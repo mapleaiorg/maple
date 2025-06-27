@@ -1,0 +1,346 @@
+# File: examples/ual/research_agent.ual
+# Example UAL agent definition
+
+"""
+agent ResearchAgent {
+    version: "1.0"
+    metadata: {
+        description: "Intelligent research assistant that gathers and analyzes information"
+        author: "MAPLE Team"
+        tags: ["research", "analysis", "knowledge"]
+    }
+
+    import requests
+    from datetime import datetime
+
+    // Agent state
+    state knowledge_base: map<string, any> = {}
+    state search_history: array<string> = []
+    state cache: map<string, any> = {}
+    private state api_calls_count: integer = 0
+    persistent state total_queries: integer = 0
+
+    // Resources
+    resource search_api: api {
+        endpoint: "https://api.search.example.com/v1",
+        auth_type: "bearer",
+        rate_limit: 100
+    }
+
+    resource cache_db: cache {
+        backend: "redis",
+        ttl: 3600,
+        max_size: 1000
+    }
+
+    // Main research capability
+    @timeout(30)
+    @retry(attempts=3)
+    public async capability research(
+        query: string,
+        depth: integer = 3,
+        sources: array<string> = ["web", "academic", "news"]
+    ) -> map<string, any> {
+        // Validate input
+        if (query == "") {
+            return {"error": "Empty query", "results": []}
+        }
+
+        // Check cache first
+        let cache_key = "research:" ++ query
+        if (cache_key in cache) {
+            return cache[cache_key]
+        }
+
+        // Track query
+        search_history = search_history ++ [query]
+        total_queries += 1
+
+        // Gather information from sources
+        let results = []
+        for (source in sources) {
+            try {
+                let source_results = await search_source(source, query, depth)
+                results = results ++ source_results
+            } catch (SearchError) {
+                emit("search_error", {
+                    "source": source,
+                    "query": query,
+                    "timestamp": datetime.now()
+                })
+            }
+        }
+
+        // Analyze and rank results
+        let analyzed = await analyze_results(results, query)
+
+        // Update knowledge base
+        knowledge_base[query] = {
+            "results": analyzed,
+            "timestamp": datetime.now(),
+            "sources": sources
+        }
+
+        // Cache results
+        cache[cache_key] = analyzed
+
+        return analyzed
+    }
+
+    // Search specific source
+    private async capability search_source(
+        source: string,
+        query: string,
+        depth: integer
+    ) -> array<map<string, any>> {
+        api_calls_count += 1
+
+        // Simulate API call
+        let response = await search_api.get("/search", {
+            "q": query,
+            "source": source,
+            "limit": depth * 10
+        })
+
+        if (response.status != 200) {
+            throw SearchError("API request failed")
+        }
+
+        return response.data.results
+    }
+
+    // Analyze search results
+    private async capability analyze_results(
+        results: array<map<string, any>>,
+        query: string
+    ) -> map<string, any> {
+        // Score and rank results
+        let scored_results = []
+        for (result in results) {
+            let score = calculate_relevance(result, query)
+            scored_results = scored_results ++ [{
+                "data": result,
+                "score": score
+            }]
+        }
+
+        // Sort by score
+        // Note: In real implementation, would use proper sorting
+
+        return {
+            "query": query,
+            "total_results": len(results),
+            "top_results": scored_results,
+            "summary": generate_summary(scored_results)
+        }
+    }
+
+    // Calculate relevance score
+    private capability calculate_relevance(
+        result: map<string, any>,
+        query: string
+    ) -> float {
+        // Simple relevance scoring
+        let score = 0.0
+
+        // Check title match
+        if (query in result.title) {
+            score += 0.5
+        }
+
+        // Check content match
+        if (query in result.content) {
+            score += 0.3
+        }
+
+        // Recency bonus
+        // Would implement proper date comparison
+        score += 0.2
+
+        return score
+    }
+
+    // Generate summary
+    private capability generate_summary(
+        results: array<map<string, any>>
+    ) -> string {
+        if (len(results) == 0) {
+            return "No relevant results found."
+        }
+
+        // Simple summary generation
+        let summary = "Found " ++ str(len(results)) ++ " relevant results. "
+
+        // Add top result info
+        if (len(results) > 0) {
+            summary = summary ++ "Top result: " ++ results[0].data.title
+        }
+
+        return summary
+    }
+
+    // Get search statistics
+    public capability get_stats() -> map<string, any> {
+        return {
+            "total_queries": total_queries,
+            "cached_queries": len(cache),
+            "knowledge_items": len(knowledge_base),
+            "api_calls": api_calls_count,
+            "search_history_size": len(search_history)
+        }
+    }
+
+    // Clear cache
+    public capability clear_cache() -> void {
+        cache = {}
+        emit("cache_cleared", {
+            "timestamp": datetime.now()
+        })
+    }
+
+    // Behavior: Auto-save knowledge base
+    behavior on_interval(event: IntervalEvent) priority: 1 {
+        if (event.interval == "hourly") {
+            // Save knowledge base to persistent storage
+            emit("knowledge_base_save", {
+                "size": len(knowledge_base),
+                "timestamp": datetime.now()
+            })
+        }
+    }
+
+    // Behavior: Handle new data events
+    behavior on_new_data(event: DataEvent) {
+        if (event.relevance > 0.8) {
+            // High relevance data - update knowledge base
+            knowledge_base[event.topic] = event.data
+
+            emit("high_relevance_data", {
+                "topic": event.topic,
+                "source": event.source
+            })
+        }
+    }
+
+    // Initialization
+    behavior initialization() {
+        emit("agent_started", {
+            "agent_id": self.agent_id,
+            "version": "1.0",
+            "capabilities": ["research", "analyze", "summarize"]
+        })
+    }
+
+    // Cleanup on termination
+    behavior termination() {
+        // Save any pending data
+        if (len(knowledge_base) > 0) {
+            emit("final_knowledge_save", {
+                "items": len(knowledge_base)
+            })
+        }
+    }
+}
+"""
+
+
+# File: examples/ual/workflow_coordinator.ual
+# Example of a workflow coordination agent
+
+"""
+agent WorkflowCoordinator {
+    version: "1.0"
+
+    state active_workflows: map<string, WorkflowState> = {}
+    state pending_tasks: array<Task> = []
+    state completed_tasks: array<Task> = []
+
+    @timeout(60)
+    public async capability start_workflow(
+        workflow_id: string,
+        workflow_type: string,
+        params: map<string, any>
+    ) -> string {
+        // Create workflow instance
+        let workflow = {
+            "id": workflow_id,
+            "type": workflow_type,
+            "status": "running",
+            "started_at": datetime.now(),
+            "params": params,
+            "current_step": 0,
+            "results": {}
+        }
+
+        active_workflows[workflow_id] = workflow
+
+        // Start workflow execution
+        await execute_workflow(workflow_id)
+
+        return workflow_id
+    }
+
+    private async capability execute_workflow(workflow_id: string) -> void {
+        let workflow = active_workflows[workflow_id]
+
+        // Get workflow definition
+        let steps = get_workflow_steps(workflow.type)
+
+        // Execute each step
+        for (step in steps) {
+            workflow.current_step += 1
+
+            try {
+                let result = await execute_step(step, workflow.params)
+                workflow.results[step.name] = result
+
+                // Check if step requires approval
+                if (step.requires_approval) {
+                    workflow.status = "waiting_approval"
+                    emit("approval_required", {
+                        "workflow_id": workflow_id,
+                        "step": step.name
+                    })
+                    return
+                }
+            } catch (StepError) {
+                workflow.status = "failed"
+                emit("workflow_failed", {
+                    "workflow_id": workflow_id,
+                    "step": step.name,
+                    "error": error.message
+                })
+                return
+            }
+        }
+
+        // Workflow completed
+        workflow.status = "completed"
+        workflow.completed_at = datetime.now()
+
+        emit("workflow_completed", {
+            "workflow_id": workflow_id,
+            "results": workflow.results
+        })
+    }
+
+    behavior on_approval_received(event: ApprovalEvent) {
+        let workflow_id = event.workflow_id
+
+        if (workflow_id in active_workflows) {
+            let workflow = active_workflows[workflow_id]
+
+            if (event.approved) {
+                workflow.status = "running"
+                await execute_workflow(workflow_id)
+            } else {
+                workflow.status = "rejected"
+                emit("workflow_rejected", {
+                    "workflow_id": workflow_id,
+                    "reason": event.reason
+                })
+            }
+        }
+    }
+}
+"""

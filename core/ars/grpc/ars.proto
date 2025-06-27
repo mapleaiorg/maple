@@ -1,0 +1,447 @@
+// File: maple/core/ars/grpc/ars.proto
+// Description: Protocol Buffer definitions for the Agent Registry Service.
+// Defines messages and service interfaces for gRPC communication.
+
+syntax = "proto3";
+
+package maple.ars;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/duration.proto";
+
+option go_package = "github.com/finalverse/maple/core/ars/grpc";
+option java_multiple_files = true;
+option java_package = "com.finalverse.maple.ars.grpc";
+option java_outer_classname = "ARSProto";
+
+// Agent status enumeration
+enum AgentStatus {
+  AGENT_STATUS_UNKNOWN = 0;
+  AGENT_STATUS_ACTIVE = 1;
+  AGENT_STATUS_INACTIVE = 2;
+  AGENT_STATUS_MAINTENANCE = 3;
+  AGENT_STATUS_DEPRECATED = 4;
+}
+
+// Health status enumeration
+enum HealthStatus {
+  HEALTH_STATUS_UNKNOWN = 0;
+  HEALTH_STATUS_HEALTHY = 1;
+  HEALTH_STATUS_DEGRADED = 2;
+  HEALTH_STATUS_UNHEALTHY = 3;
+}
+
+// Search strategy enumeration
+enum SearchStrategy {
+  SEARCH_STRATEGY_EXACT = 0;
+  SEARCH_STRATEGY_FUZZY = 1;
+  SEARCH_STRATEGY_SEMANTIC = 2;
+  SEARCH_STRATEGY_HYBRID = 3;
+}
+
+// Capability definition
+message Capability {
+  string name = 1;
+  string version = 2;
+  string description = 3;
+  google.protobuf.Struct parameters = 4;
+}
+
+// Endpoint definition
+message Endpoint {
+  string type = 1;  // http, grpc, websocket, etc.
+  string url = 2;
+  string protocol = 3;  // REST, GraphQL, etc.
+  google.protobuf.Struct metadata = 4;
+}
+
+// Agent definition
+message Agent {
+  string agent_id = 1;
+  string name = 2;
+  string version = 3;
+  AgentStatus status = 4;
+  HealthStatus health_status = 5;
+  repeated Capability capabilities = 6;
+  repeated Endpoint endpoints = 7;
+  google.protobuf.Struct metadata = 8;
+  google.protobuf.Struct metrics = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp last_heartbeat = 11;
+}
+
+// Event definition
+message Event {
+  string event_id = 1;
+  string event_type = 2;
+  google.protobuf.Timestamp timestamp = 3;
+  string agent_id = 4;
+  google.protobuf.Struct data = 5;
+  string correlation_id = 6;
+  string source = 7;
+}
+
+// Request/Response messages
+
+// Register agent
+message RegisterAgentRequest {
+  string agent_id = 1;  // Optional, will be generated if not provided
+  string name = 2;
+  string version = 3;
+  repeated Capability capabilities = 4;
+  repeated Endpoint endpoints = 5;
+  google.protobuf.Struct metadata = 6;
+}
+
+message RegisterAgentResponse {
+  Agent agent = 1;
+}
+
+// Deregister agent
+message DeregisterAgentRequest {
+  string agent_id = 1;
+}
+
+// Get agent
+message GetAgentRequest {
+  string agent_id = 1;
+}
+
+message GetAgentResponse {
+  Agent agent = 1;
+}
+
+// Discover agents
+message DiscoverAgentsRequest {
+  repeated string capabilities = 1;
+  repeated string tags = 2;
+  AgentStatus status = 3;
+  HealthStatus health_status = 4;
+  google.protobuf.Struct metadata_filter = 5;
+  bool require_all_capabilities = 6;
+  SearchStrategy search_strategy = 7;
+  string sort_by = 8;
+  int32 limit = 9;
+  int32 offset = 10;
+}
+
+message DiscoverAgentsResponse {
+  repeated Agent agents = 1;
+  int32 total_count = 2;
+  string next_cursor = 3;  // For cursor-based pagination
+}
+
+// Update health
+message UpdateHealthRequest {
+  string agent_id = 1;
+  HealthStatus health_status = 2;
+  google.protobuf.Struct metrics = 3;
+}
+
+// Heartbeat
+message HeartbeatRequest {
+  string agent_id = 1;
+  google.protobuf.Struct metrics = 2;
+}
+
+// Update capabilities
+message UpdateCapabilitiesRequest {
+  string agent_id = 1;
+  repeated Capability capabilities = 2;
+}
+
+// Stream events
+message StreamEventsRequest {
+  repeated string event_types = 1;  // Empty for all events
+  string agent_id = 2;  // Optional filter by agent
+  google.protobuf.Timestamp since = 3;  // Optional start time
+}
+
+// Get statistics
+message GetStatisticsResponse {
+  int64 total_agents = 1;
+  map<string, int64> status_counts = 2;
+  map<string, int64> health_counts = 3;
+  map<string, int64> capability_counts = 4;
+  int64 total_events = 5;
+  google.protobuf.Struct metadata = 6;  // Additional stats
+}
+
+// Batch operations
+message BatchDiscoverRequest {
+  repeated DiscoverAgentsRequest requests = 1;
+}
+
+message BatchDiscoverResponse {
+  message BatchResult {
+    bool success = 1;
+    repeated Agent agents = 2;
+    int32 total_count = 3;
+    string error_message = 4;
+  }
+  repeated BatchResult results = 1;
+}
+
+// Bidirectional streaming messages
+message AgentStreamRequest {
+  oneof request {
+    RegisterAgentRequest register = 1;
+    HeartbeatRequest heartbeat = 2;
+    UpdateHealthRequest update_health = 3;
+    UpdateCapabilitiesRequest update_capabilities = 4;
+  }
+}
+
+message AgentStreamResponse {
+  message Registered {
+    string agent_id = 1;
+  }
+
+  message Acknowledgment {
+    bool success = 1;
+    string message = 2;
+  }
+
+  message Error {
+    int32 code = 1;
+    string message = 2;
+  }
+
+  oneof response {
+    Registered registered = 1;
+    Acknowledgment ack = 2;
+    Event event = 3;
+    Error error = 4;
+  }
+}
+
+// Query builder for complex searches
+message QueryBuilder {
+  message CapabilityFilter {
+    string name = 1;
+    string version = 2;
+    enum MatchType {
+      EXACT = 0;
+      PREFIX = 1;
+      CONTAINS = 2;
+      REGEX = 3;
+    }
+    MatchType match_type = 3;
+  }
+
+  message MetadataFilter {
+    string key = 1;
+    google.protobuf.Value value = 2;
+    enum Operator {
+      EQUALS = 0;
+      NOT_EQUALS = 1;
+      GREATER_THAN = 2;
+      LESS_THAN = 3;
+      CONTAINS = 4;
+      IN = 5;
+    }
+    Operator operator = 3;
+  }
+
+  message TimeRange {
+    google.protobuf.Timestamp start = 1;
+    google.protobuf.Timestamp end = 2;
+  }
+
+  repeated CapabilityFilter capability_filters = 1;
+  repeated MetadataFilter metadata_filters = 2;
+  repeated string tags = 3;
+  AgentStatus status = 4;
+  HealthStatus health_status = 5;
+  TimeRange created_range = 6;
+  TimeRange heartbeat_range = 7;
+
+  enum LogicalOperator {
+    AND = 0;
+    OR = 1;
+  }
+  LogicalOperator capability_operator = 8;
+  LogicalOperator metadata_operator = 9;
+}
+
+// Advanced search request
+message AdvancedSearchRequest {
+  QueryBuilder query = 1;
+  SearchStrategy strategy = 2;
+  repeated string include_fields = 3;  // Field projection
+  repeated string exclude_fields = 4;
+  string sort_by = 5;
+  bool sort_descending = 6;
+  int32 limit = 7;
+  int32 offset = 8;
+  bool include_metrics = 9;
+}
+
+message AdvancedSearchResponse {
+  repeated Agent agents = 1;
+  int32 total_count = 2;
+  google.protobuf.Duration search_duration = 3;
+  repeated string matched_fields = 4;  // Which fields matched
+  float relevance_score = 5;  // Overall search relevance
+}
+
+// Health check configuration
+message HealthCheckConfig {
+  enum CheckType {
+    PING = 0;
+    HTTP = 1;
+    TCP = 2;
+    GRPC = 3;
+    CUSTOM = 4;
+  }
+
+  CheckType check_type = 1;
+  string endpoint = 2;
+  google.protobuf.Duration timeout = 3;
+  int32 retries = 4;
+  google.protobuf.Duration interval = 5;
+  int32 success_threshold = 6;
+  int32 failure_threshold = 7;
+}
+
+// Configure health check
+message ConfigureHealthCheckRequest {
+  string agent_id = 1;
+  HealthCheckConfig config = 2;
+}
+
+// Agent metrics
+message AgentMetrics {
+  string agent_id = 1;
+  google.protobuf.Timestamp timestamp = 2;
+  double cpu_usage = 3;
+  double memory_usage = 4;
+  double disk_usage = 5;
+  int64 request_count = 6;
+  double average_response_time = 7;
+  int64 error_count = 8;
+  map<string, double> custom_metrics = 9;
+}
+
+// Bulk metrics update
+message BulkMetricsUpdateRequest {
+  repeated AgentMetrics metrics = 1;
+}
+
+// Service definition
+service AgentRegistryService {
+  // Basic operations
+  rpc RegisterAgent(RegisterAgentRequest) returns (RegisterAgentResponse);
+  rpc DeregisterAgent(DeregisterAgentRequest) returns (google.protobuf.Empty);
+  rpc GetAgent(GetAgentRequest) returns (GetAgentResponse);
+
+  // Discovery
+  rpc DiscoverAgents(DiscoverAgentsRequest) returns (DiscoverAgentsResponse);
+  rpc AdvancedSearch(AdvancedSearchRequest) returns (AdvancedSearchResponse);
+
+  // Health management
+  rpc UpdateHealth(UpdateHealthRequest) returns (google.protobuf.Empty);
+  rpc Heartbeat(HeartbeatRequest) returns (google.protobuf.Empty);
+  rpc ConfigureHealthCheck(ConfigureHealthCheckRequest) returns (google.protobuf.Empty);
+
+  // Capability management
+  rpc UpdateCapabilities(UpdateCapabilitiesRequest) returns (google.protobuf.Empty);
+
+  // Events
+  rpc StreamEvents(StreamEventsRequest) returns (stream Event);
+
+  // Statistics
+  rpc GetStatistics(google.protobuf.Empty) returns (GetStatisticsResponse);
+
+  // Batch operations
+  rpc BatchDiscover(BatchDiscoverRequest) returns (BatchDiscoverResponse);
+  rpc BulkMetricsUpdate(BulkMetricsUpdateRequest) returns (google.protobuf.Empty);
+
+  // Bidirectional streaming
+  rpc AgentStream(stream AgentStreamRequest) returns (stream AgentStreamResponse);
+}
+
+// Admin service for maintenance operations
+service AgentRegistryAdminService {
+  // Cleanup operations
+  rpc CleanupExpiredAgents(CleanupRequest) returns (CleanupResponse);
+  rpc PurgeEvents(PurgeEventsRequest) returns (PurgeEventsResponse);
+
+  // Backup and restore
+  rpc ExportRegistry(ExportRequest) returns (stream ExportChunk);
+  rpc ImportRegistry(stream ImportChunk) returns (ImportResponse);
+
+  // Maintenance mode
+  rpc SetMaintenanceMode(MaintenanceRequest) returns (google.protobuf.Empty);
+
+  // Reindexing
+  rpc ReindexAgents(ReindexRequest) returns (ReindexResponse);
+}
+
+// Admin messages
+message CleanupRequest {
+  google.protobuf.Duration ttl = 1;
+  bool dry_run = 2;
+}
+
+message CleanupResponse {
+  int32 agents_removed = 1;
+  repeated string removed_agent_ids = 2;
+}
+
+message PurgeEventsRequest {
+  google.protobuf.Timestamp before = 1;
+  repeated string event_types = 2;
+  bool dry_run = 3;
+}
+
+message PurgeEventsResponse {
+  int64 events_removed = 1;
+}
+
+message ExportRequest {
+  enum Format {
+    JSON = 0;
+    PROTOBUF = 1;
+    CSV = 2;
+  }
+  Format format = 1;
+  bool include_events = 2;
+  bool include_metrics = 3;
+}
+
+message ExportChunk {
+  bytes data = 1;
+  int32 sequence = 2;
+  bool is_last = 3;
+}
+
+message ImportChunk {
+  bytes data = 1;
+  int32 sequence = 2;
+  bool is_last = 3;
+}
+
+message ImportResponse {
+  int32 agents_imported = 1;
+  int32 events_imported = 2;
+  repeated string errors = 3;
+}
+
+message MaintenanceRequest {
+  bool enabled = 1;
+  string message = 2;
+  google.protobuf.Duration duration = 3;
+}
+
+message ReindexRequest {
+  repeated string indices = 1;  // capability, tag, metadata, etc.
+  bool rebuild_all = 2;
+}
+
+message ReindexResponse {
+  int32 indices_rebuilt = 1;
+  google.protobuf.Duration duration = 2;
+}
