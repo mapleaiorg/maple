@@ -1,4 +1,4 @@
-# File: maple/core/map/__main__.py
+# File: core/map/__main__.py
 # Description: Main entry point for the MAP Protocol Server. This script provides
 # CLI interface, configuration management, and bootstraps all MAP components.
 
@@ -11,10 +11,10 @@ import os
 from pathlib import Path
 from typing import Dict, Any, Optional
 
-from maple.core.map.server.protocol_server import MAPProtocolServer, ServerConfig
-from maple.core.map.security.auth import SecurityManager, Role
-from maple.core.map.middleware.auth_middleware import setup_middleware, RateLimitConfig
-from maple.core.map.orchestration.workflow import create_data_processing_workflow
+from core.map.server.protocol_server import MAPProtocolServer, ServerConfig
+from core.map.security.auth import SecurityManager, Role
+from core.map.middleware.auth_middleware import setup_middleware, RateLimitConfig
+from core.map.orchestration.workflow import create_data_processing_workflow
 
 
 # Configure logging
@@ -34,7 +34,7 @@ def setup_logging(log_level: str = "INFO", log_file: Optional[str] = None):
     )
 
     # Set specific loggers
-    logging.getLogger("maple.core.map").setLevel(logging.DEBUG)
+    logging.getLogger("core.map").setLevel(logging.DEBUG)
     logging.getLogger("aiohttp").setLevel(logging.WARNING)
     logging.getLogger("aiokafka").setLevel(logging.WARNING)
 
@@ -355,7 +355,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s \\
     CMD python -c "import requests; requests.get('http://localhost:8080/health')"
 
 # Run server
-CMD ["python", "-m", "maple.core.map", "-c", "config/map-server.yaml"]
+        CMD ["python", "-m", "core.map", "-c", "config/map-server.yaml"]
 """
 
 

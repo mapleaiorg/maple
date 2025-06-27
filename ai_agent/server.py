@@ -13,10 +13,10 @@ import logging
 from .core.agent import AIAgent
 from .config import AIAgentConfig
 from .monitoring import AgentMonitor
-from maple.core.map.client import MAPClient
-from maple.core.ars.client import ARSClient
-from maple.mall.client import MALLClient
-from maple.mapleverse.client import MapleverseClient
+from core.map.client import MAPClient
+from core.ars.client import ARSClient
+from mall.client import MALLClient
+from mapleverse.client import MapleverseClient
 
 logger = logging.getLogger(__name__)
 

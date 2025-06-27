@@ -1,4 +1,4 @@
-# File: maple/mall/core/federated.py
+# File: mall/core/federated.py
 # Description: Federated learning coordination for MALL. Manages distributed
 # training rounds, secure aggregation, and model synchronization across shards.
 
@@ -14,9 +14,9 @@ import torch
 import torch.nn as nn
 from collections import defaultdict
 
-from maple.mall.core.learning_node import LearningNode
-from maple.mall.models.agent_model import AgentModel
-from maple.mall.security.encryption import SecureAggregation
+from mall.core.learning_node import LearningNode
+from mall.models.agent_model import AgentModel
+from mall.security.encryption import SecureAggregation
 
 logger = logging.getLogger(__name__)
 

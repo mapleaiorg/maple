@@ -1,12 +1,12 @@
-# File: maple/llm/providers/local/llama.py
+# File: llm/providers/local/llama.py
 # Description: Llama local model provider implementation.
 
 from __future__ import annotations
 from typing import List, Optional, Dict, Any
 import logging
 
-from maple.core.llm.base import LLMProvider, Message
-from maple.core.llm.providers.local.base_local import BaseLocalLLM
+from llm.base import LLMProvider, Message
+from llm.providers.local.base_local import BaseLocalLLM
 
 logger = logging.getLogger(__name__)
 

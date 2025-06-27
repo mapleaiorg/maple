@@ -38,7 +38,7 @@ def _proto_to_event(self, event) -> RegistryEvent:
 
 def _status_to_proto(self, status: AgentStatus):
     """Convert AgentStatus to protobuf"""
-    from maple.core.ars.grpc import ars_pb2
+    from core.ars.grpc import ars_pb2
 
     mapping = {
         AgentStatus.ACTIVE: ars_pb2.AGENT_STATUS_ACTIVE,
@@ -51,7 +51,7 @@ def _status_to_proto(self, status: AgentStatus):
 
 def _proto_to_status(self, status) -> AgentStatus:
     """Convert protobuf to AgentStatus"""
-    from maple.core.ars.grpc import ars_pb2
+    from core.ars.grpc import ars_pb2
 
     mapping = {
         ars_pb2.AGENT_STATUS_ACTIVE: AgentStatus.ACTIVE,
@@ -64,7 +64,7 @@ def _proto_to_status(self, status) -> AgentStatus:
 
 def _health_to_proto(self, health: HealthStatus):
     """Convert HealthStatus to protobuf"""
-    from maple.core.ars.grpc import ars_pb2
+    from core.ars.grpc import ars_pb2
 
     mapping = {
         HealthStatus.HEALTHY: ars_pb2.HEALTH_STATUS_HEALTHY,
@@ -77,7 +77,7 @@ def _health_to_proto(self, health: HealthStatus):
 
 def _proto_to_health(self, health) -> HealthStatus:
     """Convert protobuf to HealthStatus"""
-    from maple.core.ars.grpc import ars_pb2
+    from core.ars.grpc import ars_pb2
 
     mapping = {
         ars_pb2.HEALTH_STATUS_HEALTHY: HealthStatus.HEALTHY,
@@ -90,7 +90,7 @@ def _proto_to_health(self, health) -> HealthStatus:
 
 def _search_strategy_to_proto(self, strategy: SearchStrategy):
     """Convert SearchStrategy to protobuf"""
-    from maple.core.ars.grpc import ars_pb2
+    from core.ars.grpc import ars_pb2
 
     mapping = {
         SearchStrategy.EXACT: ars_pb2.SEARCH_STRATEGY_EXACT,

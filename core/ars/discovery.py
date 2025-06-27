@@ -1,4 +1,4 @@
-# File: maple/core/ars/discovery.py
+# File: core/ars/discovery.py
 # Description: Advanced discovery engine for intelligent agent search and matching.
 # Provides semantic search, ranking, and recommendation capabilities.
 
@@ -15,11 +15,11 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-from maple.core.ars.models.registry import (
+from core.ars.models.registry import (
     AgentRegistration, ServiceQuery, Capability,
     AgentStatus, HealthStatus
 )
-from maple.core.ars.storage.interface import RegistryStorage
+from core.ars.storage.interface import RegistryStorage
 
 logger = logging.getLogger(__name__)
 

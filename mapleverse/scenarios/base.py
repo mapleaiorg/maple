@@ -1,4 +1,4 @@
-# File: maple/mapleverse/scenarios/base.py
+# File: mapleverse/scenarios/base.py
 # Description: Pre-built scenarios and templates for Mapleverse simulations
 
 from __future__ import annotations
@@ -9,7 +9,7 @@ import random
 import asyncio
 import logging
 
-from maple.core.mapleverse.engine.base import (
+from core.mapleverse.engine.base import (
     SimulationConfig, SimulationEngine, SimulationWorld,
     Vector3, AgentEntity, Entity, PhysicsEngine, Resource
 )

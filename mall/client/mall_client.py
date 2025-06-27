@@ -1,4 +1,4 @@
-# File: maple/mall/client/mall_client.py
+# File: mall/client/mall_client.py
 # Description: Client SDK for interacting with MALL services.
 
 from __future__ import annotations
@@ -10,8 +10,8 @@ import json
 import logging
 from datetime import datetime
 
-from maple.mall.models.agent_model import AgentModel, ModelInfo
-from maple.mall.spawn.auto_spawner import SpawnRequest
+from mall.models.agent_model import AgentModel, ModelInfo
+from mall.spawn.auto_spawner import SpawnRequest
 
 logger = logging.getLogger(__name__)
 

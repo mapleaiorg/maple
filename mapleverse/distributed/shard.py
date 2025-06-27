@@ -1,4 +1,4 @@
-# File: maple/mapleverse/distributed/shard.py
+# File: mapleverse/distributed/shard.py
 # Description: Distributed simulation sharding for planetary-scale Mapleverse
 
 from __future__ import annotations
@@ -11,11 +11,11 @@ from enum import Enum
 import json
 import time
 
-from maple.core.mapleverse.engine.base import (
+from core.mapleverse.engine.base import (
     SimulationEngine, SimulationWorld, Entity, AgentEntity, Vector3
 )
-from maple.core.map.models.message import MAPMessage, MessageType
-from maple.core.map.transport.base import TransportProtocol
+from core.map.models.message import MAPMessage, MessageType
+from core.map.transport.base import TransportProtocol
 
 logger = logging.getLogger(__name__)
 

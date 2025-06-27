@@ -1,4 +1,4 @@
-# File: maple/core/ual/models/ast.py
+# File: core/ual/models/ast.py
 # Description: Abstract Syntax Tree (AST) definitions for the Universal Agent Language.
 # Defines the core language constructs and their representations.
 

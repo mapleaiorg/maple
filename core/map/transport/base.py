@@ -1,4 +1,4 @@
-# File: maple/core/map/transport/base.py
+# File: core/map/transport/base.py
 # Description: Transport layer abstractions and implementations for MAP protocol.
 # Supports multiple transport mechanisms including HTTP, gRPC, WebSocket, and message queues.
 # This layer handles the actual delivery of messages between agents with reliability guarantees.
@@ -16,8 +16,8 @@ import aiohttp
 import websockets
 from concurrent.futures import ThreadPoolExecutor
 
-from maple.core.map.models.message import MAPMessage, DeliveryMode
-from maple.core.map.routing.engine import AgentRoute
+from core.map.models.message import MAPMessage, DeliveryMode
+from core.map.routing.engine import AgentRoute
 
 logger = logging.getLogger(__name__)
 

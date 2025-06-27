@@ -1,4 +1,4 @@
-# File: maple/llm/providers/local/base_local.py
+# File: llm/providers/local/base_local.py
 # Description: Base class for local LLM providers.
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ from transformers import (
 )
 from huggingface_hub import hf_hub_download, snapshot_download
 
-from maple.core.llm.base import (
+from llm.base import (
     BaseLLM, LLMProvider, ModelCapability, ModelInfo,
     CompletionRequest, CompletionResponse, Message, Choice, TokenUsage,
     EmbeddingRequest, EmbeddingResponse

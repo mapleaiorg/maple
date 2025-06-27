@@ -1,19 +1,19 @@
-# File: maple/llm/factory.py
+# File: llm/factory.py
 # Description: Factory for creating LLM providers.
 
 from __future__ import annotations
 from typing import Optional, Dict, Any
 import logging
 
-from maple.core.llm.base import BaseLLM, LLMProvider
-from maple.core.llm.providers.openai import OpenAIProvider
-from maple.core.llm.providers.anthropic import AnthropicProvider
-from maple.core.llm.providers.google import GoogleProvider
-from maple.core.llm.providers.local.llama import (
+from llm.base import BaseLLM, LLMProvider
+from llm.providers.openai import OpenAIProvider
+from llm.providers.anthropic import AnthropicProvider
+from llm.providers.google import GoogleProvider
+from llm.providers.local.llama import (
     LlamaProvider, CodeLlamaProvider, VicunaProvider
 )
-from maple.core.llm.providers.local.mistral import MistralProvider, MixtralProvider
-from maple.core.llm.providers.local.other_models import (
+from llm.providers.local.mistral import MistralProvider, MixtralProvider
+from llm.providers.local.other_models import (
     FalconProvider, MPTProvider, AlpacaProvider
 )
 

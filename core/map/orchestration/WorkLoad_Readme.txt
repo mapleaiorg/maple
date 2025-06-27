@@ -1,6 +1,6 @@
 MAP Workflow Orchestration Engine:
 
-Core Models (maple/core/map/orchestration/models.py)
+Core Models (core/map/orchestration/models.py)
 
 Workflow and step states
 Execution contexts with variable management
@@ -8,7 +8,7 @@ Retry policies and compensation strategies
 Comprehensive metrics tracking
 
 
-Step Implementations (maple/core/map/orchestration/steps.py)
+Step Implementations (core/map/orchestration/steps.py)
 
 MessageStep: Send messages to agents
 ParallelStep: Execute multiple steps concurrently
@@ -21,7 +21,7 @@ AggregateStep: Aggregate results from multiple steps
 CustomStep: Extensible custom logic
 
 
-Core Engine (maple/core/map/orchestration/engine.py)
+Core Engine (core/map/orchestration/engine.py)
 
 WorkflowInstance: Runtime execution with pause/resume/cancel
 WorkflowEngine: Main orchestration engine
@@ -30,7 +30,7 @@ Comprehensive error handling and compensation
 Background task management
 
 
-Persistence Layer (maple/core/map/orchestration/persistence.py)
+Persistence Layer (core/map/orchestration/persistence.py)
 
 InMemoryPersistence: For development/testing
 RedisPersistence: For distributed deployments
@@ -39,7 +39,7 @@ CompositePersistence: Multi-tier persistence strategy
 Checkpoint support for long-running workflows
 
 
-Builder and DSL (maple/core/map/orchestration/builder.py)
+Builder and DSL (core/map/orchestration/builder.py)
 
 Fluent API for programmatic workflow creation
 YAML/JSON DSL support

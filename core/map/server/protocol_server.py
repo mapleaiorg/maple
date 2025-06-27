@@ -1,4 +1,4 @@
-# File: maple/core/map/server/protocol_server.py
+# File: core/map/server/protocol_server.py
 # Description: Main MAP Protocol Server that integrates all components and provides
 # the primary service interface for the Multi-Agent Protocol. This server handles
 # incoming messages, manages agent connections, and orchestrates all MAP operations.
@@ -18,13 +18,13 @@ from prometheus_client import Counter, Histogram, Gauge, generate_latest
 import aiokafka
 from dataclasses import dataclass, field
 
-from maple.core.map.models.message import (
+from core.map.models.message import (
     MAPMessage, MessageType, MessagePriority,
     DeliveryMode, AgentIdentifier, MessageDestination
 )
-from maple.core.map.routing.engine import RoutingEngine, AgentRoute
-from maple.core.map.transport.base import TransportManager, DeliveryReceipt
-from maple.core.map.orchestration.workflow import WorkflowEngine
+from core.map.routing.engine import RoutingEngine, AgentRoute
+from core.map.transport.base import TransportManager, DeliveryReceipt
+from core.map.orchestration.workflow import WorkflowEngine
 
 logger = logging.getLogger(__name__)
 
@@ -1006,7 +1006,7 @@ class MAPProtocolServer:
         if action in self.message_handlers:
             self.message_handlers[action].remove(handler)
 
-# File: maple/core/map/server/protocol_server.py
+# File: core/map/server/protocol_server.py
 # Description: Main MAP Protocol Server that integrates all components and provides
 # the primary service interface for the Multi-Agent Protocol. This server handles
 # incoming messages, manages agent connections, and orchestrates all MAP operations.
@@ -1026,13 +1026,13 @@ from prometheus_client import Counter, Histogram, Gauge, generate_latest
 import aiokafka
 from dataclasses import dataclass, field
 
-from maple.core.map.models.message import (
+from core.map.models.message import (
     MAPMessage, MessageType, MessagePriority,
     DeliveryMode, AgentIdentifier, MessageDestination
 )
-from maple.core.map.routing.engine import RoutingEngine, AgentRoute
-from maple.core.map.transport.base import TransportManager, DeliveryReceipt
-from maple.core.map.orchestration.workflow import WorkflowEngine
+from core.map.routing.engine import RoutingEngine, AgentRoute
+from core.map.transport.base import TransportManager, DeliveryReceipt
+from core.map.orchestration.workflow import WorkflowEngine
 
 logger = logging.getLogger(__name__)
 

@@ -1,4 +1,4 @@
-# File: maple/core/ars/grpc/init.py
+# File: core/ars/grpc/init.py
 
 """
 gRPC interface for the Agent Registry Service.
@@ -19,7 +19,7 @@ try:
 except ImportError:
     import warnings
     warnings.warn(
-        "gRPC code not generated. Run 'python -m maple.core.ars.grpc.generate_grpc' "
+        "gRPC code not generated. Run 'python -m core.ars.grpc.generate_grpc' "
         "to generate the required files.",
         ImportWarning
     )

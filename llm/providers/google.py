@@ -11,7 +11,7 @@ from google.generativeai.types import (
     ContentType, GenerationConfig, SafetySettingsType
 )
 
-from maple.core.llm.base import (
+from llm.base import (
     BaseLLM, LLMProvider, ModelCapability, ModelInfo, PricingInfo,
     CompletionRequest, CompletionResponse, Message, Choice, TokenUsage,
     EmbeddingRequest, EmbeddingResponse, EmbeddingData

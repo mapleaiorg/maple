@@ -1,8 +1,8 @@
-# File: maple/core/ual/codegen/base.py
+# File: core/ual/codegen/base.py
 # Base code generator class
 
 from abc import ABC, abstractmethod
-from maple.core.ual.models.ast import *
+from core.ual.models.ast import *
 
 
 class CodeGenerator(ABC, ASTVisitor):

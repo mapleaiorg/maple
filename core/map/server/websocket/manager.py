@@ -1,4 +1,4 @@
-# File: maple/core/map/server/websocket/manager.py
+# File: core/map/server/websocket/manager.py
 # Description: WebSocket connection management extracted from protocol_server.py
 # Handles WebSocket connections, message broadcasting, and connection lifecycle.
 
@@ -12,8 +12,8 @@ from uuid import UUID
 from aiohttp import web, WSMsgType
 import weakref
 
-from maple.core.map.models.message import MAPMessage
-from maple.core.map.routing.engine import RoutingEngine, AgentRoute
+from core.map.models.message import MAPMessage
+from core.map.routing.engine import RoutingEngine, AgentRoute
 
 logger = logging.getLogger(__name__)
 

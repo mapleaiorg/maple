@@ -1,4 +1,4 @@
-# File: maple/core/ars/events.py
+# File: core/ars/events.py
 # Description: Event-driven system for ARS notifications and pub/sub messaging.
 # Provides event bus, handlers, and integration with external systems.
 
@@ -14,7 +14,7 @@ import logging
 from collections import defaultdict, deque
 import inspect
 
-from maple.core.ars.models.registry import RegistryEvent
+from core.ars.models.registry import RegistryEvent
 
 logger = logging.getLogger(__name__)
 

@@ -1,4 +1,4 @@
-# File: maple/core/ual/__main__.py
+# File: core/ual/__main__.py
 # Description: Command-line interface for the UAL compiler
 
 import argparse
@@ -7,7 +7,7 @@ import logging
 from pathlib import Path
 from typing import List
 
-from maple.core.ual.compiler import (
+from core.ual.compiler import (
     UALCompiler, CompilerOptions, TargetLanguage,
     CompilationResult
 )
@@ -32,16 +32,16 @@ def main():
         epilog="""
 Examples:
   # Compile a single file to Python
-  python -m maple.core.ual agent.ual -o agent.py
+  python -m core.ual agent.ual -o agent.py
 
   # Compile to JavaScript
-  python -m maple.core.ual agent.ual -t javascript -o agent.js
+  python -m core.ual agent.ual -t javascript -o agent.js
 
   # Compile all files in directory
-  python -m maple.core.ual src/ -o dist/
+  python -m core.ual src/ -o dist/
 
   # Check syntax without generating code
-  python -m maple.core.ual --check agent.ual
+  python -m core.ual --check agent.ual
         """
     )
 

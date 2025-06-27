@@ -1,4 +1,4 @@
-# File: maple/core/ual/lexer/lexer.py
+# File: core/ual/lexer/lexer.py
 # Description: Lexical analyzer for the Universal Agent Language.
 # Tokenizes UAL source code into a stream of tokens for parsing.
 

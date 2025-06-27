@@ -1,4 +1,4 @@
-# File: maple/core/ars/storage/postgres.py
+# File: core/ars/storage/postgres.py
 # Description: PostgreSQL storage implementation for enterprise deployments.
 # Provides ACID compliance, advanced querying, and relational data integrity.
 
@@ -14,11 +14,11 @@ from contextlib import asynccontextmanager
 import asyncpg
 from asyncpg.pool import Pool
 
-from maple.core.ars.models.registry import (
+from core.ars.models.registry import (
     AgentRegistration, ServiceQuery, Capability,
     AgentStatus, HealthStatus, RegistryEvent, Endpoint
 )
-from maple.core.ars.storage.interface import RegistryStorage
+from core.ars.storage.interface import RegistryStorage
 
 logger = logging.getLogger(__name__)
 

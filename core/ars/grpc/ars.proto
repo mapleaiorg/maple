@@ -1,4 +1,4 @@
-// File: maple/core/ars/grpc/ars.proto
+// File: core/ars/grpc/ars.proto
 // Description: Protocol Buffer definitions for the Agent Registry Service.
 // Defines messages and service interfaces for gRPC communication.
 
@@ -11,7 +11,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/duration.proto";
 
-option go_package = "github.com/finalverse/maple/core/ars/grpc";
+option go_package = "github.com/finalverse/core/ars/grpc";
 option java_multiple_files = true;
 option java_package = "com.finalverse.maple.ars.grpc";
 option java_outer_classname = "ARSProto";

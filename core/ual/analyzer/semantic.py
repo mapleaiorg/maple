@@ -1,4 +1,4 @@
-# File: maple/core/ual/analyzer/semantic.py
+# File: core/ual/analyzer/semantic.py
 # Description: Semantic analyzer for UAL that performs type checking,
 # symbol resolution, and various semantic validations.
 
@@ -8,7 +8,7 @@ from typing import Dict, List, Optional, Set, Any, Union, Tuple
 from enum import Enum
 import logging
 
-from maple.core.ual.models.ast import *
+from core.ual.models.ast import *
 
 logger = logging.getLogger(__name__)
 

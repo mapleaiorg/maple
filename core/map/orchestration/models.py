@@ -1,4 +1,4 @@
-# File: maple/core/map/orchestration/models.py
+# File: core/map/orchestration/models.py
 # Description: Core data models and types for the workflow orchestration engine.
 # Defines workflow states, execution contexts, and base abstractions.
 

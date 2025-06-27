@@ -1,4 +1,4 @@
-# File: maple/mall/__main__.py
+# File: mall/__main__.py
 # Description: Main entry point for running MALL server
 
 import asyncio
@@ -7,7 +7,7 @@ import logging
 import sys
 from pathlib import Path
 
-from maple.mall.server.mall_server import MALLServer
+from mall.server.mall_server import MALLServer
 
 
 def setup_logging(log_level: str, log_file: Optional[str] = None):

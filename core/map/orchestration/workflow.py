@@ -1,4 +1,4 @@
-# File: maple/core/map/orchestration/workflow.py
+# File: core/map/orchestration/workflow.py
 # Description: Workflow orchestration engine for MAP protocol that manages
 # complex multi-agent workflows, including parallel execution, conditional logic,
 # error handling, and state management with compensation/rollback capabilities.
@@ -16,9 +16,9 @@ import json
 import pickle
 from collections import defaultdict
 
-from maple.core.map.models.message import MAPMessage, MessageType, MessagePayload, MessageHeader, MessageDestination
-from maple.core.map.routing.engine import RoutingEngine
-from maple.core.map.transport.base import TransportManager, DeliveryReceipt
+from core.map.models.message import MAPMessage, MessageType, MessagePayload, MessageHeader, MessageDestination
+from core.map.routing.engine import RoutingEngine
+from core.map.transport.base import TransportManager, DeliveryReceipt
 
 logger = logging.getLogger(__name__)
 

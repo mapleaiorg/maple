@@ -1,4 +1,4 @@
-# File: maple/core/map/middleware/auth_middleware.py
+# File: core/map/middleware/auth_middleware.py
 # Description: Authentication and authorization middleware for MAP Protocol Server.
 # Provides request authentication, rate limiting, audit logging, and message validation.
 
@@ -13,8 +13,8 @@ from typing import Dict, Optional, Callable, Any, Set
 from aiohttp import web
 import json
 
-from maple.core.map.security.auth import SecurityManager, Permission, AuthToken
-from maple.core.map.models.message import MAPMessage
+from core.map.security.auth import SecurityManager, Permission, AuthToken
+from core.map.models.message import MAPMessage
 
 logger = logging.getLogger(__name__)
 

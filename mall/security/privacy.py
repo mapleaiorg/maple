@@ -1,4 +1,4 @@
-# File: maple/mall/security/privacy.py
+# File: mall/security/privacy.py
 # Description: Privacy-preserving mechanisms for MALL including differential
 # privacy and homomorphic encryption support.
 

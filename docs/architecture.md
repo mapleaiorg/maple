@@ -38,7 +38,7 @@ MAPLE (Multi-Agent Protocol Learning Environment) is organized as a set of Rust 
 
 The `core/` crate groups language model logic.
 
-- **maple/llm/** – External LLM integration with a simple `generate` function (currently a stub). Designed to connect to systems like Llama.cpp or Mistral.
+- **llm/** – External LLM integration with a simple `generate` function (currently a stub). Designed to connect to systems like Llama.cpp or Mistral.
 - **maple/maple/** – Internal Maple language model for governance and conflict resolution among agents.
 
 ## Extensibility

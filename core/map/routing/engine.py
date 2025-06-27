@@ -1,4 +1,4 @@
-# File: maple/core/map/routing/engine.py
+# File: core/map/routing/engine.py
 # Description: Core routing engine for the Multi-Agent Protocol that handles
 # intelligent message routing, load balancing, and agent selection based on
 # capabilities, performance metrics, and availability.
@@ -14,7 +14,7 @@ from uuid import UUID
 import random
 import heapq
 
-from maple.core.map.models.message import (
+from core.map.models.message import (
     MAPMessage, MessageDestination, AgentIdentifier,
     MessagePriority, MessageType
 )

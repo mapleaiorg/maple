@@ -1,4 +1,4 @@
-# File: maple/core/ars/client.py
+# File: core/ars/client.py
 # Description: Client SDK for interacting with the Agent Registry Service.
 # Provides both REST and gRPC clients with a unified interface.
 
@@ -15,11 +15,11 @@ from enum import Enum
 import aiohttp
 import grpc
 
-from maple.core.ars.models.registry import (
+from core.ars.models.registry import (
     AgentRegistration, ServiceQuery, Capability,
     AgentStatus, HealthStatus, RegistryEvent, Endpoint
 )
-from maple.core.ars.discovery import SearchStrategy
+from core.ars.discovery import SearchStrategy
 
 logger = logging.getLogger(__name__)
 
@@ -581,7 +581,7 @@ class ARSGrpcClient:
     async def connect(self) -> None:
         """Initialize gRPC channel"""
         try:
-            from maple.core.ars.grpc import ars_pb2_grpc
+            from core.ars.grpc import ars_pb2_grpc
 
             # Create channel
             target = f"{self.config.grpc_host}:{self.config.grpc_port}"
@@ -620,7 +620,7 @@ class ARSGrpcClient:
         except ImportError:
             raise ImportError(
                 "gRPC support not available. "
-                "Run 'python -m maple.core.ars.grpc.generate_grpc' to generate required files."
+                "Run 'python -m core.ars.grpc.generate_grpc' to generate required files."
             )
 
     async def close(self) -> None:
@@ -652,7 +652,7 @@ class ARSGrpcClient:
             agent_id: Optional[str] = None
     ) -> AgentRegistration:
         """Register agent via gRPC"""
-        from maple.core.ars.grpc import ars_pb2
+        from core.ars.grpc import ars_pb2
 
         request = ars_pb2.RegisterAgentRequest(
             agent_id=agent_id or "",
@@ -684,7 +684,7 @@ class ARSGrpcClient:
 
     async def deregister_agent(self, agent_id: str) -> bool:
         """Deregister agent via gRPC"""
-        from maple.core.ars.grpc import ars_pb2
+        from core.ars.grpc import ars_pb2
 
         request = ars_pb2.DeregisterAgentRequest(agent_id=agent_id)
 
@@ -698,7 +698,7 @@ class ARSGrpcClient:
 
     async def get_agent(self, agent_id: str) -> Optional[AgentRegistration]:
         """Get agent via gRPC"""
-        from maple.core.ars.grpc import ars_pb2
+        from core.ars.grpc import ars_pb2
 
         request = ars_pb2.GetAgentRequest(agent_id=agent_id)
 
@@ -724,7 +724,7 @@ class ARSGrpcClient:
             offset: Optional[int] = None
     ) -> List[AgentRegistration]:
         """Discover agents via gRPC"""
-        from maple.core.ars.grpc import ars_pb2
+        from core.ars.grpc import ars_pb2
 
         request = ars_pb2.DiscoverAgentsRequest(
             capabilities=capabilities or [],
@@ -753,7 +753,7 @@ class ARSGrpcClient:
             metrics: Optional[Dict[str, Any]] = None
     ) -> bool:
         """Update health via gRPC"""
-        from maple.core.ars.grpc import ars_pb2
+        from core.ars.grpc import ars_pb2
 
         request = ars_pb2.UpdateHealthRequest(
             agent_id=agent_id,
@@ -775,7 +775,7 @@ class ARSGrpcClient:
             metrics: Optional[Dict[str, Any]] = None
     ) -> bool:
         """Send heartbeat via gRPC"""
-        from maple.core.ars.grpc import ars_pb2
+        from core.ars.grpc import ars_pb2
 
         request = ars_pb2.HeartbeatRequest(
             agent_id=agent_id,
@@ -796,7 +796,7 @@ class ARSGrpcClient:
             capabilities: List[Capability]
     ) -> bool:
         """Update capabilities via gRPC"""
-        from maple.core.ars.grpc import ars_pb2
+        from core.ars.grpc import ars_pb2
 
         request = ars_pb2.UpdateCapabilitiesRequest(
             agent_id=agent_id,
@@ -842,7 +842,7 @@ class ARSGrpcClient:
             agent_id: Optional[str] = None
     ) -> AsyncIterator[RegistryEvent]:
         """Stream events via gRPC"""
-        from maple.core.ars.grpc import ars_pb2
+        from core.ars.grpc import ars_pb2
 
         request = ars_pb2.StreamEventsRequest(
             event_types=event_types or [],
@@ -916,7 +916,7 @@ class ARSGrpcClient:
 
     def _status_to_proto(self, status: AgentStatus):
         """Convert AgentStatus to protobuf"""
-        from maple.core.ars.grpc import ars_pb2
+        from core.ars.grpc import ars_pb2
 
         mapping = {
             AgentStatus.ACTIVE: ars_pb2.AGENT_STATUS_ACTIVE,
@@ -928,7 +928,7 @@ class ARSGrpcClient:
 
     def _proto_to_status(self, status) -> AgentStatus:
         """Convert protobuf to AgentStatus"""
-        from maple.core.ars.grpc import ars_pb2
+        from core.ars.grpc import ars_pb2
 
         mapping = {
             ars_pb2.AGENT_STATUS_ACTIVE: AgentStatus.ACTIVE,
@@ -940,7 +940,7 @@ class ARSGrpcClient:
 
     def _health_to_proto(self, health: HealthStatus):
         """Convert HealthStatus to protobuf"""
-        from maple.core.ars.grpc import ars_pb2
+        from core.ars.grpc import ars_pb2
 
         mapping = {
             HealthStatus.HEALTHY: ars_pb2.HEALTH_STATUS_HEALTHY,
@@ -952,7 +952,7 @@ class ARSGrpcClient:
 
     def _proto_to_health(self, health) -> HealthStatus:
         """Convert protobuf to HealthStatus"""
-        from maple.core.ars.grpc import ars_pb2
+        from core.ars.grpc import ars_pb2
 
         mapping = {
             ars_pb2.HEALTH_STATUS_HEALTHY: HealthStatus.HEALTHY,
@@ -964,7 +964,7 @@ class ARSGrpcClient:
 
     def _search_strategy_to_proto(self, strategy: SearchStrategy):
         """Convert SearchStrategy to protobuf"""
-        from maple.core.ars.grpc import ars_pb2
+        from core.ars.grpc import ars_pb2
 
         mapping = {
             SearchStrategy.EXACT: ars_pb2.SEARCH_STRATEGY_EXACT,

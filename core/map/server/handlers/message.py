@@ -1,4 +1,4 @@
-# File: maple/core/map/server/handlers/message.py
+# File: core/map/server/handlers/message.py
 # Description: Message handling endpoints extracted from protocol_server.py
 # Handles all message-related HTTP endpoints and business logic.
 
@@ -11,12 +11,12 @@ from uuid import UUID
 from aiohttp import web
 from prometheus_client import Counter, Histogram
 
-from maple.core.map.models.message import (
+from core.map.models.message import (
     MAPMessage, MessageType, MessagePriority,
     DeliveryMode, MessageDestination
 )
-from maple.core.map.routing.engine import RoutingEngine
-from maple.core.map.transport.base import TransportManager
+from core.map.routing.engine import RoutingEngine
+from core.map.transport.base import TransportManager
 
 logger = logging.getLogger(__name__)
 

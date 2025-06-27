@@ -1,4 +1,4 @@
-# File: maple/llm/providers/openai.py
+# File: llm/providers/openai.py
 # Description: OpenAI (ChatGPT) provider implementation for MAPLE.
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ import aiohttp
 from openai import AsyncOpenAI
 import tiktoken
 
-from maple.core.llm.base import (
+from llm.base import (
     BaseLLM, LLMProvider, ModelCapability, ModelInfo, PricingInfo,
     CompletionRequest, CompletionResponse, Message, Choice, TokenUsage,
     EmbeddingRequest, EmbeddingResponse, EmbeddingData

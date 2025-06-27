@@ -1,4 +1,4 @@
-# File: maple/core/ual/codegen/python.py
+# File: core/ual/codegen/python.py
 # Description: Python code generator for UAL that converts the AST into
 # executable Python code for MAPLE agents.
 
@@ -7,8 +7,8 @@ from typing import Dict, List, Optional, Any, Set
 from io import StringIO
 import textwrap
 
-from maple.core.ual.models.ast import *
-from maple.core.ual.codegen.base import CodeGenerator
+from core.ual.models.ast import *
+from core.ual.codegen.base import CodeGenerator
 
 
 class PythonCodeGenerator(CodeGenerator):
@@ -34,7 +34,7 @@ class PythonCodeGenerator(CodeGenerator):
         self.imports.add("import logging")
         self.imports.add("from typing import Dict, List, Optional, Any, Union")
         self.imports.add("from datetime import datetime, timedelta")
-        self.imports.add("from maple.core.agent import MAPLEAgent, capability, behavior, state")
+        self.imports.add("from core.agent import MAPLEAgent, capability, behavior, state")
 
         # Visit agent
         agent.accept(self)

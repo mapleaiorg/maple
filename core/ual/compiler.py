@@ -1,4 +1,4 @@
-# File: maple/core/ual/compiler.py
+# File: core/ual/compiler.py
 # Description: Main UAL compiler that orchestrates the compilation process
 # from source code to target language output.
 
@@ -9,11 +9,11 @@ from enum import Enum
 import logging
 from pathlib import Path
 
-from maple.core.ual.lexer.lexer import tokenize, LexerError
-from maple.core.ual.parser.parser import parse, ParseError
-from maple.core.ual.analyzer.semantic import analyze, SemanticError
-from maple.core.ual.codegen.python import generate_python
-from maple.core.ual.models.ast import Agent
+from core.ual.lexer.lexer import tokenize, LexerError
+from core.ual.parser.parser import parse, ParseError
+from core.ual.analyzer.semantic import analyze, SemanticError
+from core.ual.codegen.python import generate_python
+from core.ual.models.ast import Agent
 
 logger = logging.getLogger(__name__)
 

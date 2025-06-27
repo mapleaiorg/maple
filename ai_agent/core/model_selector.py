@@ -9,7 +9,7 @@ import numpy as np
 from dataclasses import dataclass
 import logging
 
-from maple.mall.client import MALLClient
+from mall.client import MALLClient
 
 logger = logging.getLogger(__name__)
 

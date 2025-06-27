@@ -1,4 +1,4 @@
-# File: maple/mall/core/environment.py
+# File: mall/core/environment.py
 # Description: Environment monitoring and analysis for MALL. Collects real-time
 # data about system state, agent performance, and resource utilization.
 

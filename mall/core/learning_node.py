@@ -1,4 +1,4 @@
-# File: maple/mall/core/learning_node.py
+# File: mall/core/learning_node.py
 # Description: Learning node implementation for MALL's distributed learning network.
 # Each node is responsible for training, evaluating, and deploying agent models.
 
@@ -14,9 +14,9 @@ import torch
 import torch.nn as nn
 from uuid import uuid4
 
-from maple.core.map.models.message import Message, MessageType
-from maple.mall.models.agent_model import AgentModel
-from maple.mall.security.privacy import PrivacyManager
+from core.map.models.message import Message, MessageType
+from mall.models.agent_model import AgentModel
+from mall.security.privacy import PrivacyManager
 
 logger = logging.getLogger(__name__)
 

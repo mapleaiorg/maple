@@ -1,4 +1,4 @@
-# File: maple/mall/__init__.py
+# File: mall/__init__.py
 # Description: Maple Agent Learning Lab (MALL) - The distributed learning environment
 # that drives continuous evolution, optimization, and adaptation of cognitive agents.
 
@@ -14,16 +14,16 @@ Key Features:
 - Transfer learning across shards
 """
 
-from maple.mall.core.learning_node import LearningNode, NodeConfig
-from maple.mall.core.federated import FederatedLearningManager, FederatedConfig
-from maple.mall.core.reinforcement import ReinforcementEngine, DQNConfig
-from maple.mall.spawn.auto_spawner import AutoSpawner, SpawnConfig
-from maple.mall.spawn.predictor import SpawnPredictor, EnvironmentAnalyzer
-from maple.mall.models.agent_model import AgentModel, ModelInfo
-from maple.mall.strategies.gan_strategy import StrategyGAN, StrategyConfig
-from maple.mall.security.privacy import PrivacyManager, EncryptionType
-from maple.mall.client import MALLClient
-from maple.mall.server import MALLServer
+from mall.core.learning_node import LearningNode, NodeConfig
+from mall.core.federated import FederatedLearningManager, FederatedConfig
+from mall.core.reinforcement import ReinforcementEngine, DQNConfig
+from mall.spawn.auto_spawner import AutoSpawner, SpawnConfig
+from mall.spawn.predictor import SpawnPredictor, EnvironmentAnalyzer
+from mall.models.agent_model import AgentModel, ModelInfo
+from mall.strategies.gan_strategy import StrategyGAN, StrategyConfig
+from mall.security.privacy import PrivacyManager, EncryptionType
+from mall.client import MALLClient
+from mall.server import MALLServer
 
 __version__ = "0.1.0"
 

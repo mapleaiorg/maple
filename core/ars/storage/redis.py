@@ -1,4 +1,4 @@
-# File: maple/core/ars/storage/redis.py
+# File: core/ars/storage/redis.py
 # Description: Redis-based storage implementation for production deployments.
 # Provides distributed, persistent storage with high performance and reliability.
 
@@ -15,11 +15,11 @@ import redis.asyncio as redis
 from redis.asyncio import ConnectionPool
 from redis.asyncio.sentinel import Sentinel
 
-from maple.core.ars.models.registry import (
+from core.ars.models.registry import (
     AgentRegistration, ServiceQuery, Capability,
     AgentStatus, HealthStatus, RegistryEvent
 )
-from maple.core.ars.storage.interface import RegistryStorage
+from core.ars.storage.interface import RegistryStorage
 
 logger = logging.getLogger(__name__)
 

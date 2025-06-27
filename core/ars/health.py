@@ -1,4 +1,4 @@
-# File: maple/core/ars/health.py
+# File: core/ars/health.py
 # Description: Health monitoring system for registered agents.
 # Provides heartbeat tracking, health checks, and automated recovery.
 
@@ -13,11 +13,11 @@ from enum import Enum
 import json
 from collections import defaultdict, deque
 
-from maple.core.ars.models.registry import (
+from core.ars.models.registry import (
     AgentRegistration, AgentStatus, HealthStatus
 )
-from maple.core.ars.storage.interface import RegistryStorage
-from maple.core.ars.events import EventBus
+from core.ars.storage.interface import RegistryStorage
+from core.ars.events import EventBus
 
 logger = logging.getLogger(__name__)
 
@@ -301,7 +301,7 @@ class HealthMonitor:
     async def check_all_agents(self) -> Dict[str, HealthStatus]:
         """Perform health checks for all registered agents"""
         # Get all active agents
-        from maple.core.ars.models.registry import ServiceQuery
+        from core.ars.models.registry import ServiceQuery
 
         query = ServiceQuery(status=AgentStatus.ACTIVE)
         agents = await self._storage.query_agents(query)

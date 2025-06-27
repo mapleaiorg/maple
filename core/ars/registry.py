@@ -1,4 +1,4 @@
-# File: maple/core/ars/registry.py
+# File: core/ars/registry.py
 # Description: Core registry manager that orchestrates storage backends and provides
 # the main API for agent registration, discovery, and lifecycle management.
 
@@ -11,17 +11,17 @@ import logging
 from enum import Enum
 from contextlib import asynccontextmanager
 
-from maple.core.ars.models.registry import (
+from core.ars.models.registry import (
     AgentRegistration, ServiceQuery, Capability,
     AgentStatus, HealthStatus, RegistryEvent, Endpoint
 )
-from maple.core.ars.storage.interface import RegistryStorage
-from maple.core.ars.storage.memory import InMemoryStorage
-from maple.core.ars.storage.redis import RedisStorage
-from maple.core.ars.storage.postgres import PostgresStorage
-from maple.core.ars.discovery import DiscoveryEngine
-from maple.core.ars.health import HealthMonitor
-from maple.core.ars.events import EventBus, EventHandler
+from core.ars.storage.interface import RegistryStorage
+from core.ars.storage.memory import InMemoryStorage
+from core.ars.storage.redis import RedisStorage
+from core.ars.storage.postgres import PostgresStorage
+from core.ars.discovery import DiscoveryEngine
+from core.ars.health import HealthMonitor
+from core.ars.events import EventBus, EventHandler
 
 logger = logging.getLogger(__name__)
 
@@ -378,7 +378,7 @@ class RegistryManager:
         config = self.config.storage_config
 
         if backend == StorageBackend.MEMORY:
-            from maple.core.ars.storage.memory import CachedInMemoryStorage
+            from core.ars.storage.memory import CachedInMemoryStorage
             if self.config.enable_caching:
                 return CachedInMemoryStorage(cache_ttl=self.config.cache_ttl)
             else:

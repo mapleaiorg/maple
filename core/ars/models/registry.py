@@ -1,4 +1,4 @@
-# File: maple/core/ars/models/registry.py
+# File: core/ars/models/registry.py
 # Description: Core data models for the Agent Registry Service including
 # agent registration, capability definitions, and service metadata.
 

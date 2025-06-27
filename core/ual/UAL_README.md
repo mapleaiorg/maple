@@ -2,13 +2,13 @@
 
 ## Core Components Created:
 
-1. AST Models (maple/core/ual/models/ast.py)
+1. AST Models (core/ual/models/ast.py)
  - Complete Abstract Syntax Tree definitions
  - Support for all language constructs
  - Visitor pattern for traversal
 
 
-2. Lexer (maple/core/ual/lexer/lexer.py)
+2. Lexer (core/ual/lexer/lexer.py)
 
  - Full tokenization of UAL source code
  - Support for all keywords, operators, and literals
@@ -16,7 +16,7 @@
  - Template string handling
 
 
-3. Parser (maple/core/ual/parser/parser.py)
+3. Parser (core/ual/parser/parser.py)
 
  - Recursive descent parser
  - Converts tokens to AST
@@ -27,7 +27,7 @@
    - Control flow structures 
    - Type annotations
     
-4. Semantic Analyzer (maple/core/ual/analyzer/semantic.py)
+4. Semantic Analyzer (core/ual/analyzer/semantic.py)
 
  - Type checking
  - Symbol resolution
@@ -38,11 +38,11 @@
 
 5. Code Generators
 
- - Python Backend (maple/core/ual/codegen/python.py): Complete Python code generation
+ - Python Backend (core/ual/codegen/python.py): Complete Python code generation
  - Extensible framework for additional backends (JavaScript, Go, Rust)
 
 
-6. Compiler (maple/core/ual/compiler.py)
+6. Compiler (core/ual/compiler.py)
 
  - Orchestrates the compilation pipeline
  - Configurable options
@@ -50,7 +50,7 @@
  - File and directory compilation support
 
 
-7. CLI Tool (maple/core/ual/__main__.py)
+7. CLI Tool (core/ual/__main__.py)
 
  - Command-line interface for compilation
  - Multiple input/output options

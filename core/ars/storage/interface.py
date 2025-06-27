@@ -1,4 +1,4 @@
-# File: maple/core/ars/storage/interface.py
+# File: core/ars/storage/interface.py
 # Description: Abstract storage interface for the Agent Registry Service
 # supporting multiple backend implementations.
 
@@ -8,7 +8,7 @@ from typing import List, Optional, Dict, Any, Set, AsyncIterator
 from datetime import datetime, timedelta
 import asyncio
 
-from maple.core.ars.models.registry import (
+from core.ars.models.registry import (
     AgentRegistration, ServiceQuery, Capability,
     AgentStatus, HealthStatus, RegistryEvent
 )

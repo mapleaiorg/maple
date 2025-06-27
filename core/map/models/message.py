@@ -1,4 +1,4 @@
-# File: maple/core/map/models/message.py
+# File: core/map/models/message.py
 # Description: Core message types and data models for the Multi-Agent Protocol.
 # This module defines the fundamental message structure used throughout MAPLE
 # for inter-agent communication, including headers, payloads, and security metadata.

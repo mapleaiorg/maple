@@ -1,4 +1,4 @@
-# File: maple/mall/core/reinforcement.py
+# File: mall/core/reinforcement.py
 # Description: Reinforcement learning engine for MALL. Implements Deep Q-Network (DQN)
 # and other RL algorithms for agent behavior optimization.
 

@@ -1,4 +1,4 @@
-# File: maple/core/map/security/auth.py
+# File: core/map/security/auth.py
 # Description: Security and authentication layer for MAP Protocol providing
 # JWT-based authentication, message encryption/decryption, signature verification,
 # and role-based access control for the multi-agent communication system.
@@ -23,7 +23,7 @@ import base64
 import json
 from enum import Enum
 
-from maple.core.map.models.message import MAPMessage, SecurityContext, EncryptionType
+from core.map.models.message import MAPMessage, SecurityContext, EncryptionType
 
 logger = logging.getLogger(__name__)
 

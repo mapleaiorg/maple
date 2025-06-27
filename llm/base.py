@@ -1,4 +1,4 @@
-# File: maple/llm/base.py
+# File: llm/base.py
 # Description: Base classes and interfaces for LLM integration in MAPLE.
 # Provides unified abstraction for all LLM providers.
 
@@ -395,19 +395,19 @@ class LLMManager:
         """Create provider instance"""
         # Import provider implementations
         if provider == LLMProvider.OPENAI:
-            from maple.core.llm.providers.openai import OpenAIProvider
+            from llm.providers.openai import OpenAIProvider
             return OpenAIProvider(config)
         elif provider == LLMProvider.ANTHROPIC:
-            from maple.core.llm.providers.anthropic import AnthropicProvider
+            from llm.providers.anthropic import AnthropicProvider
             return AnthropicProvider(config)
         elif provider == LLMProvider.GOOGLE:
-            from maple.core.llm.providers.google import GoogleProvider
+            from llm.providers.google import GoogleProvider
             return GoogleProvider(config)
         elif provider == LLMProvider.LLAMA:
-            from maple.core.llm.providers.local.llama import LlamaProvider
+            from llm.providers.local.llama import LlamaProvider
             return LlamaProvider(config)
         elif provider == LLMProvider.MISTRAL:
-            from maple.core.llm.providers.local.mistral import MistralProvider
+            from llm.providers.local.mistral import MistralProvider
             return MistralProvider(config)
         else:
             raise ValueError(f"Unsupported provider: {provider}")

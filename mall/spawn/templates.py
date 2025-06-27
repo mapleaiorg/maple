@@ -1,4 +1,4 @@
-# File: maple/mall/spawn/templates.py
+# File: mall/spawn/templates.py
 # Description: Agent templates for auto-spawning. Defines pre-configured
 # agent types that can be spawned dynamically.
 
@@ -252,7 +252,7 @@ class TemplateRegistry:
             config.update(overrides)
 
         # Import here to avoid circular dependency
-        from maple.mall.spawn.auto_spawner import SpawnRequest
+        from mall.spawn.auto_spawner import SpawnRequest
 
         return SpawnRequest(
             agent_id=agent_id,

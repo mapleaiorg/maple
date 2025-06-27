@@ -1,4 +1,4 @@
-# File: maple/mall/spawn/auto_spawner.py
+# File: mall/spawn/auto_spawner.py
 # Description: Auto-spawner for dynamic agent creation based on environmental
 # analysis and workload predictions. Integrates with ARS and UAL.
 
@@ -11,9 +11,9 @@ import logging
 from enum import Enum
 import json
 
-from maple.mall.spawn.predictor import SpawnPredictor
-from maple.mall.spawn.templates import TemplateRegistry, AgentTemplate
-from maple.mall.core.environment import EnvironmentMonitor
+from mall.spawn.predictor import SpawnPredictor
+from mall.spawn.templates import TemplateRegistry, AgentTemplate
+from mall.core.environment import EnvironmentMonitor
 
 logger = logging.getLogger(__name__)
 

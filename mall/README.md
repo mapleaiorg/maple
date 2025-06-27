@@ -35,7 +35,7 @@ The Maple Agent Learning Lab (MALL) is the distributed learning infrastructure f
 
 ## Architecture
 ```
-maple/mall/
+mall/
 ├── core/               # Core learning infrastructure
 │   ├── learning_node.py    # Distributed learning nodes
 │   ├── federated.py        # Federated learning manager
@@ -67,14 +67,14 @@ maple/mall/
 
 ```python
 # Run the MALL server
-python -m maple.mall.server.mall_server
+python -m mall.server.mall_server
 ```
 
 ### Using the MALL Client
 ```python
-from maple.mall.client import MALLClient, MALLClientConfig
-from maple.mall.models.agent_model import AgentModel, ModelType
-from maple.mall.spawn.auto_spawner import SpawnRequest
+from mall.client import MALLClient, MALLClientConfig
+from mall.models.agent_model import AgentModel, ModelType
+from mall.spawn.auto_spawner import SpawnRequest
 
 # Create client
 config = MALLClientConfig(base_url="http://localhost:8080")
@@ -117,8 +117,8 @@ if spawn_prediction["should_spawn"]:
 ### Implementing Custom Learning
 
 ```python
-from maple.mall.core.learning_node import LearningNode, NodeConfig
-from maple.mall.core.federated import FederatedLearningManager
+from mall.core.learning_node import LearningNode, NodeConfig
+from mall.core.federated import FederatedLearningManager
 
 # Create learning node
 node_config = NodeConfig(
@@ -238,7 +238,7 @@ Experimental quantum algorithms for strategy optimization:
 
 ```python
 # Quantum annealing simulation for complex optimization
-from maple.mall.strategies.quantum import QuantumOptimizer
+from mall.strategies.quantum import QuantumOptimizer
 
 optimizer = QuantumOptimizer()
 optimal_strategy = optimizer.anneal(

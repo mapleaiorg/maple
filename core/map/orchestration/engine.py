@@ -1,4 +1,4 @@
-# File: maple/core/map/orchestration/engine.py
+# File: core/map/orchestration/engine.py
 # Description: Core workflow execution engine that manages workflow instances,
 # handles execution flow, state management, and compensation logic.
 
@@ -12,13 +12,13 @@ from uuid import UUID, uuid4
 import json
 from enum import Enum
 
-from maple.core.map.orchestration.models import (
+from core.map.orchestration.models import (
     WorkflowDefinition, WorkflowContext, WorkflowState, StepState,
     WorkflowMetrics, CompensationStrategy, RetryPolicy, StepResult
 )
-from maple.core.map.orchestration.persistence import WorkflowPersistence
-from maple.core.map.routing.engine import RoutingEngine
-from maple.core.map.transport.base import TransportManager
+from core.map.orchestration.persistence import WorkflowPersistence
+from core.map.routing.engine import RoutingEngine
+from core.map.transport.base import TransportManager
 
 logger = logging.getLogger(__name__)
 

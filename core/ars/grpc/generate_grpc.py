@@ -1,4 +1,4 @@
-# File: maple/core/ars/grpc/generate_grpc.py
+# File: core/ars/grpc/generate_grpc.py
 # Description: Script to generate Python gRPC code from protobuf definitions
 
 # !/usr/bin/env python3

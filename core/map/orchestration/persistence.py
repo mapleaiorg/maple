@@ -1,4 +1,4 @@
-# File: maple/core/map/orchestration/persistence.py
+# File: core/map/orchestration/persistence.py
 # Description: Persistence layer for workflow state management, supporting
 # multiple backends including in-memory, Redis, and database storage.
 
@@ -15,7 +15,7 @@ import aioredis
 import asyncpg
 from dataclasses import dataclass, field
 
-from maple.core.map.orchestration.models import WorkflowContext, WorkflowState
+from core.map.orchestration.models import WorkflowContext, WorkflowState
 
 logger = logging.getLogger(__name__)
 

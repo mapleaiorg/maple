@@ -1,4 +1,4 @@
-# File: maple/core/ars/storage/memory.py
+# File: core/ars/storage/memory.py
 # Description: In-memory storage implementation for development and testing.
 # Provides fast, thread-safe storage with full query capabilities.
 
@@ -9,11 +9,11 @@ from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any, Set
 import logging
 
-from maple.core.ars.models.registry import (
+from core.ars.models.registry import (
     AgentRegistration, ServiceQuery, Capability,
     AgentStatus, HealthStatus, RegistryEvent
 )
-from maple.core.ars.storage.interface import RegistryStorage
+from core.ars.storage.interface import RegistryStorage
 
 logger = logging.getLogger(__name__)
 

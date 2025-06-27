@@ -1,4 +1,4 @@
-# File: maple/mall/strategies/gan_strategy.py
+# File: mall/strategies/gan_strategy.py
 # Description: Generative Adversarial Network for creating novel agent strategies.
 
 from __future__ import annotations

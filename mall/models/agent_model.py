@@ -1,4 +1,4 @@
-# File: maple/mall/models/agent_model.py
+# File: mall/models/agent_model.py
 # Description: Base agent model class and utilities for MALL.
 
 from __future__ import annotations

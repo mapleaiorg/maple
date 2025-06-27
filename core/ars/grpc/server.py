@@ -1,4 +1,4 @@
-# File: maple/core/ars/grpc/server.py
+# File: core/ars/grpc/server.py
 # Description: gRPC server implementation for the Agent Registry Service.
 # Provides high-performance RPC interface for agent management.
 
@@ -12,13 +12,13 @@ import logging
 from google.protobuf import timestamp_pb2, empty_pb2, duration_pb2
 from grpc_reflection.v1alpha import reflection
 
-from maple.core.ars.registry import RegistryManager, create_registry_manager
-from maple.core.ars.models.registry import (
+from core.ars.registry import RegistryManager, create_registry_manager
+from core.ars.models.registry import (
     AgentRegistration, ServiceQuery, Capability,
     AgentStatus, HealthStatus, Endpoint
 )
-from maple.core.ars.discovery import SearchStrategy
-from maple.core.ars.grpc import ars_pb2, ars_pb2_grpc
+from core.ars.discovery import SearchStrategy
+from core.ars.grpc import ars_pb2, ars_pb2_grpc
 
 logger = logging.getLogger(__name__)
 

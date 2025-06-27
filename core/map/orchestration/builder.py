@@ -1,4 +1,4 @@
-# File: maple/core/map/orchestration/builder.py
+# File: core/map/orchestration/builder.py
 # Description: Workflow builder with fluent API and DSL for creating workflows
 # programmatically or from YAML/JSON definitions.
 
@@ -10,11 +10,11 @@ from typing import Dict, List, Optional, Any, Callable, Union, TypeVar
 from uuid import uuid4
 import inspect
 
-from maple.core.map.orchestration.models import (
+from core.map.orchestration.models import (
     WorkflowDefinition, WorkflowStep, RetryPolicy, RetryStrategy,
     CompensationStrategy
 )
-from maple.core.map.orchestration.steps import (
+from core.map.orchestration.steps import (
     MessageStep, ParallelStep, ConditionalStep, LoopStep,
     SubWorkflowStep, WaitStep, TransformStep, AggregateStep, CustomStep
 )

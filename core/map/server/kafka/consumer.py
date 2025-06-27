@@ -1,4 +1,4 @@
-# File: maple/core/map/server/kafka/consumer.py
+# File: core/map/server/kafka/consumer.py
 # Description: Kafka consumer implementation extracted from protocol_server.py
 # Handles Kafka message consumption for cluster synchronization.
 
@@ -11,9 +11,9 @@ from typing import Dict, List, Optional, Callable, Any
 from uuid import UUID
 import aiokafka
 
-from maple.core.map.models.message import MAPMessage
-from maple.core.map.routing.engine import RoutingEngine
-from maple.core.map.transport.base import TransportManager
+from core.map.models.message import MAPMessage
+from core.map.routing.engine import RoutingEngine
+from core.map.transport.base import TransportManager
 
 logger = logging.getLogger(__name__)
 
@@ -215,8 +215,8 @@ class KafkaConsumerManager:
             return
 
         # Create a proxy route for the remote agent
-        from maple.core.map.models.message import AgentIdentifier
-        from maple.core.map.routing.engine import AgentRoute
+        from core.map.models.message import AgentIdentifier
+        from core.map.routing.engine import AgentRoute
 
         proxy_route = AgentRoute(
             agent=AgentIdentifier(

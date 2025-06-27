@@ -1,4 +1,4 @@
-# File: maple/core/ars/api/server.py
+# File: core/ars/api/server.py
 # Description: RESTful API server for the Agent Registry Service.
 # Provides HTTP endpoints for agent management and discovery.
 
@@ -18,13 +18,13 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field, validator
 import uvicorn
 
-from maple.core.ars.registry import RegistryManager, create_registry_manager
-from maple.core.ars.models.registry import (
+from core.ars.registry import RegistryManager, create_registry_manager
+from core.ars.models.registry import (
     AgentRegistration, ServiceQuery, Capability,
     AgentStatus, HealthStatus, RegistryEvent, Endpoint
 )
-from maple.core.ars.discovery import SearchStrategy
-from maple.core.ars.events import EventBus, Event, EventPriority
+from core.ars.discovery import SearchStrategy
+from core.ars.events import EventBus, Event, EventPriority
 
 logger = logging.getLogger(__name__)
 

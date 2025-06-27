@@ -1,4 +1,4 @@
-# File: maple/llm/providers/anthropic.py
+# File: llm/providers/anthropic.py
 # Description: Anthropic (Claude) provider implementation for MAPLE.
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ import json
 import anthropic
 from anthropic import AsyncAnthropic
 
-from maple.core.llm.base import (
+from llm.base import (
     BaseLLM, LLMProvider, ModelCapability, ModelInfo, PricingInfo,
     CompletionRequest, CompletionResponse, Message, Choice, TokenUsage,
     EmbeddingRequest, EmbeddingResponse

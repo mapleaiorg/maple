@@ -1,4 +1,4 @@
-# File: maple/mall/spawn/predictor.py
+# File: mall/spawn/predictor.py
 # Description: LSTM-based predictor for analyzing environmental data and
 # determining when to spawn new agents.
 

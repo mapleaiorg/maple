@@ -12,9 +12,9 @@ from rich.progress import Progress
 
 from ..config import AIAgentConfig
 from ..core.agent import AIAgent
-from maple.core.map.client import MAPClient
-from maple.core.ars.client import ARSClient
-from maple.mall.client import MALLClient
+from core.map.client import MAPClient
+from core.ars.client import ARSClient
+from mall.client import MALLClient
 
 console = Console()
 

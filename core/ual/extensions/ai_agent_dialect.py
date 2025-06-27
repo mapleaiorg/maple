@@ -1,4 +1,4 @@
-# File: maple/core/ual/extensions/ai_agent_dialect.py
+# File: core/ual/extensions/ai_agent_dialect.py
 # Description: UAL dialect extension for AI Agent commands.
 # Adds REQ, QUERY, and other AI-specific commands to UAL.
 

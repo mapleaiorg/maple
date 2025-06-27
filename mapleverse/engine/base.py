@@ -1,4 +1,4 @@
-# File: maple/mapleverse/engine/base.py
+# File: mapleverse/engine/base.py
 # Description: Core simulation engine for the Mapleverse distributed physics platform
 
 from __future__ import annotations

@@ -1,11 +1,11 @@
-# File: maple/core/ual/parser/parser.py
+# File: core/ual/parser/parser.py
 # Description: Parser for the Universal Agent Language that converts tokens
 # into an Abstract Syntax Tree (AST).
 
 from __future__ import annotations
 from typing import List, Optional, Dict, Any, Union, Tuple
-from maple.core.ual.lexer.lexer import Token, TokenType, LexerError
-from maple.core.ual.models.ast import *
+from core.ual.lexer.lexer import Token, TokenType, LexerError
+from core.ual.models.ast import *
 
 
 class ParseError(Exception):

@@ -10,12 +10,12 @@ from dataclasses import dataclass, field
 from datetime import datetime
 import logging
 
-from maple.core.map.models.message import Message, MessageType, MessagePayload
-from maple.core.map.client import MAPClient
-from maple.core.ual.runtime import UALRuntime
-from maple.core.ars.client import ARSClient
-from maple.mall.client import MALLClient
-from maple.mapleverse.client import MapleverseClient
+from core.map.models.message import Message, MessageType, MessagePayload
+from core.map.client import MAPClient
+from core.ual.runtime import UALRuntime
+from core.ars.client import ARSClient
+from mall.client import MALLClient
+from mapleverse.client import MapleverseClient
 
 from ..adapters.base import LLMAdapter, AdapterRegistry
 from ..aggregation.ensemble import EnsembleAggregator
