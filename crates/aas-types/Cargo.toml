@@ -1,0 +1,12 @@
+[package]
+name = "aas-types"
+version.workspace = true
+edition.workspace = true
+description = "AAS Types - Agent Accountability Service"
+[dependencies]
+rcl-types = { workspace = true }
+rcl-commitment = { workspace = true }
+serde = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+thiserror = { workspace = true }

@@ -1,0 +1,49 @@
+[package]
+name = "maple-runtime"
+version = "0.1.0"
+edition = "2021"
+authors = ["MAPLE Team"]
+description = "MAPLE Resonance Runtime - Foundational AI framework for Mapleverse, Finalverse, and iBank"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.38", features = ["full"] }
+async-trait = "0.1"
+
+# Data structures
+dashmap = "5.5"
+petgraph = "0.6"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Metrics and telemetry
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+metrics = "0.21"
+
+# Cryptography (for identity and proofs)
+uuid = { version = "1.8", features = ["v4", "serde"] }
+sha2 = "0.10"
+
+# Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# Configuration
+config = "0.14"
+
+[dev-dependencies]
+tokio-test = "0.4"
+
+[features]
+default = ["mapleverse", "finalverse", "ibank"]
+mapleverse = []
+finalverse = []
+ibank = []
+telemetry-detailed = []

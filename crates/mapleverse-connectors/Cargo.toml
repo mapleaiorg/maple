@@ -1,0 +1,15 @@
+[package]
+name = "mapleverse-connectors"
+version.workspace = true
+edition.workspace = true
+description = "Mapleverse Connectors - Domain-specific execution adapters"
+
+[dependencies]
+mapleverse-types = { workspace = true }
+mapleverse-executor = { workspace = true }
+rcl-types = { workspace = true }
+rcl-commitment = { workspace = true }
+serde = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+thiserror = { workspace = true }

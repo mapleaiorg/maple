@@ -1,0 +1,13 @@
+[package]
+name = "resonator-types"
+version.workspace = true
+edition.workspace = true
+description = "Resonator Types - Cognitive agent types"
+
+[dependencies]
+rcl-types = { workspace = true }
+rcl-commitment = { workspace = true }
+serde = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+thiserror = { workspace = true }

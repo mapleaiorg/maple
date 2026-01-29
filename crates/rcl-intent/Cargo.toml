@@ -1,0 +1,13 @@
+[package]
+name = "rcl-intent"
+version.workspace = true
+edition.workspace = true
+description = "RCL-Intent Layer - Direction without obligation"
+
+[dependencies]
+rcl-types = { workspace = true }
+rcl-meaning = { workspace = true }
+serde = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+thiserror = { workspace = true }

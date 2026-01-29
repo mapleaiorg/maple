@@ -1,0 +1,282 @@
+//! Coupling Fabric - manages coupling relationships and topology
+//!
+//! Coupling describes the strength and character of interaction between Resonators.
+
+use dashmap::DashMap;
+use std::sync::Arc;
+use tokio::sync::RwLock;
+use petgraph::graph::{DiGraph, NodeIndex};
+use crate::types::*;
+use crate::allocator::AttentionAllocator;
+use crate::runtime_core::CouplingHandle;
+use crate::runtime_core::DecouplingResult;
+
+
+/// Coupling Fabric manages all coupling relationships
+pub struct CouplingFabric {
+    /// Active couplings
+    couplings: DashMap<CouplingId, Coupling>,
+
+    /// Coupling graph (directed, weighted)
+    graph: Arc<RwLock<CouplingGraph>>,
+
+    /// Attention allocator reference (coupling is bounded by attention)
+    attention: Arc<AttentionAllocator>,
+
+    /// Configuration
+    config: CouplingFabricConfig,
+}
+
+struct CouplingGraph {
+    graph: DiGraph<ResonatorId, CouplingId>,
+    node_map: std::collections::HashMap<ResonatorId, NodeIndex>,
+}
+
+impl CouplingGraph {
+    fn new() -> Self {
+        Self {
+            graph: DiGraph::new(),
+            node_map: std::collections::HashMap::new(),
+        }
+    }
+
+    fn add_node(&mut self, resonator: ResonatorId) -> NodeIndex {
+        if let Some(&node) = self.node_map.get(&resonator) {
+            return node;
+        }
+
+        let node = self.graph.add_node(resonator);
+        self.node_map.insert(resonator, node);
+        node
+    }
+
+    fn add_edge(&mut self, coupling: &Coupling) {
+        let source_node = self.add_node(coupling.source);
+        let target_node = self.add_node(coupling.target);
+        self.graph.add_edge(source_node, target_node, coupling.id);
+    }
+
+    fn remove_edge(&mut self, coupling_id: &CouplingId) {
+        if let Some(edge_index) = self
+            .graph
+            .edge_indices()
+            .find(|&e| self.graph[e] == *coupling_id)
+        {
+            self.graph.remove_edge(edge_index);
+        }
+    }
+}
+
+impl CouplingFabric {
+    pub fn new(config: &CouplingFabricConfig, attention: Arc<AttentionAllocator>) -> Self {
+        Self {
+            couplings: DashMap::new(),
+            graph: Arc::new(RwLock::new(CouplingGraph::new())),
+            attention,
+            config: config.clone(),
+        }
+    }
+
+    /// Register a Resonator in the coupling topology
+    pub async fn register(&self, resonator: &ResonatorId) -> Result<(), String> {
+        let mut graph = self.graph.write().await;
+        graph.add_node(*resonator);
+        Ok(())
+    }
+
+    /// Establish coupling between Resonators
+    ///
+    /// ARCHITECTURAL RULE: Couplings MUST strengthen gradually.
+    /// Abrupt coupling escalation is a design failure.
+    ///
+    /// Returns the coupling ID and attention token for handle creation by the runtime.
+    pub async fn establish_coupling(
+        &self,
+        params: CouplingParams,
+    ) -> Result<(CouplingId, AllocationToken), CouplingError> {
+        // Validate parameters
+        params.validate().map_err(|e| CouplingError::ValidationFailed(e.to_string()))?;
+
+        // Check attention availability (INVARIANT: Coupling bounded by attention)
+        let attention_available = self
+            .attention
+            .available_for_coupling(&params.source)
+            .await?;
+
+        if attention_available < params.initial_attention_cost {
+            return Err(CouplingError::InsufficientAttention {
+                requested: params.initial_attention_cost,
+                available: attention_available,
+            });
+        }
+
+        // Validate coupling strength is not too aggressive initially
+        // (prevent abrupt escalation)
+        if params.initial_strength > self.config.max_initial_strength {
+            return Err(CouplingError::TooAggressiveInitialStrength);
+        }
+
+        // Allocate attention
+        let attention_token = self
+            .attention
+            .allocate(&params.source, params.initial_attention_cost)
+            .await?;
+
+        // Create coupling
+        let coupling = Coupling {
+            id: CouplingId::generate(),
+            source: params.source,
+            target: params.target,
+            strength: params.initial_strength,
+            persistence: params.persistence,
+            scope: params.scope,
+            symmetry: params.symmetry,
+            attention_allocated: params.initial_attention_cost,
+            meaning_convergence: 0.0,
+            interaction_count: 0,
+            created_at: TemporalAnchor::now(),
+            last_resonance: TemporalAnchor::now(),
+        };
+
+        let coupling_id = coupling.id;
+
+        // Add to topology
+        self.graph.write().await.add_edge(&coupling);
+        self.couplings.insert(coupling.id, coupling.clone());
+
+        tracing::debug!(
+            "Established coupling {} -> {} (strength: {})",
+            params.source,
+            params.target,
+            params.initial_strength
+        );
+
+        Ok((coupling_id, attention_token))
+    }
+
+    /// Strengthen coupling gradually
+    pub async fn strengthen(
+        &self,
+        coupling_id: CouplingId,
+        delta: f64,
+    ) -> Result<(), CouplingError> {
+        // RULE: Maximum strengthening rate
+        if delta > self.config.max_strengthening_rate {
+            return Err(CouplingError::StrengtheningTooRapid);
+        }
+
+        if let Some(mut coupling) = self.couplings.get_mut(&coupling_id) {
+            let new_strength = (coupling.strength + delta).min(1.0);
+            coupling.strength = new_strength;
+
+            // May need more attention for stronger coupling
+            let additional_attention = (delta * 10.0) as u64;
+            self.attention
+                .allocate_more(&coupling.source, additional_attention)
+                .await?;
+            coupling.attention_allocated += additional_attention;
+
+            tracing::debug!(
+                "Strengthened coupling {} to {}",
+                coupling_id,
+                new_strength
+            );
+        }
+
+        Ok(())
+    }
+
+    /// Weaken coupling without severing
+    pub async fn weaken(&self, coupling_id: CouplingId, factor: f64) -> Result<(), CouplingError> {
+        if let Some(mut coupling) = self.couplings.get_mut(&coupling_id) {
+            coupling.strength *= 1.0 - factor;
+
+            // Release some attention
+            let attention_release = (coupling.attention_allocated as f64 * factor) as u64;
+            self.attention
+                .release_partial(&coupling.source, attention_release)
+                .await;
+            coupling.attention_allocated -= attention_release;
+
+            tracing::debug!("Weakened coupling {} by factor {}", coupling_id, factor);
+        }
+
+        Ok(())
+    }
+
+    /// Safe decoupling that preserves commitments
+    ///
+    /// ARCHITECTURAL RULE: Coupling MUST be severed safely without
+    /// violating existing commitments.
+    pub async fn decouple_safely(
+        &self,
+        coupling_id: CouplingId,
+    ) -> Result<DecouplingResult, CouplingError> {
+        let coupling = self
+            .couplings
+            .get(&coupling_id)
+            .ok_or(CouplingError::NotFound)?
+            .clone();
+
+        // Check for active commitments through this coupling
+        // (would be checked via CommitmentManager in real implementation)
+
+        // Remove from graph
+        self.graph.write().await.remove_edge(&coupling_id);
+
+        // Release attention
+        self.attention
+            .release_all(&coupling.source, coupling.attention_allocated)
+            .await;
+
+        // Remove coupling
+        self.couplings.remove(&coupling_id);
+
+        tracing::debug!("Decoupled {}", coupling_id);
+
+        Ok(DecouplingResult::Success)
+    }
+
+    /// Get coupling by ID
+    pub fn get_coupling(&self, id: &CouplingId) -> Option<Coupling> {
+        self.couplings.get(id).map(|r| r.clone())
+    }
+
+    /// Get all couplings for a Resonator
+    pub fn get_couplings_for(&self, resonator: &ResonatorId) -> Vec<Coupling> {
+        self.couplings
+            .iter()
+            .filter(|entry| {
+                entry.source == *resonator || entry.target == *resonator
+            })
+            .map(|entry| entry.clone())
+            .collect()
+    }
+
+    /// Restore couplings from continuity record
+    pub async fn restore_couplings(
+        &self,
+        _resonator: &ResonatorId,
+        couplings: &[Coupling],
+    ) -> Result<(), String> {
+        for coupling in couplings {
+            self.graph.write().await.add_edge(coupling);
+            self.couplings.insert(coupling.id, coupling.clone());
+        }
+
+        tracing::debug!("Restored {} couplings", couplings.len());
+        Ok(())
+    }
+
+    /// Persist coupling topology
+    pub async fn persist_topology(&self) -> Result<(), String> {
+        // Placeholder: In real implementation, would persist to durable storage
+        tracing::info!("Persisting {} couplings", self.couplings.len());
+        Ok(())
+    }
+
+    /// Count of active couplings
+    pub fn count(&self) -> usize {
+        self.couplings.len()
+    }
+}

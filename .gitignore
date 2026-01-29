@@ -1,0 +1,27 @@
+# Rust / Cargo
+target/
+**/*.rs.bk
+Cargo.lock    # <- commit this one if it's a binary or workspace with binaries
+              #   omit/comment out if it's a pure library workspace
+
+# Common editors & OS files
+.idea/              # <- you already have this showing
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs & temp
+*.log
+tmp/
+temp/
+
+# Optional – if you really never want to commit lockfiles in libraries:
+# Cargo.lock
+
+# Optional – profiling & coverage
+*.profraw
+*.gcda
+*.gcno
+coverage/

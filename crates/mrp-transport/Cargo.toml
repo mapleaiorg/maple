@@ -1,0 +1,10 @@
+[package]
+name = "mrp-transport"
+version.workspace = true
+edition.workspace = true
+description = "mrp transport"
+
+[dependencies]
+thiserror = { workspace = true }
+mrp-types = { workspace = true }
+rcl-types = { workspace = true }

@@ -1,0 +1,16 @@
+[package]
+name = "resonator-commitment"
+version.workspace = true
+edition.workspace = true
+description = "resonator commitment"
+
+[dependencies]
+thiserror = { workspace = true }
+rcl-types = { workspace = true }
+rcl-meaning = { workspace = true }
+rcl-intent = { workspace = true }
+rcl-commitment = { workspace = true }
+mrp-types = { workspace = true }
+aas-types = { workspace = true }
+serde = { workspace = true }
+chrono = { workspace = true }

@@ -1,0 +1,19 @@
+[package]
+name = "aas-service"
+version.workspace = true
+edition.workspace = true
+description = "AAS Service - The unified Agent Accountability Service"
+
+[dependencies]
+aas-types = { workspace = true }
+aas-identity = { workspace = true }
+aas-capability = { workspace = true }
+aas-policy = { workspace = true }
+aas-adjudication = { workspace = true }
+aas-ledger = { workspace = true }
+rcl-types = { workspace = true }
+rcl-commitment = { workspace = true }
+serde = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+thiserror = { workspace = true }

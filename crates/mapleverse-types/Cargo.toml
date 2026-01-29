@@ -1,0 +1,15 @@
+[package]
+name = "mapleverse-types"
+version.workspace = true
+edition.workspace = true
+description = "Mapleverse Types - Execution layer types"
+
+[dependencies]
+rcl-types = { workspace = true }
+rcl-commitment = { workspace = true }
+aas-types = { workspace = true }
+mrp-types = { workspace = true }
+serde = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+thiserror = { workspace = true }

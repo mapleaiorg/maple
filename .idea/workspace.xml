@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="CargoProjects">
+    <cargoProject FILE="$PROJECT_DIR$/Cargo.toml">
+      <package file="$PROJECT_DIR$/crates/aas-adjudication">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/aas-capability">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/aas-identity">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/aas-ledger">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/aas-policy">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/aas-service">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/aas-types">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/eve-artifacts">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/eve-evaluation">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/eve-ingestion">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/eve-service">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/eve-types">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/maple-cli">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/maple-integration">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/maple-runtime">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/mapleverse-connectors">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/mapleverse-evidence">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/mapleverse-executor">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/mapleverse-service">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/mapleverse-types">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/mrp-router">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/mrp-service">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/mrp-transport">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/mrp-types">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/rcl-audit">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/rcl-commitment">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/rcl-compiler">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/rcl-intent">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/rcl-meaning">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/rcl-types">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/rcl-validator">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/resonator-client">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/resonator-commitment">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/resonator-identity">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/resonator-intent">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/resonator-meaning">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/resonator-profiles">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/resonator-runtime">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/crates/resonator-types">
+        <feature name="default" enabled="true" />
+      </package>
+    </cargoProject>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="ada556f3-ec0e-4750-a70c-40216707f15f" name="Changes" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;qwy16&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://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@github.com/mapleaiorg/maple.git&quot;,
+    &quot;accountId&quot;: &quot;40ec93e4-5aef-4a62-9805-59296a78a9cc&quot;
+  }
+}</component>
+  <component name="InvalidFacetManager">
+    <ignored-facets>
+      <facet id="Maple/invalid/Python facet" />
+    </ignored-facets>
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="Yb1oGqax" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4
+}</component>
+  <component name="ProjectId" id="30finsEIr8tsuo6rB27GShdGg3T" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.rust.reset.selective.auto.import": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "git-widget-placeholder": "main",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "/Users/wenyan/MapleProjects/maple",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
+    "org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon": "",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RustProjectSettings">
+    <option name="toolchainHomeDirectory" value="$USER_HOME$/.cargo/bin" />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="ada556f3-ec0e-4750-a70c-40216707f15f" name="Changes" comment="" />
+      <created>1754025197676</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1754025197676</updated>
+      <workItem from="1754025198876" duration="89000" />
+      <workItem from="1754025297007" duration="160000" />
+      <workItem from="1754025468219" duration="1267000" />
+      <workItem from="1769484947299" duration="1204000" />
+      <workItem from="1769642468265" duration="2514000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

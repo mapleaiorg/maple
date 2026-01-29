@@ -1,0 +1,11 @@
+[package]
+name = "rcl-compiler"
+version.workspace = true
+edition.workspace = true
+description = "RCL Compiler"
+[dependencies]
+rcl-types = { workspace = true }
+rcl-commitment = { workspace = true }
+rcl-validator = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }

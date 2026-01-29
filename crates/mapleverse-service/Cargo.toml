@@ -1,0 +1,18 @@
+[package]
+name = "mapleverse-service"
+version.workspace = true
+edition.workspace = true
+description = "Mapleverse Service - Unified execution service"
+
+[dependencies]
+mapleverse-types = { workspace = true }
+mapleverse-executor = { workspace = true }
+mapleverse-connectors = { workspace = true }
+mapleverse-evidence = { workspace = true }
+rcl-types = { workspace = true }
+rcl-commitment = { workspace = true }
+aas-types = { workspace = true }
+serde = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+thiserror = { workspace = true }

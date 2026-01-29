@@ -1,0 +1,15 @@
+[package]
+name = "mapleverse-executor"
+version.workspace = true
+edition.workspace = true
+description = "Mapleverse Executor - Execution engine"
+
+[dependencies]
+mapleverse-types = { workspace = true }
+rcl-types = { workspace = true }
+rcl-commitment = { workspace = true }
+aas-types = { workspace = true }
+serde = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+thiserror = { workspace = true }

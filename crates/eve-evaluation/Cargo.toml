@@ -1,0 +1,15 @@
+[package]
+name = "eve-evaluation"
+version.workspace = true
+edition.workspace = true
+description = "EVE Evaluation - Pattern analysis and learning"
+
+[dependencies]
+eve-types = { workspace = true }
+mapleverse-types = { workspace = true }
+rcl-types = { workspace = true }
+rcl-commitment = { workspace = true }
+serde = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+thiserror = { workspace = true }

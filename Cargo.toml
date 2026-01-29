@@ -1,0 +1,155 @@
+[workspace]
+resolver = "2"
+members = [
+    # Phase 0: Contract-First (Constitutional Layer)
+    "crates/rcl-types",
+    "crates/rcl-meaning",
+    "crates/rcl-intent",
+    "crates/rcl-commitment",
+    "crates/rcl-validator",
+    "crates/rcl-compiler",
+    "crates/rcl-audit",
+    "crates/mrp-types",
+    "crates/mrp-router",
+    "crates/mrp-transport",
+    "crates/mrp-service",
+
+    # Phase 1: Authority and Execution Boundary
+    "crates/aas-types",
+    "crates/aas-identity",
+    "crates/aas-capability",
+    "crates/aas-policy",
+    "crates/aas-adjudication",
+    "crates/aas-ledger",
+    "crates/aas-service",
+    "crates/mapleverse-types",
+    "crates/mapleverse-executor",
+    "crates/mapleverse-connectors",
+    "crates/mapleverse-evidence",
+    "crates/mapleverse-service",
+
+    # Phase 2: Learning Without Power
+    "crates/eve-types",
+    "crates/eve-ingestion",
+    "crates/eve-evaluation",
+    "crates/eve-artifacts",
+    "crates/eve-service",
+
+    # Phase 3: Cognition Layer
+    "crates/resonator-types",
+    "crates/resonator-identity",
+    "crates/resonator-meaning",
+    "crates/resonator-intent",
+    "crates/resonator-commitment",
+    "crates/resonator-profiles",
+    "crates/resonator-runtime",
+    "crates/resonator-client",
+
+    # MAPLE Core Runtime
+    "crates/maple-runtime",
+
+    # Integration and Testing
+    "crates/maple-integration",
+    "crates/maple-cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Maple AI Team"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/mapleaiorg/maple"
+description = "Maple AI Framework - Resonance-Native Architecture"
+rust-version = "1.75"
+
+[workspace.dependencies]
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Time and dates
+chrono = { version = "0.4", features = ["serde"] }
+
+# Async runtime
+tokio = { version = "1.35", features = ["full"] }
+async-trait = "0.1"
+futures = "0.3"
+
+# Cryptography
+blake3 = "1.5"
+ed25519-dalek = { version = "2.1", features = ["serde"] }
+rand = "0.8"
+getrandom = "0.2"
+
+# Unique identifiers
+uuid = { version = "1.6", features = ["v4", "serde"] }
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Logging and tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Database
+sqlx = { version = "0.7", features = ["runtime-tokio", "postgres", "sqlite", "chrono", "uuid"] }
+
+# Networking
+axum = "0.7"
+tower = "0.4"
+tower-http = { version = "0.5", features = ["trace", "cors"] }
+reqwest = { version = "0.11", features = ["json"] }
+
+# Testing
+proptest = "1.4"
+criterion = "0.5"
+
+# Internal crates
+rcl-types = { path = "crates/rcl-types" }
+rcl-meaning = { path = "crates/rcl-meaning" }
+rcl-intent = { path = "crates/rcl-intent" }
+rcl-commitment = { path = "crates/rcl-commitment" }
+rcl-validator = { path = "crates/rcl-validator" }
+rcl-compiler = { path = "crates/rcl-compiler" }
+rcl-audit = { path = "crates/rcl-audit" }
+mrp-types = { path = "crates/mrp-types" }
+mrp-router = { path = "crates/mrp-router" }
+mrp-transport = { path = "crates/mrp-transport" }
+mrp-service = { path = "crates/mrp-service" }
+aas-types = { path = "crates/aas-types" }
+aas-identity = { path = "crates/aas-identity" }
+aas-capability = { path = "crates/aas-capability" }
+aas-policy = { path = "crates/aas-policy" }
+aas-adjudication = { path = "crates/aas-adjudication" }
+aas-ledger = { path = "crates/aas-ledger" }
+aas-service = { path = "crates/aas-service" }
+mapleverse-types = { path = "crates/mapleverse-types" }
+mapleverse-executor = { path = "crates/mapleverse-executor" }
+mapleverse-connectors = { path = "crates/mapleverse-connectors" }
+mapleverse-evidence = { path = "crates/mapleverse-evidence" }
+mapleverse-service = { path = "crates/mapleverse-service" }
+eve-types = { path = "crates/eve-types" }
+eve-ingestion = { path = "crates/eve-ingestion" }
+eve-evaluation = { path = "crates/eve-evaluation" }
+eve-artifacts = { path = "crates/eve-artifacts" }
+eve-service = { path = "crates/eve-service" }
+resonator-types = { path = "crates/resonator-types" }
+resonator-identity = { path = "crates/resonator-identity" }
+resonator-meaning = { path = "crates/resonator-meaning" }
+resonator-intent = { path = "crates/resonator-intent" }
+resonator-commitment = { path = "crates/resonator-commitment" }
+resonator-profiles = { path = "crates/resonator-profiles" }
+resonator-runtime = { path = "crates/resonator-runtime" }
+resonator-client = { path = "crates/resonator-client" }
+maple-runtime = { path = "crates/maple-runtime" }
+maple-integration = { path = "crates/maple-integration" }
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.dev]
+opt-level = 0
+debug = true

@@ -1,0 +1,10 @@
+[package]
+name = "mrp-service"
+version.workspace = true
+edition.workspace = true
+description = "mrp service"
+
+[dependencies]
+thiserror = { workspace = true }
+mrp-types = { workspace = true }
+rcl-types = { workspace = true }

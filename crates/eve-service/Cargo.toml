@@ -1,0 +1,18 @@
+[package]
+name = "eve-service"
+version.workspace = true
+edition.workspace = true
+description = "EVE Service - Unified Epistemic Validation Engine"
+
+[dependencies]
+eve-types = { workspace = true }
+eve-ingestion = { workspace = true }
+eve-evaluation = { workspace = true }
+eve-artifacts = { workspace = true }
+mapleverse-types = { workspace = true }
+rcl-types = { workspace = true }
+rcl-commitment = { workspace = true }
+serde = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+thiserror = { workspace = true }

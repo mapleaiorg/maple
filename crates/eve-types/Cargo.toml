@@ -1,0 +1,15 @@
+[package]
+name = "eve-types"
+version.workspace = true
+edition.workspace = true
+description = "EVE Types - Epistemic Validation Engine types"
+
+[dependencies]
+mapleverse-types = { workspace = true }
+rcl-types = { workspace = true }
+rcl-commitment = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+thiserror = { workspace = true }

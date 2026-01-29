@@ -1,0 +1,14 @@
+[package]
+name = "eve-artifacts"
+version.workspace = true
+edition.workspace = true
+description = "EVE Artifacts - Learning artifact storage"
+
+[dependencies]
+eve-types = { workspace = true }
+rcl-types = { workspace = true }
+rcl-commitment = { workspace = true }
+serde = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+thiserror = { workspace = true }

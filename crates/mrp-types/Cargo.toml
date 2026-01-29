@@ -1,0 +1,13 @@
+[package]
+name = "mrp-types"
+version.workspace = true
+edition.workspace = true
+description = "MRP Types"
+[dependencies]
+rcl-types = { workspace = true }
+rcl-commitment = { workspace = true }
+serde = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+blake3 = { workspace = true }
+thiserror = { workspace = true }

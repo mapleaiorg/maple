@@ -1,0 +1,9 @@
+[package]
+name = "mrp-router"
+version.workspace = true
+edition.workspace = true
+description = "MRP Router"
+[dependencies]
+mrp-types = { workspace = true }
+rcl-types = { workspace = true }
+thiserror = { workspace = true }

@@ -1,0 +1,14 @@
+[package]
+name = "maple-integration"
+version.workspace = true
+edition.workspace = true
+description = "maple integration"
+
+[dependencies]
+rcl-types = { workspace = true }
+rcl-meaning = { workspace = true }
+rcl-intent = { workspace = true }
+rcl-commitment = { workspace = true }
+rcl-validator = { workspace = true }
+mrp-types = { workspace = true }
+aas-types = { workspace = true }
