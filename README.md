@@ -119,51 +119,51 @@ The foundational Resonance Runtime powering all MAPLE platforms.
 
 ### 📜 Resonance Contract Language (RCL)
 
-**[rcl-types](crates/rcl-types/)** - RCL type system
-**[rcl-meaning](crates/rcl-meaning/)** - Meaning expression
-**[rcl-intent](crates/rcl-intent/)** - Intent declaration
-**[rcl-commitment](crates/rcl-commitment/)** - Commitment specification
-**[rcl-validator](crates/rcl-validator/)** - Contract validation
-**[rcl-compiler](crates/rcl-compiler/)** - RCL compiler
-**[rcl-audit](crates/rcl-audit/)** - Audit trail generation
+- **[rcl-types](crates/rcl-types/)** - RCL type system
+- **[rcl-meaning](crates/rcl-meaning/)** - Meaning expression
+- **[rcl-intent](crates/rcl-intent/)** - Intent declaration
+- **[rcl-commitment](crates/rcl-commitment/)** - Commitment specification
+- **[rcl-validator](crates/rcl-validator/)** - Contract validation
+- **[rcl-compiler](crates/rcl-compiler/)** - RCL compiler
+- **[rcl-audit](crates/rcl-audit/)** - Audit trail generation
 
 ### 🌐 MAPLE Routing Protocol (MRP)
 
-**[mrp-types](crates/mrp-types/)** - MRP type definitions
-**[mrp-router](crates/mrp-router/)** - Resonance routing
-**[mrp-transport](crates/mrp-transport/)** - Transport layer
-**[mrp-service](crates/mrp-service/)** - MRP service
+- **[mrp-types](crates/mrp-types/)** - MRP type definitions
+- **[mrp-router](crates/mrp-router/)** - Resonance routing
+- **[mrp-transport](crates/mrp-transport/)** - Transport layer
+- **[mrp-service](crates/mrp-service/)** - MRP service
 
 ### 🛡️ Authority & Accountability Service (AAS)
 
-**[aas-types](crates/aas-types/)** - AAS type system
-**[aas-identity](crates/aas-identity/)** - Identity management
-**[aas-capability](crates/aas-capability/)** - Capability system
-**[aas-policy](crates/aas-policy/)** - Policy enforcement
-**[aas-adjudication](crates/aas-adjudication/)** - Dispute resolution
-**[aas-ledger](crates/aas-ledger/)** - Accountability ledger
-**[aas-service](crates/aas-service/)** - AAS service
+- **[aas-types](crates/aas-types/)** - AAS type system
+- **[aas-identity](crates/aas-identity/)** - Identity management
+- **[aas-capability](crates/aas-capability/)** - Capability system
+- **[aas-policy](crates/aas-policy/)** - Policy enforcement
+- **[aas-adjudication](crates/aas-adjudication/)** - Dispute resolution
+- **[aas-ledger](crates/aas-ledger/)** - Accountability ledger
+- **[aas-service](crates/aas-service/)** - AAS service
 
 ### 🌍 Mapleverse Platform
 
-**[mapleverse-types](crates/mapleverse-types/)** - Platform types
-**[mapleverse-executor](crates/mapleverse-executor/)** - Agent execution
-**[mapleverse-connectors](crates/mapleverse-connectors/)** - External integrations
-**[mapleverse-evidence](crates/mapleverse-evidence/)** - Evidence collection
-**[mapleverse-service](crates/mapleverse-service/)** - Mapleverse service
+- **[mapleverse-types](crates/mapleverse-types/)** - Platform types
+- **[mapleverse-executor](crates/mapleverse-executor/)** - Agent execution
+- **[mapleverse-connectors](crates/mapleverse-connectors/)** - External integrations
+- **[mapleverse-evidence](crates/mapleverse-evidence/)** - Evidence collection
+- **[mapleverse-service](crates/mapleverse-service/)** - Mapleverse service
 
 ### 📚 Evidence & Verification Engine (EVE)
 
-**[eve-types](crates/eve-types/)** - EVE type system
-**[eve-ingestion](crates/eve-ingestion/)** - Data ingestion
-**[eve-evaluation](crates/eve-evaluation/)** - Evidence evaluation
-**[eve-artifacts](crates/eve-artifacts/)** - Artifact management
-**[eve-service](crates/eve-service/)** - EVE service
+- **[eve-types](crates/eve-types/)** - EVE type system
+- **[eve-ingestion](crates/eve-ingestion/)** - Data ingestion
+- **[eve-evaluation](crates/eve-evaluation/)** - Evidence evaluation
+- **[eve-artifacts](crates/eve-artifacts/)** - Artifact management
+- **[eve-service](crates/eve-service/)** - EVE service
 
 ### 🔧 Integration & Tools
 
-**[maple-integration](crates/maple-integration/)** - Integration tests
-**[maple-cli](crates/maple-cli/)** - Command-line interface
+- **[maple-integration](crates/maple-integration/)** - Integration tests
+- **[maple-cli](crates/maple-cli/)** - Command-line interface
 
 ---
 
@@ -175,26 +175,30 @@ MAPLE is built on a fundamentally different paradigm than traditional agent fram
 
 ```
 Traditional Agent Frameworks:
-┌─────────┐    message    ┌─────────┐    message    ┌─────────┐
-│ Agent A │ ────────────> │ Agent B │ ────────────> │ Agent C │
-└─────────┘               └─────────┘               └─────────┘
-    ↓                         ↓                         ↓
- Stateless                Stateless                Stateless
- Isolated                 Isolated                 Isolated
+
+  ┌─────────┐     message     ┌─────────┐     message     ┌─────────┐
+  │ Agent A │ ──────────────> │ Agent B │ ──────────────> │ Agent C │
+  └─────────┘                 └─────────┘                 └─────────┘
+      ↓                            ↓                           ↓
+   Stateless                   Stateless                  Stateless
+   Isolated                    Isolated                   Isolated
+
+---------------------------------------------------------------------------
 
 MAPLE Resonance Architecture:
-┌──────────────┐   coupling   ┌──────────────┐   coupling   ┌──────────────┐
-│ Resonator A  │ <==========> │ Resonator B  │ <==========> │ Resonator C  │
-│              │              │              │              │              │
-│ [presence]   │              │ [presence]   │              │ [presence]   │
-│      ↓       │              │      ↓       │              │      ↓       │
-│ [meaning] ───┼─────────────>│ [meaning] ───┼─────────────>│ [meaning]    │
-│      ↓       │              │      ↓       │              │      ↓       │
-│ [intent] ────┼─────────────>│ [commitment] │──────────────>│ [consequence]│
-└──────────────┘              └──────────────┘              └──────────────┘
-    ↓                             ↓                             ↓
- Stateful                      Stateful                      Stateful
- Relationship                  Relationship                  Relationship
+
+┌──────────────┐  coupling  ┌──────────────┐  coupling  ┌──────────────┐
+│ Resonator A  │ <========> │ Resonator B  │ <========> │ Resonator C  │
+│              │            │              │            │              │
+│ [presence]   │            │ [presence]   │            │ [presence]   │
+│      ↓       │            │      ↓       │            │      ↓       │
+│ [meaning] ───┼───────────>│ [meaning] ───┼───────────>│ [meaning]    │
+│      ↓       │            │      ↓       │            │      ↓       │
+│ [intent] ────┼───────────>│ [commitment] │───────────>│ [consequence]│
+└──────────────┘            └──────────────┘            └──────────────┘
+      ↓                            ↓                            ↓
+   Stateful                     Stateful                     Stateful
+   Relationship                 Relationship                 Relationship
 ```
 
 ### Core Flow
