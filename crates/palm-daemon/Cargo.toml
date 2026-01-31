@@ -1,0 +1,59 @@
+[package]
+name = "palm-daemon"
+version = "0.1.0"
+edition = "2021"
+description = "PALM background orchestration daemon"
+license = "MIT"
+
+[[bin]]
+name = "palmd"
+path = "src/main.rs"
+
+[dependencies]
+# PALM crates
+palm-types = { path = "../palm-types" }
+palm-registry = { path = "../palm-registry" }
+palm-deployment = { path = "../palm-deployment" }
+palm-health = { path = "../palm-health" }
+palm-state = { path = "../palm-state" }
+palm-policy = { path = "../palm-policy" }
+palm-control = { path = "../palm-control" }
+
+# Async runtime
+tokio = { version = "1", features = ["full", "signal"] }
+async-trait = "0.1"
+futures-util = "0.3"
+
+# Web framework
+axum = { version = "0.7", features = ["macros"] }
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors", "trace"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Error handling
+thiserror = "1"
+anyhow = "1"
+
+# Logging/tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Configuration
+config = "0.14"
+clap = { version = "4", features = ["derive", "env"] }
+
+# Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# UUID
+uuid = { version = "1", features = ["v4", "serde"] }
+
+# Semver
+semver = { version = "1.0", features = ["serde"] }
+
+[dev-dependencies]
+tokio-test = "0.4"
+reqwest = { version = "0.11", features = ["json"] }
