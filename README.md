@@ -176,29 +176,29 @@ MAPLE is built on a fundamentally different paradigm than traditional agent fram
 ```
 Traditional Agent Frameworks:
 
-  ┌─────────┐     message     ┌─────────┐     message     ┌─────────┐
-  │ Agent A │ ──────────────> │ Agent B │ ──────────────> │ Agent C │
-  └─────────┘                 └─────────┘                 └─────────┘
-      ↓                            ↓                           ↓
-   Stateless                   Stateless                  Stateless
-   Isolated                    Isolated                   Isolated
+  ┌─────────┐   message    ┌─────────┐   message    ┌─────────┐
+  │ Agent A │ ───────────> │ Agent B │ ───────────> │ Agent C │
+  └─────────┘              └─────────┘              └─────────┘
+      ↓                         ↓                       ↓
+   Stateless                 Stateless               Stateless
+   Isolated                  Isolated                Isolated
 
----------------------------------------------------------------------------
+-----------------------------------------------------------------
 
 MAPLE Resonance Architecture:
 
-┌──────────────┐  coupling  ┌──────────────┐  coupling  ┌──────────────┐
-│ Resonator A  │ <========> │ Resonator B  │ <========> │ Resonator C  │
-│              │            │              │            │              │
-│ [presence]   │            │ [presence]   │            │ [presence]   │
-│      ↓       │            │      ↓       │            │      ↓       │
-│ [meaning] ───┼───────────>│ [meaning] ───┼───────────>│ [meaning]    │
-│      ↓       │            │      ↓       │            │      ↓       │
-│ [intent] ────┼───────────>│ [commitment] │───────────>│ [consequence]│
-└──────────────┘            └──────────────┘            └──────────────┘
-      ↓                            ↓                            ↓
-   Stateful                     Stateful                     Stateful
-   Relationship                 Relationship                 Relationship
+┌─────────────┐ coupling ┌─────────────┐ coupling ┌──────────────┐
+│ Resonator A │<========>│ Resonator B │<========>│ Resonator C  │
+│             │          │             │          │              │
+│ [presence]  │          │ [presence]  │          │ [presence]   │
+│      ↓      │          │      ↓      │          │      ↓       │
+│ [meaning] ──┼─────────>│ [meaning] ──┼─────────>│ [meaning]    │
+│      ↓      │          │      ↓      │          │      ↓       │
+│ [intent] ───┼─────────>│ [commitment]│─────────>│ [consequence]│
+└─────────────┘          └─────────────┘          └──────────────┘
+      ↓                         ↓                        ↓
+   Stateful                  Stateful                 Stateful
+   Relationship              Relationship             Relationship
 ```
 
 ### Core Flow

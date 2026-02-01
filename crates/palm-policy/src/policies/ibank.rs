@@ -387,8 +387,10 @@ mod tests {
     #[tokio::test]
     async fn test_ibank_high_risk_requires_approval() {
         let policy = IBankAccountabilityPolicy::new();
-        let ctx = PolicyEvaluationContext::new("user-1", PlatformProfile::IBank)
+        // Set timestamp within change window (6 AM - 10 PM)
+        let mut ctx = PolicyEvaluationContext::new("user-1", PlatformProfile::IBank)
             .with_environment("production");
+        ctx.timestamp = Utc.with_ymd_and_hms(2024, 1, 15, 12, 0, 0).unwrap(); // 12:00 noon
         let op = PalmOperation::DeleteDeployment {
             deployment_id: "deploy-1".into(),
         };
@@ -401,9 +403,11 @@ mod tests {
     async fn test_ibank_high_risk_with_approval() {
         let policy = IBankAccountabilityPolicy::new();
         let approval = HumanApproval::new("risk-management@ibank.example.com");
-        let ctx = PolicyEvaluationContext::new("user-1", PlatformProfile::IBank)
+        // Set timestamp within change window (6 AM - 10 PM)
+        let mut ctx = PolicyEvaluationContext::new("user-1", PlatformProfile::IBank)
             .with_environment("production")
             .with_human_approval(approval);
+        ctx.timestamp = Utc.with_ymd_and_hms(2024, 1, 15, 12, 0, 0).unwrap(); // 12:00 noon
         let op = PalmOperation::DeleteDeployment {
             deployment_id: "deploy-1".into(),
         };

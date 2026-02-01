@@ -58,6 +58,10 @@ members = [
     "crates/palm-policy",
     "crates/palm-cli",
     "crates/palm-daemon",
+    "crates/palm-observability",
+
+    # Platform Contracts
+    "contracts/platform-pack",
 
     # Integration and Testing
     "crates/maple-integration",
@@ -166,6 +170,7 @@ palm-control = { path = "crates/palm-control" }
 palm-policy = { path = "crates/palm-policy" }
 palm-cli = { path = "crates/palm-cli" }
 palm-daemon = { path = "crates/palm-daemon" }
+palm-observability = { path = "crates/palm-observability" }
 
 [profile.release]
 lto = true

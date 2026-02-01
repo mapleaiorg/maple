@@ -15,11 +15,14 @@ pub mod error;
 pub mod metrics;
 pub mod tracing;
 
-pub use audit::{AuditEntry, AuditQuery, AuditSink};
-pub use correlation::CorrelationEngine;
+pub use audit::{AuditEntry, AuditQuery, AuditSink, FileAuditSink, MemoryAuditSink};
+pub use correlation::{CorrelatedEvent, CorrelationEngine, CorrelationId, EventCorrelation};
 pub use error::ObservabilityError;
 pub use metrics::{MetricsRegistry, PalmMetrics};
-pub use tracing::{init_tracing, TracingConfig};
+pub use tracing::{init_tracing, PalmContext, PalmSpan, TracingConfig};
+
+use std::path::PathBuf;
+use std::sync::Arc;
 
 /// Configuration for observability infrastructure
 #[derive(Debug, Clone, Default)]
@@ -70,7 +73,7 @@ pub struct ObservabilityHandle {
     /// Metrics registry
     pub metrics: MetricsRegistry,
     /// Audit sink (if configured)
-    pub audit_sink: Option<Box<dyn AuditSink>>,
+    pub audit_sink: Option<Arc<dyn AuditSink>>,
     /// Event correlation engine
     pub correlation: CorrelationEngine,
 }
@@ -78,8 +81,8 @@ pub struct ObservabilityHandle {
 /// Initialize all observability infrastructure
 pub async fn init(config: ObservabilityConfig) -> error::Result<ObservabilityHandle> {
     // Initialize tracing
-    if let Some(tracing_config) = config.tracing {
-        init_tracing(tracing_config)?;
+    if let Some(ref tracing_config) = config.tracing {
+        let _ = init_tracing(tracing_config)?;
     }
 
     // Initialize metrics registry
@@ -89,8 +92,8 @@ pub async fn init(config: ObservabilityConfig) -> error::Result<ObservabilityHan
     };
 
     // Initialize audit sink
-    let audit_sink = match config.audit {
-        Some(audit_config) => Some(audit::create_sink(audit_config).await?),
+    let audit_sink: Option<Arc<dyn AuditSink>> = match config.audit {
+        Some(audit_config) => Some(create_audit_sink(audit_config).await?),
         None => None,
     };
 
@@ -104,6 +107,17 @@ pub async fn init(config: ObservabilityConfig) -> error::Result<ObservabilityHan
     })
 }
 
+/// Create an audit sink based on configuration
+async fn create_audit_sink(config: AuditConfig) -> error::Result<Arc<dyn AuditSink>> {
+    match config.backend {
+        AuditBackend::Memory => Ok(Arc::new(MemoryAuditSink::new())),
+        AuditBackend::File { path } => {
+            let sink = FileAuditSink::new(PathBuf::from(path)).await?;
+            Ok(Arc::new(sink))
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -113,7 +127,10 @@ mod tests {
         let config = ObservabilityConfig::default();
         let handle = init(config).await.unwrap();
 
-        // Metrics should be initialized
+        // Record a metric to ensure the registry works
+        handle.metrics.palm().deployment.record_operation("test", "create", "success", 1.0);
+
+        // Metrics should be initialized and exportable
         assert!(!handle.metrics.export().is_empty());
 
         // No audit sink by default
