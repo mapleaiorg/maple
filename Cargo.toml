@@ -62,6 +62,7 @@ members = [
 
     # Platform Contracts
     "contracts/platform-pack",
+    "contracts/conformance",
 
     # Integration and Testing
     "crates/maple-integration",

@@ -2246,6 +2246,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "palm-conformance"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "palm-platform-pack",
+ "palm-types",
+ "semver",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
+]
+
+[[package]]
 name = "palm-control"
 version = "0.1.0"
 dependencies = [
