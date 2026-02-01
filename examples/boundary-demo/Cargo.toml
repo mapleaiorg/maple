@@ -1,0 +1,24 @@
+[package]
+name = "palm-boundary-demo"
+version = "0.1.0"
+edition = "2021"
+description = "PALM Platform Boundary Enforcement Demo"
+
+[[bin]]
+name = "boundary-demo"
+path = "src/main.rs"
+
+[dependencies]
+palm-platform-pack = { path = "../../contracts/platform-pack" }
+palm-types = { path = "../../crates/palm-types" }
+palm-policy = { path = "../../crates/palm-policy" }
+palm-conformance = { path = "../../contracts/conformance" }
+
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+colored = "2.0"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.0", features = ["v4"] }
+async-trait = "0.1"
+serde_json = "1.0"

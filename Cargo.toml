@@ -67,6 +67,9 @@ members = [
     # Integration and Testing
     "crates/maple-integration",
     "crates/maple-cli",
+
+    # Examples
+    "examples/boundary-demo",
 ]
 
 [workspace.package]
