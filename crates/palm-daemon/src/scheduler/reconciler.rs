@@ -1,7 +1,9 @@
 //! Reconciliation loop and scheduler
 
 use crate::config::SchedulerConfig;
-use crate::storage::{DeploymentStorage, InstanceStorage, InMemoryStorage};
+use crate::storage::{
+    ActivityStorage, DeploymentStorage, EventStorage, InMemoryStorage, InstanceStorage, Storage,
+};
 use palm_types::{
     instance::{
         AgentInstance, HealthStatus, InstanceMetrics, InstancePlacement, InstanceStatus,
@@ -10,6 +12,7 @@ use palm_types::{
     DeploymentId, DeploymentStatus, EventSeverity, EventSource, InstanceId, PalmEvent,
     PalmEventEnvelope, PlatformProfile,
 };
+use palm_shared_state::{Activity, ActivityActor};
 use std::sync::Arc;
 use tokio::sync::{broadcast, mpsc, RwLock};
 use tokio::time::{interval, Duration};
@@ -17,8 +20,9 @@ use tokio::time::{interval, Duration};
 /// Scheduler state
 pub struct Scheduler {
     config: SchedulerConfig,
-    storage: Arc<InMemoryStorage>,
+    storage: Arc<dyn Storage>,
     event_tx: broadcast::Sender<PalmEventEnvelope>,
+    activity_tx: broadcast::Sender<Activity>,
     reconcile_tx: mpsc::Sender<()>,
     running: Arc<RwLock<bool>>,
     platform: PlatformProfile,
@@ -28,17 +32,19 @@ impl Scheduler {
     /// Create a new scheduler
     pub fn new(
         config: SchedulerConfig,
-        storage: Arc<InMemoryStorage>,
+        storage: Arc<dyn Storage>,
         event_tx: broadcast::Sender<PalmEventEnvelope>,
+        activity_tx: broadcast::Sender<Activity>,
     ) -> (Arc<Self>, mpsc::Receiver<()>) {
-        Self::with_platform(config, storage, event_tx, PlatformProfile::Development)
+        Self::with_platform(config, storage, event_tx, activity_tx, PlatformProfile::Development)
     }
 
     /// Create a new scheduler with a specific platform profile
     pub fn with_platform(
         config: SchedulerConfig,
-        storage: Arc<InMemoryStorage>,
+        storage: Arc<dyn Storage>,
         event_tx: broadcast::Sender<PalmEventEnvelope>,
+        activity_tx: broadcast::Sender<Activity>,
         platform: PlatformProfile,
     ) -> (Arc<Self>, mpsc::Receiver<()>) {
         let (reconcile_tx, reconcile_rx) = mpsc::channel(10);
@@ -47,6 +53,7 @@ impl Scheduler {
             config,
             storage,
             event_tx,
+            activity_tx,
             reconcile_tx,
             running: Arc::new(RwLock::new(false)),
             platform,
@@ -157,7 +164,7 @@ impl Scheduler {
                         reason: e.to_string(),
                     },
                     EventSeverity::Error,
-                );
+                ).await;
             }
         }
 
@@ -207,7 +214,7 @@ impl Scheduler {
                         deployment_id: deployment_id.clone(),
                     },
                     EventSeverity::Info,
-                );
+                ).await;
             }
 
             // Update deployment status
@@ -254,7 +261,7 @@ impl Scheduler {
                         exit_code: Some(0),
                     },
                     EventSeverity::Info,
-                );
+                ).await;
             }
         }
 
@@ -311,7 +318,7 @@ impl Scheduler {
                         reason: "Heartbeat timeout".to_string(),
                     },
                     EventSeverity::Warning,
-                );
+                ).await;
 
                 // Auto-heal if enabled
                 if self.config.auto_healing_enabled {
@@ -342,7 +349,7 @@ impl Scheduler {
                 exit_code: Some(1),
             },
             EventSeverity::Info,
-        );
+        ).await;
 
         // Reconciliation will create a replacement
         self.trigger_reconcile().await;
@@ -351,9 +358,29 @@ impl Scheduler {
     }
 
     /// Emit an event
-    fn emit_event(&self, event: PalmEvent, severity: EventSeverity) {
+    async fn emit_event(&self, event: PalmEvent, severity: EventSeverity) {
         let envelope = PalmEventEnvelope::new(event, EventSource::Scheduler, self.platform.clone())
             .with_actor("scheduler");
+
+        if let Err(err) = self.storage.store_event(envelope.clone()).await {
+            tracing::warn!(error = %err, "Failed to persist event");
+        }
+
+        let activity = Activity::new(
+            ActivityActor::System,
+            "scheduler",
+            "event",
+            format!("{:?}", envelope.event),
+            serde_json::json!({
+                "event_id": envelope.id,
+                "severity": format!("{:?}", envelope.severity),
+                "source": format!("{:?}", envelope.source),
+            }),
+        );
+
+        if let Ok(stored) = self.storage.store_activity(activity).await {
+            let _ = self.activity_tx.send(stored);
+        }
 
         let _ = self.event_tx.send(envelope);
     }
@@ -380,11 +407,13 @@ mod tests {
 
     #[tokio::test]
     async fn test_reconcile_scales_up() {
-        let storage = Arc::new(InMemoryStorage::new());
+        let storage: Arc<dyn Storage> = Arc::new(InMemoryStorage::new());
         let (event_tx, _rx) = broadcast::channel(100);
+        let (activity_tx, _arx) = broadcast::channel(100);
         let config = SchedulerConfig::default();
 
-        let (scheduler, _reconcile_rx) = Scheduler::new(config, storage.clone(), event_tx);
+        let (scheduler, _reconcile_rx) =
+            Scheduler::new(config, storage.clone(), event_tx, activity_tx);
 
         // Create deployment with 3 replicas
         let deployment = create_test_deployment();
@@ -406,11 +435,13 @@ mod tests {
 
     #[tokio::test]
     async fn test_reconcile_scales_down() {
-        let storage = Arc::new(InMemoryStorage::new());
+        let storage: Arc<dyn Storage> = Arc::new(InMemoryStorage::new());
         let (event_tx, _rx) = broadcast::channel(100);
+        let (activity_tx, _arx) = broadcast::channel(100);
         let config = SchedulerConfig::default();
 
-        let (scheduler, _reconcile_rx) = Scheduler::new(config, storage.clone(), event_tx);
+        let (scheduler, _reconcile_rx) =
+            Scheduler::new(config, storage.clone(), event_tx, activity_tx);
 
         // Create deployment with 1 replica
         let mut deployment = create_test_deployment();

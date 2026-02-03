@@ -1,22 +1,30 @@
 //! Application state for API handlers
 
+use crate::playground::PlaygroundService;
 use crate::scheduler::Scheduler;
-use crate::storage::InMemoryStorage;
+use crate::storage::Storage;
 use std::sync::Arc;
 use tokio::sync::broadcast;
 use palm_types::PalmEventEnvelope;
+use palm_shared_state::Activity;
 
 /// Shared application state
 #[derive(Clone)]
 pub struct AppState {
     /// Storage backend
-    pub storage: Arc<InMemoryStorage>,
+    pub storage: Arc<dyn Storage>,
 
     /// Scheduler handle
     pub scheduler: Arc<Scheduler>,
 
     /// Event broadcast channel
     pub event_tx: broadcast::Sender<PalmEventEnvelope>,
+
+    /// Activity broadcast channel
+    pub activity_tx: broadcast::Sender<Activity>,
+
+    /// Playground service
+    pub playground: Arc<PlaygroundService>,
 
     /// Daemon version
     pub version: String,
@@ -28,14 +36,18 @@ pub struct AppState {
 impl AppState {
     /// Create new application state
     pub fn new(
-        storage: Arc<InMemoryStorage>,
+        storage: Arc<dyn Storage>,
         scheduler: Arc<Scheduler>,
         event_tx: broadcast::Sender<PalmEventEnvelope>,
+        activity_tx: broadcast::Sender<Activity>,
+        playground: Arc<PlaygroundService>,
     ) -> Self {
         Self {
             storage,
             scheduler,
             event_tx,
+            activity_tx,
+            playground,
             version: env!("CARGO_PKG_VERSION").to_string(),
             started_at: chrono::Utc::now(),
         }

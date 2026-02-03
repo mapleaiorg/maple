@@ -3,9 +3,12 @@
 //! Provides persistent storage for specs, deployments, and instances.
 
 mod memory;
+mod postgres;
 mod traits;
 
 pub use memory::InMemoryStorage;
+pub use postgres::PostgresStorage;
 pub use traits::{
-    DeploymentStorage, EventStorage, InstanceStorage, SnapshotStorage, SpecStorage, Storage,
+    ActivityStorage, DeploymentStorage, EventStorage, InstanceStorage, PlaygroundConfigStorage,
+    ResonatorStorage, SnapshotStorage, SpecStorage, Storage,
 };

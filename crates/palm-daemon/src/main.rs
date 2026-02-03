@@ -13,6 +13,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 mod api;
 mod config;
 mod error;
+mod playground;
 mod scheduler;
 mod server;
 mod storage;
@@ -111,6 +112,6 @@ async fn main() -> DaemonResult<()> {
     );
 
     // Create and run server
-    let server = Server::new(config)?;
+    let server = Server::new(config).await?;
     server.run().await
 }

@@ -9,6 +9,7 @@
 pub mod api;
 pub mod config;
 pub mod error;
+pub mod playground;
 pub mod scheduler;
 pub mod server;
 pub mod storage;
@@ -17,4 +18,4 @@ pub use config::DaemonConfig;
 pub use error::{ApiError, DaemonError, StorageError};
 pub use scheduler::Scheduler;
 pub use server::Server;
-pub use storage::{InMemoryStorage, Storage};
+pub use storage::{InMemoryStorage, PostgresStorage, Storage};

@@ -2249,6 +2249,7 @@ dependencies = [
  "dirs",
  "futures-util",
  "indicatif",
+ "palm-shared-state",
  "palm-types",
  "predicates",
  "reqwest",
@@ -2316,12 +2317,15 @@ dependencies = [
  "palm-health",
  "palm-policy",
  "palm-registry",
+ "palm-shared-state",
  "palm-state",
  "palm-types",
+ "rand 0.8.5",
  "reqwest",
  "semver",
  "serde",
  "serde_json",
+ "sqlx",
  "thiserror",
  "tokio",
  "tokio-test",
@@ -2438,6 +2442,17 @@ dependencies = [
  "serde",
  "thiserror",
  "tokio",
+]
+
+[[package]]
+name = "palm-shared-state"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "palm-types",
+ "serde",
+ "serde_json",
+ "uuid",
 ]
 
 [[package]]

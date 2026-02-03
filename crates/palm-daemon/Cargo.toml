@@ -18,6 +18,7 @@ palm-health = { path = "../palm-health" }
 palm-state = { path = "../palm-state" }
 palm-policy = { path = "../palm-policy" }
 palm-control = { path = "../palm-control" }
+palm-shared-state = { path = "../palm-shared-state" }
 
 # Async runtime
 tokio = { version = "1", features = ["full", "signal"] }
@@ -32,6 +33,7 @@ tower-http = { version = "0.5", features = ["cors", "trace"] }
 # Serialization
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+sqlx = { workspace = true }
 
 # Error handling
 thiserror = "1"
@@ -40,6 +42,9 @@ anyhow = "1"
 # Logging/tracing
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Randomness (simulation)
+rand = { workspace = true }
 
 # Configuration
 config = "0.14"

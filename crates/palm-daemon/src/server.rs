@@ -2,44 +2,66 @@
 
 use crate::api::create_router;
 use crate::api::rest::state::AppState;
-use crate::config::DaemonConfig;
-use crate::error::DaemonResult;
+use crate::config::{DaemonConfig, StorageConfig};
+use crate::error::{DaemonError, DaemonResult};
+use crate::playground::PlaygroundService;
 use crate::scheduler::Scheduler;
-use crate::storage::InMemoryStorage;
+use crate::storage::{InMemoryStorage, PostgresStorage, Storage};
 use palm_types::PalmEventEnvelope;
+use palm_shared_state::Activity;
 use std::sync::Arc;
 use tokio::net::TcpListener;
-use tokio::sync::broadcast;
+use tokio::sync::{broadcast, mpsc};
 
 /// PALM Daemon Server
 pub struct Server {
     config: DaemonConfig,
-    storage: Arc<InMemoryStorage>,
+    storage: Arc<dyn Storage>,
     scheduler: Arc<Scheduler>,
     event_tx: broadcast::Sender<PalmEventEnvelope>,
+    activity_tx: broadcast::Sender<Activity>,
+    reconcile_rx: Option<mpsc::Receiver<()>>,
+    playground: Arc<PlaygroundService>,
 }
 
 impl Server {
     /// Create a new server with the given configuration
-    pub fn new(config: DaemonConfig) -> DaemonResult<Self> {
+    pub async fn new(config: DaemonConfig) -> DaemonResult<Self> {
         // Create storage
-        let storage = Arc::new(InMemoryStorage::new());
+        let storage: Arc<dyn Storage> = match &config.storage {
+            StorageConfig::Memory => Arc::new(InMemoryStorage::new()),
+            StorageConfig::Postgres { url, max_connections, connect_timeout_secs } => {
+                let pg = PostgresStorage::new(url, *max_connections, *connect_timeout_secs)
+                    .await
+                    .map_err(DaemonError::Storage)?;
+                Arc::new(pg)
+            }
+        };
 
-        // Create event channel
+        // Create event + activity channels
         let (event_tx, _) = broadcast::channel(1000);
+        let (activity_tx, _) = broadcast::channel(1000);
 
         // Create scheduler
-        let (scheduler, _reconcile_rx) = Scheduler::new(
+        let (scheduler, reconcile_rx) = Scheduler::with_platform(
             config.scheduler.clone(),
             storage.clone(),
             event_tx.clone(),
+            activity_tx.clone(),
+            config.platform.clone(),
         );
+
+        // Create playground service
+        let playground = PlaygroundService::new(storage.clone(), activity_tx.clone()).await?;
 
         Ok(Self {
             config,
             storage,
             scheduler,
             event_tx,
+            activity_tx,
+            reconcile_rx: Some(reconcile_rx),
+            playground,
         })
     }
 
@@ -52,6 +74,8 @@ impl Server {
             self.storage.clone(),
             self.scheduler.clone(),
             self.event_tx.clone(),
+            self.activity_tx.clone(),
+            self.playground.clone(),
         );
 
         // Create router
@@ -65,15 +89,16 @@ impl Server {
 
         // Start scheduler in background
         let scheduler = self.scheduler.clone();
-        let (_, reconcile_rx) = Scheduler::new(
-            self.config.scheduler.clone(),
-            self.storage.clone(),
-            self.event_tx.clone(),
-        );
+        if let Some(reconcile_rx) = self.reconcile_rx {
+            tokio::spawn(async move {
+                scheduler.start(reconcile_rx).await;
+            });
+        } else {
+            tracing::warn!("Scheduler already running or reconcile channel missing");
+        }
 
-        tokio::spawn(async move {
-            scheduler.start(reconcile_rx).await;
-        });
+        // Start playground simulation
+        self.playground.start().await;
 
         // Run server with graceful shutdown
         axum::serve(listener, app)

@@ -15,6 +15,15 @@ pub fn create_router(state: AppState) -> Router {
         // Health and status
         .route("/health", get(handlers::health_check))
         .route("/status", get(handlers::daemon_status))
+        // Playground
+        .route("/playground/state", get(handlers::playground_state))
+        .route("/playground/config", get(handlers::get_playground_config))
+        .route("/playground/config", put(handlers::update_playground_config))
+        .route("/playground/backends", get(handlers::list_playground_backends))
+        .route("/playground/resonators", get(handlers::list_playground_resonators))
+        .route("/playground/agents", get(handlers::list_playground_agents))
+        .route("/playground/activities", get(handlers::list_playground_activities))
+        .route("/playground/activities/stream", get(handlers::stream_playground_activities))
         // Specs
         .route("/specs", get(handlers::list_specs))
         .route("/specs", post(handlers::create_spec))
@@ -47,6 +56,8 @@ pub fn create_router(state: AppState) -> Router {
 
     // Build router with middleware
     Router::new()
+        .route("/playground", get(handlers::playground_index))
+        .route("/", get(handlers::playground_index))
         .nest("/api/v1", api_routes)
         .layer(TraceLayer::new_for_http())
         .layer(

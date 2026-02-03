@@ -16,7 +16,7 @@ mod config;
 mod error;
 mod output;
 
-use commands::{deployment, events, health, instance, spec, state};
+use commands::{deployment, events, health, instance, playground, spec, state};
 use config::CliConfig;
 use error::CliResult;
 
@@ -90,6 +90,12 @@ enum Commands {
         command: events::EventCommands,
     },
 
+    /// Playground operations
+    Playground {
+        #[command(subcommand)]
+        command: playground::PlaygroundCommands,
+    },
+
     /// Show configuration
     Config,
 
@@ -127,6 +133,7 @@ async fn main() -> CliResult<()> {
         Commands::State { command } => state::execute(command, &client, cli.output).await,
         Commands::Health { command } => health::execute(command, &client, cli.output).await,
         Commands::Events { command } => events::execute(command, &client).await,
+        Commands::Playground { command } => playground::execute(command, &client, cli.output).await,
         Commands::Config => {
             println!("Endpoint: {}", endpoint);
             println!("Platform: {:?}", platform);

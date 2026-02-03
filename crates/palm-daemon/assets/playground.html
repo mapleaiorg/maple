@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MAPLE Playground Dashboard</title>
+  <style>
+    :root {
+      --bg-0: #0c1116;
+      --bg-1: #101822;
+      --bg-2: #15202c;
+      --panel: rgba(18, 28, 38, 0.85);
+      --panel-strong: rgba(18, 28, 38, 0.98);
+      --accent: #ffb347;
+      --accent-2: #5dd6ff;
+      --accent-3: #b8ff6a;
+      --text: #e7eef7;
+      --muted: #8aa0b6;
+      --danger: #ff6b6b;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Space Grotesk", "IBM Plex Sans", "Fira Sans", sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at 10% 10%, rgba(93, 214, 255, 0.18), transparent 30%),
+                  radial-gradient(circle at 90% 10%, rgba(255, 179, 71, 0.2), transparent 35%),
+                  radial-gradient(circle at 50% 90%, rgba(184, 255, 106, 0.15), transparent 40%),
+                  linear-gradient(180deg, var(--bg-0), var(--bg-2));
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 28px 40px 10px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-mark {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: var(--shadow);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.6rem;
+      letter-spacing: 0.02em;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .status-pill {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    nav {
+      display: flex;
+      gap: 10px;
+      padding: 0 40px 20px;
+      flex-wrap: wrap;
+    }
+
+    nav button {
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(18, 28, 38, 0.6);
+      color: var(--text);
+      padding: 10px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    nav button.active {
+      background: linear-gradient(135deg, rgba(255, 179, 71, 0.25), rgba(93, 214, 255, 0.25));
+      border-color: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+    }
+
+    main {
+      padding: 0 40px 40px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      animation: fadeUp 0.5s ease;
+    }
+
+    .grid-2 {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    .grid-3 {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .metric {
+      padding: 16px;
+      border-radius: 14px;
+      background: rgba(11, 17, 23, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .metric h3 {
+      margin: 0 0 6px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .metric span {
+      font-size: 1.6rem;
+      font-weight: 600;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--muted);
+    }
+
+    .list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .list-item {
+      display: grid;
+      gap: 6px;
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(10, 15, 20, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .list-item strong {
+      font-size: 1rem;
+    }
+
+    .list-item small {
+      color: var(--muted);
+    }
+
+    .activity-timeline {
+      max-height: 360px;
+      overflow: auto;
+      display: grid;
+      gap: 8px;
+    }
+
+    .activity-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      background: rgba(15, 22, 29, 0.85);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: transform 0.2s ease;
+    }
+
+    .activity-item.highlight {
+      transform: translateX(6px);
+      border-color: rgba(255, 179, 71, 0.5);
+      box-shadow: 0 8px 20px rgba(255, 179, 71, 0.15);
+    }
+
+    .activity-meta {
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .flex {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .form-row {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(10, 15, 20, 0.7);
+      color: var(--text);
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border: none;
+      padding: 10px 16px;
+      border-radius: 12px;
+      color: #0b0e13;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button.ghost {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 8px 14px;
+      border-radius: 10px;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      header, nav, main {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div>
+        <h1>MAPLE Playground</h1>
+        <p>Live agent + human activity screening with replay</p>
+      </div>
+    </div>
+    <div class="status-pill" id="status-pill">Connecting...</div>
+  </header>
+
+  <nav>
+    <button class="active" data-tab="overview">Overview</button>
+    <button data-tab="agents">Agents</button>
+    <button data-tab="resonators">Resonators</button>
+    <button data-tab="activities">Activities</button>
+    <button data-tab="backends">Backends</button>
+    <button data-tab="simulation">Simulation</button>
+  </nav>
+
+  <main>
+    <section id="tab-overview" class="panel">
+      <div class="grid-3" id="overview-metrics"></div>
+      <div class="grid-2" style="margin-top:16px;">
+        <div class="panel" style="margin:0;">
+          <h2>Live Pulse</h2>
+          <div id="overview-pulse" class="list"></div>
+        </div>
+        <div class="panel" style="margin:0;">
+          <h2>Active Backend</h2>
+          <div id="overview-backend" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-agents" class="panel hidden">
+      <div class="flex" style="justify-content: space-between;">
+        <h2>Agents</h2>
+        <span class="tag" id="agents-count">0 agents</span>
+      </div>
+      <div class="list" id="agents-list"></div>
+    </section>
+
+    <section id="tab-resonators" class="panel hidden">
+      <div class="flex" style="justify-content: space-between;">
+        <h2>Resonators</h2>
+        <span class="tag" id="resonators-count">0 resonators</span>
+      </div>
+      <div class="list" id="resonators-list"></div>
+    </section>
+
+    <section id="tab-activities" class="panel hidden">
+      <div class="flex" style="justify-content: space-between;">
+        <h2>Activities</h2>
+        <div class="flex">
+          <button class="ghost" id="activities-refresh">Refresh</button>
+          <button class="primary" id="activities-replay">Replay</button>
+        </div>
+      </div>
+      <div class="activity-timeline" id="activities-list"></div>
+    </section>
+
+    <section id="tab-backends" class="panel hidden">
+      <div class="flex" style="justify-content: space-between;">
+        <h2>AI Backends</h2>
+        <span class="tag" id="backend-status">active</span>
+      </div>
+      <div class="grid-2" style="margin-top:16px;">
+        <div class="panel" style="margin:0;">
+          <h3>Available Backends</h3>
+          <div class="list" id="backend-list"></div>
+        </div>
+        <div class="panel" style="margin:0;">
+          <h3>Configure Backend</h3>
+          <form id="backend-form">
+            <div class="form-row">
+              <select id="backend-kind">
+                <option value="local_llama">Local Llama</option>
+                <option value="open_ai">OpenAI</option>
+                <option value="anthropic">Anthropic</option>
+              </select>
+              <input id="backend-model" placeholder="Model (e.g. llama3)" />
+              <input id="backend-endpoint" placeholder="Endpoint (for local)" />
+              <input id="backend-key" placeholder="API key" />
+            </div>
+            <div class="flex" style="margin-top:12px;">
+              <button type="submit" class="primary">Save</button>
+              <span class="tag" id="backend-save-status">Idle</span>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-simulation" class="panel hidden">
+      <div class="flex" style="justify-content: space-between;">
+        <h2>Simulation</h2>
+        <span class="tag" id="simulation-status">running</span>
+      </div>
+      <div class="grid-2" style="margin-top:16px;">
+        <div class="panel" style="margin:0;">
+          <h3>Settings</h3>
+          <form id="simulation-form">
+            <div class="form-row">
+              <select id="simulation-enabled">
+                <option value="true">Enabled</option>
+                <option value="false">Paused</option>
+              </select>
+              <input id="simulation-interval" placeholder="Tick interval ms" />
+              <input id="simulation-intensity" placeholder="Intensity (0.1 - 1.0)" />
+            </div>
+            <div class="form-row" style="margin-top:10px;">
+              <input id="simulation-max-agents" placeholder="Max agents" />
+              <input id="simulation-max-resonators" placeholder="Max resonators" />
+            </div>
+            <div class="flex" style="margin-top:12px;">
+              <button type="submit" class="primary">Update</button>
+              <span class="tag" id="simulation-save-status">Idle</span>
+            </div>
+          </form>
+        </div>
+        <div class="panel" style="margin:0;">
+          <h3>Notes</h3>
+          <div class="list">
+            <div class="list-item">
+              <strong>Heavy Simulation</strong>
+              <small>Presence, coupling, agent metrics, and human/operator actions are synthesized every tick.</small>
+            </div>
+            <div class="list-item">
+              <strong>History Replay</strong>
+              <small>Activities tab replays events in sequence for quick diagnostics.</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const API = '/api/v1/playground';
+    let stateCache = null;
+    let activitiesCache = [];
+    let lastSequence = 0;
+
+    const tabs = document.querySelectorAll('nav button');
+    tabs.forEach(btn => btn.addEventListener('click', () => setTab(btn.dataset.tab)));
+
+    function setTab(name) {
+      tabs.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === name));
+      document.querySelectorAll('main section').forEach(section => {
+        section.classList.toggle('hidden', section.id !== `tab-${name}`);
+      });
+    }
+
+    async function fetchState() {
+      try {
+        const res = await fetch(`${API}/state`);
+        const data = await res.json();
+        stateCache = data;
+        updateOverview(data);
+        updateAgents(data.agents || []);
+        updateResonators(data.resonators || []);
+        updateBackends(data.backends || [], data.playground || {});
+        updateSimulation(data.playground?.simulation || {});
+        document.getElementById('status-pill').textContent = `Online · ${new Date(data.generated_at).toLocaleTimeString()}`;
+      } catch (err) {
+        document.getElementById('status-pill').textContent = 'Offline';
+      }
+    }
+
+    function updateOverview(data) {
+      const stats = data.stats || {};
+      const metrics = [
+        { label: 'Agents', value: stats.agents_total ?? 0 },
+        { label: 'Healthy Agents', value: stats.agents_healthy ?? 0 },
+        { label: 'Resonators', value: stats.resonators_total ?? 0 },
+        { label: 'Couplings', value: stats.active_couplings ?? 0 },
+        { label: 'Activities (loaded)', value: (data.activities || []).length },
+        { label: 'Last Activity', value: stats.last_activity_at ? new Date(stats.last_activity_at).toLocaleTimeString() : 'n/a' },
+      ];
+
+      const container = document.getElementById('overview-metrics');
+      container.innerHTML = metrics.map(m => `
+        <div class="metric">
+          <h3>${m.label}</h3>
+          <span>${m.value}</span>
+        </div>
+      `).join('');
+
+      const pulse = document.getElementById('overview-pulse');
+      pulse.innerHTML = (data.activities || []).slice(-4).reverse().map(a => `
+        <div class="list-item">
+          <strong>${a.summary}</strong>
+          <small>${a.actor_type} · ${new Date(a.timestamp).toLocaleTimeString()}</small>
+        </div>
+      `).join('') || '<div class="list-item"><strong>No activity yet</strong></div>';
+
+      const backend = document.getElementById('overview-backend');
+      const active = data.playground?.ai_backend;
+      backend.innerHTML = active ? `
+        <div class="list-item">
+          <strong>${active.kind} · ${active.model}</strong>
+          <small>${active.endpoint || 'remote API'} · ${active.configured ? 'configured' : 'missing key'}</small>
+        </div>
+      ` : '<div class="list-item"><strong>No backend configured</strong></div>';
+    }
+
+    function updateAgents(agents) {
+      document.getElementById('agents-count').textContent = `${agents.length} agents`;
+      document.getElementById('agents-list').innerHTML = agents.map(agent => `
+        <div class="list-item">
+          <strong>${agent.id} · ${agent.status}</strong>
+          <small>Health: ${JSON.stringify(agent.health)} | Attention: ${agent.metrics?.attention_utilization?.toFixed(2) ?? '0.00'}</small>
+        </div>
+      `).join('') || '<div class="list-item"><strong>No agents yet</strong></div>';
+    }
+
+    function updateResonators(resonators) {
+      document.getElementById('resonators-count').textContent = `${resonators.length} resonators`;
+      document.getElementById('resonators-list').innerHTML = resonators.map(r => `
+        <div class="list-item">
+          <strong>${r.name} · ${r.status}</strong>
+          <small>Presence: ${(r.presence?.responsiveness ?? 0).toFixed(2)} | Couplings: ${r.couplings?.length ?? 0}</small>
+        </div>
+      `).join('') || '<div class="list-item"><strong>No resonators yet</strong></div>';
+    }
+
+    function updateBackends(backends, config) {
+      const list = document.getElementById('backend-list');
+      list.innerHTML = backends.map(b => `
+        <div class="list-item">
+          <strong>${b.kind} · ${b.model}</strong>
+          <small>${b.active ? 'active' : 'inactive'} · ${b.configured ? 'configured' : 'missing key'}</small>
+        </div>
+      `).join('');
+
+      document.getElementById('backend-status').textContent = config?.ai_backend?.kind || 'unknown';
+      document.getElementById('backend-kind').value = config?.ai_backend?.kind || 'local_llama';
+      document.getElementById('backend-model').value = config?.ai_backend?.model || '';
+      document.getElementById('backend-endpoint').value = config?.ai_backend?.endpoint || '';
+    }
+
+    function updateSimulation(sim) {
+      if (!sim) return;
+      document.getElementById('simulation-enabled').value = String(sim.enabled);
+      document.getElementById('simulation-interval').value = sim.tick_interval_ms ?? '';
+      document.getElementById('simulation-intensity').value = sim.intensity ?? '';
+      document.getElementById('simulation-max-agents').value = sim.max_agents ?? '';
+      document.getElementById('simulation-max-resonators').value = sim.max_resonators ?? '';
+      document.getElementById('simulation-status').textContent = sim.enabled ? 'running' : 'paused';
+    }
+
+    function renderActivities(list, append = false) {
+      if (!append) {
+        activitiesCache = list;
+      } else {
+        activitiesCache = activitiesCache.concat(list);
+      }
+
+      const container = document.getElementById('activities-list');
+      container.innerHTML = activitiesCache.slice(-200).map(a => `
+        <div class="activity-item" data-seq="${a.sequence}">
+          <div>
+            <strong>${a.summary}</strong>
+            <div class="activity-meta">${a.actor_type} · ${a.kind}</div>
+          </div>
+          <div class="activity-meta">${new Date(a.timestamp).toLocaleTimeString()}</div>
+        </div>
+      `).join('');
+    }
+
+    async function refreshActivities() {
+      const res = await fetch(`${API}/activities?limit=200`);
+      const data = await res.json();
+      lastSequence = data.length ? data[data.length - 1].sequence : 0;
+      renderActivities(data, false);
+    }
+
+    function startActivityStream() {
+      const source = new EventSource(`${API}/activities/stream`);
+      source.onmessage = (event) => {
+        if (!event.data) return;
+        const activity = JSON.parse(event.data);
+        if (activity.sequence > lastSequence) {
+          lastSequence = activity.sequence;
+          renderActivities([activity], true);
+        }
+      };
+    }
+
+    document.getElementById('activities-refresh').addEventListener('click', refreshActivities);
+    document.getElementById('activities-replay').addEventListener('click', () => replayActivities());
+
+    async function replayActivities() {
+      const items = Array.from(document.querySelectorAll('.activity-item'));
+      for (const item of items) {
+        item.classList.remove('highlight');
+      }
+      for (const item of items) {
+        item.classList.add('highlight');
+        await new Promise(r => setTimeout(r, 180));
+        item.classList.remove('highlight');
+      }
+    }
+
+    document.getElementById('backend-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const payload = {
+        ai_backend: {
+          kind: document.getElementById('backend-kind').value,
+          model: document.getElementById('backend-model').value,
+          endpoint: document.getElementById('backend-endpoint').value || null,
+          api_key: document.getElementById('backend-key').value || null
+        }
+      };
+      const status = document.getElementById('backend-save-status');
+      status.textContent = 'Saving...';
+      await fetch(`${API}/config`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      status.textContent = 'Saved';
+      await fetchState();
+    });
+
+    document.getElementById('simulation-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const payload = {
+        simulation: {
+          enabled: document.getElementById('simulation-enabled').value === 'true',
+          tick_interval_ms: Number(document.getElementById('simulation-interval').value),
+          intensity: Number(document.getElementById('simulation-intensity').value),
+          max_agents: Number(document.getElementById('simulation-max-agents').value),
+          max_resonators: Number(document.getElementById('simulation-max-resonators').value)
+        }
+      };
+      const status = document.getElementById('simulation-save-status');
+      status.textContent = 'Saving...';
+      await fetch(`${API}/config`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      status.textContent = 'Updated';
+      await fetchState();
+    });
+
+    fetchState();
+    refreshActivities();
+    startActivityStream();
+    setInterval(fetchState, 4000);
+  </script>
+</body>
+</html>

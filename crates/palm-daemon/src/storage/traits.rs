@@ -2,6 +2,7 @@
 
 use crate::error::StorageError;
 use async_trait::async_trait;
+use palm_shared_state::{Activity, PlaygroundConfig, ResonatorStatus};
 use palm_types::{
     AgentSpec, AgentSpecId, Deployment, DeploymentId, InstanceId, PalmEventEnvelope,
     instance::AgentInstance,
@@ -12,7 +13,19 @@ pub type StorageResult<T> = Result<T, StorageError>;
 
 /// Combined storage trait
 #[async_trait]
-pub trait Storage: SpecStorage + DeploymentStorage + InstanceStorage + EventStorage + SnapshotStorage + Send + Sync {}
+pub trait Storage:
+    SpecStorage
+    + DeploymentStorage
+    + InstanceStorage
+    + EventStorage
+    + SnapshotStorage
+    + PlaygroundConfigStorage
+    + ResonatorStorage
+    + ActivityStorage
+    + Send
+    + Sync
+{
+}
 
 /// Storage for agent specifications
 #[async_trait]
@@ -114,4 +127,40 @@ pub trait SnapshotStorage: Send + Sync {
 
     /// Delete a snapshot
     async fn delete_snapshot(&self, snapshot_id: &str) -> StorageResult<bool>;
+}
+
+/// Storage for playground configuration
+#[async_trait]
+pub trait PlaygroundConfigStorage: Send + Sync {
+    /// Get the playground configuration (singleton)
+    async fn get_playground_config(&self) -> StorageResult<Option<PlaygroundConfig>>;
+
+    /// Store the playground configuration
+    async fn upsert_playground_config(&self, config: PlaygroundConfig) -> StorageResult<()>;
+}
+
+/// Storage for resonator state summaries
+#[async_trait]
+pub trait ResonatorStorage: Send + Sync {
+    /// Get a resonator by ID
+    async fn get_resonator(&self, id: &str) -> StorageResult<Option<ResonatorStatus>>;
+
+    /// List all resonators
+    async fn list_resonators(&self) -> StorageResult<Vec<ResonatorStatus>>;
+
+    /// Create or update a resonator
+    async fn upsert_resonator(&self, resonator: ResonatorStatus) -> StorageResult<()>;
+
+    /// Delete a resonator
+    async fn delete_resonator(&self, id: &str) -> StorageResult<bool>;
+}
+
+/// Storage for activity events
+#[async_trait]
+pub trait ActivityStorage: Send + Sync {
+    /// Store an activity entry (returns the stored activity with sequence assigned)
+    async fn store_activity(&self, activity: Activity) -> StorageResult<Activity>;
+
+    /// List recent activities
+    async fn list_activities(&self, limit: usize, after_sequence: Option<u64>) -> StorageResult<Vec<Activity>>;
 }

@@ -94,7 +94,11 @@ pub enum StorageConfig {
 
 impl Default for StorageConfig {
     fn default() -> Self {
-        StorageConfig::Memory
+        StorageConfig::Postgres {
+            url: default_postgres_url(),
+            max_connections: default_pool_size(),
+            connect_timeout_secs: default_connection_timeout(),
+        }
     }
 }
 
@@ -179,6 +183,10 @@ fn default_pool_size() -> u32 {
 
 fn default_connection_timeout() -> u64 {
     5
+}
+
+fn default_postgres_url() -> String {
+    "postgres://postgres:postgres@localhost:5432/maple".to_string()
 }
 
 fn default_reconcile_interval() -> u64 {

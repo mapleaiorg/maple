@@ -1,0 +1,301 @@
+//! Shared state models for the MAPLE playground and PALM services.
+
+#![deny(unsafe_code)]
+
+use chrono::{DateTime, Utc};
+use palm_types::instance::AgentInstance;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use uuid::Uuid;
+
+/// Supported AI backend kinds.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum AiBackendKind {
+    LocalLlama,
+    OpenAI,
+    Anthropic,
+}
+
+/// Configuration for the active AI backend.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AiBackendConfig {
+    pub kind: AiBackendKind,
+    pub model: String,
+    pub endpoint: Option<String>,
+    pub api_key: Option<String>,
+    pub temperature: Option<f32>,
+    pub max_tokens: Option<u32>,
+}
+
+impl AiBackendConfig {
+    pub fn is_configured(&self) -> bool {
+        match self.kind {
+            AiBackendKind::LocalLlama => self.endpoint.is_some(),
+            AiBackendKind::OpenAI | AiBackendKind::Anthropic => self
+                .api_key
+                .as_ref()
+                .map(|k| !k.trim().is_empty())
+                .unwrap_or(false),
+        }
+    }
+
+    pub fn to_public(&self) -> AiBackendPublic {
+        AiBackendPublic {
+            kind: self.kind,
+            model: self.model.clone(),
+            endpoint: self.endpoint.clone(),
+            active: true,
+            configured: self.is_configured(),
+        }
+    }
+}
+
+/// Public AI backend info (no secrets).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AiBackendPublic {
+    pub kind: AiBackendKind,
+    pub model: String,
+    pub endpoint: Option<String>,
+    pub active: bool,
+    pub configured: bool,
+}
+
+/// Simulation configuration.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SimulationConfig {
+    pub enabled: bool,
+    pub tick_interval_ms: u64,
+    pub intensity: f32,
+    pub max_resonators: u32,
+    pub max_agents: u32,
+}
+
+impl Default for SimulationConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            tick_interval_ms: 1200,
+            intensity: 0.75,
+            max_resonators: 64,
+            max_agents: 64,
+        }
+    }
+}
+
+/// Playground configuration stored in persistent state.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PlaygroundConfig {
+    pub ai_backend: AiBackendConfig,
+    pub simulation: SimulationConfig,
+    pub updated_at: DateTime<Utc>,
+}
+
+impl Default for PlaygroundConfig {
+    fn default() -> Self {
+        Self {
+            ai_backend: AiBackendConfig {
+                kind: AiBackendKind::LocalLlama,
+                model: "llama3".to_string(),
+                endpoint: Some("http://127.0.0.1:11434".to_string()),
+                api_key: None,
+                temperature: Some(0.7),
+                max_tokens: Some(2048),
+            },
+            simulation: SimulationConfig::default(),
+            updated_at: Utc::now(),
+        }
+    }
+}
+
+impl PlaygroundConfig {
+    pub fn public_view(&self) -> PlaygroundConfigPublic {
+        PlaygroundConfigPublic {
+            ai_backend: self.ai_backend.to_public(),
+            simulation: self.simulation.clone(),
+            updated_at: self.updated_at,
+        }
+    }
+}
+
+/// Public-facing playground configuration.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PlaygroundConfigPublic {
+    pub ai_backend: AiBackendPublic,
+    pub simulation: SimulationConfig,
+    pub updated_at: DateTime<Utc>,
+}
+
+/// Partial update payload for playground config.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct PlaygroundConfigUpdate {
+    pub ai_backend: Option<AiBackendConfigUpdate>,
+    pub simulation: Option<SimulationConfig>,
+}
+
+/// Partial update payload for AI backend config.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct AiBackendConfigUpdate {
+    pub kind: Option<AiBackendKind>,
+    pub model: Option<String>,
+    pub endpoint: Option<String>,
+    pub api_key: Option<String>,
+    pub temperature: Option<f32>,
+    pub max_tokens: Option<u32>,
+}
+
+impl PlaygroundConfigUpdate {
+    pub fn apply(self, mut current: PlaygroundConfig) -> PlaygroundConfig {
+        if let Some(simulation) = self.simulation {
+            current.simulation = simulation;
+        }
+
+        if let Some(ai_update) = self.ai_backend {
+            if let Some(kind) = ai_update.kind {
+                current.ai_backend.kind = kind;
+            }
+            if let Some(model) = ai_update.model {
+                current.ai_backend.model = model;
+            }
+            if let Some(endpoint) = ai_update.endpoint {
+                current.ai_backend.endpoint = Some(endpoint);
+            }
+            if let Some(api_key) = ai_update.api_key {
+                current.ai_backend.api_key = Some(api_key);
+            }
+            if let Some(temp) = ai_update.temperature {
+                current.ai_backend.temperature = Some(temp);
+            }
+            if let Some(max_tokens) = ai_update.max_tokens {
+                current.ai_backend.max_tokens = Some(max_tokens);
+            }
+        }
+
+        current.updated_at = Utc::now();
+        current
+    }
+}
+
+/// Activity actor type.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ActivityActor {
+    Agent,
+    Human,
+    Resonator,
+    System,
+}
+
+/// Activity log entry.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Activity {
+    pub id: Uuid,
+    pub sequence: u64,
+    pub timestamp: DateTime<Utc>,
+    pub actor_type: ActivityActor,
+    pub actor_id: String,
+    pub kind: String,
+    pub summary: String,
+    pub details: Value,
+}
+
+impl Activity {
+    pub fn new(
+        actor_type: ActivityActor,
+        actor_id: impl Into<String>,
+        kind: impl Into<String>,
+        summary: impl Into<String>,
+        details: Value,
+    ) -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            sequence: 0,
+            timestamp: Utc::now(),
+            actor_type,
+            actor_id: actor_id.into(),
+            kind: kind.into(),
+            summary: summary.into(),
+            details,
+        }
+    }
+}
+
+/// Presence snapshot summary.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PresenceSnapshot {
+    pub discoverability: f64,
+    pub responsiveness: f64,
+    pub stability: f64,
+    pub coupling_readiness: f64,
+    pub silent_mode: bool,
+}
+
+impl Default for PresenceSnapshot {
+    fn default() -> Self {
+        Self {
+            discoverability: 0.5,
+            responsiveness: 0.8,
+            stability: 0.9,
+            coupling_readiness: 0.6,
+            silent_mode: false,
+        }
+    }
+}
+
+/// Coupling snapshot summary.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CouplingSnapshot {
+    pub peer_id: String,
+    pub strength: f64,
+    pub meaning_convergence: f64,
+    pub interaction_count: u64,
+    pub attention_allocated: u64,
+}
+
+/// Resonator status.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ResonatorStatusKind {
+    Idle,
+    Processing,
+    WaitingForApproval,
+    Draining,
+    Offline,
+    Error,
+}
+
+/// Resonator state summary stored for the playground.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ResonatorStatus {
+    pub id: String,
+    pub name: String,
+    pub status: ResonatorStatusKind,
+    pub presence: PresenceSnapshot,
+    pub couplings: Vec<CouplingSnapshot>,
+    pub attention_utilization: f64,
+    pub last_activity: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+/// Aggregate system stats for the playground.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct SystemStats {
+    pub agents_total: usize,
+    pub agents_healthy: usize,
+    pub resonators_total: usize,
+    pub activities_total: usize,
+    pub active_couplings: usize,
+    pub last_activity_at: Option<DateTime<Utc>>,
+}
+
+/// Aggregated playground state for dashboards.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SystemState {
+    pub generated_at: DateTime<Utc>,
+    pub playground: PlaygroundConfigPublic,
+    pub backends: Vec<AiBackendPublic>,
+    pub stats: SystemStats,
+    pub agents: Vec<AgentInstance>,
+    pub resonators: Vec<ResonatorStatus>,
+    pub activities: Vec<Activity>,
+}

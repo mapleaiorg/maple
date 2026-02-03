@@ -3,12 +3,13 @@
 use super::traits::*;
 use crate::error::StorageError;
 use async_trait::async_trait;
+use palm_shared_state::{Activity, PlaygroundConfig, ResonatorStatus};
 use palm_types::{
     AgentSpec, AgentSpecId, Deployment, DeploymentId, InstanceId, PalmEventEnvelope,
     instance::{AgentInstance, HealthStatus},
 };
 use std::collections::HashMap;
-use std::sync::Arc;
+use std::sync::{Arc, atomic::{AtomicU64, Ordering}};
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
@@ -20,6 +21,10 @@ pub struct InMemoryStorage {
     instances: Arc<RwLock<HashMap<InstanceId, AgentInstance>>>,
     events: Arc<RwLock<Vec<PalmEventEnvelope>>>,
     snapshots: Arc<RwLock<HashMap<String, SnapshotInfo>>>,
+    playground_config: Arc<RwLock<Option<PlaygroundConfig>>>,
+    resonators: Arc<RwLock<HashMap<String, ResonatorStatus>>>,
+    activities: Arc<RwLock<Vec<Activity>>>,
+    activity_sequence: Arc<AtomicU64>,
 }
 
 impl Default for InMemoryStorage {
@@ -37,6 +42,10 @@ impl InMemoryStorage {
             instances: Arc::new(RwLock::new(HashMap::new())),
             events: Arc::new(RwLock::new(Vec::new())),
             snapshots: Arc::new(RwLock::new(HashMap::new())),
+            playground_config: Arc::new(RwLock::new(None)),
+            resonators: Arc::new(RwLock::new(HashMap::new())),
+            activities: Arc::new(RwLock::new(Vec::new())),
+            activity_sequence: Arc::new(AtomicU64::new(0)),
         }
     }
 }
@@ -250,6 +259,89 @@ impl SnapshotStorage for InMemoryStorage {
 }
 
 impl Storage for InMemoryStorage {}
+
+#[async_trait]
+impl PlaygroundConfigStorage for InMemoryStorage {
+    async fn get_playground_config(&self) -> StorageResult<Option<PlaygroundConfig>> {
+        let config = self.playground_config.read().await;
+        Ok(config.clone())
+    }
+
+    async fn upsert_playground_config(&self, config: PlaygroundConfig) -> StorageResult<()> {
+        let mut current = self.playground_config.write().await;
+        *current = Some(config);
+        Ok(())
+    }
+}
+
+#[async_trait]
+impl ResonatorStorage for InMemoryStorage {
+    async fn get_resonator(&self, id: &str) -> StorageResult<Option<ResonatorStatus>> {
+        let resonators = self.resonators.read().await;
+        Ok(resonators.get(id).cloned())
+    }
+
+    async fn list_resonators(&self) -> StorageResult<Vec<ResonatorStatus>> {
+        let resonators = self.resonators.read().await;
+        Ok(resonators.values().cloned().collect())
+    }
+
+    async fn upsert_resonator(&self, resonator: ResonatorStatus) -> StorageResult<()> {
+        let mut resonators = self.resonators.write().await;
+        resonators.insert(resonator.id.clone(), resonator);
+        Ok(())
+    }
+
+    async fn delete_resonator(&self, id: &str) -> StorageResult<bool> {
+        let mut resonators = self.resonators.write().await;
+        Ok(resonators.remove(id).is_some())
+    }
+}
+
+#[async_trait]
+impl ActivityStorage for InMemoryStorage {
+    async fn store_activity(&self, mut activity: Activity) -> StorageResult<Activity> {
+        if activity.sequence == 0 {
+            let seq = self.activity_sequence.fetch_add(1, Ordering::SeqCst) + 1;
+            activity.sequence = seq;
+        }
+
+        let mut activities = self.activities.write().await;
+        activities.push(activity.clone());
+
+        // Keep only last 50k activities in memory
+        if activities.len() > 50_000 {
+            activities.drain(0..5_000);
+        }
+
+        Ok(activity)
+    }
+
+    async fn list_activities(
+        &self,
+        limit: usize,
+        after_sequence: Option<u64>,
+    ) -> StorageResult<Vec<Activity>> {
+        let activities = self.activities.read().await;
+
+        let mut filtered: Vec<Activity> = match after_sequence {
+            Some(after) => activities
+                .iter()
+                .filter(|a| a.sequence > after)
+                .cloned()
+                .collect(),
+            None => activities.iter().cloned().collect(),
+        };
+
+        filtered.sort_by_key(|a| a.sequence);
+
+        if filtered.len() > limit {
+            filtered = filtered[filtered.len().saturating_sub(limit)..].to_vec();
+        }
+
+        Ok(filtered)
+    }
+}
 
 #[cfg(test)]
 mod tests {

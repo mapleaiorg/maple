@@ -12,6 +12,7 @@ path = "src/main.rs"
 
 [dependencies]
 palm-types = { path = "../palm-types" }
+palm-shared-state = { path = "../palm-shared-state" }
 
 clap = { version = "4", features = ["derive", "env"] }
 tokio = { version = "1", features = ["full"] }

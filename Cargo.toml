@@ -56,6 +56,7 @@ members = [
     "crates/palm-state",
     "crates/palm-control",
     "crates/palm-policy",
+    "crates/palm-shared-state",
     "crates/palm-cli",
     "crates/palm-daemon",
     "crates/palm-observability",
@@ -112,7 +113,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # Database
-sqlx = { version = "0.7", features = ["runtime-tokio", "postgres", "sqlite", "chrono", "uuid"] }
+sqlx = { version = "0.7", features = ["runtime-tokio", "postgres", "sqlite", "chrono", "uuid", "json"] }
 
 # Networking
 axum = "0.7"
@@ -172,6 +173,7 @@ palm-health = { path = "crates/palm-health" }
 palm-state = { path = "crates/palm-state" }
 palm-control = { path = "crates/palm-control" }
 palm-policy = { path = "crates/palm-policy" }
+palm-shared-state = { path = "crates/palm-shared-state" }
 palm-cli = { path = "crates/palm-cli" }
 palm-daemon = { path = "crates/palm-daemon" }
 palm-observability = { path = "crates/palm-observability" }

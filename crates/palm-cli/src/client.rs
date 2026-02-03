@@ -1,6 +1,10 @@
 //! HTTP client for PALM daemon
 
 use crate::error::{CliError, CliResult};
+use palm_shared_state::{
+    Activity, AiBackendPublic, PlaygroundConfigPublic, PlaygroundConfigUpdate, ResonatorStatus,
+    SystemState,
+};
 use palm_types::*;
 use reqwest::{Client, StatusCode};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
@@ -257,6 +261,57 @@ impl PalmClient {
         });
 
         Ok(stream)
+    }
+
+    // ========== Playground API ==========
+
+    /// Get aggregated playground state
+    pub async fn get_playground_state(&self) -> CliResult<SystemState> {
+        self.get("/api/v1/playground/state").await
+    }
+
+    /// Get playground configuration (public)
+    pub async fn get_playground_config(&self) -> CliResult<PlaygroundConfigPublic> {
+        self.get("/api/v1/playground/config").await
+    }
+
+    /// Update playground configuration
+    pub async fn update_playground_config(
+        &self,
+        update: &PlaygroundConfigUpdate,
+    ) -> CliResult<PlaygroundConfigPublic> {
+        self.put("/api/v1/playground/config", update).await
+    }
+
+    /// List available AI backends
+    pub async fn list_playground_backends(&self) -> CliResult<Vec<AiBackendPublic>> {
+        self.get("/api/v1/playground/backends").await
+    }
+
+    /// List resonators
+    pub async fn list_playground_resonators(&self) -> CliResult<Vec<ResonatorStatus>> {
+        self.get("/api/v1/playground/resonators").await
+    }
+
+    /// List agents
+    pub async fn list_playground_agents(&self) -> CliResult<Vec<AgentInstance>> {
+        self.get("/api/v1/playground/agents").await
+    }
+
+    /// List activities
+    pub async fn list_playground_activities(
+        &self,
+        limit: usize,
+        after_sequence: Option<u64>,
+    ) -> CliResult<Vec<Activity>> {
+        let url = match after_sequence {
+            Some(after) => format!(
+                "/api/v1/playground/activities?limit={}&after_sequence={}",
+                limit, after
+            ),
+            None => format!("/api/v1/playground/activities?limit={}", limit),
+        };
+        self.get(&url).await
     }
 
     // ========== Internal HTTP helpers ==========

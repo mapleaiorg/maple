@@ -5,12 +5,12 @@
 **Coupling** is a stateful relationship between two Resonators. It is NOT a message channel or RPC endpoint - it's a persistent, evolving connection that has strength, scope, persistence, and attention cost.
 
 ```
-Traditional:  Agent A --[message]--> Agent B
+Traditional:    Agent A -----[message]----> Agent B
 MAPLE:        Resonator A <==[coupling]==> Resonator B
-                              ↑
-                         [strength: 0.7]
-                         [attention: 150.0]
-                         [meaning: 0.85]
+                                 ↑
+                           [strength: 0.7]
+                           [attention: 150.0]
+                           [meaning: 0.85]
 ```
 
 ## Core Properties
