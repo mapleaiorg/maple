@@ -10,8 +10,8 @@ eve-ingestion = { workspace = true }
 eve-evaluation = { workspace = true }
 eve-artifacts = { workspace = true }
 mapleverse-types = { workspace = true }
-rcl-types = { workspace = true }
-rcl-commitment = { workspace = true }
+rcf-types = { workspace = true }
+rcf-commitment = { workspace = true }
 serde = { workspace = true }
 chrono = { workspace = true }
 uuid = { workspace = true }

@@ -201,7 +201,7 @@ maple/
 │   ├── maple-runtime/       # Core runtime
 │   ├── resonator-types/     # Resonator types
 │   ├── resonator-runtime/   # Resonator execution
-│   ├── rcl-types/           # RCL type system
+│   ├── rcf-types/           # RCF type system
 │   ├── mrp-types/           # MRP types
 │   ├── aas-types/           # AAS types
 │   └── ...

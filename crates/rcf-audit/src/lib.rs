@@ -1,5 +1,5 @@
 #![deny(unsafe_code)]
-use rcl_types::IdentityRef;
+use rcf_types::IdentityRef;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

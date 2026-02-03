@@ -9,8 +9,8 @@ mapleverse-types = { workspace = true }
 mapleverse-executor = { workspace = true }
 mapleverse-connectors = { workspace = true }
 mapleverse-evidence = { workspace = true }
-rcl-types = { workspace = true }
-rcl-commitment = { workspace = true }
+rcf-types = { workspace = true }
+rcf-commitment = { workspace = true }
 aas-types = { workspace = true }
 serde = { workspace = true }
 chrono = { workspace = true }

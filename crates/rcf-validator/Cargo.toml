@@ -1,13 +1,11 @@
 [package]
-name = "mrp-types"
+name = "rcf-validator"
 version.workspace = true
 edition.workspace = true
-description = "MRP Types"
+description = "RCF Validator"
 [dependencies]
 rcf-types = { workspace = true }
+rcf-meaning = { workspace = true }
+rcf-intent = { workspace = true }
 rcf-commitment = { workspace = true }
-serde = { workspace = true }
-chrono = { workspace = true }
-uuid = { workspace = true }
-blake3 = { workspace = true }
 thiserror = { workspace = true }

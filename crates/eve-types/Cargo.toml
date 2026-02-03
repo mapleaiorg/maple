@@ -6,8 +6,8 @@ description = "EVE Types - Epistemic Validation Engine types"
 
 [dependencies]
 mapleverse-types = { workspace = true }
-rcl-types = { workspace = true }
-rcl-commitment = { workspace = true }
+rcf-types = { workspace = true }
+rcf-commitment = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 chrono = { workspace = true }

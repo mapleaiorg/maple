@@ -9,7 +9,7 @@ use eve_types::{
     ArtifactContent, ArtifactId, ArtifactType, ConfidenceScore, ConsequenceRecord,
     EveInsight, InsightType, LearningArtifact,
 };
-use rcl_types::EffectDomain;
+use rcf_types::EffectDomain;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::RwLock;
@@ -269,7 +269,7 @@ mod tests {
     use super::*;
     use eve_types::CommitmentCharacteristics;
     use mapleverse_types::{ConsequenceId, ReversibilityStatus};
-    use rcl_commitment::CommitmentId;
+    use rcf_commitment::CommitmentId;
 
     fn create_test_record(domain: EffectDomain) -> ConsequenceRecord {
         ConsequenceRecord {

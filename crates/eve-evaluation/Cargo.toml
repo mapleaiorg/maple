@@ -7,8 +7,8 @@ description = "EVE Evaluation - Pattern analysis and learning"
 [dependencies]
 eve-types = { workspace = true }
 mapleverse-types = { workspace = true }
-rcl-types = { workspace = true }
-rcl-commitment = { workspace = true }
+rcf-types = { workspace = true }
+rcf-commitment = { workspace = true }
 serde = { workspace = true }
 chrono = { workspace = true }
 uuid = { workspace = true }

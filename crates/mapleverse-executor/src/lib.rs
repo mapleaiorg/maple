@@ -10,8 +10,8 @@ use mapleverse_types::{
     ExecutionParameters, ExecutionRequest, ExecutionRequestId, ExecutionResult, ExecutionStatus,
     ReversibilityStatus,
 };
-use rcl_commitment::{RclCommitment, Reversibility};
-use rcl_types::EffectDomain;
+use rcf_commitment::{RcfCommitment, Reversibility};
+use rcf_types::EffectDomain;
 use std::collections::HashMap;
 use std::sync::RwLock;
 use thiserror::Error;
@@ -147,7 +147,7 @@ impl Executor {
     }
 
     /// Rollback an execution
-    fn rollback(&self, commitment: &RclCommitment) -> Result<(), ExecutorError> {
+    fn rollback(&self, commitment: &RcfCommitment) -> Result<(), ExecutorError> {
         let handlers = self.handlers.read().map_err(|_| ExecutorError::LockError)?;
 
         if let Some(handler) = handlers.get(&commitment.effect_domain) {
@@ -168,11 +168,11 @@ impl Default for Executor {
 pub trait ExecutionHandler {
     fn execute(
         &self,
-        commitment: &RclCommitment,
+        commitment: &RcfCommitment,
         params: &ExecutionParameters,
     ) -> Result<Consequence, ExecutorError>;
 
-    fn rollback(&self, commitment: &RclCommitment) -> Result<(), ExecutorError>;
+    fn rollback(&self, commitment: &RcfCommitment) -> Result<(), ExecutorError>;
 
     fn can_handle(&self, domain: &EffectDomain) -> bool;
 }
@@ -195,7 +195,7 @@ impl MockHandler {
 impl ExecutionHandler for MockHandler {
     fn execute(
         &self,
-        commitment: &RclCommitment,
+        commitment: &RcfCommitment,
         _params: &ExecutionParameters,
     ) -> Result<Consequence, ExecutorError> {
         if self.should_fail {
@@ -222,7 +222,7 @@ impl ExecutionHandler for MockHandler {
         })
     }
 
-    fn rollback(&self, _commitment: &RclCommitment) -> Result<(), ExecutorError> {
+    fn rollback(&self, _commitment: &RcfCommitment) -> Result<(), ExecutorError> {
         Ok(())
     }
 
@@ -256,8 +256,8 @@ pub enum ExecutorError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rcl_commitment::CommitmentBuilder;
-    use rcl_types::{IdentityRef, ScopeConstraint};
+    use rcf_commitment::CommitmentBuilder;
+    use rcf_types::{IdentityRef, ScopeConstraint};
 
     #[test]
     fn test_executor() {

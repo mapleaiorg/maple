@@ -6,7 +6,7 @@
 #![deny(unsafe_code)]
 
 use aas_types::AgentId;
-use rcl_types::{ContinuityRef, IdentityRef};
+use rcf_types::{ContinuityRef, IdentityRef};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::RwLock;

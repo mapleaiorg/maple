@@ -6,8 +6,8 @@
 #![deny(unsafe_code)]
 
 use mapleverse_types::Consequence;
-use rcl_commitment::CommitmentId;
-use rcl_types::EffectDomain;
+use rcf_commitment::CommitmentId;
+use rcf_types::EffectDomain;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 

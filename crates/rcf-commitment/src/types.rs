@@ -1,8 +1,8 @@
 //! Commitment Type Definitions
 //!
-//! Supporting types for RCL-Commitment artifacts.
+//! Supporting types for RCF-Commitment artifacts.
 
-use rcl_types::{IdentityRef, TemporalAnchor, ResonanceType};
+use rcf_types::{IdentityRef, TemporalAnchor, ResonanceType};
 use serde::{Deserialize, Serialize};
 
 /// Intended outcome of a commitment
@@ -439,8 +439,8 @@ pub enum CommitmentValidationError {
     MissingRequiredField(String),
 }
 
-impl From<CommitmentValidationError> for rcl_types::RclError {
+impl From<CommitmentValidationError> for rcf_types::RcfError {
     fn from(err: CommitmentValidationError) -> Self {
-        rcl_types::RclError::ValidationError(err.to_string())
+        rcf_types::RcfError::ValidationError(err.to_string())
     }
 }

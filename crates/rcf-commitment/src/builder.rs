@@ -1,15 +1,15 @@
 //! Commitment Builder
 //!
-//! Builder pattern for constructing valid RCL-Commitment artifacts.
+//! Builder pattern for constructing valid RCF-Commitment artifacts.
 
 use crate::types::*;
-use crate::{CommitmentId, RclCommitment};
-use rcl_types::{
+use crate::{CommitmentId, RcfCommitment};
+use rcf_types::{
     CapabilityRef, ContinuityRef, EffectDomain, IdentityRef, ResonanceType, ResourceLimits,
     TemporalAnchor,
 };
 
-/// Builder for RclCommitment
+/// Builder for RcfCommitment
 ///
 /// Ensures all required fields are provided before building.
 #[derive(Default)]
@@ -148,7 +148,7 @@ impl CommitmentBuilder {
     /// Build the commitment
     ///
     /// Validates all required fields are present and returns the commitment.
-    pub fn build(self) -> Result<RclCommitment, CommitmentBuildError> {
+    pub fn build(self) -> Result<RcfCommitment, CommitmentBuildError> {
         // Validate and extract all required fields
 
         let declaring_identity = self
@@ -196,7 +196,7 @@ impl CommitmentBuilder {
         let id = CommitmentId::generate();
 
         // Build the commitment (without hash first)
-        let mut commitment = RclCommitment {
+        let mut commitment = RcfCommitment {
             id,
             resonance_type: ResonanceType::Commitment,
             declaring_identity,
@@ -217,7 +217,7 @@ impl CommitmentBuilder {
             risk_classification,
             policy_tags: self.policy_tags,
             declaration_hash: [0u8; 32], // Placeholder
-            schema_version: rcl_types::SCHEMA_VERSION.to_string(),
+            schema_version: rcf_types::SCHEMA_VERSION.to_string(),
         };
 
         // Compute and set the declaration hash
@@ -271,16 +271,16 @@ pub enum CommitmentBuildError {
     InsufficientIntentConfidence { confidence: f64, required: f64 },
 }
 
-impl From<CommitmentBuildError> for rcl_types::RclError {
+impl From<CommitmentBuildError> for rcf_types::RcfError {
     fn from(err: CommitmentBuildError) -> Self {
-        rcl_types::RclError::ValidationError(err.to_string())
+        rcf_types::RcfError::ValidationError(err.to_string())
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rcl_types::{ScopeConstraint, TemporalValidity};
+    use rcf_types::{ScopeConstraint, TemporalValidity};
 
     fn create_test_identity() -> IdentityRef {
         IdentityRef::new("test-agent")

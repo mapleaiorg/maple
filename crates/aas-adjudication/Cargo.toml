@@ -6,8 +6,8 @@ description = "AAS Adjudication - Commitment evaluation and decision making"
 
 [dependencies]
 aas-types = { workspace = true }
-rcl-types = { workspace = true }
-rcl-commitment = { workspace = true }
+rcf-types = { workspace = true }
+rcf-commitment = { workspace = true }
 serde = { workspace = true }
 chrono = { workspace = true }
 uuid = { workspace = true }

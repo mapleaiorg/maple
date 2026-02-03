@@ -8,8 +8,8 @@ version = "0.1.0"
 dependencies = [
  "aas-types",
  "chrono",
- "rcl-commitment",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-types",
  "serde",
  "thiserror",
  "uuid",
@@ -21,8 +21,8 @@ version = "0.1.0"
 dependencies = [
  "aas-types",
  "chrono",
- "rcl-commitment",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-types",
  "serde",
  "thiserror",
  "uuid",
@@ -34,8 +34,8 @@ version = "0.1.0"
 dependencies = [
  "aas-types",
  "chrono",
- "rcl-commitment",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-types",
  "serde",
  "thiserror",
  "uuid",
@@ -47,8 +47,8 @@ version = "0.1.0"
 dependencies = [
  "aas-types",
  "chrono",
- "rcl-commitment",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-types",
  "serde",
  "thiserror",
  "uuid",
@@ -60,8 +60,8 @@ version = "0.1.0"
 dependencies = [
  "aas-types",
  "chrono",
- "rcl-commitment",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-types",
  "serde",
  "thiserror",
  "uuid",
@@ -78,8 +78,8 @@ dependencies = [
  "aas-policy",
  "aas-types",
  "chrono",
- "rcl-commitment",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-types",
  "serde",
  "thiserror",
  "uuid",
@@ -90,8 +90,8 @@ name = "aas-types"
 version = "0.1.0"
 dependencies = [
  "chrono",
- "rcl-commitment",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-types",
  "serde",
  "thiserror",
  "uuid",
@@ -920,8 +920,8 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "eve-types",
- "rcl-commitment",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-types",
  "serde",
  "thiserror",
  "uuid",
@@ -934,8 +934,8 @@ dependencies = [
  "chrono",
  "eve-types",
  "mapleverse-types",
- "rcl-commitment",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-types",
  "serde",
  "thiserror",
  "uuid",
@@ -948,8 +948,8 @@ dependencies = [
  "chrono",
  "eve-types",
  "mapleverse-types",
- "rcl-commitment",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-types",
  "serde",
  "thiserror",
  "uuid",
@@ -965,8 +965,8 @@ dependencies = [
  "eve-ingestion",
  "eve-types",
  "mapleverse-types",
- "rcl-commitment",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-types",
  "serde",
  "thiserror",
  "uuid",
@@ -978,8 +978,8 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "mapleverse-types",
- "rcl-commitment",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-types",
  "serde",
  "serde_json",
  "thiserror",
@@ -1749,11 +1749,11 @@ version = "0.1.0"
 dependencies = [
  "aas-types",
  "mrp-types",
- "rcl-commitment",
- "rcl-intent",
- "rcl-meaning",
- "rcl-types",
- "rcl-validator",
+ "rcf-commitment",
+ "rcf-intent",
+ "rcf-meaning",
+ "rcf-types",
+ "rcf-validator",
 ]
 
 [[package]]
@@ -1785,8 +1785,8 @@ dependencies = [
  "chrono",
  "mapleverse-executor",
  "mapleverse-types",
- "rcl-commitment",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-types",
  "serde",
  "thiserror",
  "uuid",
@@ -1798,8 +1798,8 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "mapleverse-types",
- "rcl-commitment",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-types",
  "serde",
  "thiserror",
  "uuid",
@@ -1812,8 +1812,8 @@ dependencies = [
  "aas-types",
  "chrono",
  "mapleverse-types",
- "rcl-commitment",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-types",
  "serde",
  "thiserror",
  "uuid",
@@ -1829,8 +1829,8 @@ dependencies = [
  "mapleverse-evidence",
  "mapleverse-executor",
  "mapleverse-types",
- "rcl-commitment",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-types",
  "serde",
  "thiserror",
  "uuid",
@@ -1843,8 +1843,8 @@ dependencies = [
  "aas-types",
  "chrono",
  "mrp-types",
- "rcl-commitment",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-types",
  "serde",
  "thiserror",
  "uuid",
@@ -1931,7 +1931,7 @@ name = "mrp-router"
 version = "0.1.0"
 dependencies = [
  "mrp-types",
- "rcl-types",
+ "rcf-types",
  "thiserror",
 ]
 
@@ -1940,7 +1940,7 @@ name = "mrp-service"
 version = "0.1.0"
 dependencies = [
  "mrp-types",
- "rcl-types",
+ "rcf-types",
  "thiserror",
 ]
 
@@ -1949,7 +1949,7 @@ name = "mrp-transport"
 version = "0.1.0"
 dependencies = [
  "mrp-types",
- "rcl-types",
+ "rcf-types",
  "thiserror",
 ]
 
@@ -1959,8 +1959,8 @@ version = "0.1.0"
 dependencies = [
  "blake3",
  "chrono",
- "rcl-commitment",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-types",
  "serde",
  "thiserror",
  "uuid",
@@ -2904,67 +2904,67 @@ dependencies = [
 ]
 
 [[package]]
-name = "rcl-audit"
+name = "rcf-audit"
 version = "0.1.0"
 dependencies = [
  "chrono",
- "rcl-commitment",
- "rcl-intent",
- "rcl-meaning",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-intent",
+ "rcf-meaning",
+ "rcf-types",
  "serde",
 ]
 
 [[package]]
-name = "rcl-commitment"
+name = "rcf-commitment"
 version = "0.1.0"
 dependencies = [
  "blake3",
  "chrono",
  "getrandom 0.2.17",
- "rcl-intent",
- "rcl-types",
+ "rcf-intent",
+ "rcf-types",
  "serde",
  "thiserror",
  "uuid",
 ]
 
 [[package]]
-name = "rcl-compiler"
+name = "rcf-compiler"
 version = "0.1.0"
 dependencies = [
- "rcl-commitment",
- "rcl-types",
- "rcl-validator",
+ "rcf-commitment",
+ "rcf-types",
+ "rcf-validator",
  "serde",
  "thiserror",
 ]
 
 [[package]]
-name = "rcl-intent"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "rcl-meaning",
- "rcl-types",
- "serde",
- "thiserror",
- "uuid",
-]
-
-[[package]]
-name = "rcl-meaning"
+name = "rcf-intent"
 version = "0.1.0"
 dependencies = [
  "chrono",
- "rcl-types",
+ "rcf-meaning",
+ "rcf-types",
  "serde",
  "thiserror",
  "uuid",
 ]
 
 [[package]]
-name = "rcl-types"
+name = "rcf-meaning"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "rcf-types",
+ "serde",
+ "thiserror",
+ "uuid",
+]
+
+[[package]]
+name = "rcf-types"
 version = "0.1.0"
 dependencies = [
  "blake3",
@@ -2980,13 +2980,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "rcl-validator"
+name = "rcf-validator"
 version = "0.1.0"
 dependencies = [
- "rcl-commitment",
- "rcl-intent",
- "rcl-meaning",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-intent",
+ "rcf-meaning",
+ "rcf-types",
  "thiserror",
 ]
 
@@ -3097,10 +3097,10 @@ dependencies = [
  "aas-types",
  "chrono",
  "mrp-types",
- "rcl-commitment",
- "rcl-intent",
- "rcl-meaning",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-intent",
+ "rcf-meaning",
+ "rcf-types",
  "serde",
  "thiserror",
 ]
@@ -3112,10 +3112,10 @@ dependencies = [
  "aas-types",
  "chrono",
  "mrp-types",
- "rcl-commitment",
- "rcl-intent",
- "rcl-meaning",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-intent",
+ "rcf-meaning",
+ "rcf-types",
  "serde",
  "thiserror",
 ]
@@ -3127,10 +3127,10 @@ dependencies = [
  "aas-types",
  "chrono",
  "mrp-types",
- "rcl-commitment",
- "rcl-intent",
- "rcl-meaning",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-intent",
+ "rcf-meaning",
+ "rcf-types",
  "serde",
  "thiserror",
 ]
@@ -3142,10 +3142,10 @@ dependencies = [
  "aas-types",
  "chrono",
  "mrp-types",
- "rcl-commitment",
- "rcl-intent",
- "rcl-meaning",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-intent",
+ "rcf-meaning",
+ "rcf-types",
  "serde",
  "thiserror",
 ]
@@ -3157,10 +3157,10 @@ dependencies = [
  "aas-types",
  "chrono",
  "mrp-types",
- "rcl-commitment",
- "rcl-intent",
- "rcl-meaning",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-intent",
+ "rcf-meaning",
+ "rcf-types",
  "serde",
  "thiserror",
 ]
@@ -3172,10 +3172,10 @@ dependencies = [
  "aas-types",
  "chrono",
  "mrp-types",
- "rcl-commitment",
- "rcl-intent",
- "rcl-meaning",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-intent",
+ "rcf-meaning",
+ "rcf-types",
  "serde",
  "thiserror",
 ]
@@ -3187,10 +3187,10 @@ dependencies = [
  "aas-types",
  "chrono",
  "mrp-types",
- "rcl-commitment",
- "rcl-intent",
- "rcl-meaning",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-intent",
+ "rcf-meaning",
+ "rcf-types",
  "serde",
  "thiserror",
 ]
@@ -3200,8 +3200,8 @@ name = "resonator-types"
 version = "0.1.0"
 dependencies = [
  "chrono",
- "rcl-commitment",
- "rcl-types",
+ "rcf-commitment",
+ "rcf-types",
  "serde",
  "thiserror",
  "uuid",

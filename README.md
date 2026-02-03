@@ -145,15 +145,15 @@ The foundational Resonance Runtime powering all MAPLE platforms.
 - High-level API for applications
 - Simplified Resonator interaction
 
-### 📜 Resonance Contract Language (RCL)
+### 📜 Resonance Commitment Format (RCF)
 
-- **[rcl-types](crates/rcl-types/)** - RCL type system
-- **[rcl-meaning](crates/rcl-meaning/)** - Meaning expression
-- **[rcl-intent](crates/rcl-intent/)** - Intent declaration
-- **[rcl-commitment](crates/rcl-commitment/)** - Commitment specification
-- **[rcl-validator](crates/rcl-validator/)** - Contract validation
-- **[rcl-compiler](crates/rcl-compiler/)** - RCL compiler
-- **[rcl-audit](crates/rcl-audit/)** - Audit trail generation
+- **[rcf-types](crates/rcf-types/)** - RCF type system
+- **[rcf-meaning](crates/rcf-meaning/)** - Meaning expression
+- **[rcf-intent](crates/rcf-intent/)** - Intent declaration
+- **[rcf-commitment](crates/rcf-commitment/)** - Commitment specification
+- **[rcf-validator](crates/rcf-validator/)** - Contract validation
+- **[rcf-compiler](crates/rcf-compiler/)** - RCF compiler
+- **[rcf-audit](crates/rcf-audit/)** - Audit trail generation
 
 ### 🌐 MAPLE Routing Protocol (MRP)
 

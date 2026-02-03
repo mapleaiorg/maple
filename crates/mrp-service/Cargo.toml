@@ -7,4 +7,4 @@ description = "mrp service"
 [dependencies]
 thiserror = { workspace = true }
 mrp-types = { workspace = true }
-rcl-types = { workspace = true }
+rcf-types = { workspace = true }

@@ -6,7 +6,7 @@
 #![deny(unsafe_code)]
 
 use aas_types::{AgentId, Capability, CapabilityStatus};
-use rcl_types::{EffectDomain, ScopeConstraint, TemporalValidity};
+use rcf_types::{EffectDomain, ScopeConstraint, TemporalValidity};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::RwLock;

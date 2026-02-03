@@ -6,10 +6,10 @@ description = "resonator client"
 
 [dependencies]
 thiserror = { workspace = true }
-rcl-types = { workspace = true }
-rcl-meaning = { workspace = true }
-rcl-intent = { workspace = true }
-rcl-commitment = { workspace = true }
+rcf-types = { workspace = true }
+rcf-meaning = { workspace = true }
+rcf-intent = { workspace = true }
+rcf-commitment = { workspace = true }
 mrp-types = { workspace = true }
 aas-types = { workspace = true }
 serde = { workspace = true }

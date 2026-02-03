@@ -1,6 +1,6 @@
 #![deny(unsafe_code)]
 use mrp_types::{Destination, MrpEnvelope};
-use rcl_types::ResonanceType;
+use rcf_types::ResonanceType;
 use std::collections::HashMap;
 
 pub struct MrpRouter { defaults: HashMap<ResonanceType, Destination> }

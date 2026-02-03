@@ -9,8 +9,8 @@ use mapleverse_executor::{ExecutionHandler, ExecutorError};
 use mapleverse_types::{
     Consequence, ConsequenceId, Evidence, EvidenceType, ExecutionParameters, ReversibilityStatus,
 };
-use rcl_commitment::{RclCommitment, Reversibility};
-use rcl_types::EffectDomain;
+use rcf_commitment::{RcfCommitment, Reversibility};
+use rcf_types::EffectDomain;
 use std::collections::HashMap;
 use thiserror::Error;
 
@@ -45,9 +45,9 @@ impl Default for ConnectorRegistry {
 /// Trait for domain connectors
 pub trait Connector {
     fn supported_domain(&self) -> EffectDomain;
-    fn execute(&self, commitment: &RclCommitment) -> Result<Consequence, ConnectorError>;
-    fn rollback(&self, commitment: &RclCommitment) -> Result<(), ConnectorError>;
-    fn validate(&self, commitment: &RclCommitment) -> Result<(), ConnectorError>;
+    fn execute(&self, commitment: &RcfCommitment) -> Result<Consequence, ConnectorError>;
+    fn rollback(&self, commitment: &RcfCommitment) -> Result<(), ConnectorError>;
+    fn validate(&self, commitment: &RcfCommitment) -> Result<(), ConnectorError>;
 }
 
 /// Computation domain connector (no-op / sandboxed)
@@ -58,7 +58,7 @@ impl Connector for ComputationConnector {
         EffectDomain::Computation
     }
 
-    fn execute(&self, commitment: &RclCommitment) -> Result<Consequence, ConnectorError> {
+    fn execute(&self, commitment: &RcfCommitment) -> Result<Consequence, ConnectorError> {
         // Simulated computation execution
         Ok(Consequence {
             consequence_id: ConsequenceId::generate(),
@@ -79,12 +79,12 @@ impl Connector for ComputationConnector {
         })
     }
 
-    fn rollback(&self, _commitment: &RclCommitment) -> Result<(), ConnectorError> {
+    fn rollback(&self, _commitment: &RcfCommitment) -> Result<(), ConnectorError> {
         // Computation cannot be rolled back
         Err(ConnectorError::RollbackNotSupported)
     }
 
-    fn validate(&self, _commitment: &RclCommitment) -> Result<(), ConnectorError> {
+    fn validate(&self, _commitment: &RcfCommitment) -> Result<(), ConnectorError> {
         Ok(())
     }
 }
@@ -92,13 +92,13 @@ impl Connector for ComputationConnector {
 impl ExecutionHandler for ComputationConnector {
     fn execute(
         &self,
-        commitment: &RclCommitment,
+        commitment: &RcfCommitment,
         _params: &ExecutionParameters,
     ) -> Result<Consequence, ExecutorError> {
         Connector::execute(self, commitment).map_err(|e| ExecutorError::ExecutionFailed(e.to_string()))
     }
 
-    fn rollback(&self, commitment: &RclCommitment) -> Result<(), ExecutorError> {
+    fn rollback(&self, commitment: &RcfCommitment) -> Result<(), ExecutorError> {
         Connector::rollback(self, commitment).map_err(|e| ExecutorError::RollbackFailed(e.to_string()))
     }
 
@@ -115,7 +115,7 @@ impl Connector for DataConnector {
         EffectDomain::Data
     }
 
-    fn execute(&self, commitment: &RclCommitment) -> Result<Consequence, ConnectorError> {
+    fn execute(&self, commitment: &RcfCommitment) -> Result<Consequence, ConnectorError> {
         Ok(Consequence {
             consequence_id: ConsequenceId::generate(),
             commitment_id: commitment.commitment_id.clone(),
@@ -136,12 +136,12 @@ impl Connector for DataConnector {
         })
     }
 
-    fn rollback(&self, _commitment: &RclCommitment) -> Result<(), ConnectorError> {
+    fn rollback(&self, _commitment: &RcfCommitment) -> Result<(), ConnectorError> {
         // Data operations can potentially be rolled back
         Ok(())
     }
 
-    fn validate(&self, _commitment: &RclCommitment) -> Result<(), ConnectorError> {
+    fn validate(&self, _commitment: &RcfCommitment) -> Result<(), ConnectorError> {
         Ok(())
     }
 }
@@ -149,13 +149,13 @@ impl Connector for DataConnector {
 impl ExecutionHandler for DataConnector {
     fn execute(
         &self,
-        commitment: &RclCommitment,
+        commitment: &RcfCommitment,
         _params: &ExecutionParameters,
     ) -> Result<Consequence, ExecutorError> {
         Connector::execute(self, commitment).map_err(|e| ExecutorError::ExecutionFailed(e.to_string()))
     }
 
-    fn rollback(&self, commitment: &RclCommitment) -> Result<(), ExecutorError> {
+    fn rollback(&self, commitment: &RcfCommitment) -> Result<(), ExecutorError> {
         Connector::rollback(self, commitment).map_err(|e| ExecutorError::RollbackFailed(e.to_string()))
     }
 
@@ -172,7 +172,7 @@ impl Connector for CommunicationConnector {
         EffectDomain::Communication
     }
 
-    fn execute(&self, commitment: &RclCommitment) -> Result<Consequence, ConnectorError> {
+    fn execute(&self, commitment: &RcfCommitment) -> Result<Consequence, ConnectorError> {
         Ok(Consequence {
             consequence_id: ConsequenceId::generate(),
             commitment_id: commitment.commitment_id.clone(),
@@ -189,11 +189,11 @@ impl Connector for CommunicationConnector {
         })
     }
 
-    fn rollback(&self, _commitment: &RclCommitment) -> Result<(), ConnectorError> {
+    fn rollback(&self, _commitment: &RcfCommitment) -> Result<(), ConnectorError> {
         Err(ConnectorError::RollbackNotSupported)
     }
 
-    fn validate(&self, _commitment: &RclCommitment) -> Result<(), ConnectorError> {
+    fn validate(&self, _commitment: &RcfCommitment) -> Result<(), ConnectorError> {
         Ok(())
     }
 }
@@ -201,13 +201,13 @@ impl Connector for CommunicationConnector {
 impl ExecutionHandler for CommunicationConnector {
     fn execute(
         &self,
-        commitment: &RclCommitment,
+        commitment: &RcfCommitment,
         _params: &ExecutionParameters,
     ) -> Result<Consequence, ExecutorError> {
         Connector::execute(self, commitment).map_err(|e| ExecutorError::ExecutionFailed(e.to_string()))
     }
 
-    fn rollback(&self, commitment: &RclCommitment) -> Result<(), ExecutorError> {
+    fn rollback(&self, commitment: &RcfCommitment) -> Result<(), ExecutorError> {
         Connector::rollback(self, commitment).map_err(|e| ExecutorError::RollbackFailed(e.to_string()))
     }
 
@@ -241,8 +241,8 @@ pub enum ConnectorError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rcl_commitment::CommitmentBuilder;
-    use rcl_types::{IdentityRef, ScopeConstraint};
+    use rcf_commitment::CommitmentBuilder;
+    use rcf_types::{IdentityRef, ScopeConstraint};
 
     #[test]
     fn test_computation_connector() {

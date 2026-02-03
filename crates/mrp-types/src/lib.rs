@@ -1,6 +1,6 @@
 #![deny(unsafe_code)]
-use rcl_commitment::RclCommitment;
-use rcl_types::{CapabilityRef, ContinuityRef, IdentityRef, ResonanceType, hex_bytes_32, hex_bytes_64};
+use rcf_commitment::RcfCommitment;
+use rcf_types::{CapabilityRef, ContinuityRef, IdentityRef, ResonanceType, hex_bytes_32, hex_bytes_64};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -76,9 +76,9 @@ pub struct MeaningPayload { pub meaning_id: String }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct IntentPayload { pub intent_id: String }
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct CommitmentPayload { pub commitment: RclCommitment, pub submission: CommitmentSubmission }
+pub struct CommitmentPayload { pub commitment: RcfCommitment, pub submission: CommitmentSubmission }
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ConsequencePayload { pub commitment_ref: rcl_commitment::CommitmentId, pub outcome: Outcome }
+pub struct ConsequencePayload { pub commitment_ref: rcf_commitment::CommitmentId, pub outcome: Outcome }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CommitmentSubmission { pub submission_id: String, pub adjudication_type: AdjudicationType, pub urgency: Urgency }

@@ -1,12 +1,12 @@
-//! RCL-Intent Layer - Non-executable goals and plans
+//! RCF-Intent Layer - Non-executable goals and plans
 #![deny(unsafe_code)]
 
-use rcl_meaning::RclMeaning;
-use rcl_types::{IdentityRef, ResonanceArtifact, ResonanceType, TemporalAnchor};
+use rcf_meaning::RcfMeaning;
+use rcf_types::{IdentityRef, ResonanceArtifact, ResonanceType, TemporalAnchor};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct RclIntent {
+pub struct RcfIntent {
     pub id: String,
     pub author: IdentityRef,
     pub anchor: TemporalAnchor,
@@ -16,7 +16,7 @@ pub struct RclIntent {
     pub schema_version: String,
 }
 
-impl RclIntent {
+impl RcfIntent {
     pub fn new(author: IdentityRef, goals: Vec<Goal>) -> Self {
         Self {
             id: uuid::Uuid::new_v4().to_string(),
@@ -25,11 +25,11 @@ impl RclIntent {
             goals,
             meaning_refs: Vec::new(),
             confidence: 0.5,
-            schema_version: rcl_types::SCHEMA_VERSION.to_string(),
+            schema_version: rcf_types::SCHEMA_VERSION.to_string(),
         }
     }
     
-    pub fn from_meaning(meaning: &RclMeaning, goals: Vec<Goal>) -> Self {
+    pub fn from_meaning(meaning: &RcfMeaning, goals: Vec<Goal>) -> Self {
         Self {
             id: uuid::Uuid::new_v4().to_string(),
             author: meaning.author.clone(),
@@ -37,7 +37,7 @@ impl RclIntent {
             goals,
             meaning_refs: vec![meaning.id.clone()],
             confidence: meaning.uncertainty.confidence,
-            schema_version: rcl_types::SCHEMA_VERSION.to_string(),
+            schema_version: rcf_types::SCHEMA_VERSION.to_string(),
         }
     }
     
@@ -52,7 +52,7 @@ impl RclIntent {
     pub fn is_executable(&self) -> bool { false }
 }
 
-impl ResonanceArtifact for RclIntent {
+impl ResonanceArtifact for RcfIntent {
     fn resonance_type(&self) -> ResonanceType { ResonanceType::Intent }
     fn artifact_id(&self) -> &str { &self.id }
     fn is_executable(&self) -> bool { false }

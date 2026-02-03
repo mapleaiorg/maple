@@ -1,12 +1,11 @@
 [package]
-name = "rcl-intent"
+name = "rcf-meaning"
 version.workspace = true
 edition.workspace = true
-description = "RCL-Intent Layer - Direction without obligation"
+description = "RCF-Meaning Layer - Interpretation without obligation"
 
 [dependencies]
-rcl-types = { workspace = true }
-rcl-meaning = { workspace = true }
+rcf-types = { workspace = true }
 serde = { workspace = true }
 chrono = { workspace = true }
 uuid = { workspace = true }

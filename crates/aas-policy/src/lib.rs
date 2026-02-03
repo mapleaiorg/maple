@@ -8,7 +8,7 @@
 use aas_types::{
     AgentId, Decision, RiskAssessment, RiskFactor, RiskLevel, Rationale, RuleReference,
 };
-use rcl_commitment::RclCommitment;
+use rcf_commitment::RcfCommitment;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::RwLock;
@@ -99,7 +99,7 @@ impl PolicyEngine {
     }
 
     /// Evaluate a commitment against all policies
-    pub fn evaluate(&self, commitment: &RclCommitment, context: &EvaluationContext) -> Result<PolicyEvaluation, PolicyError> {
+    pub fn evaluate(&self, commitment: &RcfCommitment, context: &EvaluationContext) -> Result<PolicyEvaluation, PolicyError> {
         let policies = self.policies.read().map_err(|_| PolicyError::LockError)?;
 
         let mut rule_results = vec![];
@@ -184,7 +184,7 @@ impl PolicyEngine {
     fn evaluate_rule(
         &self,
         rule: &Rule,
-        commitment: &RclCommitment,
+        commitment: &RcfCommitment,
         _context: &EvaluationContext,
     ) -> Result<RuleResult, PolicyError> {
         let triggered = match &rule.condition {
@@ -301,8 +301,8 @@ pub enum PolicyError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rcl_commitment::{CommitmentBuilder, Reversibility};
-    use rcl_types::{EffectDomain, IdentityRef, ScopeConstraint};
+    use rcf_commitment::{CommitmentBuilder, Reversibility};
+    use rcf_types::{EffectDomain, IdentityRef, ScopeConstraint};
 
     #[test]
     fn test_policy_evaluation() {

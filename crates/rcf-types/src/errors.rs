@@ -1,13 +1,13 @@
-//! Error Types for RCL
+//! Error Types for RCF
 //!
-//! Defines all error types used across the RCL system.
+//! Defines all error types used across the RCF system.
 
 use crate::ResonanceType;
 use thiserror::Error;
 
-/// RCL Error type
+/// RCF Error type
 #[derive(Error, Debug)]
-pub enum RclError {
+pub enum RcfError {
     /// Invalid transition between resonance types
     #[error("Invalid transition from {from} to {to}: {reason}")]
     InvalidTransition {
@@ -91,30 +91,30 @@ pub enum RclError {
     InternalError(String),
 }
 
-impl RclError {
+impl RcfError {
     /// Create a validation error
     pub fn validation(msg: impl Into<String>) -> Self {
-        RclError::ValidationError(msg.into())
+        RcfError::ValidationError(msg.into())
     }
 
     /// Create an identity error
     pub fn identity(msg: impl Into<String>) -> Self {
-        RclError::IdentityError(msg.into())
+        RcfError::IdentityError(msg.into())
     }
 
     /// Create a capability error
     pub fn capability(msg: impl Into<String>) -> Self {
-        RclError::CapabilityError(msg.into())
+        RcfError::CapabilityError(msg.into())
     }
 
     /// Create a missing field error
     pub fn missing_field(field: impl Into<String>) -> Self {
-        RclError::MissingField(field.into())
+        RcfError::MissingField(field.into())
     }
 
     /// Create an invalid field value error
     pub fn invalid_field(field: impl Into<String>, reason: impl Into<String>) -> Self {
-        RclError::InvalidFieldValue {
+        RcfError::InvalidFieldValue {
             field: field.into(),
             reason: reason.into(),
         }
@@ -122,28 +122,28 @@ impl RclError {
 
     /// Check if this is a validation error
     pub fn is_validation_error(&self) -> bool {
-        matches!(self, RclError::ValidationError(_))
+        matches!(self, RcfError::ValidationError(_))
     }
 
     /// Check if this is a temporal error (expired or not yet effective)
     pub fn is_temporal_error(&self) -> bool {
-        matches!(self, RclError::Expired { .. } | RclError::NotYetEffective { .. })
+        matches!(self, RcfError::Expired { .. } | RcfError::NotYetEffective { .. })
     }
 
     /// Check if this is a security-related error
     pub fn is_security_error(&self) -> bool {
         matches!(
             self,
-            RclError::HashMismatch { .. }
-                | RclError::SignatureError(_)
-                | RclError::CapabilityError(_)
-                | RclError::ScopeViolation(_)
+            RcfError::HashMismatch { .. }
+                | RcfError::SignatureError(_)
+                | RcfError::CapabilityError(_)
+                | RcfError::ScopeViolation(_)
         )
     }
 }
 
-/// Result type for RCL operations
-pub type RclResult<T> = Result<T, RclError>;
+/// Result type for RCF operations
+pub type RcfResult<T> = Result<T, RcfError>;
 
 #[cfg(test)]
 mod tests {
@@ -151,16 +151,16 @@ mod tests {
 
     #[test]
     fn test_error_creation() {
-        let err = RclError::validation("test error");
+        let err = RcfError::validation("test error");
         assert!(err.is_validation_error());
 
-        let err = RclError::missing_field("commitment_id");
-        assert!(matches!(err, RclError::MissingField(_)));
+        let err = RcfError::missing_field("commitment_id");
+        assert!(matches!(err, RcfError::MissingField(_)));
     }
 
     #[test]
     fn test_error_display() {
-        let err = RclError::InvalidTransition {
+        let err = RcfError::InvalidTransition {
             from: ResonanceType::Intent,
             to: ResonanceType::Meaning,
             reason: "backward transition".to_string(),

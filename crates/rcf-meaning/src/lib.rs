@@ -1,11 +1,11 @@
-//! RCL-Meaning Layer - Non-executable interpretation
+//! RCF-Meaning Layer - Non-executable interpretation
 #![deny(unsafe_code)]
 
-use rcl_types::{IdentityRef, ResonanceArtifact, ResonanceType, TemporalAnchor, Uncertainty};
+use rcf_types::{IdentityRef, ResonanceArtifact, ResonanceType, TemporalAnchor, Uncertainty};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct RclMeaning {
+pub struct RcfMeaning {
     pub id: String,
     pub author: IdentityRef,
     pub anchor: TemporalAnchor,
@@ -14,7 +14,7 @@ pub struct RclMeaning {
     pub schema_version: String,
 }
 
-impl RclMeaning {
+impl RcfMeaning {
     pub fn new(author: IdentityRef, claims: Vec<Claim>) -> Self {
         Self {
             id: uuid::Uuid::new_v4().to_string(),
@@ -22,7 +22,7 @@ impl RclMeaning {
             anchor: TemporalAnchor::now(),
             claims,
             uncertainty: Uncertainty::default(),
-            schema_version: rcl_types::SCHEMA_VERSION.to_string(),
+            schema_version: rcf_types::SCHEMA_VERSION.to_string(),
         }
     }
     
@@ -37,7 +37,7 @@ impl RclMeaning {
     pub fn is_executable(&self) -> bool { false }
 }
 
-impl ResonanceArtifact for RclMeaning {
+impl ResonanceArtifact for RcfMeaning {
     fn resonance_type(&self) -> ResonanceType { ResonanceType::Meaning }
     fn artifact_id(&self) -> &str { &self.id }
     fn is_executable(&self) -> bool { false }

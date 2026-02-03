@@ -125,8 +125,8 @@ pub enum EveError {
 mod tests {
     use super::*;
     use mapleverse_types::{ConsequenceId, ReversibilityStatus};
-    use rcl_commitment::CommitmentId;
-    use rcl_types::EffectDomain;
+    use rcf_commitment::CommitmentId;
+    use rcf_types::EffectDomain;
 
     #[test]
     fn test_eve_service() {

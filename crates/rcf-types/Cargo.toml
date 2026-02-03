@@ -1,10 +1,10 @@
 [package]
-name = "rcl-types"
+name = "rcf-types"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
-description = "RCL Type System - Constitutional type separation for Maple AI Framework"
+description = "RCF Type System - Constitutional type separation for Maple AI Framework"
 
 [features]
 strict-docs = []

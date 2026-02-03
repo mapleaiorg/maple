@@ -1,8 +1,8 @@
 //! AAS Types - The ONLY authority layer
 #![deny(unsafe_code)]
 
-use rcl_commitment::{CommitmentId, RclCommitment};
-use rcl_types::{EffectDomain, TemporalValidity};
+use rcf_commitment::{CommitmentId, RcfCommitment};
+use rcf_types::{EffectDomain, TemporalValidity};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -14,7 +14,7 @@ impl std::fmt::Display for AgentId { fn fmt(&self, f: &mut std::fmt::Formatter<'
 pub struct Capability {
     pub capability_id: String,
     pub domain: EffectDomain,
-    pub scope: rcl_types::ScopeConstraint,
+    pub scope: rcf_types::ScopeConstraint,
     pub validity: TemporalValidity,
     pub status: CapabilityStatus,
     pub issuer: AgentId,
@@ -78,7 +78,7 @@ pub enum AdjudicatorType { Automated, Human, Hybrid }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct LedgerEntry {
     pub entry_id: LedgerEntryId,
-    pub commitment: RclCommitment,
+    pub commitment: RcfCommitment,
     pub decision: PolicyDecisionCard,
     pub lifecycle: CommitmentLifecycle,
     #[serde(skip_serializing_if = "Option::is_none")]

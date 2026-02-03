@@ -5,8 +5,8 @@
 
 #![deny(unsafe_code)]
 
-use rcl_commitment::RclCommitment;
-use rcl_types::{EffectDomain, IdentityRef, ScopeConstraint};
+use rcf_commitment::RcfCommitment;
+use rcf_types::{EffectDomain, IdentityRef, ScopeConstraint};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -221,7 +221,7 @@ pub enum RiskLevel {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PendingCommitment {
     pub draft_id: String,
-    pub commitment: RclCommitment,
+    pub commitment: RcfCommitment,
     pub submitted_at: chrono::DateTime<chrono::Utc>,
     pub status: PendingStatus,
 }

@@ -5,5 +5,5 @@ edition.workspace = true
 description = "MRP Router"
 [dependencies]
 mrp-types = { workspace = true }
-rcl-types = { workspace = true }
+rcf-types = { workspace = true }
 thiserror = { workspace = true }

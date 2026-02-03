@@ -2,13 +2,13 @@
 resolver = "2"
 members = [
     # Phase 0: Contract-First (Constitutional Layer)
-    "crates/rcl-types",
-    "crates/rcl-meaning",
-    "crates/rcl-intent",
-    "crates/rcl-commitment",
-    "crates/rcl-validator",
-    "crates/rcl-compiler",
-    "crates/rcl-audit",
+    "crates/rcf-types",
+    "crates/rcf-meaning",
+    "crates/rcf-intent",
+    "crates/rcf-commitment",
+    "crates/rcf-validator",
+    "crates/rcf-compiler",
+    "crates/rcf-audit",
     "crates/mrp-types",
     "crates/mrp-router",
     "crates/mrp-transport",
@@ -126,13 +126,13 @@ proptest = "1.4"
 criterion = "0.5"
 
 # Internal crates
-rcl-types = { path = "crates/rcl-types" }
-rcl-meaning = { path = "crates/rcl-meaning" }
-rcl-intent = { path = "crates/rcl-intent" }
-rcl-commitment = { path = "crates/rcl-commitment" }
-rcl-validator = { path = "crates/rcl-validator" }
-rcl-compiler = { path = "crates/rcl-compiler" }
-rcl-audit = { path = "crates/rcl-audit" }
+rcf-types = { path = "crates/rcf-types" }
+rcf-meaning = { path = "crates/rcf-meaning" }
+rcf-intent = { path = "crates/rcf-intent" }
+rcf-commitment = { path = "crates/rcf-commitment" }
+rcf-validator = { path = "crates/rcf-validator" }
+rcf-compiler = { path = "crates/rcf-compiler" }
+rcf-audit = { path = "crates/rcf-audit" }
 mrp-types = { path = "crates/mrp-types" }
 mrp-router = { path = "crates/mrp-router" }
 mrp-transport = { path = "crates/mrp-transport" }

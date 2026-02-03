@@ -9,7 +9,7 @@ use aas_types::{
     AdjudicatorInfo, AdjudicatorType, Condition, ConditionType, Decision, DecisionId,
     PolicyDecisionCard, RiskAssessment, RiskLevel, Rationale,
 };
-use rcl_commitment::{CommitmentId, RclCommitment};
+use rcf_commitment::{CommitmentId, RcfCommitment};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::RwLock;
@@ -33,7 +33,7 @@ impl Adjudicator {
     }
 
     /// Submit a commitment for adjudication
-    pub fn submit(&self, commitment: RclCommitment, evaluation: PolicyEvaluationInput) -> Result<SubmissionReceipt, AdjudicationError> {
+    pub fn submit(&self, commitment: RcfCommitment, evaluation: PolicyEvaluationInput) -> Result<SubmissionReceipt, AdjudicationError> {
         let commitment_id = commitment.commitment_id.clone();
 
         let pending = PendingDecision {
@@ -222,7 +222,7 @@ impl Adjudicator {
     }
 
     /// Calculate approval expiration based on commitment
-    fn calculate_expiration(&self, commitment: &RclCommitment) -> Option<chrono::DateTime<chrono::Utc>> {
+    fn calculate_expiration(&self, commitment: &RcfCommitment) -> Option<chrono::DateTime<chrono::Utc>> {
         // Default expiration based on temporal validity
         if let Some(expires) = commitment.temporal_validity.valid_until {
             Some(expires)
@@ -242,7 +242,7 @@ impl Default for Adjudicator {
 /// A pending decision awaiting adjudication
 #[derive(Clone, Debug)]
 struct PendingDecision {
-    commitment: RclCommitment,
+    commitment: RcfCommitment,
     evaluation: PolicyEvaluationInput,
     #[allow(dead_code)]
     submitted_at: chrono::DateTime<chrono::Utc>,
@@ -307,8 +307,8 @@ pub enum AdjudicationError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rcl_commitment::CommitmentBuilder;
-    use rcl_types::{EffectDomain, IdentityRef, ScopeConstraint};
+    use rcf_commitment::CommitmentBuilder;
+    use rcf_types::{EffectDomain, IdentityRef, ScopeConstraint};
 
     #[test]
     fn test_adjudication_flow() {

@@ -1,4 +1,4 @@
-//! RCL Type System - Resonance Commitment Language
+//! RCF Type System - Resonance Commitment Language
 //!
 //! Constitutional type separation: Meaning ≠ Intent ≠ Commitment ≠ Consequence
 

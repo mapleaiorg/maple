@@ -1,27 +1,27 @@
 #![deny(unsafe_code)]
-use rcl_commitment::RclCommitment;
-use rcl_intent::RclIntent;
-use rcl_meaning::RclMeaning;
-use rcl_types::{ResonanceArtifact, ResonanceType};
+use rcf_commitment::RcfCommitment;
+use rcf_intent::RcfIntent;
+use rcf_meaning::RcfMeaning;
+use rcf_types::{ResonanceArtifact, ResonanceType};
 
-pub struct RclValidator;
-impl RclValidator {
+pub struct RcfValidator;
+impl RcfValidator {
     pub fn new() -> Self { Self }
-    pub fn validate_meaning(&self, m: &RclMeaning) -> Result<(), ValidationError> { 
+    pub fn validate_meaning(&self, m: &RcfMeaning) -> Result<(), ValidationError> { 
         if m.resonance_type() != ResonanceType::Meaning { return Err(ValidationError::WrongType); }
         Ok(()) 
     }
-    pub fn validate_intent(&self, i: &RclIntent) -> Result<(), ValidationError> { 
+    pub fn validate_intent(&self, i: &RcfIntent) -> Result<(), ValidationError> { 
         if i.resonance_type() != ResonanceType::Intent { return Err(ValidationError::WrongType); }
         Ok(()) 
     }
-    pub fn validate_commitment(&self, c: &RclCommitment) -> Result<(), ValidationError> { 
+    pub fn validate_commitment(&self, c: &RcfCommitment) -> Result<(), ValidationError> { 
         if c.resonance_type() != ResonanceType::Commitment { return Err(ValidationError::WrongType); }
         c.validate().map_err(|_| ValidationError::InvalidStructure)?;
         Ok(()) 
     }
 }
-impl Default for RclValidator { fn default() -> Self { Self::new() } }
+impl Default for RcfValidator { fn default() -> Self { Self::new() } }
 
 #[derive(Debug, thiserror::Error)]
 pub enum ValidationError {

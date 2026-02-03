@@ -5,7 +5,7 @@
 #![deny(unsafe_code)]
 
 use eve_types::{ArtifactId, ArtifactQuery, ArtifactType, LearningArtifact};
-use rcl_types::EffectDomain;
+use rcf_types::EffectDomain;
 use std::collections::HashMap;
 use std::sync::RwLock;
 use thiserror::Error;

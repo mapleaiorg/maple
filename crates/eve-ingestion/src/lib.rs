@@ -6,7 +6,7 @@
 
 use eve_types::{AnalysisStatus, CommitmentCharacteristics, ConsequenceRecord};
 use mapleverse_types::Consequence;
-use rcl_commitment::CommitmentId;
+use rcf_commitment::CommitmentId;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::RwLock;
@@ -145,7 +145,7 @@ pub enum IngestionError {
 mod tests {
     use super::*;
     use mapleverse_types::{ConsequenceId, Evidence, EvidenceType, ReversibilityStatus};
-    use rcl_types::EffectDomain;
+    use rcf_types::EffectDomain;
 
     #[test]
     fn test_ingestion() {

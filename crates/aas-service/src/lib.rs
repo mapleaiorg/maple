@@ -11,8 +11,8 @@ use aas_identity::{IdentityError, IdentityRegistry, RegistrationRequest, Verific
 use aas_ledger::{AccountabilityLedger, LedgerError, LedgerQuery, LedgerStatistics};
 use aas_policy::{EvaluationContext, PolicyEngine, PolicyError};
 use aas_types::{AgentId, CommitmentOutcome, LedgerEntry, PolicyDecisionCard};
-use rcl_commitment::{CommitmentId, RclCommitment};
-use rcl_types::{EffectDomain, ScopeConstraint};
+use rcf_commitment::{CommitmentId, RcfCommitment};
+use rcf_types::{EffectDomain, ScopeConstraint};
 use std::sync::Arc;
 use thiserror::Error;
 
@@ -62,7 +62,7 @@ impl AasService {
     }
 
     /// Verify an identity
-    pub fn verify_identity(&self, identity: &rcl_types::IdentityRef) -> Result<VerificationResult, AasError> {
+    pub fn verify_identity(&self, identity: &rcf_types::IdentityRef) -> Result<VerificationResult, AasError> {
         self.identity.verify(identity).map_err(AasError::Identity)
     }
 
@@ -87,7 +87,7 @@ impl AasService {
 
     /// Submit a commitment for adjudication
     /// This is the main entry point for the commitment boundary
-    pub fn submit_commitment(&self, commitment: RclCommitment) -> Result<PolicyDecisionCard, AasError> {
+    pub fn submit_commitment(&self, commitment: RcfCommitment) -> Result<PolicyDecisionCard, AasError> {
         // Step 1: Verify identity
         let verification = self.identity.verify(&commitment.principal)?;
         if !verification.valid {
@@ -267,8 +267,8 @@ pub enum AasError {
 mod tests {
     use super::*;
     use aas_identity::AgentType;
-    use rcl_commitment::CommitmentBuilder;
-    use rcl_types::TemporalValidity;
+    use rcf_commitment::CommitmentBuilder;
+    use rcf_types::TemporalValidity;
 
     #[test]
     fn test_full_commitment_flow() {

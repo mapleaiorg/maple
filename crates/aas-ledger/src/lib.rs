@@ -9,7 +9,7 @@ use aas_types::{
     AgentId, CommitmentLifecycle, CommitmentOutcome, LedgerEntry, LedgerEntryId,
     LifecycleStatus, PolicyDecisionCard,
 };
-use rcl_commitment::{CommitmentId, RclCommitment};
+use rcf_commitment::{CommitmentId, RcfCommitment};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::RwLock;
@@ -35,7 +35,7 @@ impl AccountabilityLedger {
     /// Record a new commitment with its decision
     pub fn record_commitment(
         &self,
-        commitment: RclCommitment,
+        commitment: RcfCommitment,
         decision: PolicyDecisionCard,
     ) -> Result<LedgerEntryId, LedgerError> {
         let entry_id = LedgerEntryId::generate();
@@ -277,8 +277,8 @@ mod tests {
         AdjudicatorInfo, AdjudicatorType, Decision, DecisionId, Rationale,
         RiskAssessment, RiskLevel,
     };
-    use rcl_commitment::CommitmentBuilder;
-    use rcl_types::{EffectDomain, IdentityRef, ScopeConstraint};
+    use rcf_commitment::CommitmentBuilder;
+    use rcf_types::{EffectDomain, IdentityRef, ScopeConstraint};
 
     #[test]
     fn test_record_and_retrieve() {

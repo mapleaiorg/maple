@@ -1,11 +1,11 @@
-//! RCL-Commitment Layer - The ONLY executable layer
+//! RCF-Commitment Layer - The ONLY executable layer
 //!
 //! Commitments are the boundary between intention and action.
 //! Only Commitments can be executed, and only after AAS approval.
 
 #![deny(unsafe_code)]
 
-use rcl_types::{
+use rcf_types::{
     CapabilityRef, ContinuityRef, EffectDomain, IdentityRef, ResonanceArtifact, ResonanceType,
     ResourceLimits, ScopeConstraint, TemporalValidity,
 };
@@ -35,9 +35,9 @@ impl std::fmt::Display for CommitmentId {
     }
 }
 
-/// An RCL Commitment - the ONLY executable type
+/// An RCF Commitment - the ONLY executable type
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct RclCommitment {
+pub struct RcfCommitment {
     pub commitment_id: CommitmentId,
     pub principal: IdentityRef,
     pub continuity_ref: ContinuityRef,
@@ -58,7 +58,7 @@ pub struct RclCommitment {
     pub schema_version: String,
 }
 
-impl RclCommitment {
+impl RcfCommitment {
     pub fn builder(principal: IdentityRef, domain: EffectDomain) -> CommitmentBuilder {
         CommitmentBuilder::new(principal, domain)
     }
@@ -77,7 +77,7 @@ impl RclCommitment {
     }
 }
 
-impl ResonanceArtifact for RclCommitment {
+impl ResonanceArtifact for RcfCommitment {
     fn resonance_type(&self) -> ResonanceType {
         ResonanceType::Commitment
     }
@@ -309,7 +309,7 @@ impl CommitmentBuilder {
         self
     }
 
-    pub fn build(self) -> Result<RclCommitment, CommitmentBuildError> {
+    pub fn build(self) -> Result<RcfCommitment, CommitmentBuildError> {
         let intended_outcome = self
             .intended_outcome
             .unwrap_or_else(|| IntendedOutcome::new("Unspecified outcome"));
@@ -331,7 +331,7 @@ impl CommitmentBuilder {
         let continuity_ref = self.principal.continuity_ref.clone();
         let audit = AuditMetadata::new(self.principal.clone());
 
-        Ok(RclCommitment {
+        Ok(RcfCommitment {
             commitment_id,
             principal: self.principal,
             continuity_ref,
@@ -348,7 +348,7 @@ impl CommitmentBuilder {
             intent_ref: self.intent_ref,
             risk_classification: RiskClassification::default(),
             policy_tags: self.policy_tags,
-            schema_version: rcl_types::SCHEMA_VERSION.to_string(),
+            schema_version: rcf_types::SCHEMA_VERSION.to_string(),
         })
     }
 }

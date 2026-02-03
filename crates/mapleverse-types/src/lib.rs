@@ -6,8 +6,8 @@
 #![deny(unsafe_code)]
 
 use aas_types::CommitmentOutcome;
-use rcl_commitment::{CommitmentId, RclCommitment};
-use rcl_types::EffectDomain;
+use rcf_commitment::{CommitmentId, RcfCommitment};
+use rcf_types::EffectDomain;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -15,7 +15,7 @@ use std::collections::HashMap;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ExecutionRequest {
     pub request_id: ExecutionRequestId,
-    pub commitment: RclCommitment,
+    pub commitment: RcfCommitment,
     pub decision_id: String,
     pub requested_at: chrono::DateTime<chrono::Utc>,
     pub execution_parameters: ExecutionParameters,

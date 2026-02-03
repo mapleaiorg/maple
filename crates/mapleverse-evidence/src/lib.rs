@@ -5,7 +5,7 @@
 #![deny(unsafe_code)]
 
 use mapleverse_types::{Consequence, Evidence, EvidenceType};
-use rcl_commitment::CommitmentId;
+use rcf_commitment::CommitmentId;
 use std::collections::HashMap;
 use std::sync::RwLock;
 use thiserror::Error;

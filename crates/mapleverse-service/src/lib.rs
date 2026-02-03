@@ -9,8 +9,8 @@ use mapleverse_connectors::{CommunicationConnector, ComputationConnector, DataCo
 use mapleverse_evidence::{EvidenceError, EvidenceStore};
 use mapleverse_executor::{Executor, ExecutorError};
 use mapleverse_types::{ExecutionParameters, ExecutionRequest, ExecutionRequestId, ExecutionResult};
-use rcl_commitment::{CommitmentId, RclCommitment};
-use rcl_types::EffectDomain;
+use rcf_commitment::{CommitmentId, RcfCommitment};
+use rcf_types::EffectDomain;
 use std::sync::Arc;
 use thiserror::Error;
 
@@ -45,7 +45,7 @@ impl MapleverseService {
     /// Execute an approved commitment
     pub fn execute(
         &self,
-        commitment: RclCommitment,
+        commitment: RcfCommitment,
         decision_id: String,
         params: ExecutionParameters,
     ) -> Result<ExecutionResult, MapleverseError> {
@@ -118,8 +118,8 @@ pub enum MapleverseError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rcl_commitment::CommitmentBuilder;
-    use rcl_types::{IdentityRef, ScopeConstraint};
+    use rcf_commitment::CommitmentBuilder;
+    use rcf_types::{IdentityRef, ScopeConstraint};
 
     #[test]
     fn test_mapleverse_execution() {
