@@ -2,7 +2,7 @@
 //!
 //! The AgentRegistry manages agent specifications (templates for deployment).
 
-use crate::error::{RegistryError, Result};
+use crate::error::Result;
 use async_trait::async_trait;
 use palm_types::{AgentSpec, AgentSpecId};
 use semver::Version;

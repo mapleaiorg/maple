@@ -176,12 +176,14 @@ where
 
 /// A no-op probe implementation for testing.
 #[derive(Debug, Clone, Default)]
+#[allow(dead_code)]
 pub struct NoOpProbe {
     value: f64,
 }
 
 impl NoOpProbe {
     /// Create a no-op probe that always returns the given value.
+    #[allow(dead_code)]
     pub fn new(value: f64) -> Self {
         Self {
             value: value.clamp(0.0, 1.0),

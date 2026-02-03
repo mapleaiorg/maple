@@ -1,8 +1,6 @@
 //! Heavy simulation loop for playground activity
 
-use crate::storage::{
-    ActivityStorage, DeploymentStorage, InstanceStorage, ResonatorStorage, SpecStorage, Storage,
-};
+use crate::storage::Storage;
 use crate::error::StorageError;
 use palm_shared_state::{
     Activity, ActivityActor, CouplingSnapshot, PlaygroundConfig, PresenceSnapshot,
@@ -215,7 +213,6 @@ impl SimulationEngine {
         // Emit resonator activities
         if activities_emitted < activity_budget {
             if let Some(resonator) = resonator_map.values().collect::<Vec<_>>().choose(&mut rng) {
-                activities_emitted += 1;
                 let activity = Activity::new(
                     ActivityActor::Resonator,
                     resonator.id.clone(),

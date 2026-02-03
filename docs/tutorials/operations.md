@@ -17,6 +17,12 @@ cargo run -p maple-cli -- version
 cargo run -p maple-cli -- validate --file README.md
 ```
 
+Install once (no `cargo run` required):
+
+```bash
+cargo install --path crates/maple-cli --bin maple && cargo install --path crates/palm --bin palm
+```
+
 ## 2. Start the Daemon
 
 ```bash
@@ -56,7 +62,7 @@ Tip: add `--output json` for scripting and automation.
 Direct operations CLI (optional):
 
 ```bash
-cargo run -p palm-cli -- events watch
+cargo run -p palm -- events watch
 ```
 
 ## 4. Playground UI (Optional)

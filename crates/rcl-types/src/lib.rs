@@ -3,7 +3,9 @@
 //! Constitutional type separation: Meaning ≠ Intent ≠ Commitment ≠ Consequence
 
 #![deny(unsafe_code)]
-#![warn(missing_docs, rust_2018_idioms)]
+#![cfg_attr(feature = "strict-docs", warn(missing_docs))]
+#![cfg_attr(not(feature = "strict-docs"), allow(missing_docs))]
+#![warn(rust_2018_idioms)]
 
 mod resonance;
 mod identity;

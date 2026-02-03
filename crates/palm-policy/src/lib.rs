@@ -109,7 +109,8 @@
 //! ```
 
 #![deny(unsafe_code)]
-#![warn(missing_docs)]
+#![cfg_attr(feature = "strict-docs", warn(missing_docs))]
+#![cfg_attr(not(feature = "strict-docs"), allow(missing_docs))]
 
 pub mod context;
 pub mod decision;

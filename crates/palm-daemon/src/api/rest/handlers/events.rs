@@ -2,7 +2,6 @@
 
 use crate::api::rest::state::AppState;
 use crate::error::{ApiError, ApiResult};
-use crate::storage::EventStorage;
 use axum::{
     extract::{Query, State},
     response::sse::{Event, KeepAlive, Sse},
@@ -55,7 +54,7 @@ pub async fn get_events(
 pub async fn stream_events(
     State(state): State<AppState>,
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
-    let mut rx = state.event_tx.subscribe();
+    let rx = state.event_tx.subscribe();
 
     let stream = stream::unfold(rx, |mut rx| async move {
         match rx.recv().await {

@@ -1739,7 +1739,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "maple-integration",
- "palm-cli",
+ "palm",
  "tokio",
 ]
 
@@ -2220,25 +2220,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "palm-boundary-demo"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "chrono",
- "colored",
- "palm-conformance",
- "palm-platform-pack",
- "palm-policy",
- "palm-types",
- "serde_json",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "uuid",
-]
-
-[[package]]
-name = "palm-cli"
+name = "palm"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -2263,6 +2245,24 @@ dependencies = [
  "toml",
  "tracing",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "palm-boundary-demo"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "colored",
+ "palm-conformance",
+ "palm-platform-pack",
+ "palm-policy",
+ "palm-types",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
 ]
 
 [[package]]

@@ -6,6 +6,9 @@ authors.workspace = true
 license.workspace = true
 description = "RCL Type System - Constitutional type separation for Maple AI Framework"
 
+[features]
+strict-docs = []
+
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }

@@ -5,13 +5,10 @@
 
 #![deny(unsafe_code)]
 
-use aas_types::CommitmentOutcome;
 use mapleverse_connectors::{CommunicationConnector, ComputationConnector, DataConnector};
 use mapleverse_evidence::{EvidenceError, EvidenceStore};
 use mapleverse_executor::{Executor, ExecutorError};
-use mapleverse_types::{
-    Consequence, ExecutionParameters, ExecutionRequest, ExecutionRequestId, ExecutionResult,
-};
+use mapleverse_types::{ExecutionParameters, ExecutionRequest, ExecutionRequestId, ExecutionResult};
 use rcl_commitment::{CommitmentId, RclCommitment};
 use rcl_types::EffectDomain;
 use std::sync::Arc;

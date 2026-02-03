@@ -2,7 +2,6 @@
 
 use crate::api::rest::state::AppState;
 use crate::error::ApiResult;
-use crate::storage::{DeploymentStorage, InstanceStorage, SpecStorage};
 use axum::{extract::State, Json};
 use serde::{Deserialize, Serialize};
 use palm_types::instance::HealthStatus;

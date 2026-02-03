@@ -4,7 +4,7 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use super::ids::{CouplingId, ResonatorId};
+use super::ids::CouplingId;
 
 /// Attention budget for a Resonator
 ///

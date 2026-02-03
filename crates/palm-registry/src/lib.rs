@@ -13,7 +13,8 @@
 //! that implement the same traits.
 
 #![deny(unsafe_code)]
-#![warn(missing_docs)]
+#![cfg_attr(feature = "strict-docs", warn(missing_docs))]
+#![cfg_attr(not(feature = "strict-docs"), allow(missing_docs))]
 
 pub mod error;
 pub mod agent;

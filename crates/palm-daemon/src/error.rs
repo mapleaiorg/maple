@@ -10,6 +10,7 @@ use thiserror::Error;
 
 /// Daemon-level errors
 #[derive(Debug, Error)]
+#[allow(dead_code)]
 pub enum DaemonError {
     /// Configuration error
     #[error("Configuration error: {0}")]
@@ -38,6 +39,7 @@ pub enum DaemonError {
 
 /// Storage-specific errors
 #[derive(Debug, Error)]
+#[allow(dead_code)]
 pub enum StorageError {
     /// Item not found
     #[error("Not found: {0}")]
@@ -62,6 +64,7 @@ pub enum StorageError {
 
 /// API-specific errors
 #[derive(Debug, Error)]
+#[allow(dead_code)]
 pub enum ApiError {
     /// Resource not found
     #[error("Not found: {0}")]

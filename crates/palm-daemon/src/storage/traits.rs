@@ -43,6 +43,7 @@ pub trait SpecStorage: Send + Sync {
     async fn delete_spec(&self, id: &AgentSpecId) -> StorageResult<bool>;
 
     /// Get spec by name and version
+    #[allow(dead_code)]
     async fn get_spec_by_name(&self, name: &str, version: Option<&str>) -> StorageResult<Option<AgentSpec>>;
 }
 
@@ -126,6 +127,7 @@ pub trait SnapshotStorage: Send + Sync {
     async fn restore_snapshot(&self, instance_id: &InstanceId, snapshot_id: &str) -> StorageResult<()>;
 
     /// Delete a snapshot
+    #[allow(dead_code)]
     async fn delete_snapshot(&self, snapshot_id: &str) -> StorageResult<bool>;
 }
 
@@ -143,6 +145,7 @@ pub trait PlaygroundConfigStorage: Send + Sync {
 #[async_trait]
 pub trait ResonatorStorage: Send + Sync {
     /// Get a resonator by ID
+    #[allow(dead_code)]
     async fn get_resonator(&self, id: &str) -> StorageResult<Option<ResonatorStatus>>;
 
     /// List all resonators
@@ -152,6 +155,7 @@ pub trait ResonatorStorage: Send + Sync {
     async fn upsert_resonator(&self, resonator: ResonatorStatus) -> StorageResult<()>;
 
     /// Delete a resonator
+    #[allow(dead_code)]
     async fn delete_resonator(&self, id: &str) -> StorageResult<bool>;
 }
 

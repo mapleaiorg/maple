@@ -1,16 +1,14 @@
 //! Reconciliation loop and scheduler
 
 use crate::config::SchedulerConfig;
-use crate::storage::{
-    ActivityStorage, DeploymentStorage, EventStorage, InMemoryStorage, InstanceStorage, Storage,
-};
+use crate::storage::Storage;
 use palm_types::{
     instance::{
         AgentInstance, HealthStatus, InstanceMetrics, InstancePlacement, InstanceStatus,
         ResonatorIdRef,
     },
-    DeploymentId, DeploymentStatus, EventSeverity, EventSource, InstanceId, PalmEvent,
-    PalmEventEnvelope, PlatformProfile,
+    DeploymentId, DeploymentStatus, EventSource, InstanceId, PalmEvent, PalmEventEnvelope,
+    PlatformProfile,
 };
 use palm_shared_state::{Activity, ActivityActor};
 use std::sync::Arc;
@@ -30,6 +28,7 @@ pub struct Scheduler {
 
 impl Scheduler {
     /// Create a new scheduler
+    #[allow(dead_code)]
     pub fn new(
         config: SchedulerConfig,
         storage: Arc<dyn Storage>,
@@ -158,13 +157,11 @@ impl Scheduler {
                     "Failed to reconcile deployment"
                 );
 
-                self.emit_event(
-                    PalmEvent::DeploymentFailed {
-                        deployment_id: deployment.id.clone(),
-                        reason: e.to_string(),
-                    },
-                    EventSeverity::Error,
-                ).await;
+                self.emit_event(PalmEvent::DeploymentFailed {
+                    deployment_id: deployment.id.clone(),
+                    reason: e.to_string(),
+                })
+                .await;
             }
         }
 
@@ -208,13 +205,11 @@ impl Scheduler {
 
             for _ in 0..to_create {
                 let instance = self.create_instance(deployment_id).await?;
-                self.emit_event(
-                    PalmEvent::InstanceCreated {
-                        instance_id: instance.id.clone(),
-                        deployment_id: deployment_id.clone(),
-                    },
-                    EventSeverity::Info,
-                ).await;
+                self.emit_event(PalmEvent::InstanceCreated {
+                    instance_id: instance.id.clone(),
+                    deployment_id: deployment_id.clone(),
+                })
+                .await;
             }
 
             // Update deployment status
@@ -255,13 +250,11 @@ impl Scheduler {
 
             for instance in to_delete {
                 self.storage.delete_instance(&instance.id).await?;
-                self.emit_event(
-                    PalmEvent::InstanceTerminated {
-                        instance_id: instance.id.clone(),
-                        exit_code: Some(0),
-                    },
-                    EventSeverity::Info,
-                ).await;
+                self.emit_event(PalmEvent::InstanceTerminated {
+                    instance_id: instance.id.clone(),
+                    exit_code: Some(0),
+                })
+                .await;
             }
         }
 
@@ -311,14 +304,12 @@ impl Scheduler {
                 };
                 self.storage.upsert_instance(updated).await?;
 
-                self.emit_event(
-                    PalmEvent::HealthProbeFailed {
-                        instance_id: instance.id.clone(),
-                        probe_type: "heartbeat".to_string(),
-                        reason: "Heartbeat timeout".to_string(),
-                    },
-                    EventSeverity::Warning,
-                ).await;
+                self.emit_event(PalmEvent::HealthProbeFailed {
+                    instance_id: instance.id.clone(),
+                    probe_type: "heartbeat".to_string(),
+                    reason: "Heartbeat timeout".to_string(),
+                })
+                .await;
 
                 // Auto-heal if enabled
                 if self.config.auto_healing_enabled {
@@ -343,13 +334,11 @@ impl Scheduler {
         // Delete the unhealthy instance
         self.storage.delete_instance(&instance.id).await?;
 
-        self.emit_event(
-            PalmEvent::InstanceTerminated {
-                instance_id: instance.id.clone(),
-                exit_code: Some(1),
-            },
-            EventSeverity::Info,
-        ).await;
+        self.emit_event(PalmEvent::InstanceTerminated {
+            instance_id: instance.id.clone(),
+            exit_code: Some(1),
+        })
+        .await;
 
         // Reconciliation will create a replacement
         self.trigger_reconcile().await;
@@ -358,7 +347,7 @@ impl Scheduler {
     }
 
     /// Emit an event
-    async fn emit_event(&self, event: PalmEvent, severity: EventSeverity) {
+    async fn emit_event(&self, event: PalmEvent) {
         let envelope = PalmEventEnvelope::new(event, EventSource::Scheduler, self.platform.clone())
             .with_actor("scheduler");
 
@@ -389,6 +378,7 @@ impl Scheduler {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::storage::InMemoryStorage;
     use palm_types::{AgentSpecId, Deployment, DeploymentStrategy, ReplicaConfig};
 
     fn create_test_deployment() -> Deployment {

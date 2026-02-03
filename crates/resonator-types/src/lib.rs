@@ -6,7 +6,7 @@
 #![deny(unsafe_code)]
 
 use rcl_commitment::RclCommitment;
-use rcl_types::{EffectDomain, IdentityRef, ResonanceType, ScopeConstraint};
+use rcl_types::{EffectDomain, IdentityRef, ScopeConstraint};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 

@@ -81,7 +81,7 @@ impl DeploymentExecutor for CanaryDeploymentExecutor {
         let total = deployment.replicas.desired;
         let mut canary_percentage = self.initial_percent;
         let mut canary_instances: Vec<AgentInstance> = Vec::new();
-        let mut old_instances = current_instances;
+        let old_instances = current_instances;
 
         info!(
             deployment_id = %deployment.id,

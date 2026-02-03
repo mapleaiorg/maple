@@ -1,6 +1,6 @@
 //! Audit query support
 
-use super::entry::{ActorType, AuditAction, AuditEntry, AuditOutcome, ResourceType};
+use super::entry::{ActorType, AuditAction, AuditEntry, ResourceType};
 use chrono::{DateTime, Utc};
 
 /// Query for audit entries

@@ -3,20 +3,18 @@
 //! The HealthMonitor runs continuous health checks on all registered
 //! instances and triggers recovery actions when needed.
 
-use std::collections::HashSet;
 use std::sync::Arc;
 
-use chrono::Utc;
 use dashmap::DashMap;
 use palm_types::InstanceId;
 use tokio::sync::{broadcast, RwLock};
 use tokio::task::JoinHandle;
-use tracing::{debug, error, info, instrument, warn};
+use tracing::{debug, info, instrument, warn};
 
 use crate::assessment::{FleetHealthSummary, HealthAssessment, OverallHealth};
-use crate::config::{HealthConfig, HealthThresholds};
+use crate::config::HealthConfig;
 use crate::error::{HealthError, HealthResult};
-use crate::probes::{Probe, ProbeResult, ProbeSet, ProbeType};
+use crate::probes::{ProbeResult, ProbeSet, ProbeType};
 use crate::resilience::{RecoveryAction, RecoveryOutcome, ResilienceController};
 
 /// Events emitted by the health monitor.
@@ -107,6 +105,7 @@ struct InstanceMonitorState {
     paused: bool,
 
     /// Custom probes for this instance.
+    #[allow(dead_code)]
     custom_probes: Vec<String>,
 }
 

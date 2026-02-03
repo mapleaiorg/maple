@@ -57,7 +57,7 @@ members = [
     "crates/palm-control",
     "crates/palm-policy",
     "crates/palm-shared-state",
-    "crates/palm-cli",
+    "crates/palm",
     "crates/palm-daemon",
     "crates/palm-observability",
 
@@ -174,7 +174,7 @@ palm-state = { path = "crates/palm-state" }
 palm-control = { path = "crates/palm-control" }
 palm-policy = { path = "crates/palm-policy" }
 palm-shared-state = { path = "crates/palm-shared-state" }
-palm-cli = { path = "crates/palm-cli" }
+palm = { path = "crates/palm" }
 palm-daemon = { path = "crates/palm-daemon" }
 palm-observability = { path = "crates/palm-observability" }
 

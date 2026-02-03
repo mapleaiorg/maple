@@ -15,12 +15,14 @@ pub struct TemporalCoordinator {
     timelines: DashMap<ResonatorId, LocalTimeline>,
 
     /// Causal graph derived from temporal anchors
+    #[allow(dead_code)]
     causality_graph: Arc<RwLock<CausalityGraph>>,
 
     /// Temporal anchor registry
     anchors: DashMap<AnchorId, TemporalAnchor>,
 
     /// Configuration
+    #[allow(dead_code)]
     config: TemporalCoordinatorConfig,
 }
 

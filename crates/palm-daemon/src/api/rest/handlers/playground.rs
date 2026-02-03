@@ -2,7 +2,6 @@
 
 use crate::api::rest::state::AppState;
 use crate::error::ApiResult;
-use crate::storage::{ActivityStorage, InstanceStorage, ResonatorStorage};
 use axum::{
     extract::{Query, State},
     response::{Html, sse::{Event, KeepAlive, Sse}},
@@ -127,7 +126,7 @@ pub async fn list_playground_activities(
 pub async fn stream_playground_activities(
     State(state): State<AppState>,
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
-    let mut rx = state.activity_tx.subscribe();
+    let rx = state.activity_tx.subscribe();
 
     let stream = stream::unfold(rx, |mut rx| async move {
         match rx.recv().await {

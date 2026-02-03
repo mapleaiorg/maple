@@ -12,7 +12,7 @@
 | `palm-control` | Unified control plane |
 | `palm-policy` | Policy gate system |
 | `maple-cli` | Umbrella CLI (developer tools + `maple palm ...` operations) |
-| `palm-cli` | Direct operations CLI (backwards compatible) |
+| `palm` | Direct operations CLI (backwards compatible) |
 | `palm-daemon` | Background service |
 | `palm-observability` | Metrics and audit |
 | `palm-platform-pack` | Platform pack contract |

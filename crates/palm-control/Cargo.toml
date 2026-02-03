@@ -6,6 +6,9 @@ description = "PALM - Unified control plane facade"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/anthropic/maple"
 
+[features]
+strict-docs = []
+
 [dependencies]
 palm-types = { path = "../palm-types" }
 palm-registry = { path = "../palm-registry" }

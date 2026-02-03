@@ -6,8 +6,8 @@
 #![deny(unsafe_code)]
 
 use aas_types::{
-    AgentId, AdjudicatorInfo, AdjudicatorType, Condition, ConditionType, Decision,
-    DecisionId, PolicyDecisionCard, RiskAssessment, RiskLevel, Rationale,
+    AdjudicatorInfo, AdjudicatorType, Condition, ConditionType, Decision, DecisionId,
+    PolicyDecisionCard, RiskAssessment, RiskLevel, Rationale,
 };
 use rcl_commitment::{CommitmentId, RclCommitment};
 use serde::{Deserialize, Serialize};
@@ -244,7 +244,9 @@ impl Default for Adjudicator {
 struct PendingDecision {
     commitment: RclCommitment,
     evaluation: PolicyEvaluationInput,
+    #[allow(dead_code)]
     submitted_at: chrono::DateTime<chrono::Utc>,
+    #[allow(dead_code)]
     status: PendingStatus,
 }
 

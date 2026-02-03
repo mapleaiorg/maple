@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 description = "PALM - Deployment orchestration for Resonator fleets"
 
+[features]
+strict-docs = []
+
 [dependencies]
 palm-types = { path = "../palm-types" }
 palm-registry = { path = "../palm-registry" }

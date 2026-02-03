@@ -1,10 +1,9 @@
 //! Resonator Registry - manages persistent Resonator identities
 
-use dashmap::DashMap;
-use std::sync::Arc;
-use crate::types::*;
-use crate::runtime_core::{ContinuityProof, ContinuityRecord};
 use crate::config::RegistryConfig;
+use crate::runtime_core::{ContinuityProof, ContinuityRecord};
+use crate::types::*;
+use dashmap::DashMap;
 
 /// Registry of all Resonators with persistent identity
 pub struct ResonatorRegistry {
@@ -12,6 +11,7 @@ pub struct ResonatorRegistry {
     resonators: DashMap<ResonatorId, ResonatorMetadata>,
 
     /// Configuration
+    #[allow(dead_code)]
     config: RegistryConfig,
 }
 
@@ -45,7 +45,7 @@ impl ResonatorRegistry {
     /// Verify continuity proof and retrieve record
     pub async fn verify_continuity(
         &self,
-        proof: &ContinuityProof,
+        _proof: &ContinuityProof,
     ) -> Result<ContinuityRecord, ResumeError> {
         // In a real implementation, this would:
         // 1. Verify cryptographic signature

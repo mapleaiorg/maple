@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `palm-state`: Checkpoint and state management
 - `palm-control`: Unified control plane
 - `palm-policy`: Policy gate system with platform-specific policies
-- `palm-cli`: Command-line interface
+- `palm`: Command-line interface
 - `palm-daemon`: Background orchestration service
 - `palm-observability`: Metrics, tracing, and audit
 

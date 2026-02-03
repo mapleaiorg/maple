@@ -2,7 +2,7 @@
 //!
 //! The InstanceRegistry manages running agent instances.
 
-use crate::error::{RegistryError, Result};
+use crate::error::Result;
 use async_trait::async_trait;
 use palm_types::{AgentInstance, DeploymentId, HealthStatus, InstanceId, InstanceStatus};
 

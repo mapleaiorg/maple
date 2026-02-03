@@ -6,7 +6,6 @@
 
 use mapleverse_types::{Consequence, Evidence, EvidenceType};
 use rcl_commitment::CommitmentId;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::RwLock;
 use thiserror::Error;

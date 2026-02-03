@@ -8,7 +8,6 @@ use tokio::sync::RwLock;
 use petgraph::graph::{DiGraph, NodeIndex};
 use crate::types::*;
 use crate::allocator::AttentionAllocator;
-use crate::runtime_core::CouplingHandle;
 use crate::runtime_core::DecouplingResult;
 
 

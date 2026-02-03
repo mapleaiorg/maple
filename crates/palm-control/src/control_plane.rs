@@ -76,6 +76,7 @@ pub struct PalmControlPlane {
     health_monitor: Arc<HealthMonitor>,
 
     /// Resilience controller
+    #[allow(dead_code)]
     resilience_controller: Arc<ResilienceController>,
 
     /// State manager

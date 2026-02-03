@@ -61,6 +61,7 @@ pub struct DeploymentScheduler {
     /// Queue of pending deployments
     queue: Arc<RwLock<Vec<QueuedDeployment>>>,
     /// Instance registry for instance management
+    #[allow(dead_code)]
     instance_registry: Arc<dyn InstanceRegistry>,
     /// State store for deployment persistence
     state_store: Arc<dyn DeploymentStateStore>,

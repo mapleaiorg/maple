@@ -10,9 +10,8 @@ use mapleverse_types::{
     ExecutionParameters, ExecutionRequest, ExecutionRequestId, ExecutionResult, ExecutionStatus,
     ReversibilityStatus,
 };
-use rcl_commitment::{CommitmentId, RclCommitment, Reversibility};
+use rcl_commitment::{RclCommitment, Reversibility};
 use rcl_types::EffectDomain;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::RwLock;
 use thiserror::Error;

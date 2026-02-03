@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 description = "PALM - Core types for fleet orchestration layer"
 
+[features]
+strict-docs = []
+
 [dependencies]
 # Serialization
 serde = { version = "1.0", features = ["derive"] }

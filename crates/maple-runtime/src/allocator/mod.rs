@@ -14,6 +14,7 @@ pub struct AttentionAllocator {
     budgets: DashMap<ResonatorId, AttentionBudget>,
 
     /// Configuration
+    #[allow(dead_code)]
     config: AttentionConfig,
 }
 
@@ -60,7 +61,7 @@ impl AttentionAllocator {
         resonator: &ResonatorId,
         amount: u64,
     ) -> Result<AllocationToken, AttentionError> {
-        let mut budget = self
+        let budget = self
             .budgets
             .get_mut(resonator)
             .ok_or(AttentionError::ResonatorNotFound)?;
@@ -94,7 +95,7 @@ impl AttentionAllocator {
         resonator: &ResonatorId,
         amount: u64,
     ) -> Result<(), AttentionError> {
-        let mut budget = self
+        let budget = self
             .budgets
             .get_mut(resonator)
             .ok_or(AttentionError::ResonatorNotFound)?;

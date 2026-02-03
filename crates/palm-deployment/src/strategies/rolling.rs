@@ -73,7 +73,7 @@ impl DeploymentExecutor for RollingDeploymentExecutor {
             let total_instances = new_instances.len() as u32 + old_instances.len() as u32;
             let healthy_new = ctx.count_healthy(&new_instances).await?;
             let healthy_old = ctx.count_healthy(&old_instances).await?;
-            let total_healthy = healthy_new + healthy_old;
+            let _total_healthy = healthy_new + healthy_old;
 
             // Phase 1: Create new instances (if under max_total and need more)
             if healthy_new < target_count && total_instances < max_total {

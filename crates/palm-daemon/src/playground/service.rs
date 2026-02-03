@@ -1,7 +1,7 @@
 //! Playground service for shared state and simulation control
 
 use super::simulation::SimulationEngine;
-use crate::storage::{PlaygroundConfigStorage, Storage};
+use crate::storage::Storage;
 use crate::error::StorageError;
 use palm_shared_state::{
     AiBackendKind, AiBackendPublic, PlaygroundConfig, PlaygroundConfigPublic,

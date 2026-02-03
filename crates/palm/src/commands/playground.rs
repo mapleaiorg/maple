@@ -4,7 +4,7 @@ use crate::client::PalmClient;
 use crate::error::CliResult;
 use crate::output::{self, OutputFormat, print_info, print_success};
 use clap::Subcommand;
-use palm_shared_state::{Activity, PlaygroundConfigUpdate, AiBackendConfigUpdate};
+use palm_shared_state::{Activity, AiBackendConfigUpdate, AiBackendPublic, PlaygroundConfigUpdate};
 use serde::Serialize;
 use tabled::Tabled;
 
@@ -29,6 +29,9 @@ pub enum PlaygroundCommands {
 
     /// List agents
     Agents,
+
+    /// List available AI backends
+    Backends,
 
     /// Set the active AI backend
     SetBackend {
@@ -85,6 +88,27 @@ struct AgentRow {
     attention: String,
 }
 
+#[derive(Debug, Serialize, Tabled)]
+struct BackendRow {
+    kind: String,
+    model: String,
+    endpoint: String,
+    active: bool,
+    configured: bool,
+}
+
+impl From<AiBackendPublic> for BackendRow {
+    fn from(b: AiBackendPublic) -> Self {
+        Self {
+            kind: format!("{:?}", b.kind),
+            model: b.model,
+            endpoint: b.endpoint.unwrap_or_else(|| "-".to_string()),
+            active: b.active,
+            configured: b.configured,
+        }
+    }
+}
+
 pub async fn execute(
     command: PlaygroundCommands,
     client: &PalmClient,
@@ -133,6 +157,12 @@ pub async fn execute(
                     attention: format!("{:.2}", a.metrics.attention_utilization),
                 })
                 .collect();
+            output::print_output(rows, format);
+            Ok(())
+        }
+        PlaygroundCommands::Backends => {
+            let backends = client.list_playground_backends().await?;
+            let rows: Vec<BackendRow> = backends.into_iter().map(BackendRow::from).collect();
             output::print_output(rows, format);
             Ok(())
         }

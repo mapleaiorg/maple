@@ -15,7 +15,7 @@ use palm_registry::{AgentRegistry, InstanceRegistry};
 use palm_types::*;
 use std::sync::Arc;
 use tokio::sync::broadcast;
-use tracing::{info, warn, instrument};
+use tracing::{info, instrument};
 
 /// Configuration for delete operations
 #[derive(Debug, Clone)]

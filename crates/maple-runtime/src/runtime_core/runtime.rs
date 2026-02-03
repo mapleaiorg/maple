@@ -48,6 +48,7 @@ struct RuntimeInner {
     // ═══════════════════════════════════════════════════════════════════
     // SAFETY AND GOVERNANCE
     // ═══════════════════════════════════════════════════════════════════
+    #[allow(dead_code)]
     invariant_guard: Arc<InvariantGuard>,
     // agency_protector: Arc<HumanAgencyProtector>,
     // safety_enforcer: Arc<SafetyBoundaryEnforcer>,

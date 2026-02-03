@@ -110,7 +110,8 @@
 //! 7. **Human agency cannot be bypassed**: Human Resonators must always be able to disengage
 //! 8. **Failure must be explicit**: All failures must be surfaced, never hidden
 
-#![warn(missing_docs)]
+#![cfg_attr(feature = "strict-docs", warn(missing_docs))]
+#![cfg_attr(not(feature = "strict-docs"), allow(missing_docs))]
 #![warn(clippy::all)]
 
 // Core modules

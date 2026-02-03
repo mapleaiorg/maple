@@ -12,8 +12,8 @@ use tracing::{info, instrument, warn};
 use crate::checkpoint::{
     CheckpointConfig, CheckpointService, InstanceInfo, RuntimeStateGatherer,
 };
-use crate::commitment_reconcile::{AasClient, CommitmentReconciler, ReconciliationResult};
-use crate::coupling_restore::{CouplingRestorationHandle, CouplingRestorationManager, CouplingRuntime};
+use crate::commitment_reconcile::{AasClient, CommitmentReconciler};
+use crate::coupling_restore::{CouplingRestorationManager, CouplingRuntime};
 use crate::error::{Result, StateError, StateSnapshotId};
 use crate::migration::{MigrationResult, MigrationRuntime, MigrationService, NodeId};
 use crate::restore::{ContinuityVerifier, RestoreResult, RestoreService, RuntimeStateRestorer};

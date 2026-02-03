@@ -2,7 +2,7 @@
 
 use super::entry::AuditEntry;
 use sha2::{Sha256, Digest};
-use crate::error::{ObservabilityError, Result};
+use crate::error::Result;
 
 /// Manages the integrity chain for audit entries
 #[derive(Debug)]

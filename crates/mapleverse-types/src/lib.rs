@@ -5,7 +5,7 @@
 
 #![deny(unsafe_code)]
 
-use aas_types::{AgentId, CommitmentOutcome};
+use aas_types::CommitmentOutcome;
 use rcl_commitment::{CommitmentId, RclCommitment};
 use rcl_types::EffectDomain;
 use serde::{Deserialize, Serialize};

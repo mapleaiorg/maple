@@ -9,7 +9,6 @@ use aas_types::{
     AgentId, Decision, RiskAssessment, RiskFactor, RiskLevel, Rationale, RuleReference,
 };
 use rcl_commitment::RclCommitment;
-use rcl_types::EffectDomain;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::RwLock;
@@ -303,7 +302,7 @@ pub enum PolicyError {
 mod tests {
     use super::*;
     use rcl_commitment::{CommitmentBuilder, Reversibility};
-    use rcl_types::{IdentityRef, ScopeConstraint};
+    use rcl_types::{EffectDomain, IdentityRef, ScopeConstraint};
 
     #[test]
     fn test_policy_evaluation() {

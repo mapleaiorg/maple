@@ -17,7 +17,7 @@ enum Commands {
     /// Validate a local file (developer utility)
     Validate { #[arg(short, long)] file: String },
 
-    /// PALM operations (forwarded to palm-cli)
+    /// PALM operations (forwarded to palm)
     #[command(alias = "ops")]
     Palm {
         #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
@@ -39,7 +39,7 @@ async fn main() {
             forwarded.push(OsString::from("palm"));
             forwarded.extend(args);
 
-            if let Err(err) = palm_cli::run_with_args(forwarded).await {
+            if let Err(err) = palm::run_with_args(forwarded).await {
                 eprintln!("{err}");
                 std::process::exit(1);
             }

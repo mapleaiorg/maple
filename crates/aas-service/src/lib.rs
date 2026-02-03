@@ -9,8 +9,8 @@ use aas_adjudication::{Adjudicator, AdjudicationError, PolicyEvaluationInput, Ru
 use aas_capability::{CapabilityCheckResult, CapabilityError, CapabilityRegistry, GrantRequest};
 use aas_identity::{IdentityError, IdentityRegistry, RegistrationRequest, VerificationResult};
 use aas_ledger::{AccountabilityLedger, LedgerError, LedgerQuery, LedgerStatistics};
-use aas_policy::{PolicyEngine, PolicyError, PolicyEvaluation, EvaluationContext};
-use aas_types::{AgentId, CommitmentOutcome, LedgerEntry, LedgerEntryId, PolicyDecisionCard};
+use aas_policy::{EvaluationContext, PolicyEngine, PolicyError};
+use aas_types::{AgentId, CommitmentOutcome, LedgerEntry, PolicyDecisionCard};
 use rcl_commitment::{CommitmentId, RclCommitment};
 use rcl_types::{EffectDomain, ScopeConstraint};
 use std::sync::Arc;

@@ -233,6 +233,7 @@ impl DaemonConfig {
     }
 
     /// Create a development configuration
+    #[allow(dead_code)]
     pub fn development() -> Self {
         Self {
             platform: PlatformProfile::Development,

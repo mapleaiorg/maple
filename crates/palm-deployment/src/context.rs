@@ -285,7 +285,7 @@ impl DeploymentContext {
 
     // --- Internal helpers ---
 
-    async fn execute_health_probe(&self, instance: &AgentInstance, config: &ProbeConfig) -> ProbeResult {
+    async fn execute_health_probe(&self, _instance: &AgentInstance, config: &ProbeConfig) -> ProbeResult {
         let start = std::time::Instant::now();
 
         // In a real implementation, this would:

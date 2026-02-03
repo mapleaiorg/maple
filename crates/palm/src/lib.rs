@@ -113,7 +113,7 @@ pub async fn run() -> CliResult<()> {
 pub async fn run_with_args<I, T>(args: I) -> CliResult<()>
 where
     I: IntoIterator<Item = T>,
-    T: Into<OsString>,
+    T: Into<OsString> + Clone,
 {
     let cli = Cli::parse_from(args);
 
@@ -155,6 +155,9 @@ where
                 println!("✓ PALM daemon is healthy");
                 println!("  Version: {}", status.version);
                 println!("  Uptime: {}", status.uptime);
+                if let Some(platform) = status.platform.as_deref() {
+                    println!("  Platform: {}", platform);
+                }
                 Ok(())
             }
             Err(e) => {

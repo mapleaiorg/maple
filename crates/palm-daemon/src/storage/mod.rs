@@ -8,6 +8,7 @@ mod traits;
 
 pub use memory::InMemoryStorage;
 pub use postgres::PostgresStorage;
+#[allow(unused_imports)]
 pub use traits::{
     ActivityStorage, DeploymentStorage, EventStorage, InstanceStorage, PlaygroundConfigStorage,
     ResonatorStorage, SnapshotStorage, SpecStorage, Storage,

@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 description = "PALM - Registry traits and implementations for agent and instance management"
 
+[features]
+strict-docs = []
+
 [dependencies]
 palm-types = { path = "../palm-types" }
 

@@ -61,7 +61,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 MAPLE can run fully headless (runtime-only) or with the PALM control plane + Playground UI.
 
 - **`maple`** is the umbrella CLI. Use `maple palm ...` for operations and `maple` for developer utilities.
-- **`palm`** still exists as a direct operations CLI (backwards-compatible with `palm-cli`).
+- **`palm`** still exists as a direct operations CLI (same commands as `maple palm ...`).
 - The **Playground** is optional and provides a live, game-like view plus history replay for humans and web observers.
 
 Examples:
@@ -70,12 +70,15 @@ Examples:
 # Start the PALM daemon (API + control plane)
 cargo run -p palm-daemon
 
+# Install the CLI binaries (no cargo run required)
+cargo install --path crates/maple-cli --bin maple && cargo install --path crates/palm --bin palm
+
 # Real-time monitoring in the terminal (umbrella CLI)
 cargo run -p maple-cli -- palm events watch
 cargo run -p maple-cli -- palm playground activities --limit 50
 
 # Direct operations CLI (optional)
-cargo run -p palm-cli -- events watch
+cargo run -p palm -- events watch
 
 # Open the web dashboard (optional)
 open http://localhost:8080/playground
@@ -189,7 +192,7 @@ The foundational Resonance Runtime powering all MAPLE platforms.
 
 - **[maple-integration](crates/maple-integration/)** - Integration tests
 - **[maple-cli](crates/maple-cli/)** - Umbrella CLI (`maple` + `maple palm ...`)
-- **[palm-cli](crates/palm-cli/)** - Direct operations CLI (backwards compatible)
+- **[palm](crates/palm/)** - Direct operations CLI (backwards compatible)
 - **[palm-daemon](crates/palm-daemon/)** - Control plane + API service
 
 ---
