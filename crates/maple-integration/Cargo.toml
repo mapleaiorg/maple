@@ -10,5 +10,8 @@ rcf-meaning = { workspace = true }
 rcf-intent = { workspace = true }
 rcf-commitment = { workspace = true }
 rcf-validator = { workspace = true }
+ual-types = { workspace = true }
+ual-parser = { workspace = true }
+ual-compiler = { workspace = true }
 mrp-types = { workspace = true }
 aas-types = { workspace = true }

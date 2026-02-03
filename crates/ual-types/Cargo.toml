@@ -1,0 +1,10 @@
+[package]
+name = "ual-types"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "UAL Types - Universal Agent Language AST and shared types"
+
+[dependencies]
+serde = { workspace = true, features = ["derive"] }

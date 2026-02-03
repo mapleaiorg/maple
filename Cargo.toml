@@ -9,6 +9,9 @@ members = [
     "crates/rcf-validator",
     "crates/rcf-compiler",
     "crates/rcf-audit",
+    "crates/ual-types",
+    "crates/ual-parser",
+    "crates/ual-compiler",
     "crates/mrp-types",
     "crates/mrp-router",
     "crates/mrp-transport",
@@ -133,6 +136,9 @@ rcf-commitment = { path = "crates/rcf-commitment" }
 rcf-validator = { path = "crates/rcf-validator" }
 rcf-compiler = { path = "crates/rcf-compiler" }
 rcf-audit = { path = "crates/rcf-audit" }
+ual-types = { path = "crates/ual-types" }
+ual-parser = { path = "crates/ual-parser" }
+ual-compiler = { path = "crates/ual-compiler" }
 mrp-types = { path = "crates/mrp-types" }
 mrp-router = { path = "crates/mrp-router" }
 mrp-transport = { path = "crates/mrp-transport" }

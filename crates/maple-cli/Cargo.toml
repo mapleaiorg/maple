@@ -13,3 +13,9 @@ maple-integration = { workspace = true }
 tokio = { workspace = true }
 clap = { version = "4.4", features = ["derive"] }
 palm = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+ual-parser = { workspace = true }
+ual-compiler = { workspace = true }
+ual-types = { workspace = true }
+rcf-validator = { workspace = true }
