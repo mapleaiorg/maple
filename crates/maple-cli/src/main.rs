@@ -33,6 +33,10 @@ enum Commands {
         #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
         args: Vec<OsString>,
     },
+
+    /// Direct PALM operations shortcut (e.g. `maple spec list`)
+    #[command(external_subcommand)]
+    PalmShortcut(Vec<OsString>),
 }
 
 #[derive(Subcommand)]
@@ -70,6 +74,16 @@ async fn main() {
             }
         }
         Commands::Palm { args } => {
+            let mut forwarded = Vec::with_capacity(args.len() + 1);
+            forwarded.push(OsString::from("palm"));
+            forwarded.extend(args);
+
+            if let Err(err) = palm::run_with_args(forwarded).await {
+                eprintln!("{err}");
+                std::process::exit(1);
+            }
+        }
+        Commands::PalmShortcut(args) => {
             let mut forwarded = Vec::with_capacity(args.len() + 1);
             forwarded.push(OsString::from("palm"));
             forwarded.extend(args);

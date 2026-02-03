@@ -50,6 +50,8 @@ maple palm playground infer "Draft a UAL commit statement" --system-prompt "You 
 
 This is useful for operator workflows and backend smoke-testing. Inference activity is recorded in Playground activity history for visibility.
 
+Playground simulation runs **auto-inference mode by default**, where simulated agents periodically invoke the active backend and emit richer `agent_cognition` traces.
+
 ## 5) Governance Path for LLM-Generated Intent
 
 Recommended flow:

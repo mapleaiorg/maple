@@ -61,6 +61,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 MAPLE can run fully headless (runtime-only) or with the PALM control plane + Playground UI.
 
 - **`maple`** is the umbrella CLI. Use `maple palm ...` for operations and `maple` for developer utilities.
+- **`maple`** is the umbrella CLI. PALM ops can be run directly (`maple spec list`) or explicitly (`maple palm spec list`).
 - **`palm`** still exists as a direct operations CLI (same commands as `maple palm ...`).
 - The **Playground** is optional and provides a live, game-like view plus history replay for humans and web observers.
 
@@ -74,8 +75,8 @@ cargo run -p palm-daemon
 cargo install --path crates/maple-cli --bin maple && cargo install --path crates/palm --bin palm
 
 # Real-time monitoring in the terminal (umbrella CLI)
-cargo run -p maple-cli -- palm events watch
-cargo run -p maple-cli -- palm playground activities --limit 50
+cargo run -p maple-cli -- events watch
+cargo run -p maple-cli -- playground activities --limit 50
 
 # Direct operations CLI (optional)
 cargo run -p palm -- events watch

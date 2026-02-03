@@ -105,6 +105,11 @@ All endpoints are under `/api/v1`.
 
 Supported backend kinds: `local_llama`, `open_ai`, `anthropic`, `grok`, `gemini`.
 
+`simulation` config now also supports:
+- `auto_inference_enabled` (bool)
+- `inference_interval_ticks` (u64)
+- `inferences_per_tick` (u32)
+
 `POST /playground/infer` request body:
 
 ```json

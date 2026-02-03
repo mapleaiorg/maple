@@ -105,11 +105,11 @@ MAPLE can run headless, but if you want a control plane with persistence, monito
 cargo run -p palm-daemon
 
 # Check connectivity
-cargo run -p maple-cli -- palm status
+cargo run -p maple-cli -- status
 
 # Real-time monitoring
-cargo run -p maple-cli -- palm events watch
-cargo run -p maple-cli -- palm playground activities --limit 50
+cargo run -p maple-cli -- events watch
+cargo run -p maple-cli -- playground activities --limit 50
 ```
 
 The Playground UI is optional and available at:

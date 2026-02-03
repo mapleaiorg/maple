@@ -419,6 +419,14 @@
               <input id="simulation-max-agents" placeholder="Max agents" />
               <input id="simulation-max-resonators" placeholder="Max resonators" />
             </div>
+            <div class="form-row" style="margin-top:10px;">
+              <select id="simulation-auto-inference">
+                <option value="false">Auto Inference Off</option>
+                <option value="true">Auto Inference On</option>
+              </select>
+              <input id="simulation-inference-interval" placeholder="Inference interval ticks" />
+              <input id="simulation-inferences-per-tick" placeholder="Inferences per tick" />
+            </div>
             <div class="flex" style="margin-top:12px;">
               <button type="submit" class="primary">Update</button>
               <span class="tag" id="simulation-save-status">Idle</span>
@@ -435,6 +443,10 @@
             <div class="list-item">
               <strong>History Replay</strong>
               <small>Activities tab replays events in sequence for quick diagnostics.</small>
+            </div>
+            <div class="list-item">
+              <strong>Auto Inference</strong>
+              <small>When enabled, simulated agents periodically invoke the active AI backend and emit cognition traces.</small>
             </div>
           </div>
         </div>
@@ -553,6 +565,9 @@
       document.getElementById('simulation-intensity').value = sim.intensity ?? '';
       document.getElementById('simulation-max-agents').value = sim.max_agents ?? '';
       document.getElementById('simulation-max-resonators').value = sim.max_resonators ?? '';
+      document.getElementById('simulation-auto-inference').value = String(Boolean(sim.auto_inference_enabled));
+      document.getElementById('simulation-inference-interval').value = sim.inference_interval_ticks ?? '';
+      document.getElementById('simulation-inferences-per-tick').value = sim.inferences_per_tick ?? '';
       document.getElementById('simulation-status').textContent = sim.enabled ? 'running' : 'paused';
     }
 
@@ -675,7 +690,10 @@
           tick_interval_ms: Number(document.getElementById('simulation-interval').value),
           intensity: Number(document.getElementById('simulation-intensity').value),
           max_agents: Number(document.getElementById('simulation-max-agents').value),
-          max_resonators: Number(document.getElementById('simulation-max-resonators').value)
+          max_resonators: Number(document.getElementById('simulation-max-resonators').value),
+          auto_inference_enabled: document.getElementById('simulation-auto-inference').value === 'true',
+          inference_interval_ticks: Number(document.getElementById('simulation-inference-interval').value),
+          inferences_per_tick: Number(document.getElementById('simulation-inferences-per-tick').value)
         }
       };
       const status = document.getElementById('simulation-save-status');

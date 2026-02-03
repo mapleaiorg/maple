@@ -70,23 +70,69 @@ pub struct AiBackendPublic {
 /// Simulation configuration.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SimulationConfig {
+    #[serde(default = "default_simulation_enabled")]
     pub enabled: bool,
+    #[serde(default = "default_tick_interval_ms")]
     pub tick_interval_ms: u64,
+    #[serde(default = "default_simulation_intensity")]
     pub intensity: f32,
+    #[serde(default = "default_max_resonators")]
     pub max_resonators: u32,
+    #[serde(default = "default_max_agents")]
     pub max_agents: u32,
+    #[serde(default = "default_auto_inference_enabled")]
+    pub auto_inference_enabled: bool,
+    #[serde(default = "default_inference_interval_ticks")]
+    pub inference_interval_ticks: u64,
+    #[serde(default = "default_inferences_per_tick")]
+    pub inferences_per_tick: u32,
 }
 
 impl Default for SimulationConfig {
     fn default() -> Self {
         Self {
-            enabled: true,
-            tick_interval_ms: 1200,
-            intensity: 0.75,
-            max_resonators: 64,
-            max_agents: 64,
+            enabled: default_simulation_enabled(),
+            tick_interval_ms: default_tick_interval_ms(),
+            intensity: default_simulation_intensity(),
+            max_resonators: default_max_resonators(),
+            max_agents: default_max_agents(),
+            auto_inference_enabled: default_auto_inference_enabled(),
+            inference_interval_ticks: default_inference_interval_ticks(),
+            inferences_per_tick: default_inferences_per_tick(),
         }
     }
+}
+
+const fn default_simulation_enabled() -> bool {
+    true
+}
+
+const fn default_tick_interval_ms() -> u64 {
+    1200
+}
+
+const fn default_simulation_intensity() -> f32 {
+    0.75
+}
+
+const fn default_max_resonators() -> u32 {
+    64
+}
+
+const fn default_max_agents() -> u32 {
+    64
+}
+
+const fn default_auto_inference_enabled() -> bool {
+    true
+}
+
+const fn default_inference_interval_ticks() -> u64 {
+    5
+}
+
+const fn default_inferences_per_tick() -> u32 {
+    1
 }
 
 /// Playground configuration stored in persistent state.
@@ -356,4 +402,39 @@ pub struct SystemState {
     pub agents: Vec<AgentInstance>,
     pub resonators: Vec<ResonatorStatus>,
     pub activities: Vec<Activity>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn simulation_defaults_include_auto_inference_controls() {
+        let simulation = SimulationConfig::default();
+        assert!(simulation.enabled);
+        assert!(simulation.auto_inference_enabled);
+        assert_eq!(simulation.inference_interval_ticks, 5);
+        assert_eq!(simulation.inferences_per_tick, 1);
+    }
+
+    #[test]
+    fn inference_request_validation_rejects_invalid_inputs() {
+        let empty_prompt = PlaygroundInferenceRequest {
+            prompt: " ".to_string(),
+            system_prompt: None,
+            actor_id: None,
+            temperature: Some(0.7),
+            max_tokens: Some(128),
+        };
+        assert!(empty_prompt.validate().is_err());
+
+        let invalid_temp = PlaygroundInferenceRequest {
+            prompt: "ok".to_string(),
+            system_prompt: None,
+            actor_id: None,
+            temperature: Some(4.0),
+            max_tokens: Some(128),
+        };
+        assert!(invalid_temp.validate().is_err());
+    }
 }

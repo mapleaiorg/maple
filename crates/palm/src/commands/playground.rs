@@ -52,6 +52,34 @@ pub enum PlaygroundCommands {
         api_key: Option<String>,
     },
 
+    /// Update simulation settings (including auto-inference mode)
+    SetSimulation {
+        /// Enable or pause simulation
+        #[arg(long)]
+        enabled: Option<bool>,
+        /// Tick interval in milliseconds
+        #[arg(long)]
+        tick_interval_ms: Option<u64>,
+        /// Simulation intensity (0.1 - 1.0 typical)
+        #[arg(long)]
+        intensity: Option<f32>,
+        /// Maximum simulated agents
+        #[arg(long)]
+        max_agents: Option<u32>,
+        /// Maximum simulated resonators
+        #[arg(long)]
+        max_resonators: Option<u32>,
+        /// Enable periodic auto-inference
+        #[arg(long)]
+        auto_inference_enabled: Option<bool>,
+        /// Auto-inference interval in simulation ticks
+        #[arg(long)]
+        inference_interval_ticks: Option<u64>,
+        /// Number of inference calls per interval tick
+        #[arg(long)]
+        inferences_per_tick: Option<u32>,
+    },
+
     /// Run a one-shot prompt on the active backend
     Infer {
         /// Prompt text to send to the active backend
@@ -220,6 +248,54 @@ pub async fn execute(
 
             let config = client.update_playground_config(&update).await?;
             print_success(&format!("Active backend: {:?}", config.ai_backend.kind));
+            Ok(())
+        }
+        PlaygroundCommands::SetSimulation {
+            enabled,
+            tick_interval_ms,
+            intensity,
+            max_agents,
+            max_resonators,
+            auto_inference_enabled,
+            inference_interval_ticks,
+            inferences_per_tick,
+        } => {
+            print_info("Updating simulation configuration...");
+            let mut simulation = client.get_playground_config().await?.simulation;
+            if let Some(value) = enabled {
+                simulation.enabled = value;
+            }
+            if let Some(value) = tick_interval_ms {
+                simulation.tick_interval_ms = value;
+            }
+            if let Some(value) = intensity {
+                simulation.intensity = value;
+            }
+            if let Some(value) = max_agents {
+                simulation.max_agents = value;
+            }
+            if let Some(value) = max_resonators {
+                simulation.max_resonators = value;
+            }
+            if let Some(value) = auto_inference_enabled {
+                simulation.auto_inference_enabled = value;
+            }
+            if let Some(value) = inference_interval_ticks {
+                simulation.inference_interval_ticks = value;
+            }
+            if let Some(value) = inferences_per_tick {
+                simulation.inferences_per_tick = value;
+            }
+
+            let update = PlaygroundConfigUpdate {
+                ai_backend: None,
+                simulation: Some(simulation),
+            };
+            let config = client.update_playground_config(&update).await?;
+            print_success(&format!(
+                "Simulation updated (enabled={}, auto_inference={})",
+                config.simulation.enabled, config.simulation.auto_inference_enabled
+            ));
             Ok(())
         }
         PlaygroundCommands::Infer {

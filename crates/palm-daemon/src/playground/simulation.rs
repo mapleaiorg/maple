@@ -1,10 +1,11 @@
 //! Heavy simulation loop for playground activity
 
+use super::llm;
 use crate::error::StorageError;
 use crate::storage::Storage;
 use palm_shared_state::{
-    Activity, ActivityActor, CouplingSnapshot, PlaygroundConfig, PresenceSnapshot, ResonatorStatus,
-    ResonatorStatusKind,
+    Activity, ActivityActor, CouplingSnapshot, PlaygroundConfig, PlaygroundInferenceRequest,
+    PresenceSnapshot, ResonatorStatus, ResonatorStatusKind,
 };
 use palm_types::{
     instance::{
@@ -15,15 +16,32 @@ use palm_types::{
 };
 use rand::{seq::SliceRandom, Rng, SeedableRng};
 use std::collections::{HashMap, HashSet};
-use std::sync::Arc;
+use std::sync::{
+    atomic::{AtomicU64, Ordering},
+    Arc,
+};
 use tokio::sync::{broadcast, RwLock};
 use tokio::time::{sleep, Duration};
+
+const INFERENCE_ERROR_COOLDOWN_TICKS: u64 = 12;
+
+#[derive(Clone)]
+struct AgentSimulationContext {
+    id: String,
+    resonator_id: String,
+    attention_utilization: f64,
+    active_couplings: u32,
+    status: String,
+    health: String,
+}
 
 /// Simulation engine for playground data
 pub struct SimulationEngine {
     storage: Arc<dyn Storage>,
     activity_tx: broadcast::Sender<Activity>,
     config: Arc<RwLock<PlaygroundConfig>>,
+    tick_counter: AtomicU64,
+    last_inference_error_tick: AtomicU64,
 }
 
 impl SimulationEngine {
@@ -36,6 +54,8 @@ impl SimulationEngine {
             storage,
             activity_tx,
             config,
+            tick_counter: AtomicU64::new(0),
+            last_inference_error_tick: AtomicU64::new(0),
         }
     }
 
@@ -56,6 +76,7 @@ impl SimulationEngine {
     }
 
     async fn tick(&self, config: &PlaygroundConfig) -> Result<(), StorageError> {
+        let tick_number = self.tick_counter.fetch_add(1, Ordering::Relaxed) + 1;
         self.ensure_seed_data(config).await?;
 
         let specs = self.storage.list_specs().await?;
@@ -156,6 +177,8 @@ impl SimulationEngine {
         // Update instances based on resonator state
         let mut activities_emitted = 0usize;
         let activity_budget = (config.simulation.intensity * 6.0).ceil() as usize + 1;
+        let mut agent_contexts: Vec<AgentSimulationContext> =
+            Vec::with_capacity(playground_instances.len());
 
         for mut instance in playground_instances {
             let resonator_id = instance.resonator_id.to_string();
@@ -200,6 +223,15 @@ impl SimulationEngine {
                     },
                     _ => InstanceStatus::Running,
                 };
+
+                agent_contexts.push(AgentSimulationContext {
+                    id: instance.id.to_string(),
+                    resonator_id: resonator_id.clone(),
+                    attention_utilization: instance.metrics.attention_utilization,
+                    active_couplings: instance.metrics.active_couplings,
+                    status: format!("{:?}", instance.status),
+                    health: format!("{:?}", instance.health),
+                });
 
                 self.storage.upsert_instance(instance.clone()).await?;
 
@@ -258,6 +290,17 @@ impl SimulationEngine {
                 }),
             );
             self.record_activity(activity).await?;
+        }
+
+        if config.simulation.auto_inference_enabled {
+            self.maybe_run_auto_inference(
+                tick_number,
+                config,
+                &agent_contexts,
+                &resonator_map,
+                &mut rng,
+            )
+            .await?;
         }
 
         Ok(())
@@ -350,6 +393,156 @@ impl SimulationEngine {
         }
 
         Ok(())
+    }
+
+    async fn maybe_run_auto_inference(
+        &self,
+        tick_number: u64,
+        config: &PlaygroundConfig,
+        agent_contexts: &[AgentSimulationContext],
+        resonator_map: &HashMap<String, ResonatorStatus>,
+        rng: &mut impl Rng,
+    ) -> Result<(), StorageError> {
+        let interval = config.simulation.inference_interval_ticks.max(1);
+        if tick_number % interval != 0 {
+            return Ok(());
+        }
+
+        if agent_contexts.is_empty() {
+            return Ok(());
+        }
+
+        if !config.ai_backend.is_configured() {
+            let last = self.last_inference_error_tick.load(Ordering::Relaxed);
+            if tick_number.saturating_sub(last) >= INFERENCE_ERROR_COOLDOWN_TICKS {
+                self.last_inference_error_tick
+                    .store(tick_number, Ordering::Relaxed);
+                self.record_activity(Activity::new(
+                    ActivityActor::System,
+                    "playground-simulation",
+                    "auto_inference_skipped",
+                    format!(
+                        "Auto-inference skipped: backend {:?} is not configured",
+                        config.ai_backend.kind
+                    ),
+                    serde_json::json!({
+                        "backend_kind": format!("{:?}", config.ai_backend.kind),
+                        "backend_model": config.ai_backend.model,
+                        "tick": tick_number,
+                    }),
+                ))
+                .await?;
+            }
+            return Ok(());
+        }
+
+        let mut selected = agent_contexts.to_vec();
+        selected.shuffle(rng);
+        let count =
+            usize::max(1, config.simulation.inferences_per_tick as usize).min(selected.len());
+
+        for agent in selected.into_iter().take(count) {
+            let resonator = resonator_map.get(&agent.resonator_id);
+            let prompt = build_cognition_prompt(&agent, resonator, tick_number);
+            let request = PlaygroundInferenceRequest {
+                prompt: prompt.clone(),
+                system_prompt: Some("You are a MAPLE simulation cognition engine. Keep answers concise, operational, and include one optional UAL statement when relevant.".to_string()),
+                actor_id: Some(agent.id.clone()),
+                temperature: config.ai_backend.temperature,
+                max_tokens: config.ai_backend.max_tokens,
+            };
+
+            match llm::infer(&config.ai_backend, &request).await {
+                Ok(response) => {
+                    let preview = summarize_for_activity(&response.output, 160);
+                    self.record_activity(Activity::new(
+                        ActivityActor::Agent,
+                        agent.id.clone(),
+                        "agent_cognition",
+                        format!("{} -> {}", short_id(&agent.id), preview),
+                        serde_json::json!({
+                            "tick": tick_number,
+                            "resonator_id": agent.resonator_id,
+                            "backend_kind": format!("{:?}", response.backend_kind),
+                            "backend_model": response.backend_model,
+                            "latency_ms": response.latency_ms,
+                            "finish_reason": response.finish_reason,
+                            "usage": response.usage,
+                            "prompt": prompt,
+                            "response": response.output,
+                            "attention_utilization": agent.attention_utilization,
+                            "active_couplings": agent.active_couplings,
+                            "status": agent.status,
+                            "health": agent.health,
+                        }),
+                    ))
+                    .await?;
+                }
+                Err(err) => {
+                    let last = self.last_inference_error_tick.load(Ordering::Relaxed);
+                    if tick_number.saturating_sub(last) >= INFERENCE_ERROR_COOLDOWN_TICKS {
+                        self.last_inference_error_tick
+                            .store(tick_number, Ordering::Relaxed);
+                        self.record_activity(Activity::new(
+                            ActivityActor::System,
+                            "playground-simulation",
+                            "auto_inference_failed",
+                            format!(
+                                "Auto-inference failed on backend {:?}",
+                                config.ai_backend.kind
+                            ),
+                            serde_json::json!({
+                                "tick": tick_number,
+                                "agent_id": agent.id,
+                                "backend_kind": format!("{:?}", config.ai_backend.kind),
+                                "backend_model": config.ai_backend.model,
+                                "error": err,
+                            }),
+                        ))
+                        .await?;
+                    }
+                }
+            }
+        }
+
+        Ok(())
+    }
+}
+
+fn build_cognition_prompt(
+    agent: &AgentSimulationContext,
+    resonator: Option<&ResonatorStatus>,
+    tick_number: u64,
+) -> String {
+    let (resonator_name, resonator_status, couplings, responsiveness, readiness) = match resonator {
+        Some(resonator) => (
+            resonator.name.as_str(),
+            format!("{:?}", resonator.status),
+            resonator.couplings.len(),
+            resonator.presence.responsiveness,
+            resonator.presence.coupling_readiness,
+        ),
+        None => ("unknown", "Unknown".to_string(), 0, 0.0, 0.0),
+    };
+
+    format!(
+        "Tick: {tick_number}\nAgent: {agent_id}\nResonator: {resonator_id} ({resonator_name})\nAgent status: {agent_status}\nAgent health: {agent_health}\nAttention utilization: {attention:.2}\nActive couplings: {active_couplings}\nResonator status: {resonator_status}\nResonator coupling count: {couplings}\nPresence responsiveness: {responsiveness:.2}\nCoupling readiness: {readiness:.2}\n\nProvide:\n1) Brief situational awareness.\n2) Immediate next action.\n3) Risk note.\n4) Optional UAL statement if commitment/deployment action is appropriate.",
+        agent_id = agent.id,
+        resonator_id = agent.resonator_id,
+        agent_status = agent.status,
+        agent_health = agent.health,
+        attention = agent.attention_utilization,
+        active_couplings = agent.active_couplings,
+    )
+}
+
+fn summarize_for_activity(text: &str, max_chars: usize) -> String {
+    let mut chars = text.chars();
+    let head: String = chars.by_ref().take(max_chars).collect();
+    if chars.next().is_some() {
+        format!("{}...", head)
+    } else {
+        head
     }
 }
 
