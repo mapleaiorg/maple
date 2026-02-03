@@ -56,6 +56,31 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+### Operations: CLI and Playground
+
+MAPLE can run fully headless (runtime-only) or with the PALM control plane + Playground UI.
+
+- **`maple`** is the umbrella CLI. Use `maple palm ...` for operations and `maple` for developer utilities.
+- **`palm`** still exists as a direct operations CLI (backwards-compatible with `palm-cli`).
+- The **Playground** is optional and provides a live, game-like view plus history replay for humans and web observers.
+
+Examples:
+
+```bash
+# Start the PALM daemon (API + control plane)
+cargo run -p palm-daemon
+
+# Real-time monitoring in the terminal (umbrella CLI)
+cargo run -p maple-cli -- palm events watch
+cargo run -p maple-cli -- palm playground activities --limit 50
+
+# Direct operations CLI (optional)
+cargo run -p palm-cli -- events watch
+
+# Open the web dashboard (optional)
+open http://localhost:8080/playground
+```
+
 ---
 
 ## 📦 Project Structure
@@ -163,7 +188,9 @@ The foundational Resonance Runtime powering all MAPLE platforms.
 ### 🔧 Integration & Tools
 
 - **[maple-integration](crates/maple-integration/)** - Integration tests
-- **[maple-cli](crates/maple-cli/)** - Command-line interface
+- **[maple-cli](crates/maple-cli/)** - Umbrella CLI (`maple` + `maple palm ...`)
+- **[palm-cli](crates/palm-cli/)** - Direct operations CLI (backwards compatible)
+- **[palm-daemon](crates/palm-daemon/)** - Control plane + API service
 
 ---
 
@@ -348,6 +375,7 @@ Designed from day one for 100M+ concurrent Resonators.
 ### For Users
 
 - **[Getting Started Guide](docs/getting-started.md)** - Your first MAPLE application
+- **[Operations Tutorial](docs/tutorials/operations.md)** - Daemon, CLI, and Playground workflows
 - **[Architecture Overview](docs/architecture.md)** - Understanding Resonance Architecture
 - **[Platform Guides](docs/platforms/)** - Mapleverse, Finalverse, iBank
 - **[API Reference](https://docs.maple.ai/api)** - Complete API documentation
@@ -449,7 +477,7 @@ cargo run -p maple-runtime --example 05_ibank_config
 - ✅ Temporal Coordination
 - ✅ Platform Configurations
 
-### Phase 2: Cognitive Pipeline (Q2 2024)
+### Phase 2: Cognitive Pipeline (Q2 2026)
 - 🚧 Meaning Formation Engine
 - 🚧 Intent Stabilization Engine
 - 🚧 Commitment Manager
@@ -457,20 +485,20 @@ cargo run -p maple-runtime --example 05_ibank_config
 - 🚧 Human Agency Protector
 - 🚧 Safety Boundary Enforcer
 
-### Phase 3: Distribution (Q3 2024)
+### Phase 3: Distribution (Q3 2026)
 - ⏳ Distributed runtime (multi-node)
 - ⏳ Persistence layer
 - ⏳ Cross-runtime resonance
 - ⏳ Federated learning
 - ⏳ Web UI dashboard
 
-### Phase 4: Platforms (Q4 2024)
+### Phase 4: Platforms (Q4 2026)
 - ⏳ Mapleverse alpha
 - ⏳ Finalverse alpha
 - ⏳ iBank alpha
 - ⏳ Platform integrations
 
-### Phase 5: Ecosystem (2025)
+### Phase 5: Ecosystem (2027)
 - ⏳ WASM target
 - ⏳ Mobile SDKs
 - ⏳ Cloud deployment

@@ -17,6 +17,18 @@ A **Resonator** is the fundamental unit in MAPLE - a persistent intelligent enti
 - ✅ Profile-governed (different modes)
 - ✅ Identity-preserving across restarts
 
+## Resonators as Entities (Individuals, Teams, Organizations)
+
+A Resonator can represent more than a single process. It can model:
+
+- An individual AI agent
+- A human participant (Human profile)
+- A team or organization composed of multiple agents
+- A human + AI hybrid operating as one identity
+- A service role such as an issuer or authority
+
+In the AAS model, an **issuer** is a Resonator identity that grants capabilities. That issuer is usually an organization-level or system-level Resonator, not just a single worker. This lets policies, commitments, and accountability attach to a stable, persistent identity.
+
 ## Core Properties
 
 ### 1. Persistent Identity

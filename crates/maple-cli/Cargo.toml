@@ -4,7 +4,12 @@ version.workspace = true
 edition.workspace = true
 description = "maple cli"
 
+[[bin]]
+name = "maple"
+path = "src/main.rs"
+
 [dependencies]
 maple-integration = { workspace = true }
 tokio = { workspace = true }
 clap = { version = "4.4", features = ["derive"] }
+palm-cli = { workspace = true }

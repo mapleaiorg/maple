@@ -11,7 +11,8 @@
 | `palm-state` | State and checkpoint management |
 | `palm-control` | Unified control plane |
 | `palm-policy` | Policy gate system |
-| `palm-cli` | Command-line interface |
+| `maple-cli` | Umbrella CLI (developer tools + `maple palm ...` operations) |
+| `palm-cli` | Direct operations CLI (backwards compatible) |
 | `palm-daemon` | Background service |
 | `palm-observability` | Metrics and audit |
 | `palm-platform-pack` | Platform pack contract |
@@ -83,6 +84,29 @@ pub enum PalmOperation {
     ViewAuditLog { filter: String },
 }
 ```
+
+## Playground API (PALM Daemon)
+
+All endpoints are under `/api/v1`.
+
+### Core Playground Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/playground/state` | Aggregated playground state (config, stats, agents, resonators, activities) |
+| `GET` | `/playground/config` | Public playground configuration |
+| `PUT` | `/playground/config` | Update playground configuration (backend, simulation) |
+| `GET` | `/playground/backends` | Available AI backend catalog |
+| `GET` | `/playground/resonators` | Resonator list + status |
+| `GET` | `/playground/agents` | Agent (instance) list + status |
+| `GET` | `/playground/activities` | Activity list (supports `limit` and `after_sequence`) |
+| `GET` | `/playground/activities/stream` | Activity stream (SSE) |
+
+### Playground UI
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/playground` | Multi-tab dashboard (HTML) |
 
 ## Platform Pack Contract
 

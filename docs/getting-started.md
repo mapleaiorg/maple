@@ -96,6 +96,28 @@ You should see:
 🎉 Completed successfully!
 ```
 
+## Optional: Operate with PALM (Daemon + CLI + Playground)
+
+MAPLE can run headless, but if you want a control plane with persistence, monitoring, and a live UI, start the PALM daemon and use the PALM CLI:
+
+```bash
+# Start the PALM daemon (API + control plane)
+cargo run -p palm-daemon
+
+# Check connectivity
+cargo run -p maple-cli -- palm status
+
+# Real-time monitoring
+cargo run -p maple-cli -- palm events watch
+cargo run -p maple-cli -- palm playground activities --limit 50
+```
+
+The Playground UI is optional and available at:
+
+```bash
+http://127.0.0.1:8080/playground
+```
+
 ## Understanding What Just Happened
 
 ### 1. Runtime Bootstrap

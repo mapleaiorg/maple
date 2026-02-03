@@ -7,7 +7,9 @@ Welcome to the MAPLE AI Framework documentation.
 | Document | Description |
 |----------|-------------|
 | [Architecture Guide](architecture.md) | Deep dive into MAPLE architecture |
+| [Getting Started](getting-started.md) | Build your first MAPLE app |
 | [Platform Packs Tutorial](tutorials/platform-packs.md) | Creating custom platform packs |
+| [Operations Tutorial](tutorials/operations.md) | Daemon, CLI, and Playground workflows |
 | [Conformance Guide](conformance.md) | Testing platform pack compliance |
 | [API Reference](api/README.md) | Complete API documentation |
 

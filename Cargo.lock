@@ -1739,6 +1739,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "maple-integration",
+ "palm-cli",
  "tokio",
 ]
 
