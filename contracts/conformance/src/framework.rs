@@ -57,10 +57,7 @@ impl ConformanceRunner {
         let start = Instant::now();
         let mut report = ConformanceReport::new(pack.metadata().name.clone());
 
-        tracing::info!(
-            "Starting conformance tests for: {}",
-            pack.metadata().name
-        );
+        tracing::info!("Starting conformance tests for: {}", pack.metadata().name);
 
         // Core conformance tests
         if self.config.run_core {
@@ -218,8 +215,7 @@ impl ConformanceRunner {
         }
 
         // Human approval capability vs policy
-        if !caps.supports_human_approval
-            && !policy_config.human_approval.always_required.is_empty()
+        if !caps.supports_human_approval && !policy_config.human_approval.always_required.is_empty()
         {
             errors.push("Human approval required but not supported".to_string());
         }
@@ -488,14 +484,16 @@ impl ConformanceRunner {
         }
 
         // Check if checkpoint restore is in recovery actions
-        let has_checkpoint_restore = recovery
-            .auto_recovery
-            .recovery_actions
-            .iter()
-            .any(|a| matches!(a.action_type, palm_platform_pack::recovery::RecoveryActionType::RestoreCheckpoint));
+        let has_checkpoint_restore = recovery.auto_recovery.recovery_actions.iter().any(|a| {
+            matches!(
+                a.action_type,
+                palm_platform_pack::recovery::RecoveryActionType::RestoreCheckpoint
+            )
+        });
 
         if !has_checkpoint_restore {
-            let mut result = TestResult::passed("finalverse_conservative_recovery", start.elapsed());
+            let mut result =
+                TestResult::passed("finalverse_conservative_recovery", start.elapsed());
             result.add_warning("Finalverse should include checkpoint restore in recovery actions");
             return result;
         }

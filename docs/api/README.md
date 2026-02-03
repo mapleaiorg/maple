@@ -97,10 +97,25 @@ All endpoints are under `/api/v1`.
 | `GET` | `/playground/config` | Public playground configuration |
 | `PUT` | `/playground/config` | Update playground configuration (backend, simulation) |
 | `GET` | `/playground/backends` | Available AI backend catalog |
+| `POST` | `/playground/infer` | Run one-shot inference on active backend |
 | `GET` | `/playground/resonators` | Resonator list + status |
 | `GET` | `/playground/agents` | Agent (instance) list + status |
 | `GET` | `/playground/activities` | Activity list (supports `limit` and `after_sequence`) |
 | `GET` | `/playground/activities/stream` | Activity stream (SSE) |
+
+Supported backend kinds: `local_llama`, `open_ai`, `anthropic`, `grok`, `gemini`.
+
+`POST /playground/infer` request body:
+
+```json
+{
+  "prompt": "Summarize resonator health",
+  "system_prompt": "You are a MAPLE operator assistant",
+  "actor_id": "ops-console",
+  "temperature": 0.4,
+  "max_tokens": 512
+}
+```
 
 ### Playground UI
 

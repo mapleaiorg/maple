@@ -120,9 +120,7 @@ pub mod gate;
 pub mod policies;
 
 // Re-exports
-pub use context::{
-    ActorType, ApprovalScope, HumanApproval, PolicyEvaluationContext, QuotaUsage,
-};
+pub use context::{ActorType, ApprovalScope, HumanApproval, PolicyEvaluationContext, QuotaUsage};
 pub use decision::{PolicyDecision, PolicyDecisionCard, PolicyEvaluationRecord};
 pub use error::{PolicyError, Result};
 pub use evaluator::{PolicyEvaluator, PolicyEvaluatorBuilder};
@@ -130,6 +128,6 @@ pub use gate::{
     AllowAllPolicyGate, ComposedPolicyGate, DenyAllPolicyGate, EvaluationMode, PolicyGate,
 };
 pub use policies::{
-    create_platform_policy, BaseInvariantPolicy, FinalverseSafetyPolicy,
-    IBankAccountabilityPolicy, MapleverseThroughputPolicy,
+    create_platform_policy, BaseInvariantPolicy, FinalverseSafetyPolicy, IBankAccountabilityPolicy,
+    MapleverseThroughputPolicy,
 };

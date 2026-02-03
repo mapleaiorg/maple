@@ -8,10 +8,7 @@
 //!
 //! Run with: `cargo run --example 01_basic_resonator`
 
-use maple_runtime::{
-    MapleRuntime, ResonatorSpec,
-    config::RuntimeConfig,
-};
+use maple_runtime::{config::RuntimeConfig, MapleRuntime, ResonatorSpec};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

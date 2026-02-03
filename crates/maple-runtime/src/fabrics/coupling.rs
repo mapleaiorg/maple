@@ -2,14 +2,13 @@
 //!
 //! Coupling describes the strength and character of interaction between Resonators.
 
-use dashmap::DashMap;
-use std::sync::Arc;
-use tokio::sync::RwLock;
-use petgraph::graph::{DiGraph, NodeIndex};
-use crate::types::*;
 use crate::allocator::AttentionAllocator;
 use crate::runtime_core::DecouplingResult;
-
+use crate::types::*;
+use dashmap::DashMap;
+use petgraph::graph::{DiGraph, NodeIndex};
+use std::sync::Arc;
+use tokio::sync::RwLock;
 
 /// Coupling Fabric manages all coupling relationships
 pub struct CouplingFabric {
@@ -94,7 +93,9 @@ impl CouplingFabric {
         params: CouplingParams,
     ) -> Result<(CouplingId, AllocationToken), CouplingError> {
         // Validate parameters
-        params.validate().map_err(|e| CouplingError::ValidationFailed(e.to_string()))?;
+        params
+            .validate()
+            .map_err(|e| CouplingError::ValidationFailed(e.to_string()))?;
 
         // Check attention availability (INVARIANT: Coupling bounded by attention)
         let attention_available = self
@@ -175,11 +176,7 @@ impl CouplingFabric {
                 .await?;
             coupling.attention_allocated += additional_attention;
 
-            tracing::debug!(
-                "Strengthened coupling {} to {}",
-                coupling_id,
-                new_strength
-            );
+            tracing::debug!("Strengthened coupling {} to {}", coupling_id, new_strength);
         }
 
         Ok(())
@@ -245,9 +242,7 @@ impl CouplingFabric {
     pub fn get_couplings_for(&self, resonator: &ResonatorId) -> Vec<Coupling> {
         self.couplings
             .iter()
-            .filter(|entry| {
-                entry.source == *resonator || entry.target == *resonator
-            })
+            .filter(|entry| entry.source == *resonator || entry.target == *resonator)
             .map(|entry| entry.clone())
             .collect()
     }

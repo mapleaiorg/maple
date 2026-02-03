@@ -28,7 +28,7 @@ impl RcfIntent {
             schema_version: rcf_types::SCHEMA_VERSION.to_string(),
         }
     }
-    
+
     pub fn from_meaning(meaning: &RcfMeaning, goals: Vec<Goal>) -> Self {
         Self {
             id: uuid::Uuid::new_v4().to_string(),
@@ -40,22 +40,35 @@ impl RcfIntent {
             schema_version: rcf_types::SCHEMA_VERSION.to_string(),
         }
     }
-    
+
     pub fn with_confidence(mut self, confidence: f64) -> Self {
-        self.confidence = confidence.clamp(0.0, 1.0); self
+        self.confidence = confidence.clamp(0.0, 1.0);
+        self
     }
-    
-    pub fn is_sufficient_for_commitment(&self) -> bool { self.confidence >= 0.7 && !self.goals.is_empty() }
-    pub fn validate(&self) -> Result<(), IntentValidationError> { Ok(()) }
-    
+
+    pub fn is_sufficient_for_commitment(&self) -> bool {
+        self.confidence >= 0.7 && !self.goals.is_empty()
+    }
+    pub fn validate(&self) -> Result<(), IntentValidationError> {
+        Ok(())
+    }
+
     #[inline]
-    pub fn is_executable(&self) -> bool { false }
+    pub fn is_executable(&self) -> bool {
+        false
+    }
 }
 
 impl ResonanceArtifact for RcfIntent {
-    fn resonance_type(&self) -> ResonanceType { ResonanceType::Intent }
-    fn artifact_id(&self) -> &str { &self.id }
-    fn is_executable(&self) -> bool { false }
+    fn resonance_type(&self) -> ResonanceType {
+        ResonanceType::Intent
+    }
+    fn artifact_id(&self) -> &str {
+        &self.id
+    }
+    fn is_executable(&self) -> bool {
+        false
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -67,7 +80,11 @@ pub struct Goal {
 
 impl Goal {
     pub fn new(description: impl Into<String>) -> Self {
-        Self { id: uuid::Uuid::new_v4().to_string(), description: description.into(), priority: 50 }
+        Self {
+            id: uuid::Uuid::new_v4().to_string(),
+            description: description.into(),
+            priority: 50,
+        }
     }
 }
 

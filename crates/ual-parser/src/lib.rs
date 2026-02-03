@@ -108,7 +108,7 @@ fn tokenize(input: &str) -> Result<Vec<Token>, UalParseError> {
             continue;
         }
 
-        if matches!(ch, ';' | ',' | '(' | ')' | '=' ) {
+        if matches!(ch, ';' | ',' | '(' | ')' | '=') {
             tokens.push(Token::Symbol(ch));
             chars.next();
             continue;
@@ -236,9 +236,7 @@ impl Parser {
                         "FROM" => stmt.valid_from = Some(self.consume_value()?),
                         "UNTIL" => stmt.valid_until = Some(self.consume_value()?),
                         _ => {
-                            return Err(UalParseError::ExpectedKeyword(
-                                "FROM or UNTIL".to_string(),
-                            ))
+                            return Err(UalParseError::ExpectedKeyword("FROM or UNTIL".to_string()))
                         }
                     }
                 }

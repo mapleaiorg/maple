@@ -1,13 +1,16 @@
 //! Heavy simulation loop for playground activity
 
-use crate::storage::Storage;
 use crate::error::StorageError;
+use crate::storage::Storage;
 use palm_shared_state::{
-    Activity, ActivityActor, CouplingSnapshot, PlaygroundConfig, PresenceSnapshot,
-    ResonatorStatus, ResonatorStatusKind,
+    Activity, ActivityActor, CouplingSnapshot, PlaygroundConfig, PresenceSnapshot, ResonatorStatus,
+    ResonatorStatusKind,
 };
 use palm_types::{
-    instance::{AgentInstance, HealthStatus, InstanceMetrics, InstancePlacement, InstanceStatus, ResonatorIdRef},
+    instance::{
+        AgentInstance, HealthStatus, InstanceMetrics, InstancePlacement, InstanceStatus,
+        ResonatorIdRef,
+    },
     AgentSpec, Deployment, DeploymentStatus, DeploymentStrategy, PlatformProfile, ReplicaConfig,
 };
 use rand::{seq::SliceRandom, Rng, SeedableRng};
@@ -20,7 +23,7 @@ use tokio::time::{sleep, Duration};
 pub struct SimulationEngine {
     storage: Arc<dyn Storage>,
     activity_tx: broadcast::Sender<Activity>,
-    config: Arc<RwLock<PlaygroundConfig>>, 
+    config: Arc<RwLock<PlaygroundConfig>>,
 }
 
 impl SimulationEngine {
@@ -121,12 +124,20 @@ impl SimulationEngine {
         // Update resonators
         for resonator_id in &resonator_ids {
             if let Some(mut resonator) = resonator_map.remove(resonator_id) {
-                update_presence(&mut resonator.presence, &mut rng, config.simulation.intensity);
-                update_couplings(&mut resonator, &resonator_ids, &mut rng, config.simulation.intensity);
+                update_presence(
+                    &mut resonator.presence,
+                    &mut rng,
+                    config.simulation.intensity,
+                );
+                update_couplings(
+                    &mut resonator,
+                    &resonator_ids,
+                    &mut rng,
+                    config.simulation.intensity,
+                );
 
-                resonator.attention_utilization = (0.12 * resonator.couplings.len() as f64
-                    + rng.gen_range(0.0..0.4))
-                    .min(1.0);
+                resonator.attention_utilization =
+                    (0.12 * resonator.couplings.len() as f64 + rng.gen_range(0.0..0.4)).min(1.0);
 
                 resonator.status = decide_status(resonator.attention_utilization, &mut rng);
                 if matches!(
@@ -198,7 +209,11 @@ impl SimulationEngine {
                         ActivityActor::Agent,
                         instance.id.to_string(),
                         "agent_activity",
-                        format!("Agent {} processed {} requests", short_id(&instance.id.to_string()), rng.gen_range(10..120)),
+                        format!(
+                            "Agent {} processed {} requests",
+                            short_id(&instance.id.to_string()),
+                            rng.gen_range(10..120)
+                        ),
                         serde_json::json!({
                             "deployment_id": instance.deployment_id.to_string(),
                             "attention_utilization": instance.metrics.attention_utilization,
@@ -217,7 +232,11 @@ impl SimulationEngine {
                     ActivityActor::Resonator,
                     resonator.id.clone(),
                     "resonance",
-                    format!("{} synced {} couplings", resonator.name, resonator.couplings.len()),
+                    format!(
+                        "{} synced {} couplings",
+                        resonator.name,
+                        resonator.couplings.len()
+                    ),
                     serde_json::json!({
                         "status": format!("{:?}", resonator.status),
                         "attention_utilization": resonator.attention_utilization,
@@ -289,7 +308,10 @@ impl SimulationEngine {
                     created_at: chrono::Utc::now(),
                     updated_at: chrono::Utc::now(),
                 };
-                deployment.status = DeploymentStatus::InProgress { progress: 5, phase: "seeding".to_string() };
+                deployment.status = DeploymentStatus::InProgress {
+                    progress: 5,
+                    phase: "seeding".to_string(),
+                };
                 self.storage.upsert_deployment(deployment.clone()).await?;
                 deployment
             }
@@ -312,7 +334,10 @@ impl SimulationEngine {
                 let instance = AgentInstance {
                     id: palm_types::InstanceId::generate(),
                     deployment_id: deployment.id.clone(),
-                    resonator_id: ResonatorIdRef::new(format!("resonator-{}", uuid::Uuid::new_v4())),
+                    resonator_id: ResonatorIdRef::new(format!(
+                        "resonator-{}",
+                        uuid::Uuid::new_v4()
+                    )),
                     status: InstanceStatus::Running,
                     health: HealthStatus::Healthy,
                     placement: InstancePlacement::default(),
@@ -342,7 +367,8 @@ fn update_presence(presence: &mut PresenceSnapshot, rng: &mut impl Rng, intensit
     presence.discoverability = clamp01(presence.discoverability + rng.gen_range(-jitter..jitter));
     presence.responsiveness = clamp01(presence.responsiveness + rng.gen_range(-jitter..jitter));
     presence.stability = clamp01(presence.stability + rng.gen_range(-jitter..jitter));
-    presence.coupling_readiness = clamp01(presence.coupling_readiness + rng.gen_range(-jitter..jitter));
+    presence.coupling_readiness =
+        clamp01(presence.coupling_readiness + rng.gen_range(-jitter..jitter));
 }
 
 fn update_couplings(
@@ -354,9 +380,8 @@ fn update_couplings(
     let drift = intensity as f64 * 0.15;
     for coupling in &mut resonator.couplings {
         coupling.strength = clamp01(coupling.strength + rng.gen_range(-drift..drift));
-        coupling.meaning_convergence = clamp01(
-            coupling.meaning_convergence + rng.gen_range(-drift..drift),
-        );
+        coupling.meaning_convergence =
+            clamp01(coupling.meaning_convergence + rng.gen_range(-drift..drift));
         coupling.interaction_count += rng.gen_range(0..4) as u64;
     }
 
@@ -364,9 +389,7 @@ fn update_couplings(
 
     if resonator.couplings.len() < 5 && rng.gen_bool(0.4 * intensity as f64) {
         if let Some(peer) = resonator_ids.choose(rng) {
-            if peer != &resonator.id
-                && !resonator.couplings.iter().any(|c| c.peer_id == *peer)
-            {
+            if peer != &resonator.id && !resonator.couplings.iter().any(|c| c.peer_id == *peer) {
                 resonator.couplings.push(CouplingSnapshot {
                     peer_id: peer.clone(),
                     strength: rng.gen_range(0.2..0.9),

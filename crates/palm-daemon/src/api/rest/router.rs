@@ -18,12 +18,31 @@ pub fn create_router(state: AppState) -> Router {
         // Playground
         .route("/playground/state", get(handlers::playground_state))
         .route("/playground/config", get(handlers::get_playground_config))
-        .route("/playground/config", put(handlers::update_playground_config))
-        .route("/playground/backends", get(handlers::list_playground_backends))
-        .route("/playground/resonators", get(handlers::list_playground_resonators))
+        .route(
+            "/playground/config",
+            put(handlers::update_playground_config),
+        )
+        .route(
+            "/playground/backends",
+            get(handlers::list_playground_backends),
+        )
+        .route(
+            "/playground/infer",
+            post(handlers::infer_playground_backend),
+        )
+        .route(
+            "/playground/resonators",
+            get(handlers::list_playground_resonators),
+        )
         .route("/playground/agents", get(handlers::list_playground_agents))
-        .route("/playground/activities", get(handlers::list_playground_activities))
-        .route("/playground/activities/stream", get(handlers::stream_playground_activities))
+        .route(
+            "/playground/activities",
+            get(handlers::list_playground_activities),
+        )
+        .route(
+            "/playground/activities/stream",
+            get(handlers::stream_playground_activities),
+        )
         // Specs
         .route("/specs", get(handlers::list_specs))
         .route("/specs", post(handlers::create_spec))
@@ -44,7 +63,10 @@ pub fn create_router(state: AppState) -> Router {
         .route("/instances/:id", get(handlers::get_instance))
         .route("/instances/:id", delete(handlers::delete_instance))
         .route("/instances/:id/health", get(handlers::get_instance_health))
-        .route("/instances/:id/checkpoint", post(handlers::create_checkpoint))
+        .route(
+            "/instances/:id/checkpoint",
+            post(handlers::create_checkpoint),
+        )
         .route("/instances/:id/snapshots", get(handlers::list_snapshots))
         .route("/instances/:id/restore", post(handlers::restore_snapshot))
         // Health

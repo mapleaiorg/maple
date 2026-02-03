@@ -1,8 +1,8 @@
 //! Telemetry and observability for MAPLE Resonance Runtime
 
-use std::sync::RwLock;
-use crate::runtime_core::ResonatorHandle;
 use crate::config::TelemetryConfig;
+use crate::runtime_core::ResonatorHandle;
+use std::sync::RwLock;
 
 /// Runtime telemetry system
 ///
@@ -28,7 +28,10 @@ impl RuntimeTelemetry {
         }
 
         tracing::info!("Resonator registered: {}", handle.id);
-        self.metrics.write().unwrap().increment("resonator_registrations");
+        self.metrics
+            .write()
+            .unwrap()
+            .increment("resonator_registrations");
     }
 
     /// Record Resonator resume
@@ -63,7 +66,10 @@ impl RuntimeTelemetry {
             target,
             strength
         );
-        self.metrics.write().unwrap().increment("coupling_establishments");
+        self.metrics
+            .write()
+            .unwrap()
+            .increment("coupling_establishments");
     }
 
     /// Record attention allocation
@@ -73,7 +79,10 @@ impl RuntimeTelemetry {
         }
 
         tracing::trace!("Attention allocated: {} (amount: {})", resonator, amount);
-        self.metrics.write().unwrap().record_gauge("attention_allocated", amount as f64);
+        self.metrics
+            .write()
+            .unwrap()
+            .record_gauge("attention_allocated", amount as f64);
     }
 
     /// Record invariant violation
@@ -83,7 +92,10 @@ impl RuntimeTelemetry {
         }
 
         tracing::error!("Invariant violated: {}", invariant);
-        self.metrics.write().unwrap().increment("invariant_violations");
+        self.metrics
+            .write()
+            .unwrap()
+            .increment("invariant_violations");
     }
 }
 

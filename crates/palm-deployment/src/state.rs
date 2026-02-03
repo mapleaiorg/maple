@@ -12,7 +12,10 @@ pub trait DeploymentStateStore: Send + Sync {
     async fn save_deployment(&self, deployment: &Deployment) -> Result<(), StateStoreError>;
 
     /// Get a deployment by ID
-    async fn get_deployment(&self, id: &DeploymentId) -> Result<Option<Deployment>, StateStoreError>;
+    async fn get_deployment(
+        &self,
+        id: &DeploymentId,
+    ) -> Result<Option<Deployment>, StateStoreError>;
 
     /// List active deployments
     async fn list_active(&self) -> Result<Vec<Deployment>, StateStoreError>;
@@ -28,10 +31,17 @@ pub trait DeploymentStateStore: Send + Sync {
     async fn delete_deployment(&self, id: &DeploymentId) -> Result<(), StateStoreError>;
 
     /// Get previous version for rollback
-    async fn get_previous_version(&self, id: &DeploymentId) -> Result<Option<Version>, StateStoreError>;
+    async fn get_previous_version(
+        &self,
+        id: &DeploymentId,
+    ) -> Result<Option<Version>, StateStoreError>;
 
     /// Record version history
-    async fn record_version(&self, id: &DeploymentId, version: &Version) -> Result<(), StateStoreError>;
+    async fn record_version(
+        &self,
+        id: &DeploymentId,
+        version: &Version,
+    ) -> Result<(), StateStoreError>;
 }
 
 /// State store errors
@@ -69,7 +79,8 @@ impl Default for InMemoryDeploymentStateStore {
 #[async_trait]
 impl DeploymentStateStore for InMemoryDeploymentStateStore {
     async fn save_deployment(&self, deployment: &Deployment) -> Result<(), StateStoreError> {
-        self.deployments.insert(deployment.id.clone(), deployment.clone());
+        self.deployments
+            .insert(deployment.id.clone(), deployment.clone());
 
         // Record version
         self.version_history
@@ -80,7 +91,10 @@ impl DeploymentStateStore for InMemoryDeploymentStateStore {
         Ok(())
     }
 
-    async fn get_deployment(&self, id: &DeploymentId) -> Result<Option<Deployment>, StateStoreError> {
+    async fn get_deployment(
+        &self,
+        id: &DeploymentId,
+    ) -> Result<Option<Deployment>, StateStoreError> {
         Ok(self.deployments.get(id).map(|d| d.clone()))
     }
 
@@ -108,7 +122,10 @@ impl DeploymentStateStore for InMemoryDeploymentStateStore {
         Ok(())
     }
 
-    async fn get_previous_version(&self, id: &DeploymentId) -> Result<Option<Version>, StateStoreError> {
+    async fn get_previous_version(
+        &self,
+        id: &DeploymentId,
+    ) -> Result<Option<Version>, StateStoreError> {
         if let Some(history) = self.version_history.get(id) {
             if history.len() >= 2 {
                 return Ok(Some(history[history.len() - 2].clone()));
@@ -117,7 +134,11 @@ impl DeploymentStateStore for InMemoryDeploymentStateStore {
         Ok(None)
     }
 
-    async fn record_version(&self, id: &DeploymentId, version: &Version) -> Result<(), StateStoreError> {
+    async fn record_version(
+        &self,
+        id: &DeploymentId,
+        version: &Version,
+    ) -> Result<(), StateStoreError> {
         self.version_history
             .entry(id.clone())
             .or_default()

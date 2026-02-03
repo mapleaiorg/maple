@@ -25,22 +25,32 @@ impl RcfMeaning {
             schema_version: rcf_types::SCHEMA_VERSION.to_string(),
         }
     }
-    
+
     pub fn with_confidence(mut self, confidence: f64) -> Self {
         self.uncertainty.confidence = confidence.clamp(0.0, 1.0);
         self
     }
-    
-    pub fn validate(&self) -> Result<(), MeaningValidationError> { Ok(()) }
-    
+
+    pub fn validate(&self) -> Result<(), MeaningValidationError> {
+        Ok(())
+    }
+
     #[inline]
-    pub fn is_executable(&self) -> bool { false }
+    pub fn is_executable(&self) -> bool {
+        false
+    }
 }
 
 impl ResonanceArtifact for RcfMeaning {
-    fn resonance_type(&self) -> ResonanceType { ResonanceType::Meaning }
-    fn artifact_id(&self) -> &str { &self.id }
-    fn is_executable(&self) -> bool { false }
+    fn resonance_type(&self) -> ResonanceType {
+        ResonanceType::Meaning
+    }
+    fn artifact_id(&self) -> &str {
+        &self.id
+    }
+    fn is_executable(&self) -> bool {
+        false
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -52,15 +62,29 @@ pub struct Claim {
 
 impl Claim {
     pub fn belief(content: impl Into<String>) -> Self {
-        Self { claim_type: ClaimType::Belief, content: content.into(), confidence: 0.5 }
+        Self {
+            claim_type: ClaimType::Belief,
+            content: content.into(),
+            confidence: 0.5,
+        }
     }
     pub fn observation(content: impl Into<String>) -> Self {
-        Self { claim_type: ClaimType::Observation, content: content.into(), confidence: 0.9 }
+        Self {
+            claim_type: ClaimType::Observation,
+            content: content.into(),
+            confidence: 0.9,
+        }
     }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub enum ClaimType { Belief, Hypothesis, Observation, Inference, Explanation }
+pub enum ClaimType {
+    Belief,
+    Hypothesis,
+    Observation,
+    Inference,
+    Explanation,
+}
 
 #[derive(Debug, thiserror::Error)]
 pub enum MeaningValidationError {

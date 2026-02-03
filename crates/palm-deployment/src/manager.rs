@@ -170,7 +170,9 @@ impl DeploymentManager {
 
         // 6. Schedule for execution
         let config = DeploymentConfig::default();
-        self.scheduler.schedule(deployment.clone(), spec, config).await?;
+        self.scheduler
+            .schedule(deployment.clone(), spec, config)
+            .await?;
 
         info!(deployment_id = %deployment.id, "Deployment created and scheduled");
 
@@ -525,8 +527,8 @@ impl DeploymentManager {
                 self.emit_event(
                     PalmEvent::DeploymentCompleted {
                         deployment_id: deployment_id.clone(),
-                        duration_seconds: (chrono::Utc::now() - deployment.created_at)
-                            .num_seconds() as u64,
+                        duration_seconds: (chrono::Utc::now() - deployment.created_at).num_seconds()
+                            as u64,
                     },
                     &deployment.platform,
                 );
@@ -603,8 +605,8 @@ impl DeploymentManager {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use palm_registry::{InMemoryAgentRegistry, InMemoryInstanceRegistry};
     use crate::state::InMemoryDeploymentStateStore;
+    use palm_registry::{InMemoryAgentRegistry, InMemoryInstanceRegistry};
 
     #[tokio::test]
     async fn test_create_deployment() {

@@ -85,9 +85,7 @@ pub enum PalmEvent {
     },
 
     /// Deployment started
-    DeploymentStarted {
-        deployment_id: DeploymentId,
-    },
+    DeploymentStarted { deployment_id: DeploymentId },
 
     /// Deployment progress updated
     DeploymentProgress {
@@ -109,14 +107,10 @@ pub enum PalmEvent {
     },
 
     /// Deployment paused
-    DeploymentPaused {
-        deployment_id: DeploymentId,
-    },
+    DeploymentPaused { deployment_id: DeploymentId },
 
     /// Deployment resumed
-    DeploymentResumed {
-        deployment_id: DeploymentId,
-    },
+    DeploymentResumed { deployment_id: DeploymentId },
 
     /// Deployment rolled back
     DeploymentRolledBack {
@@ -141,14 +135,10 @@ pub enum PalmEvent {
     },
 
     /// Instance started
-    InstanceStarted {
-        instance_id: InstanceId,
-    },
+    InstanceStarted { instance_id: InstanceId },
 
     /// Instance ready (passed readiness probe)
-    InstanceReady {
-        instance_id: InstanceId,
-    },
+    InstanceReady { instance_id: InstanceId },
 
     /// Instance health changed
     InstanceHealthChanged {
@@ -158,9 +148,7 @@ pub enum PalmEvent {
     },
 
     /// Instance draining
-    InstanceDraining {
-        instance_id: InstanceId,
-    },
+    InstanceDraining { instance_id: InstanceId },
 
     /// Instance terminated
     InstanceTerminated {
@@ -178,22 +166,16 @@ pub enum PalmEvent {
     // REGISTRY EVENTS
     // ═══════════════════════════════════════════════════════════════════
     /// Agent spec registered
-    SpecRegistered {
-        spec_id: AgentSpecId,
-    },
+    SpecRegistered { spec_id: AgentSpecId },
 
     /// Agent spec deprecated
-    SpecDeprecated {
-        spec_id: AgentSpecId,
-    },
+    SpecDeprecated { spec_id: AgentSpecId },
 
     // ═══════════════════════════════════════════════════════════════════
     // RECOVERY EVENTS
     // ═══════════════════════════════════════════════════════════════════
     /// Recovery initiated for an instance
-    RecoveryInitiated {
-        instance_id: InstanceId,
-    },
+    RecoveryInitiated { instance_id: InstanceId },
 
     // ═══════════════════════════════════════════════════════════════════
     // HEALTH EVENTS
@@ -222,15 +204,10 @@ pub enum PalmEvent {
     // POLICY EVENTS
     // ═══════════════════════════════════════════════════════════════════
     /// Policy check passed
-    PolicyPassed {
-        operation: String,
-    },
+    PolicyPassed { operation: String },
 
     /// Policy check denied
-    PolicyDenied {
-        operation: String,
-        reason: String,
-    },
+    PolicyDenied { operation: String, reason: String },
 
     /// Policy approval required
     PolicyApprovalRequired {
@@ -242,14 +219,10 @@ pub enum PalmEvent {
     // DISCOVERY EVENTS
     // ═══════════════════════════════════════════════════════════════════
     /// Instance registered in discovery
-    DiscoveryRegistered {
-        instance_id: InstanceId,
-    },
+    DiscoveryRegistered { instance_id: InstanceId },
 
     /// Instance removed from discovery
-    DiscoveryRemoved {
-        instance_id: InstanceId,
-    },
+    DiscoveryRemoved { instance_id: InstanceId },
 
     /// Traffic split updated
     TrafficSplitUpdated {

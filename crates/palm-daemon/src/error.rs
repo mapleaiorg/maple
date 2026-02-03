@@ -140,17 +140,23 @@ mod tests {
     #[test]
     fn test_api_error_status_codes() {
         assert!(matches!(
-            ApiError::NotFound("test".to_string()).into_response().status(),
+            ApiError::NotFound("test".to_string())
+                .into_response()
+                .status(),
             StatusCode::NOT_FOUND
         ));
 
         assert!(matches!(
-            ApiError::BadRequest("test".to_string()).into_response().status(),
+            ApiError::BadRequest("test".to_string())
+                .into_response()
+                .status(),
             StatusCode::BAD_REQUEST
         ));
 
         assert!(matches!(
-            ApiError::Conflict("test".to_string()).into_response().status(),
+            ApiError::Conflict("test".to_string())
+                .into_response()
+                .status(),
             StatusCode::CONFLICT
         ));
     }

@@ -1,6 +1,6 @@
 //! Platform pack validation
 
-use crate::{PlatformPackConfig, PlatformCapabilities};
+use crate::{PlatformCapabilities, PlatformPackConfig};
 use serde::{Deserialize, Serialize};
 
 /// Result of pack validation
@@ -187,7 +187,11 @@ fn validate_metadata(metadata: &crate::PlatformMetadata) -> ValidationResult {
         );
     }
 
-    if !metadata.name.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '-') {
+    if !metadata
+        .name
+        .chars()
+        .all(|c| c.is_alphanumeric() || c == '_' || c == '-')
+    {
         result = result.with_error(
             ValidationError::new(
                 "INVALID_NAME_CHARS",
@@ -240,7 +244,9 @@ fn validate_policy(policy: &crate::PlatformPolicyConfig) -> ValidationResult {
     }
 
     // Check for conflicting settings
-    if policy.human_approval.allow_auto_approval && !policy.human_approval.always_required.is_empty() {
+    if policy.human_approval.allow_auto_approval
+        && !policy.human_approval.always_required.is_empty()
+    {
         result = result.with_suggestion(
             "auto_approval is enabled but some operations always require approval; \
              consider disabling auto_approval for stricter control",
@@ -256,8 +262,11 @@ fn validate_health(health: &crate::PlatformHealthConfig) -> ValidationResult {
 
     if health.check_interval_secs == 0 {
         result = result.with_error(
-            ValidationError::new("INVALID_INTERVAL", "check_interval_secs must be greater than 0")
-                .with_field("health.check_interval_secs"),
+            ValidationError::new(
+                "INVALID_INTERVAL",
+                "check_interval_secs must be greater than 0",
+            )
+            .with_field("health.check_interval_secs"),
         );
     }
 
@@ -467,7 +476,10 @@ pub fn validate_runtime_compatibility(
             result = result.with_error(
                 ValidationError::new(
                     "UNSUPPORTED_FEATURE",
-                    format!("Required feature '{}' is not supported by the runtime", feature),
+                    format!(
+                        "Required feature '{}' is not supported by the runtime",
+                        feature
+                    ),
                 )
                 .critical(),
             );
@@ -477,15 +489,13 @@ pub fn validate_runtime_compatibility(
     // Check resource limits
     if let Some(max_deployments) = runtime_capabilities.max_deployments {
         if config.policy.limits.max_concurrent_deployments > max_deployments {
-            result = result.with_warning(
-                ValidationWarning::new(
-                    "EXCEEDS_RUNTIME_LIMIT",
-                    format!(
-                        "Configured max_concurrent_deployments ({}) exceeds runtime limit ({})",
-                        config.policy.limits.max_concurrent_deployments, max_deployments
-                    ),
+            result = result.with_warning(ValidationWarning::new(
+                "EXCEEDS_RUNTIME_LIMIT",
+                format!(
+                    "Configured max_concurrent_deployments ({}) exceeds runtime limit ({})",
+                    config.policy.limits.max_concurrent_deployments, max_deployments
                 ),
-            );
+            ));
         }
     }
 
@@ -520,7 +530,10 @@ mod tests {
         config.resources.scaling.max_instances = 5;
         let result = validate_pack(&config);
         assert!(!result.valid);
-        assert!(result.errors.iter().any(|e| e.code == "INVALID_SCALING_RANGE"));
+        assert!(result
+            .errors
+            .iter()
+            .any(|e| e.code == "INVALID_SCALING_RANGE"));
     }
 
     #[test]
@@ -530,7 +543,10 @@ mod tests {
         config.capabilities.supports_migration = false;
         let result = validate_pack(&config);
         assert!(!result.valid);
-        assert!(result.errors.iter().any(|e| e.code == "CAPABILITY_MISMATCH"));
+        assert!(result
+            .errors
+            .iter()
+            .any(|e| e.code == "CAPABILITY_MISMATCH"));
     }
 
     #[test]
@@ -545,6 +561,9 @@ mod tests {
 
         let result = validate_runtime_compatibility(&config, &runtime);
         assert!(!result.valid);
-        assert!(result.errors.iter().any(|e| e.code == "UNSUPPORTED_FEATURE"));
+        assert!(result
+            .errors
+            .iter()
+            .any(|e| e.code == "UNSUPPORTED_FEATURE"));
     }
 }

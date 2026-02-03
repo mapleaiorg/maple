@@ -2,6 +2,7 @@
 
 use crate::config::SchedulerConfig;
 use crate::storage::Storage;
+use palm_shared_state::{Activity, ActivityActor};
 use palm_types::{
     instance::{
         AgentInstance, HealthStatus, InstanceMetrics, InstancePlacement, InstanceStatus,
@@ -10,7 +11,6 @@ use palm_types::{
     DeploymentId, DeploymentStatus, EventSource, InstanceId, PalmEvent, PalmEventEnvelope,
     PlatformProfile,
 };
-use palm_shared_state::{Activity, ActivityActor};
 use std::sync::Arc;
 use tokio::sync::{broadcast, mpsc, RwLock};
 use tokio::time::{interval, Duration};
@@ -35,7 +35,13 @@ impl Scheduler {
         event_tx: broadcast::Sender<PalmEventEnvelope>,
         activity_tx: broadcast::Sender<Activity>,
     ) -> (Arc<Self>, mpsc::Receiver<()>) {
-        Self::with_platform(config, storage, event_tx, activity_tx, PlatformProfile::Development)
+        Self::with_platform(
+            config,
+            storage,
+            event_tx,
+            activity_tx,
+            PlatformProfile::Development,
+        )
     }
 
     /// Create a new scheduler with a specific platform profile

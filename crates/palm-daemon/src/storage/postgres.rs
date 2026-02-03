@@ -5,8 +5,8 @@ use crate::error::StorageError;
 use async_trait::async_trait;
 use palm_shared_state::{Activity, PlaygroundConfig, ResonatorStatus};
 use palm_types::{
-    AgentSpec, AgentSpecId, Deployment, DeploymentId, InstanceId, PalmEventEnvelope,
     instance::{AgentInstance, HealthStatus},
+    AgentSpec, AgentSpecId, Deployment, DeploymentId, InstanceId, PalmEventEnvelope,
 };
 use serde_json::Value;
 use sqlx::{postgres::PgPoolOptions, PgPool, Row};
@@ -21,7 +21,11 @@ pub struct PostgresStorage {
 
 impl PostgresStorage {
     /// Connect to PostgreSQL and initialize schema
-    pub async fn new(url: &str, max_connections: u32, connect_timeout_secs: u64) -> Result<Self, StorageError> {
+    pub async fn new(
+        url: &str,
+        max_connections: u32,
+        connect_timeout_secs: u64,
+    ) -> Result<Self, StorageError> {
         let pool = PgPoolOptions::new()
             .max_connections(max_connections)
             .acquire_timeout(Duration::from_secs(connect_timeout_secs))
@@ -225,7 +229,11 @@ impl SpecStorage for PostgresStorage {
         Ok(result.rows_affected() > 0)
     }
 
-    async fn get_spec_by_name(&self, name: &str, version: Option<&str>) -> StorageResult<Option<AgentSpec>> {
+    async fn get_spec_by_name(
+        &self,
+        name: &str,
+        version: Option<&str>,
+    ) -> StorageResult<Option<AgentSpec>> {
         let row = if let Some(version) = version {
             sqlx::query("SELECT data FROM agent_specs WHERE name = $1 AND version = $2 LIMIT 1")
                 .bind(name)
@@ -234,11 +242,13 @@ impl SpecStorage for PostgresStorage {
                 .await
                 .map_err(|e| StorageError::Query(e.to_string()))?
         } else {
-            sqlx::query("SELECT data FROM agent_specs WHERE name = $1 ORDER BY updated_at DESC LIMIT 1")
-                .bind(name)
-                .fetch_optional(&self.pool)
-                .await
-                .map_err(|e| StorageError::Query(e.to_string()))?
+            sqlx::query(
+                "SELECT data FROM agent_specs WHERE name = $1 ORDER BY updated_at DESC LIMIT 1",
+            )
+            .bind(name)
+            .fetch_optional(&self.pool)
+            .await
+            .map_err(|e| StorageError::Query(e.to_string()))?
         };
 
         match row {
@@ -289,13 +299,17 @@ impl DeploymentStorage for PostgresStorage {
             .collect()
     }
 
-    async fn list_deployments_for_spec(&self, spec_id: &AgentSpecId) -> StorageResult<Vec<Deployment>> {
+    async fn list_deployments_for_spec(
+        &self,
+        spec_id: &AgentSpecId,
+    ) -> StorageResult<Vec<Deployment>> {
         let spec_str = Self::serialize_spec_id(spec_id);
-        let rows = sqlx::query("SELECT data FROM deployments WHERE spec_id = $1 ORDER BY updated_at DESC")
-            .bind(spec_str)
-            .fetch_all(&self.pool)
-            .await
-            .map_err(|e| StorageError::Query(e.to_string()))?;
+        let rows =
+            sqlx::query("SELECT data FROM deployments WHERE spec_id = $1 ORDER BY updated_at DESC")
+                .bind(spec_str)
+                .fetch_all(&self.pool)
+                .await
+                .map_err(|e| StorageError::Query(e.to_string()))?;
 
         rows.into_iter()
             .map(|row| {
@@ -382,12 +396,17 @@ impl InstanceStorage for PostgresStorage {
             .collect()
     }
 
-    async fn list_instances_for_deployment(&self, deployment_id: &DeploymentId) -> StorageResult<Vec<AgentInstance>> {
-        let rows = sqlx::query("SELECT data FROM instances WHERE deployment_id = $1 ORDER BY updated_at DESC")
-            .bind(deployment_id.as_uuid())
-            .fetch_all(&self.pool)
-            .await
-            .map_err(|e| StorageError::Query(e.to_string()))?;
+    async fn list_instances_for_deployment(
+        &self,
+        deployment_id: &DeploymentId,
+    ) -> StorageResult<Vec<AgentInstance>> {
+        let rows = sqlx::query(
+            "SELECT data FROM instances WHERE deployment_id = $1 ORDER BY updated_at DESC",
+        )
+        .bind(deployment_id.as_uuid())
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| StorageError::Query(e.to_string()))?;
 
         rows.into_iter()
             .map(|row| {
@@ -445,10 +464,12 @@ impl InstanceStorage for PostgresStorage {
     }
 
     async fn list_unhealthy_instances(&self) -> StorageResult<Vec<AgentInstance>> {
-        let rows = sqlx::query("SELECT data FROM instances WHERE health = 'unhealthy' OR health = 'degraded'")
-            .fetch_all(&self.pool)
-            .await
-            .map_err(|e| StorageError::Query(e.to_string()))?;
+        let rows = sqlx::query(
+            "SELECT data FROM instances WHERE health = 'unhealthy' OR health = 'degraded'",
+        )
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| StorageError::Query(e.to_string()))?;
 
         rows.into_iter()
             .map(|row| {
@@ -505,14 +526,20 @@ impl EventStorage for PostgresStorage {
         Ok(events)
     }
 
-    async fn get_events_for_deployment(&self, deployment_id: &DeploymentId, limit: usize) -> StorageResult<Vec<PalmEventEnvelope>> {
+    async fn get_events_for_deployment(
+        &self,
+        deployment_id: &DeploymentId,
+        limit: usize,
+    ) -> StorageResult<Vec<PalmEventEnvelope>> {
         let dep_str = deployment_id.to_string();
-        let rows = sqlx::query("SELECT data FROM events WHERE data::text ILIKE $1 ORDER BY timestamp DESC LIMIT $2")
-            .bind(format!("%{}%", dep_str))
-            .bind(limit as i64)
-            .fetch_all(&self.pool)
-            .await
-            .map_err(|e| StorageError::Query(e.to_string()))?;
+        let rows = sqlx::query(
+            "SELECT data FROM events WHERE data::text ILIKE $1 ORDER BY timestamp DESC LIMIT $2",
+        )
+        .bind(format!("%{}%", dep_str))
+        .bind(limit as i64)
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| StorageError::Query(e.to_string()))?;
 
         let mut events: Vec<PalmEventEnvelope> = rows
             .into_iter()
@@ -527,14 +554,20 @@ impl EventStorage for PostgresStorage {
         Ok(events)
     }
 
-    async fn get_events_for_instance(&self, instance_id: &InstanceId, limit: usize) -> StorageResult<Vec<PalmEventEnvelope>> {
+    async fn get_events_for_instance(
+        &self,
+        instance_id: &InstanceId,
+        limit: usize,
+    ) -> StorageResult<Vec<PalmEventEnvelope>> {
         let inst_str = instance_id.to_string();
-        let rows = sqlx::query("SELECT data FROM events WHERE data::text ILIKE $1 ORDER BY timestamp DESC LIMIT $2")
-            .bind(format!("%{}%", inst_str))
-            .bind(limit as i64)
-            .fetch_all(&self.pool)
-            .await
-            .map_err(|e| StorageError::Query(e.to_string()))?;
+        let rows = sqlx::query(
+            "SELECT data FROM events WHERE data::text ILIKE $1 ORDER BY timestamp DESC LIMIT $2",
+        )
+        .bind(format!("%{}%", inst_str))
+        .bind(limit as i64)
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| StorageError::Query(e.to_string()))?;
 
         let mut events: Vec<PalmEventEnvelope> = rows
             .into_iter()
@@ -552,7 +585,11 @@ impl EventStorage for PostgresStorage {
 
 #[async_trait]
 impl SnapshotStorage for PostgresStorage {
-    async fn create_snapshot(&self, instance_id: &InstanceId, reason: &str) -> StorageResult<String> {
+    async fn create_snapshot(
+        &self,
+        instance_id: &InstanceId,
+        reason: &str,
+    ) -> StorageResult<String> {
         let snapshot_id = Uuid::new_v4().to_string();
         let now = chrono::Utc::now();
 
@@ -612,20 +649,27 @@ impl SnapshotStorage for PostgresStorage {
         Ok(snapshots)
     }
 
-    async fn restore_snapshot(&self, instance_id: &InstanceId, snapshot_id: &str) -> StorageResult<()> {
+    async fn restore_snapshot(
+        &self,
+        instance_id: &InstanceId,
+        snapshot_id: &str,
+    ) -> StorageResult<()> {
         let row = sqlx::query("SELECT instance_id FROM snapshots WHERE id = $1")
             .bind(snapshot_id)
             .fetch_optional(&self.pool)
             .await
             .map_err(|e| StorageError::Query(e.to_string()))?;
 
-        let stored = row.ok_or_else(|| StorageError::NotFound(format!("Snapshot {} not found", snapshot_id)))?;
+        let stored = row
+            .ok_or_else(|| StorageError::NotFound(format!("Snapshot {} not found", snapshot_id)))?;
         let stored_id: Uuid = stored
             .try_get("instance_id")
             .map_err(|e| StorageError::Query(e.to_string()))?;
 
         if stored_id != *instance_id.as_uuid() {
-            return Err(StorageError::InvalidData("Snapshot does not belong to this instance".to_string()));
+            return Err(StorageError::InvalidData(
+                "Snapshot does not belong to this instance".to_string(),
+            ));
         }
 
         Ok(())
@@ -781,10 +825,17 @@ impl ActivityStorage for PostgresStorage {
             .try_get("sequence")
             .map_err(|e| StorageError::Query(e.to_string()))?;
 
-        Ok(Activity { sequence: sequence as u64, ..activity })
+        Ok(Activity {
+            sequence: sequence as u64,
+            ..activity
+        })
     }
 
-    async fn list_activities(&self, limit: usize, after_sequence: Option<u64>) -> StorageResult<Vec<Activity>> {
+    async fn list_activities(
+        &self,
+        limit: usize,
+        after_sequence: Option<u64>,
+    ) -> StorageResult<Vec<Activity>> {
         let rows = if let Some(after) = after_sequence {
             sqlx::query(
                 r#"
@@ -831,7 +882,8 @@ impl ActivityStorage for PostgresStorage {
                         .map_err(|e| StorageError::Query(e.to_string()))?,
                     sequence: row
                         .try_get::<i64, _>("sequence")
-                        .map_err(|e| StorageError::Query(e.to_string()))? as u64,
+                        .map_err(|e| StorageError::Query(e.to_string()))?
+                        as u64,
                     timestamp: row
                         .try_get("timestamp")
                         .map_err(|e| StorageError::Query(e.to_string()))?,

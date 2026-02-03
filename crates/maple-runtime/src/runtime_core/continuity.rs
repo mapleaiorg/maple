@@ -1,7 +1,7 @@
 //! Continuity proofs and records for Resonator persistence
 
-use serde::{Deserialize, Serialize};
 use crate::types::*;
+use serde::{Deserialize, Serialize};
 
 /// Proof of continuity for resuming a Resonator
 ///

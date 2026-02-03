@@ -2,10 +2,10 @@
 //!
 //! Presence is NOT binary (online/offline). It's a gradient.
 
+use crate::config::PresenceConfig as PresenceFabricConfig;
+use crate::types::*;
 use dashmap::DashMap;
 use std::time::Instant;
-use crate::types::*;
-use crate::config::PresenceConfig as PresenceFabricConfig;
 
 /// Presence Fabric manages presence states for all Resonators
 ///
@@ -68,8 +68,7 @@ impl PresenceFabric {
         // Check rate limiting
         if let Some(existing) = self.states.get(&resonator) {
             let elapsed = existing.last_update.elapsed();
-            let min_interval =
-                std::time::Duration::from_millis(self.config.min_signal_interval_ms);
+            let min_interval = std::time::Duration::from_millis(self.config.min_signal_interval_ms);
 
             if elapsed < min_interval {
                 return Err(PresenceError::RateLimitExceeded);

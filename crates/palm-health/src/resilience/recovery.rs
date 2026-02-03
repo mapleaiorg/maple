@@ -84,7 +84,9 @@ impl RecoveryAction {
             }
             RecoveryAction::Isolate { reason } => format!("Isolate: {}", reason),
             RecoveryAction::ScaleUp { count } => format!("Scale up by {} instances", count),
-            RecoveryAction::Drain { timeout_secs } => format!("Drain with {}s timeout", timeout_secs),
+            RecoveryAction::Drain { timeout_secs } => {
+                format!("Drain with {}s timeout", timeout_secs)
+            }
             RecoveryAction::Notify { severity, message } => {
                 format!("Notify ({:?}): {}", severity, message)
             }
@@ -273,19 +275,24 @@ mod tests {
 
     #[test]
     fn test_recovery_action_priority() {
-        assert!(RecoveryAction::Replace {
-            keep_old_until_healthy: true
-        }
-        .priority()
-            > RecoveryAction::RestartGraceful {
-                drain_timeout_secs: 30
+        assert!(
+            RecoveryAction::Replace {
+                keep_old_until_healthy: true
             }
-            .priority());
+            .priority()
+                > RecoveryAction::RestartGraceful {
+                    drain_timeout_secs: 30
+                }
+                .priority()
+        );
 
-        assert!(RecoveryAction::RestartForce.priority() > RecoveryAction::Isolate {
-            reason: "test".to_string()
-        }
-        .priority());
+        assert!(
+            RecoveryAction::RestartForce.priority()
+                > RecoveryAction::Isolate {
+                    reason: "test".to_string()
+                }
+                .priority()
+        );
     }
 
     #[test]

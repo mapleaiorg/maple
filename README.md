@@ -381,7 +381,7 @@ Designed from day one for 100M+ concurrent Resonators.
 - **[Operations Tutorial](docs/tutorials/operations.md)** - Daemon, CLI, and Playground workflows
 - **[Architecture Overview](docs/architecture.md)** - Understanding Resonance Architecture
 - **[Platform Guides](docs/platforms/)** - Mapleverse, Finalverse, iBank
-- **[API Reference](https://docs.maple.ai/api)** - Complete API documentation
+- **[API Reference](https://docs.mapleai.org/api)** - Complete API documentation
 - **[Examples](crates/maple-runtime/examples/)** - Working code examples
 
 ### For Contributors
@@ -394,6 +394,7 @@ Designed from day one for 100M+ concurrent Resonators.
 ### Core Concepts
 
 - **[UAL (Universal Agent Language)](docs/concepts/ual.md)** - Human/agent interaction language
+- **[Agents, Resonators, and LLMs](docs/concepts/agent-resonator-llm.md)** - How cognition backends map to MAPLE entities
 - **[Resonators](docs/concepts/resonators.md)** - Persistent intelligent entities
 - **[Coupling](docs/concepts/coupling.md)** - Stateful relationships
 - **[Attention](docs/concepts/attention.md)** - Resource economics
@@ -550,12 +551,12 @@ MAPLE is built on the principles of **Resonance Architecture**, a novel approach
 
 ## 📞 Contact
 
-- **Website**: https://maple.ai
-- **Documentation**: https://docs.maple.ai
+- **Website**: https://mapleai.org
+- **Documentation**: https://docs.mapleai.org
 - **GitHub**: https://github.com/mapleaiorg/maple
 - **Discord**: https://discord.gg/maple-ai
 - **Twitter**: [@MapleAI](https://twitter.com/MapleAI)
-- **Email**: hello@maple.ai
+- **Email**: hello@mapleai.org
 
 ---
 
@@ -565,6 +566,6 @@ MAPLE is built on the principles of **Resonance Architecture**, a novel approach
 
 *Making AI agents that resonate, not just respond*
 
-[⭐ Star us on GitHub](https://github.com/mapleaiorg/maple) • [📖 Read the Docs](https://docs.maple.ai) • [💬 Join Discord](https://discord.gg/maple-ai)
+[⭐ Star us on GitHub](https://github.com/mapleaiorg/maple) • [📖 Read the Docs](https://docs.mapleai.org) • [💬 Join Discord](https://discord.gg/maple-ai)
 
 </div>

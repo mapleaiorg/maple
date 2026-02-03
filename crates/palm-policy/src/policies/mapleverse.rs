@@ -110,7 +110,10 @@ impl PolicyGate for MapleverseThroughputPolicy {
         }
 
         // Check scale operations
-        if let PalmOperation::ScaleDeployment { target_replicas, .. } = operation {
+        if let PalmOperation::ScaleDeployment {
+            target_replicas, ..
+        } = operation
+        {
             if let Some(decision) = self.check_scale(*target_replicas) {
                 return Ok(decision);
             }
@@ -183,8 +186,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_mapleverse_scale_with_threshold() {
-        let policy = MapleverseThroughputPolicy::new()
-            .with_scale_review_threshold(10);
+        let policy = MapleverseThroughputPolicy::new().with_scale_review_threshold(10);
         let ctx = PolicyEvaluationContext::new("user-1", PlatformProfile::Mapleverse);
         let op = PalmOperation::ScaleDeployment {
             deployment_id: "deploy-1".into(),

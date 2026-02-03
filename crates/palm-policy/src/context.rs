@@ -262,8 +262,7 @@ mod tests {
 
     #[test]
     fn test_context_with_approval() {
-        let approval = HumanApproval::new("admin-1")
-            .with_reason("Emergency deployment");
+        let approval = HumanApproval::new("admin-1").with_reason("Emergency deployment");
 
         let ctx = PolicyEvaluationContext::new("user-1", PlatformProfile::Finalverse)
             .with_human_approval(approval);
@@ -276,8 +275,8 @@ mod tests {
         let approval = HumanApproval::new("admin-1");
         assert!(approval.is_valid());
 
-        let expired = HumanApproval::new("admin-1")
-            .with_expiration(Utc::now() - chrono::Duration::hours(1));
+        let expired =
+            HumanApproval::new("admin-1").with_expiration(Utc::now() - chrono::Duration::hours(1));
         assert!(!expired.is_valid());
     }
 

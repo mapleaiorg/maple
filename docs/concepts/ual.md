@@ -82,7 +82,7 @@ CREATE DEPLOYMENT SPEC risk-agent REPLICAS 3;
 SCALE DEPLOYMENT dep-123 TO 5;
 ```
 
-## LLM Integration (Ollama/GPT/Claude)
+## LLM Integration (Ollama/GPT/Claude/Grok/Gemini)
 
 LLMs should **produce UAL** (human‑readable intent). The system compiles UAL to RCF and validates it.
 

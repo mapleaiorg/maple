@@ -39,7 +39,10 @@ impl ResonanceMetrics {
     /// Create and register resonance metrics
     pub fn new(registry: &Registry) -> Self {
         let ai_invocations_total = IntCounterVec::new(
-            Opts::new("resonance_ai_invocations_total", "Total AI model invocations"),
+            Opts::new(
+                "resonance_ai_invocations_total",
+                "Total AI model invocations",
+            ),
             &["platform", "model", "outcome"],
         )
         .expect("Failed to create ai_invocations_total metric");
@@ -70,7 +73,10 @@ impl ResonanceMetrics {
             .expect("Failed to register tokens_used_total");
 
         let token_rate = IntGaugeVec::new(
-            Opts::new("resonance_token_rate", "Current token rate (tokens per minute)"),
+            Opts::new(
+                "resonance_token_rate",
+                "Current token rate (tokens per minute)",
+            ),
             &["platform", "model"],
         )
         .expect("Failed to create token_rate metric");
@@ -79,7 +85,10 @@ impl ResonanceMetrics {
             .expect("Failed to register token_rate");
 
         let memory_operations_total = IntCounterVec::new(
-            Opts::new("resonance_memory_operations_total", "Memory system operations"),
+            Opts::new(
+                "resonance_memory_operations_total",
+                "Memory system operations",
+            ),
             &["platform", "operation", "memory_type"],
         )
         .expect("Failed to create memory_operations_total metric");
@@ -131,7 +140,10 @@ impl ResonanceMetrics {
             .expect("Failed to register context_window_usage");
 
         let conversation_turns_total = IntCounterVec::new(
-            Opts::new("resonance_conversation_turns_total", "Total conversation turns"),
+            Opts::new(
+                "resonance_conversation_turns_total",
+                "Total conversation turns",
+            ),
             &["platform", "agent_id"],
         )
         .expect("Failed to create conversation_turns_total metric");
@@ -170,7 +182,13 @@ impl ResonanceMetrics {
     }
 
     /// Record token usage
-    pub fn record_tokens(&self, platform: &str, model: &str, input_tokens: u64, output_tokens: u64) {
+    pub fn record_tokens(
+        &self,
+        platform: &str,
+        model: &str,
+        input_tokens: u64,
+        output_tokens: u64,
+    ) {
         self.tokens_used_total
             .with_label_values(&[platform, model, "input"])
             .inc_by(input_tokens);
@@ -187,12 +205,7 @@ impl ResonanceMetrics {
     }
 
     /// Record a memory operation
-    pub fn record_memory_operation(
-        &self,
-        platform: &str,
-        operation: &str,
-        memory_type: &str,
-    ) {
+    pub fn record_memory_operation(&self, platform: &str, operation: &str, memory_type: &str) {
         self.memory_operations_total
             .with_label_values(&[platform, operation, memory_type])
             .inc();
@@ -222,7 +235,13 @@ impl ResonanceMetrics {
     }
 
     /// Set context window usage
-    pub fn set_context_window_usage(&self, platform: &str, model: &str, agent_id: &str, tokens: i64) {
+    pub fn set_context_window_usage(
+        &self,
+        platform: &str,
+        model: &str,
+        agent_id: &str,
+        tokens: i64,
+    ) {
         self.context_window_usage
             .with_label_values(&[platform, model, agent_id])
             .set(tokens);

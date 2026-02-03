@@ -67,10 +67,7 @@ impl DeploymentMetrics {
             .expect("Failed to register operation_duration_seconds");
 
         let rollout_progress = IntGaugeVec::new(
-            Opts::new(
-                "deployment_rollout_progress",
-                "Rollout progress percentage",
-            ),
+            Opts::new("deployment_rollout_progress", "Rollout progress percentage"),
             &["deployment_id", "strategy"],
         )
         .expect("Failed to create rollout_progress metric");

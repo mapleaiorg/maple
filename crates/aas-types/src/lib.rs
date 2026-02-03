@@ -7,8 +7,16 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct AgentId(pub String);
-impl AgentId { pub fn new(id: impl Into<String>) -> Self { Self(id.into()) } }
-impl std::fmt::Display for AgentId { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "{}", self.0) } }
+impl AgentId {
+    pub fn new(id: impl Into<String>) -> Self {
+        Self(id.into())
+    }
+}
+impl std::fmt::Display for AgentId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Capability {
@@ -21,7 +29,12 @@ pub struct Capability {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum CapabilityStatus { Active, Suspended, Revoked, Expired }
+pub enum CapabilityStatus {
+    Active,
+    Suspended,
+    Revoked,
+    Expired,
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PolicyDecisionCard {
@@ -39,41 +52,92 @@ pub struct PolicyDecisionCard {
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct DecisionId(pub String);
-impl DecisionId { pub fn generate() -> Self { Self(uuid::Uuid::new_v4().to_string()) } }
+impl DecisionId {
+    pub fn generate() -> Self {
+        Self(uuid::Uuid::new_v4().to_string())
+    }
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum Decision { Approved, Denied, PendingHumanReview, PendingAdditionalInfo }
-impl Decision { pub fn allows_execution(&self) -> bool { matches!(self, Decision::Approved) } }
+pub enum Decision {
+    Approved,
+    Denied,
+    PendingHumanReview,
+    PendingAdditionalInfo,
+}
+impl Decision {
+    pub fn allows_execution(&self) -> bool {
+        matches!(self, Decision::Approved)
+    }
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Rationale { pub summary: String, pub rule_references: Vec<RuleReference> }
+pub struct Rationale {
+    pub summary: String,
+    pub rule_references: Vec<RuleReference>,
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct RuleReference { pub rule_id: String, pub rule_description: String, pub evaluation_result: bool }
+pub struct RuleReference {
+    pub rule_id: String,
+    pub rule_description: String,
+    pub evaluation_result: bool,
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct RiskAssessment { pub overall_risk: RiskLevel, pub risk_factors: Vec<RiskFactor>, pub mitigations: Vec<Mitigation> }
+pub struct RiskAssessment {
+    pub overall_risk: RiskLevel,
+    pub risk_factors: Vec<RiskFactor>,
+    pub mitigations: Vec<Mitigation>,
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum RiskLevel { Low, Medium, High, Critical }
+pub enum RiskLevel {
+    Low,
+    Medium,
+    High,
+    Critical,
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct RiskFactor { pub name: String, pub description: String, pub severity: RiskLevel }
+pub struct RiskFactor {
+    pub name: String,
+    pub description: String,
+    pub severity: RiskLevel,
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Mitigation { pub description: String, pub applied: bool }
+pub struct Mitigation {
+    pub description: String,
+    pub applied: bool,
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Condition { pub condition_type: ConditionType, pub description: String }
+pub struct Condition {
+    pub condition_type: ConditionType,
+    pub description: String,
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum ConditionType { HumanApproval, AdditionalVerification, RateLimiting, Monitoring }
+pub enum ConditionType {
+    HumanApproval,
+    AdditionalVerification,
+    RateLimiting,
+    Monitoring,
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct AdjudicatorInfo { pub adjudicator_type: AdjudicatorType, pub adjudicator_id: String }
+pub struct AdjudicatorInfo {
+    pub adjudicator_type: AdjudicatorType,
+    pub adjudicator_id: String,
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum AdjudicatorType { Automated, Human, Hybrid }
+pub enum AdjudicatorType {
+    Automated,
+    Human,
+    Hybrid,
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct LedgerEntry {
@@ -89,19 +153,38 @@ pub struct LedgerEntry {
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct LedgerEntryId(pub String);
-impl LedgerEntryId { pub fn generate() -> Self { Self(uuid::Uuid::new_v4().to_string()) } }
+impl LedgerEntryId {
+    pub fn generate() -> Self {
+        Self(uuid::Uuid::new_v4().to_string())
+    }
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CommitmentLifecycle {
     pub status: LifecycleStatus,
     pub declared_at: chrono::DateTime<chrono::Utc>,
-    #[serde(skip_serializing_if = "Option::is_none")] pub adjudicated_at: Option<chrono::DateTime<chrono::Utc>>,
-    #[serde(skip_serializing_if = "Option::is_none")] pub execution_started_at: Option<chrono::DateTime<chrono::Utc>>,
-    #[serde(skip_serializing_if = "Option::is_none")] pub execution_completed_at: Option<chrono::DateTime<chrono::Utc>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub adjudicated_at: Option<chrono::DateTime<chrono::Utc>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub execution_started_at: Option<chrono::DateTime<chrono::Utc>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub execution_completed_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum LifecycleStatus { Pending, Approved, Denied, Executing, Completed, Failed, Expired }
+pub enum LifecycleStatus {
+    Pending,
+    Approved,
+    Denied,
+    Executing,
+    Completed,
+    Failed,
+    Expired,
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct CommitmentOutcome { pub success: bool, pub description: String, pub completed_at: chrono::DateTime<chrono::Utc> }
+pub struct CommitmentOutcome {
+    pub success: bool,
+    pub description: String,
+    pub completed_at: chrono::DateTime<chrono::Utc>,
+}

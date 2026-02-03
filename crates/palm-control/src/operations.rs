@@ -3,8 +3,8 @@
 //! This module defines all operations that can be performed through the control plane.
 //! These are used for policy evaluation and audit logging.
 
-use palm_types::{AgentSpecId, DeploymentId, InstanceId, PlatformProfile};
 use palm_state::StateSnapshotId;
+use palm_types::{AgentSpecId, DeploymentId, InstanceId, PlatformProfile};
 use serde::{Deserialize, Serialize};
 
 /// Node identifier for migration
@@ -182,7 +182,10 @@ impl ControlPlaneOperation {
         matches!(
             self,
             Self::DeleteDeployment { .. }
-                | Self::TerminateInstance { graceful: false, .. }
+                | Self::TerminateInstance {
+                    graceful: false,
+                    ..
+                }
                 | Self::DeleteSnapshot { .. }
         )
     }
@@ -216,7 +219,10 @@ impl ControlPlaneOperation {
                 // Mapleverse only requires approval for force operations
                 matches!(
                     self,
-                    Self::TerminateInstance { graceful: false, .. } | Self::ForceRecovery { .. }
+                    Self::TerminateInstance {
+                        graceful: false,
+                        ..
+                    } | Self::ForceRecovery { .. }
                 )
             }
             PlatformProfile::Development => {
@@ -233,7 +239,10 @@ impl ControlPlaneOperation {
             Self::UpdateSpec { spec_id } => format!("Update spec {}", spec_id),
             Self::DeprecateSpec { spec_id } => format!("Deprecate spec {}", spec_id),
             Self::CreateDeployment { spec_id, replicas } => {
-                format!("Create deployment of {} with {} replicas", spec_id, replicas)
+                format!(
+                    "Create deployment of {} with {} replicas",
+                    spec_id, replicas
+                )
             }
             Self::UpdateDeployment {
                 deployment_id,
@@ -242,11 +251,16 @@ impl ControlPlaneOperation {
             Self::ScaleDeployment {
                 deployment_id,
                 replicas,
-            } => format!("Scale deployment {} to {} replicas", deployment_id, replicas),
+            } => format!(
+                "Scale deployment {} to {} replicas",
+                deployment_id, replicas
+            ),
             Self::DeleteDeployment { deployment_id } => {
                 format!("Delete deployment {}", deployment_id)
             }
-            Self::PauseDeployment { deployment_id } => format!("Pause deployment {}", deployment_id),
+            Self::PauseDeployment { deployment_id } => {
+                format!("Pause deployment {}", deployment_id)
+            }
             Self::ResumeDeployment { deployment_id } => {
                 format!("Resume deployment {}", deployment_id)
             }
@@ -264,14 +278,22 @@ impl ControlPlaneOperation {
                 instance_id,
                 graceful,
             } => {
-                let mode = if *graceful { "gracefully" } else { "forcefully" };
+                let mode = if *graceful {
+                    "gracefully"
+                } else {
+                    "forcefully"
+                };
                 format!("Restart instance {} {}", instance_id, mode)
             }
             Self::TerminateInstance {
                 instance_id,
                 graceful,
             } => {
-                let mode = if *graceful { "gracefully" } else { "forcefully" };
+                let mode = if *graceful {
+                    "gracefully"
+                } else {
+                    "forcefully"
+                };
                 format!("Terminate instance {} {}", instance_id, mode)
             }
             Self::MigrateInstance {

@@ -424,7 +424,7 @@ cargo asm -p maple-runtime function_name
 - **Rust by Example**: https://doc.rust-lang.org/rust-by-example/
 - **Async Book**: https://rust-lang.github.io/async-book/
 - **API Guidelines**: https://rust-lang.github.io/api-guidelines/
-- **MAPLE Docs**: https://docs.maple.ai
+- **MAPLE Docs**: https://docs.mapleai.org
 
 ## Getting Help
 

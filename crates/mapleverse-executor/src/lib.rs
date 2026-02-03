@@ -37,7 +37,10 @@ impl Executor {
         domain: EffectDomain,
         handler: H,
     ) -> Result<(), ExecutorError> {
-        let mut handlers = self.handlers.write().map_err(|_| ExecutorError::LockError)?;
+        let mut handlers = self
+            .handlers
+            .write()
+            .map_err(|_| ExecutorError::LockError)?;
         handlers.insert(domain, Box::new(handler));
         Ok(())
     }
@@ -67,7 +70,10 @@ impl Executor {
 
         // Store initial state
         {
-            let mut executions = self.executions.write().map_err(|_| ExecutorError::LockError)?;
+            let mut executions = self
+                .executions
+                .write()
+                .map_err(|_| ExecutorError::LockError)?;
             executions.insert(request_id.clone(), result.clone());
         }
 
@@ -112,7 +118,10 @@ impl Executor {
 
         // Update stored result
         {
-            let mut executions = self.executions.write().map_err(|_| ExecutorError::LockError)?;
+            let mut executions = self
+                .executions
+                .write()
+                .map_err(|_| ExecutorError::LockError)?;
             executions.insert(request_id, result.clone());
         }
 
@@ -120,14 +129,27 @@ impl Executor {
     }
 
     /// Get execution status
-    pub fn get_status(&self, request_id: &ExecutionRequestId) -> Result<Option<ExecutionResult>, ExecutorError> {
-        let executions = self.executions.read().map_err(|_| ExecutorError::LockError)?;
+    pub fn get_status(
+        &self,
+        request_id: &ExecutionRequestId,
+    ) -> Result<Option<ExecutionResult>, ExecutorError> {
+        let executions = self
+            .executions
+            .read()
+            .map_err(|_| ExecutorError::LockError)?;
         Ok(executions.get(request_id).cloned())
     }
 
     /// Abort an execution
-    pub fn abort(&self, request_id: &ExecutionRequestId, reason: &str) -> Result<(), ExecutorError> {
-        let mut executions = self.executions.write().map_err(|_| ExecutorError::LockError)?;
+    pub fn abort(
+        &self,
+        request_id: &ExecutionRequestId,
+        reason: &str,
+    ) -> Result<(), ExecutorError> {
+        let mut executions = self
+            .executions
+            .write()
+            .map_err(|_| ExecutorError::LockError)?;
 
         if let Some(result) = executions.get_mut(request_id) {
             if !result.status.is_terminal() {
@@ -263,16 +285,17 @@ mod tests {
     fn test_executor() {
         let executor = Executor::new();
         executor
-            .register_handler(EffectDomain::Computation, MockHandler::new(EffectDomain::Computation))
+            .register_handler(
+                EffectDomain::Computation,
+                MockHandler::new(EffectDomain::Computation),
+            )
             .unwrap();
 
-        let commitment = CommitmentBuilder::new(
-            IdentityRef::new("test-agent"),
-            EffectDomain::Computation,
-        )
-        .with_scope(ScopeConstraint::default())
-        .build()
-        .unwrap();
+        let commitment =
+            CommitmentBuilder::new(IdentityRef::new("test-agent"), EffectDomain::Computation)
+                .with_scope(ScopeConstraint::default())
+                .build()
+                .unwrap();
 
         let request = ExecutionRequest {
             request_id: ExecutionRequestId::generate(),

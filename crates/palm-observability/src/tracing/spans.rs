@@ -136,7 +136,9 @@ impl SpanBuilder {
 
     /// Build the span
     pub fn build(self, platform: impl Into<String>) -> PalmSpan {
-        let context = self.context.unwrap_or_else(|| PalmContext::new_root(platform));
+        let context = self
+            .context
+            .unwrap_or_else(|| PalmContext::new_root(platform));
         PalmSpan {
             name: self.name,
             kind: self.kind,

@@ -239,23 +239,21 @@ impl PlatformHealthConfig {
                     failure_threshold: 5,
                     success_threshold: 3,
                 }),
-                custom: vec![
-                    CustomProbeConfig {
-                        name: "compliance_check".to_string(),
-                        probe_type: "http".to_string(),
-                        settings: ProbeSettings {
-                            enabled: true,
-                            timeout_secs: 30,
-                            period_secs: 300,
-                            failure_threshold: 1,
-                            success_threshold: 1,
-                        },
-                        config: serde_json::json!({
-                            "endpoint": "/health/compliance",
-                            "expected_status": 200
-                        }),
+                custom: vec![CustomProbeConfig {
+                    name: "compliance_check".to_string(),
+                    probe_type: "http".to_string(),
+                    settings: ProbeSettings {
+                        enabled: true,
+                        timeout_secs: 30,
+                        period_secs: 300,
+                        failure_threshold: 1,
+                        success_threshold: 1,
                     },
-                ],
+                    config: serde_json::json!({
+                        "endpoint": "/health/compliance",
+                        "expected_status": 200
+                    }),
+                }],
             },
             resonance: ResonanceHealthConfig {
                 check_presence: true,

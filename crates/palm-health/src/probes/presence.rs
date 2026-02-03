@@ -122,13 +122,11 @@ impl Probe for PresenceProbe {
                 instance_id,
                 reason: e.to_string(),
             }),
-            Err(_) => {
-                Ok(ProbeResult::timeout(
-                    instance_id,
-                    ProbeType::Presence,
-                    self.timeout_ms,
-                ))
-            }
+            Err(_) => Ok(ProbeResult::timeout(
+                instance_id,
+                ProbeType::Presence,
+                self.timeout_ms,
+            )),
         }
     }
 }

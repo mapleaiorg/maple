@@ -2,9 +2,9 @@
 //!
 //! CRITICAL INVARIANT: Coupling MUST always be bounded by available attention.
 
+use super::ids::CouplingId;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use super::ids::CouplingId;
 
 /// Attention budget for a Resonator
 ///

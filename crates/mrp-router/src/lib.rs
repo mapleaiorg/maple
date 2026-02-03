@@ -3,7 +3,9 @@ use mrp_types::{Destination, MrpEnvelope};
 use rcf_types::ResonanceType;
 use std::collections::HashMap;
 
-pub struct MrpRouter { defaults: HashMap<ResonanceType, Destination> }
+pub struct MrpRouter {
+    defaults: HashMap<ResonanceType, Destination>,
+}
 impl MrpRouter {
     pub fn new() -> Self {
         let mut defaults = HashMap::new();
@@ -12,20 +14,32 @@ impl MrpRouter {
         Self { defaults }
     }
     pub fn route(&self, envelope: &MrpEnvelope) -> Result<Vec<Destination>, RoutingError> {
-        let mut dests = envelope.header.routing_constraints.required_destinations.clone();
+        let mut dests = envelope
+            .header
+            .routing_constraints
+            .required_destinations
+            .clone();
         if dests.is_empty() {
             if let Some(d) = self.defaults.get(&envelope.header.resonance_type) {
                 dests.push(d.clone());
             }
         }
-        if dests.is_empty() { return Err(RoutingError::NoDestinations); }
+        if dests.is_empty() {
+            return Err(RoutingError::NoDestinations);
+        }
         Ok(dests)
     }
 }
-impl Default for MrpRouter { fn default() -> Self { Self::new() } }
+impl Default for MrpRouter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 #[derive(Debug, thiserror::Error)]
 pub enum RoutingError {
-    #[error("No destinations")] NoDestinations,
-    #[error("Invariant violation")] InvariantViolation,
+    #[error("No destinations")]
+    NoDestinations,
+    #[error("Invariant violation")]
+    InvariantViolation,
 }

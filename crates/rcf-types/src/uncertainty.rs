@@ -19,21 +19,36 @@ impl Uncertainty {
             explanation: None,
         }
     }
-    
-    pub fn is_sufficient_for_intent(&self) -> bool { self.confidence > 0.5 }
-    pub fn is_sufficient_for_commitment(&self) -> bool { self.confidence > 0.7 }
+
+    pub fn is_sufficient_for_intent(&self) -> bool {
+        self.confidence > 0.5
+    }
+    pub fn is_sufficient_for_commitment(&self) -> bool {
+        self.confidence > 0.7
+    }
 }
 
 impl Default for Uncertainty {
     fn default() -> Self {
-        Self { confidence: 0.5, uncertainty_type: UncertaintyType::Epistemic, evidence_refs: Vec::new(), explanation: None }
+        Self {
+            confidence: 0.5,
+            uncertainty_type: UncertaintyType::Epistemic,
+            evidence_refs: Vec::new(),
+            explanation: None,
+        }
     }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum UncertaintyType {
-    Epistemic, Aleatoric, Ambiguity, Incompleteness, Conflict, Temporal, Model,
+    Epistemic,
+    Aleatoric,
+    Ambiguity,
+    Incompleteness,
+    Conflict,
+    Temporal,
+    Model,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -48,5 +63,10 @@ pub struct EvidenceRef {
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum EvidenceType {
-    Observation, Inference, Attestation, Historical, Computational, Testimony,
+    Observation,
+    Inference,
+    Attestation,
+    Historical,
+    Computational,
+    Testimony,
 }

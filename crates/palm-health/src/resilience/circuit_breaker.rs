@@ -218,9 +218,10 @@ impl CircuitBreaker {
         }
 
         let now = Instant::now();
-        let opened_instant = Instant::now() - Duration::from_millis(
-            (chrono::Utc::now().timestamp_millis() as u64).saturating_sub(opened_at)
-        );
+        let opened_instant = Instant::now()
+            - Duration::from_millis(
+                (chrono::Utc::now().timestamp_millis() as u64).saturating_sub(opened_at),
+            );
 
         if now.duration_since(opened_instant) >= self.config.reset_timeout {
             let mut state = self.state.write().unwrap();

@@ -6,7 +6,7 @@
 #![deny(unsafe_code)]
 
 use aas_types::{
-    AgentId, Decision, RiskAssessment, RiskFactor, RiskLevel, Rationale, RuleReference,
+    AgentId, Decision, Rationale, RiskAssessment, RiskFactor, RiskLevel, RuleReference,
 };
 use rcf_commitment::RcfCommitment;
 use serde::{Deserialize, Serialize};
@@ -44,14 +44,12 @@ impl PolicyEngine {
             name: "Critical Domain Approval".to_string(),
             description: "Requires human approval for critical domains".to_string(),
             priority: 100,
-            rules: vec![
-                Rule {
-                    rule_id: "critical-domain-check".to_string(),
-                    description: "Check if domain is critical".to_string(),
-                    condition: RuleCondition::DomainIsCritical,
-                    action: RuleAction::RequireHumanApproval,
-                },
-            ],
+            rules: vec![Rule {
+                rule_id: "critical-domain-check".to_string(),
+                description: "Check if domain is critical".to_string(),
+                condition: RuleCondition::DomainIsCritical,
+                action: RuleAction::RequireHumanApproval,
+            }],
             enabled: true,
         });
 
@@ -61,14 +59,12 @@ impl PolicyEngine {
             name: "High Impact Scope".to_string(),
             description: "Requires review for high-impact scopes".to_string(),
             priority: 90,
-            rules: vec![
-                Rule {
-                    rule_id: "global-scope-check".to_string(),
-                    description: "Check for global scope".to_string(),
-                    condition: RuleCondition::ScopeIsGlobal,
-                    action: RuleAction::RequireHumanApproval,
-                },
-            ],
+            rules: vec![Rule {
+                rule_id: "global-scope-check".to_string(),
+                description: "Check for global scope".to_string(),
+                condition: RuleCondition::ScopeIsGlobal,
+                action: RuleAction::RequireHumanApproval,
+            }],
             enabled: true,
         });
 
@@ -78,14 +74,12 @@ impl PolicyEngine {
             name: "Irreversible Actions".to_string(),
             description: "Special handling for irreversible actions".to_string(),
             priority: 95,
-            rules: vec![
-                Rule {
-                    rule_id: "irreversible-check".to_string(),
-                    description: "Check for irreversible effects".to_string(),
-                    condition: RuleCondition::IsIrreversible,
-                    action: RuleAction::RequireHumanApproval,
-                },
-            ],
+            rules: vec![Rule {
+                rule_id: "irreversible-check".to_string(),
+                description: "Check for irreversible effects".to_string(),
+                condition: RuleCondition::IsIrreversible,
+                action: RuleAction::RequireHumanApproval,
+            }],
             enabled: true,
         });
     }
@@ -99,7 +93,11 @@ impl PolicyEngine {
     }
 
     /// Evaluate a commitment against all policies
-    pub fn evaluate(&self, commitment: &RcfCommitment, context: &EvaluationContext) -> Result<PolicyEvaluation, PolicyError> {
+    pub fn evaluate(
+        &self,
+        commitment: &RcfCommitment,
+        context: &EvaluationContext,
+    ) -> Result<PolicyEvaluation, PolicyError> {
         let policies = self.policies.read().map_err(|_| PolicyError::LockError)?;
 
         let mut rule_results = vec![];
@@ -133,9 +131,7 @@ impl PolicyEngine {
                         RuleAction::RequireHumanApproval if decision != Decision::Denied => {
                             decision = Decision::PendingHumanReview;
                         }
-                        RuleAction::RequireAdditionalInfo
-                            if decision == Decision::Approved =>
-                        {
+                        RuleAction::RequireAdditionalInfo if decision == Decision::Approved => {
                             decision = Decision::PendingAdditionalInfo;
                         }
                         _ => {}
@@ -144,7 +140,10 @@ impl PolicyEngine {
             }
         }
 
-        let overall_risk = if risk_factors.iter().any(|r| r.severity == RiskLevel::Critical) {
+        let overall_risk = if risk_factors
+            .iter()
+            .any(|r| r.severity == RiskLevel::Critical)
+        {
             RiskLevel::Critical
         } else if risk_factors.iter().any(|r| r.severity == RiskLevel::High) {
             RiskLevel::High
@@ -308,14 +307,12 @@ mod tests {
     fn test_policy_evaluation() {
         let engine = PolicyEngine::with_defaults();
 
-        let commitment = CommitmentBuilder::new(
-            IdentityRef::new("test-agent"),
-            EffectDomain::Finance,
-        )
-        .with_scope(ScopeConstraint::default())
-        .with_reversibility(Reversibility::Irreversible)
-        .build()
-        .unwrap();
+        let commitment =
+            CommitmentBuilder::new(IdentityRef::new("test-agent"), EffectDomain::Finance)
+                .with_scope(ScopeConstraint::default())
+                .with_reversibility(Reversibility::Irreversible)
+                .build()
+                .unwrap();
 
         let context = EvaluationContext {
             agent_id: AgentId::new("test-agent"),

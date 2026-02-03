@@ -76,112 +76,78 @@ fn compile_commit(stmt: &CommitStatement) -> Result<RcfCommitment, UalCompileErr
 
 fn compile_operation(stmt: &OperationStatement) -> PalmOperation {
     match stmt {
-        OperationStatement::CreateSpec { spec_id, version } => {
-            PalmOperation::CreateSpec {
-                spec_id: with_version(spec_id, version.as_deref()),
-            }
-        }
-        OperationStatement::UpdateSpec { spec_id, version } => {
-            PalmOperation::UpdateSpec {
-                spec_id: with_version(spec_id, version.as_deref()),
-            }
-        }
-        OperationStatement::DeprecateSpec { spec_id } => {
-            PalmOperation::DeprecateSpec {
-                spec_id: spec_id.clone(),
-            }
-        }
-        OperationStatement::CreateDeployment { spec_id, replicas: _ } => {
-            PalmOperation::CreateDeployment {
-                spec_id: spec_id.clone(),
-            }
-        }
-        OperationStatement::UpdateDeployment { deployment_id } => {
-            PalmOperation::UpdateDeployment {
-                deployment_id: deployment_id.clone(),
-            }
-        }
-        OperationStatement::ScaleDeployment { deployment_id, target_replicas } => {
-            PalmOperation::ScaleDeployment {
-                deployment_id: deployment_id.clone(),
-                target_replicas: *target_replicas,
-            }
-        }
-        OperationStatement::DeleteDeployment { deployment_id } => {
-            PalmOperation::DeleteDeployment {
-                deployment_id: deployment_id.clone(),
-            }
-        }
+        OperationStatement::CreateSpec { spec_id, version } => PalmOperation::CreateSpec {
+            spec_id: with_version(spec_id, version.as_deref()),
+        },
+        OperationStatement::UpdateSpec { spec_id, version } => PalmOperation::UpdateSpec {
+            spec_id: with_version(spec_id, version.as_deref()),
+        },
+        OperationStatement::DeprecateSpec { spec_id } => PalmOperation::DeprecateSpec {
+            spec_id: spec_id.clone(),
+        },
+        OperationStatement::CreateDeployment {
+            spec_id,
+            replicas: _,
+        } => PalmOperation::CreateDeployment {
+            spec_id: spec_id.clone(),
+        },
+        OperationStatement::UpdateDeployment { deployment_id } => PalmOperation::UpdateDeployment {
+            deployment_id: deployment_id.clone(),
+        },
+        OperationStatement::ScaleDeployment {
+            deployment_id,
+            target_replicas,
+        } => PalmOperation::ScaleDeployment {
+            deployment_id: deployment_id.clone(),
+            target_replicas: *target_replicas,
+        },
+        OperationStatement::DeleteDeployment { deployment_id } => PalmOperation::DeleteDeployment {
+            deployment_id: deployment_id.clone(),
+        },
         OperationStatement::RollbackDeployment { deployment_id } => {
             PalmOperation::RollbackDeployment {
                 deployment_id: deployment_id.clone(),
             }
         }
-        OperationStatement::PauseDeployment { deployment_id } => {
-            PalmOperation::PauseDeployment {
-                deployment_id: deployment_id.clone(),
-            }
-        }
-        OperationStatement::ResumeDeployment { deployment_id } => {
-            PalmOperation::ResumeDeployment {
-                deployment_id: deployment_id.clone(),
-            }
-        }
-        OperationStatement::RestartInstance { instance_id } => {
-            PalmOperation::RestartInstance {
-                instance_id: instance_id.clone(),
-            }
-        }
-        OperationStatement::TerminateInstance { instance_id } => {
-            PalmOperation::TerminateInstance {
-                instance_id: instance_id.clone(),
-            }
-        }
-        OperationStatement::MigrateInstance { instance_id } => {
-            PalmOperation::MigrateInstance {
-                instance_id: instance_id.clone(),
-            }
-        }
-        OperationStatement::DrainInstance { instance_id } => {
-            PalmOperation::DrainInstance {
-                instance_id: instance_id.clone(),
-            }
-        }
-        OperationStatement::CreateCheckpoint { instance_id } => {
-            PalmOperation::CreateCheckpoint {
-                instance_id: instance_id.clone(),
-            }
-        }
-        OperationStatement::RestoreCheckpoint { instance_id } => {
-            PalmOperation::RestoreCheckpoint {
-                instance_id: instance_id.clone(),
-            }
-        }
-        OperationStatement::DeleteCheckpoint { snapshot_id } => {
-            PalmOperation::DeleteCheckpoint {
-                snapshot_id: snapshot_id.clone(),
-            }
-        }
-        OperationStatement::HealthCheck { instance_id } => {
-            PalmOperation::HealthCheck {
-                instance_id: instance_id.clone(),
-            }
-        }
-        OperationStatement::ForceRecovery { instance_id } => {
-            PalmOperation::ForceRecovery {
-                instance_id: instance_id.clone(),
-            }
-        }
-        OperationStatement::ConfigurePolicy { policy_name } => {
-            PalmOperation::ConfigurePolicy {
-                policy_name: policy_name.clone(),
-            }
-        }
-        OperationStatement::ViewAuditLog { filter } => {
-            PalmOperation::ViewAuditLog {
-                filter: filter.clone(),
-            }
-        }
+        OperationStatement::PauseDeployment { deployment_id } => PalmOperation::PauseDeployment {
+            deployment_id: deployment_id.clone(),
+        },
+        OperationStatement::ResumeDeployment { deployment_id } => PalmOperation::ResumeDeployment {
+            deployment_id: deployment_id.clone(),
+        },
+        OperationStatement::RestartInstance { instance_id } => PalmOperation::RestartInstance {
+            instance_id: instance_id.clone(),
+        },
+        OperationStatement::TerminateInstance { instance_id } => PalmOperation::TerminateInstance {
+            instance_id: instance_id.clone(),
+        },
+        OperationStatement::MigrateInstance { instance_id } => PalmOperation::MigrateInstance {
+            instance_id: instance_id.clone(),
+        },
+        OperationStatement::DrainInstance { instance_id } => PalmOperation::DrainInstance {
+            instance_id: instance_id.clone(),
+        },
+        OperationStatement::CreateCheckpoint { instance_id } => PalmOperation::CreateCheckpoint {
+            instance_id: instance_id.clone(),
+        },
+        OperationStatement::RestoreCheckpoint { instance_id } => PalmOperation::RestoreCheckpoint {
+            instance_id: instance_id.clone(),
+        },
+        OperationStatement::DeleteCheckpoint { snapshot_id } => PalmOperation::DeleteCheckpoint {
+            snapshot_id: snapshot_id.clone(),
+        },
+        OperationStatement::HealthCheck { instance_id } => PalmOperation::HealthCheck {
+            instance_id: instance_id.clone(),
+        },
+        OperationStatement::ForceRecovery { instance_id } => PalmOperation::ForceRecovery {
+            instance_id: instance_id.clone(),
+        },
+        OperationStatement::ConfigurePolicy { policy_name } => PalmOperation::ConfigurePolicy {
+            policy_name: policy_name.clone(),
+        },
+        OperationStatement::ViewAuditLog { filter } => PalmOperation::ViewAuditLog {
+            filter: filter.clone(),
+        },
     }
 }
 
@@ -213,7 +179,10 @@ fn parse_validity(
         Some(v) => Some(parse_datetime(v)?),
         None => None,
     };
-    Ok(Some(TemporalValidity { valid_from: from, valid_until: until }))
+    Ok(Some(TemporalValidity {
+        valid_from: from,
+        valid_until: until,
+    }))
 }
 
 fn parse_datetime(value: &str) -> Result<DateTime<Utc>, UalCompileError> {

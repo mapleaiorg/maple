@@ -249,15 +249,13 @@ impl Default for PlatformRecoveryConfig {
                     multiplier: 2.0,
                     jitter: true,
                 },
-                recovery_actions: vec![
-                    RecoveryAction {
-                        name: "restart".to_string(),
-                        action_type: RecoveryActionType::Restart,
-                        order: 1,
-                        conditions: vec![],
-                        params: HashMap::new(),
-                    },
-                ],
+                recovery_actions: vec![RecoveryAction {
+                    name: "restart".to_string(),
+                    action_type: RecoveryActionType::Restart,
+                    order: 1,
+                    conditions: vec![],
+                    params: HashMap::new(),
+                }],
                 timeout_secs: 300,
             },
             escalation: EscalationConfig {
@@ -322,16 +320,14 @@ impl PlatformRecoveryConfig {
             },
             escalation: EscalationConfig {
                 enabled: true,
-                levels: vec![
-                    EscalationLevel {
-                        name: "L1".to_string(),
-                        level: 1,
-                        trigger_after_failures: 3,
-                        trigger_after_secs: 300,
-                        actions: vec!["notify".to_string()],
-                        recipients: vec!["oncall".to_string()],
-                    },
-                ],
+                levels: vec![EscalationLevel {
+                    name: "L1".to_string(),
+                    level: 1,
+                    trigger_after_failures: 3,
+                    trigger_after_secs: 300,
+                    actions: vec!["notify".to_string()],
+                    recipients: vec!["oncall".to_string()],
+                }],
                 channels: vec![],
             },
             circuit_breaker: CircuitBreakerConfig {
@@ -354,17 +350,18 @@ impl PlatformRecoveryConfig {
                     DegradationLevel {
                         name: "level2".to_string(),
                         threshold: 0.9,
-                        disable_features: vec!["analytics".to_string(), "non_critical_features".to_string()],
+                        disable_features: vec![
+                            "analytics".to_string(),
+                            "non_critical_features".to_string(),
+                        ],
                         capacity_percentage: 70,
                     },
                 ],
-                degradable_features: vec![
-                    DegradableFeature {
-                        name: "analytics".to_string(),
-                        priority: 1,
-                        resource_savings: 0.1,
-                    },
-                ],
+                degradable_features: vec![DegradableFeature {
+                    name: "analytics".to_string(),
+                    priority: 1,
+                    resource_savings: 0.1,
+                }],
             },
         }
     }
@@ -456,15 +453,13 @@ impl PlatformRecoveryConfig {
                     multiplier: 2.0,
                     jitter: false,
                 },
-                recovery_actions: vec![
-                    RecoveryAction {
-                        name: "notify".to_string(),
-                        action_type: RecoveryActionType::Notify,
-                        order: 1,
-                        conditions: vec![],
-                        params: HashMap::new(),
-                    },
-                ],
+                recovery_actions: vec![RecoveryAction {
+                    name: "notify".to_string(),
+                    action_type: RecoveryActionType::Notify,
+                    order: 1,
+                    conditions: vec![],
+                    params: HashMap::new(),
+                }],
                 timeout_secs: 900,
             },
             escalation: EscalationConfig {

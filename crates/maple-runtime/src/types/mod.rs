@@ -1,26 +1,26 @@
 //! Core type definitions for MAPLE Resonance Runtime
 
-mod ids;
-mod profile;
 mod attention;
-mod coupling;
-mod presence;
 mod commitment;
-mod temporal;
+mod coupling;
 mod errors;
+mod ids;
+mod presence;
+mod profile;
+mod temporal;
 
-pub use ids::*;
-pub use profile::*;
 pub use attention::*;
-pub use coupling::*;
-pub use presence::*;
 pub use commitment::*;
+pub use coupling::*;
+pub use ids::*;
+pub use presence::*;
+pub use profile::*;
 pub use temporal::*;
 
 // Re-export errors individually to avoid conflicts
-pub use errors::{
-    BootstrapError, ShutdownError, RegistrationError, ResumeError,
-    PresenceError, CouplingError, AttentionError, InvariantViolation,
-    CommitmentError, ConsequenceError, SchedulingError, TemporalError,
-};
 pub use coupling::CouplingValidationError;
+pub use errors::{
+    AttentionError, BootstrapError, CommitmentError, ConsequenceError, CouplingError,
+    InvariantViolation, PresenceError, RegistrationError, ResumeError, SchedulingError,
+    ShutdownError, TemporalError,
+};

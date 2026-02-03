@@ -1,7 +1,7 @@
 //! Handles for interacting with runtime entities
 
-use crate::types::*;
 use crate::runtime_core::MapleRuntime;
+use crate::types::*;
 
 /// Handle to a registered Resonator
 ///
@@ -28,7 +28,10 @@ impl ResonatorHandle {
 
     /// Enable silent mode
     pub async fn enable_silent_mode(&self) {
-        self.runtime.presence_fabric().enable_silent_presence(self.id).await
+        self.runtime
+            .presence_fabric()
+            .enable_silent_presence(self.id)
+            .await
     }
 
     /// Get current presence state
@@ -42,12 +45,17 @@ impl ResonatorHandle {
         _target: ResonatorId,
         params: CouplingParams,
     ) -> Result<CouplingHandle, CouplingError> {
-        let (coupling_id, attention_token) = self.runtime
+        let (coupling_id, attention_token) = self
+            .runtime
             .coupling_fabric()
             .establish_coupling(params)
             .await?;
 
-        Ok(CouplingHandle::new(coupling_id, attention_token, self.runtime.clone()))
+        Ok(CouplingHandle::new(
+            coupling_id,
+            attention_token,
+            self.runtime.clone(),
+        ))
     }
 
     /// Get attention budget status

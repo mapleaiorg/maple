@@ -113,7 +113,11 @@ impl FinalverseSafetyPolicy {
     }
 
     /// Check scale operation requirements
-    fn check_scale(&self, target_replicas: u32, context: &PolicyEvaluationContext) -> Option<PolicyDecision> {
+    fn check_scale(
+        &self,
+        target_replicas: u32,
+        context: &PolicyEvaluationContext,
+    ) -> Option<PolicyDecision> {
         if target_replicas <= self.scale_approval_threshold {
             return None;
         }
@@ -224,7 +228,9 @@ impl PolicyGate for FinalverseSafetyPolicy {
                 }
             }
 
-            PalmOperation::ScaleDeployment { target_replicas, .. } => {
+            PalmOperation::ScaleDeployment {
+                target_replicas, ..
+            } => {
                 if let Some(decision) = self.check_scale(*target_replicas, context) {
                     return Ok(decision);
                 }

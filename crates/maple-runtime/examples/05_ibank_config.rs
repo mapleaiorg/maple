@@ -12,10 +12,7 @@
 //!
 //! Run with: `cargo run --example 05_ibank_config`
 
-use maple_runtime::{
-    MapleRuntime, ResonatorSpec, ResonatorProfile,
-    config::ibank_runtime_config,
-};
+use maple_runtime::{config::ibank_runtime_config, MapleRuntime, ResonatorProfile, ResonatorSpec};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

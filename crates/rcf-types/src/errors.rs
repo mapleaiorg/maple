@@ -127,7 +127,10 @@ impl RcfError {
 
     /// Check if this is a temporal error (expired or not yet effective)
     pub fn is_temporal_error(&self) -> bool {
-        matches!(self, RcfError::Expired { .. } | RcfError::NotYetEffective { .. })
+        matches!(
+            self,
+            RcfError::Expired { .. } | RcfError::NotYetEffective { .. }
+        )
     }
 
     /// Check if this is a security-related error

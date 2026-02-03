@@ -174,7 +174,7 @@ impl PlatformStateConfig {
             checkpoint: CheckpointConfig {
                 auto_checkpoint: true,
                 interval_secs: 60,
-                max_size_bytes: 500 * 1024 * 1024, // 500 MB
+                max_size_bytes: 500 * 1024 * 1024,      // 500 MB
                 compression: CompressionAlgorithm::Lz4, // Fast compression
                 incremental: true,
                 max_retained: 5,
@@ -250,8 +250,8 @@ impl PlatformStateConfig {
                 max_retained: 50,
             },
             retention: RetentionConfig {
-                checkpoint_retention_days: 365,      // 1 year
-                audit_retention_days: 2555,          // 7 years (regulatory)
+                checkpoint_retention_days: 365, // 1 year
+                audit_retention_days: 2555,     // 7 years (regulatory)
                 metrics_retention_days: 365,
                 auto_cleanup: false, // Manual cleanup with approval
                 terminated_instance_retention_days: 90,

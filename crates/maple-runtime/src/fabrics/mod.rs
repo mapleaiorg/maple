@@ -1,7 +1,7 @@
 //! Resonance fabrics - Presence and Coupling infrastructure
 
-mod presence;
 mod coupling;
+mod presence;
 
-pub use presence::PresenceFabric;
 pub use coupling::CouplingFabric;
+pub use presence::PresenceFabric;

@@ -264,7 +264,8 @@ impl AuditQueryBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::audit::entry::{AuditActor, AuditResource, AuditEntry as Entry};
+    use crate::audit::entry::{AuditActor, AuditEntry as Entry, AuditResource};
+    use crate::audit::AuditOutcome;
     use chrono::Duration;
 
     fn create_test_entry(
@@ -288,14 +289,30 @@ mod tests {
     #[test]
     fn test_query_by_platform() {
         let entries = vec![
-            create_test_entry("development", "a1", "r1", AuditAction::SystemStarted, AuditOutcome::success()),
-            create_test_entry("production", "a2", "r2", AuditAction::SystemStarted, AuditOutcome::success()),
-            create_test_entry("development", "a3", "r3", AuditAction::SystemStarted, AuditOutcome::success()),
+            create_test_entry(
+                "development",
+                "a1",
+                "r1",
+                AuditAction::SystemStarted,
+                AuditOutcome::success(),
+            ),
+            create_test_entry(
+                "production",
+                "a2",
+                "r2",
+                AuditAction::SystemStarted,
+                AuditOutcome::success(),
+            ),
+            create_test_entry(
+                "development",
+                "a3",
+                "r3",
+                AuditAction::SystemStarted,
+                AuditOutcome::success(),
+            ),
         ];
 
-        let query = AuditQuery::builder()
-            .platform("development")
-            .build();
+        let query = AuditQuery::builder().platform("development").build();
 
         let results = query.apply(&entries);
         assert_eq!(results.len(), 2);
@@ -304,14 +321,30 @@ mod tests {
     #[test]
     fn test_query_by_actor() {
         let entries = vec![
-            create_test_entry("dev", "scheduler", "r1", AuditAction::InstanceStarted, AuditOutcome::success()),
-            create_test_entry("dev", "reconciler", "r2", AuditAction::InstanceStarted, AuditOutcome::success()),
-            create_test_entry("dev", "scheduler", "r3", AuditAction::InstanceStopped, AuditOutcome::success()),
+            create_test_entry(
+                "dev",
+                "scheduler",
+                "r1",
+                AuditAction::InstanceStarted,
+                AuditOutcome::success(),
+            ),
+            create_test_entry(
+                "dev",
+                "reconciler",
+                "r2",
+                AuditAction::InstanceStarted,
+                AuditOutcome::success(),
+            ),
+            create_test_entry(
+                "dev",
+                "scheduler",
+                "r3",
+                AuditAction::InstanceStopped,
+                AuditOutcome::success(),
+            ),
         ];
 
-        let query = AuditQuery::builder()
-            .actor_id("scheduler")
-            .build();
+        let query = AuditQuery::builder().actor_id("scheduler").build();
 
         let results = query.apply(&entries);
         assert_eq!(results.len(), 2);
@@ -320,19 +353,33 @@ mod tests {
     #[test]
     fn test_query_by_outcome() {
         let entries = vec![
-            create_test_entry("dev", "a1", "r1", AuditAction::InstanceStarted, AuditOutcome::success()),
-            create_test_entry("dev", "a2", "r2", AuditAction::InstanceStarted, AuditOutcome::failure("error")),
-            create_test_entry("dev", "a3", "r3", AuditAction::InstanceStarted, AuditOutcome::success()),
+            create_test_entry(
+                "dev",
+                "a1",
+                "r1",
+                AuditAction::InstanceStarted,
+                AuditOutcome::success(),
+            ),
+            create_test_entry(
+                "dev",
+                "a2",
+                "r2",
+                AuditAction::InstanceStarted,
+                AuditOutcome::failure("error"),
+            ),
+            create_test_entry(
+                "dev",
+                "a3",
+                "r3",
+                AuditAction::InstanceStarted,
+                AuditOutcome::success(),
+            ),
         ];
 
-        let success_query = AuditQuery::builder()
-            .success_only()
-            .build();
+        let success_query = AuditQuery::builder().success_only().build();
         assert_eq!(success_query.apply(&entries).len(), 2);
 
-        let failure_query = AuditQuery::builder()
-            .failures_only()
-            .build();
+        let failure_query = AuditQuery::builder().failures_only().build();
         assert_eq!(failure_query.apply(&entries).len(), 1);
     }
 
@@ -350,10 +397,7 @@ mod tests {
             })
             .collect();
 
-        let query = AuditQuery::builder()
-            .offset(2)
-            .limit(3)
-            .build();
+        let query = AuditQuery::builder().offset(2).limit(3).build();
 
         let results = query.apply(&entries);
         assert_eq!(results.len(), 3);

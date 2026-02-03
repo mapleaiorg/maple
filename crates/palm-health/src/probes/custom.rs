@@ -107,13 +107,11 @@ impl Probe for CustomProbe {
                 instance_id,
                 reason: format!("Custom probe '{}' failed: {}", self.name, e),
             }),
-            Err(_) => {
-                Ok(ProbeResult::timeout(
-                    instance_id,
-                    ProbeType::Custom,
-                    self.timeout_ms,
-                ))
-            }
+            Err(_) => Ok(ProbeResult::timeout(
+                instance_id,
+                ProbeType::Custom,
+                self.timeout_ms,
+            )),
         }
     }
 }
@@ -221,9 +219,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_custom_probe_factory() {
-        let probe = CustomProbeFactory::from_fn("factory-probe", 0.5, 1000, |_id| async {
-            Ok(0.75)
-        });
+        let probe =
+            CustomProbeFactory::from_fn("factory-probe", 0.5, 1000, |_id| async { Ok(0.75) });
 
         let instance_id = InstanceId::generate();
         let result = probe.execute(instance_id).await.unwrap();

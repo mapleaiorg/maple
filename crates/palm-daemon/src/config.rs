@@ -250,7 +250,7 @@ mod tests {
     fn test_default_config() {
         let config = DaemonConfig::default();
         assert_eq!(config.server.listen_addr.port(), 8080);
-        assert!(matches!(config.storage, StorageConfig::Memory));
+        assert!(matches!(config.storage, StorageConfig::Postgres { .. }));
         assert!(matches!(config.platform, PlatformProfile::Development));
     }
 

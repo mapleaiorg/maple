@@ -2,8 +2,8 @@
 
 use crate::error::{CliError, CliResult};
 use palm_shared_state::{
-    Activity, AiBackendPublic, PlaygroundConfigPublic, PlaygroundConfigUpdate, ResonatorStatus,
-    SystemState,
+    Activity, AiBackendPublic, PlaygroundConfigPublic, PlaygroundConfigUpdate,
+    PlaygroundInferenceRequest, PlaygroundInferenceResponse, ResonatorStatus, SystemState,
 };
 use palm_types::*;
 use reqwest::{Client, StatusCode};
@@ -39,9 +39,14 @@ struct CreateDeploymentRequest {
 impl PalmClient {
     /// Create a new PALM client
     pub fn new(endpoint: &str, platform: Option<String>) -> CliResult<Self> {
-        let client = Client::builder()
-            .timeout(std::time::Duration::from_secs(30))
-            .build()?;
+        let mut builder = Client::builder().timeout(std::time::Duration::from_secs(30));
+        let allow_system_proxy = std::env::var("PALM_USE_SYSTEM_PROXY")
+            .map(|value| matches!(value.as_str(), "1" | "true" | "yes"))
+            .unwrap_or(false);
+        if !allow_system_proxy {
+            builder = builder.no_proxy();
+        }
+        let client = builder.build()?;
 
         Ok(Self {
             client,
@@ -159,7 +164,8 @@ impl PalmClient {
 
     /// Get an instance by ID
     pub async fn get_instance(&self, instance_id: &str) -> CliResult<AgentInstance> {
-        self.get(&format!("/api/v1/instances/{}", instance_id)).await
+        self.get(&format!("/api/v1/instances/{}", instance_id))
+            .await
     }
 
     /// List instances, optionally filtered by deployment
@@ -286,6 +292,14 @@ impl PalmClient {
     /// List available AI backends
     pub async fn list_playground_backends(&self) -> CliResult<Vec<AiBackendPublic>> {
         self.get("/api/v1/playground/backends").await
+    }
+
+    /// Run inference against the active playground backend
+    pub async fn infer_playground_backend(
+        &self,
+        request: &PlaygroundInferenceRequest,
+    ) -> CliResult<PlaygroundInferenceResponse> {
+        self.post("/api/v1/playground/infer", request).await
     }
 
     /// List resonators

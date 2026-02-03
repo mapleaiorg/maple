@@ -17,11 +17,8 @@ pub trait AgentRegistry: Send + Sync {
     async fn get(&self, id: &AgentSpecId) -> Result<Option<AgentSpec>>;
 
     /// Get an agent spec by name and version
-    async fn get_by_name_version(
-        &self,
-        name: &str,
-        version: &Version,
-    ) -> Result<Option<AgentSpec>>;
+    async fn get_by_name_version(&self, name: &str, version: &Version)
+        -> Result<Option<AgentSpec>>;
 
     /// List all agent specs
     async fn list(&self) -> Result<Vec<AgentSpec>>;

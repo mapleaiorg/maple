@@ -3,8 +3,8 @@
 //! These invariants MUST hold in ALL conformant implementations.
 //! Violation of ANY invariant constitutes non-conformance.
 
-use crate::types::*;
 use crate::config::InvariantConfig;
+use crate::types::*;
 
 /// Enforces the Resonance Architecture's 8 canonical invariants
 pub struct InvariantGuard {
@@ -127,9 +127,7 @@ impl InvariantGuard {
             ArchitecturalInvariant::CommitmentPrecedesConsequence => {
                 if let Operation::ProduceConsequence { commitment_id, .. } = operation {
                     if !state.commitment_exists(commitment_id) {
-                        tracing::error!(
-                            "Invariant violation: No commitment for consequence"
-                        );
+                        tracing::error!("Invariant violation: No commitment for consequence");
                         return Err(InvariantViolation::NoCommitment);
                     }
                 }
@@ -143,9 +141,7 @@ impl InvariantGuard {
                 } = operation
                 {
                     if state.available_attention(source) < *attention_cost {
-                        tracing::error!(
-                            "Invariant violation: Attention capacity exceeded"
-                        );
+                        tracing::error!("Invariant violation: Attention capacity exceeded");
                         return Err(InvariantViolation::AttentionExceeded);
                     }
                 }
@@ -153,9 +149,7 @@ impl InvariantGuard {
 
             ArchitecturalInvariant::SafetyOverridesOptimization => {
                 if operation.is_optimization() && state.safety_concern_active() {
-                    tracing::error!(
-                        "Invariant violation: Safety priority violated"
-                    );
+                    tracing::error!("Invariant violation: Safety priority violated");
                     return Err(InvariantViolation::SafetyPriority);
                 }
             }
@@ -163,9 +157,7 @@ impl InvariantGuard {
             ArchitecturalInvariant::HumanAgencyCannotBeBypassed => {
                 if let Operation::ForceAction { target, .. } = operation {
                     if state.is_human_resonator(target) {
-                        tracing::error!(
-                            "Invariant violation: Human agency cannot be bypassed"
-                        );
+                        tracing::error!("Invariant violation: Human agency cannot be bypassed");
                         return Err(InvariantViolation::HumanAgencyViolation);
                     }
                 }

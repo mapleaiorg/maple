@@ -23,30 +23,24 @@ use std::sync::Arc;
 /// Create the default policy gate for a platform
 pub fn create_platform_policy(platform: PlatformProfile) -> Arc<dyn PolicyGate> {
     match platform {
-        PlatformProfile::Mapleverse => {
-            Arc::new(
-                ComposedPolicyGate::new("mapleverse-policy", "Mapleverse Policy Stack")
-                    .add_gate(Arc::new(BaseInvariantPolicy::new()))
-                    .add_gate(Arc::new(MapleverseThroughputPolicy::new()))
-                    .with_evaluation_mode(EvaluationMode::AllMustAllow),
-            )
-        }
-        PlatformProfile::Finalverse => {
-            Arc::new(
-                ComposedPolicyGate::new("finalverse-policy", "Finalverse Policy Stack")
-                    .add_gate(Arc::new(BaseInvariantPolicy::new()))
-                    .add_gate(Arc::new(FinalverseSafetyPolicy::new()))
-                    .with_evaluation_mode(EvaluationMode::MostRestrictive),
-            )
-        }
-        PlatformProfile::IBank => {
-            Arc::new(
-                ComposedPolicyGate::new("ibank-policy", "IBank Policy Stack")
-                    .add_gate(Arc::new(BaseInvariantPolicy::new()))
-                    .add_gate(Arc::new(IBankAccountabilityPolicy::new()))
-                    .with_evaluation_mode(EvaluationMode::AllMustAllow),
-            )
-        }
+        PlatformProfile::Mapleverse => Arc::new(
+            ComposedPolicyGate::new("mapleverse-policy", "Mapleverse Policy Stack")
+                .add_gate(Arc::new(BaseInvariantPolicy::new()))
+                .add_gate(Arc::new(MapleverseThroughputPolicy::new()))
+                .with_evaluation_mode(EvaluationMode::AllMustAllow),
+        ),
+        PlatformProfile::Finalverse => Arc::new(
+            ComposedPolicyGate::new("finalverse-policy", "Finalverse Policy Stack")
+                .add_gate(Arc::new(BaseInvariantPolicy::new()))
+                .add_gate(Arc::new(FinalverseSafetyPolicy::new()))
+                .with_evaluation_mode(EvaluationMode::MostRestrictive),
+        ),
+        PlatformProfile::IBank => Arc::new(
+            ComposedPolicyGate::new("ibank-policy", "IBank Policy Stack")
+                .add_gate(Arc::new(BaseInvariantPolicy::new()))
+                .add_gate(Arc::new(IBankAccountabilityPolicy::new()))
+                .with_evaluation_mode(EvaluationMode::AllMustAllow),
+        ),
         PlatformProfile::Development => {
             // Development mode uses only base invariants
             Arc::new(BaseInvariantPolicy::new())

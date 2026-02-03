@@ -50,35 +50,81 @@ pub enum ReversibilitySpec {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum OperationStatement {
     // Registry operations
-    CreateSpec { spec_id: String, version: Option<String> },
-    UpdateSpec { spec_id: String, version: Option<String> },
-    DeprecateSpec { spec_id: String },
+    CreateSpec {
+        spec_id: String,
+        version: Option<String>,
+    },
+    UpdateSpec {
+        spec_id: String,
+        version: Option<String>,
+    },
+    DeprecateSpec {
+        spec_id: String,
+    },
 
     // Deployment operations
-    CreateDeployment { spec_id: String, replicas: u32 },
-    UpdateDeployment { deployment_id: String },
-    ScaleDeployment { deployment_id: String, target_replicas: u32 },
-    DeleteDeployment { deployment_id: String },
-    RollbackDeployment { deployment_id: String },
-    PauseDeployment { deployment_id: String },
-    ResumeDeployment { deployment_id: String },
+    CreateDeployment {
+        spec_id: String,
+        replicas: u32,
+    },
+    UpdateDeployment {
+        deployment_id: String,
+    },
+    ScaleDeployment {
+        deployment_id: String,
+        target_replicas: u32,
+    },
+    DeleteDeployment {
+        deployment_id: String,
+    },
+    RollbackDeployment {
+        deployment_id: String,
+    },
+    PauseDeployment {
+        deployment_id: String,
+    },
+    ResumeDeployment {
+        deployment_id: String,
+    },
 
     // Instance operations
-    RestartInstance { instance_id: String },
-    TerminateInstance { instance_id: String },
-    MigrateInstance { instance_id: String },
-    DrainInstance { instance_id: String },
+    RestartInstance {
+        instance_id: String,
+    },
+    TerminateInstance {
+        instance_id: String,
+    },
+    MigrateInstance {
+        instance_id: String,
+    },
+    DrainInstance {
+        instance_id: String,
+    },
 
     // State operations
-    CreateCheckpoint { instance_id: String },
-    RestoreCheckpoint { instance_id: String },
-    DeleteCheckpoint { snapshot_id: String },
+    CreateCheckpoint {
+        instance_id: String,
+    },
+    RestoreCheckpoint {
+        instance_id: String,
+    },
+    DeleteCheckpoint {
+        snapshot_id: String,
+    },
 
     // Health operations
-    HealthCheck { instance_id: String },
-    ForceRecovery { instance_id: String },
+    HealthCheck {
+        instance_id: String,
+    },
+    ForceRecovery {
+        instance_id: String,
+    },
 
     // Administrative operations
-    ConfigurePolicy { policy_name: String },
-    ViewAuditLog { filter: String },
+    ConfigurePolicy {
+        policy_name: String,
+    },
+    ViewAuditLog {
+        filter: String,
+    },
 }

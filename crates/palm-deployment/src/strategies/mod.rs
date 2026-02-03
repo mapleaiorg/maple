@@ -1,16 +1,16 @@
 //! Deployment strategy implementations
 
-pub mod executor;
-pub mod rolling;
 pub mod blue_green;
 pub mod canary;
+pub mod executor;
 pub mod recreate;
+pub mod rolling;
 
-pub use executor::{DeploymentExecutor, DeploymentResult};
-pub use rolling::RollingDeploymentExecutor;
 pub use blue_green::BlueGreenDeploymentExecutor;
 pub use canary::CanaryDeploymentExecutor;
+pub use executor::{DeploymentExecutor, DeploymentResult};
 pub use recreate::RecreateDeploymentExecutor;
+pub use rolling::RollingDeploymentExecutor;
 
 use palm_types::DeploymentStrategy;
 use std::sync::Arc;

@@ -1,8 +1,8 @@
 //! Profile Manager - validates and enforces profile constraints
 
-use crate::types::*;
-use crate::runtime_core::ResonatorSpec;
 use crate::config::ProfileConfig;
+use crate::runtime_core::ResonatorSpec;
+use crate::types::*;
 
 /// Profile manager validates Resonator specifications against profile rules
 pub struct ProfileManager {

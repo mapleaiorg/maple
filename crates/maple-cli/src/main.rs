@@ -16,7 +16,10 @@ enum Commands {
     Version,
 
     /// Validate a local file (developer utility)
-    Validate { #[arg(short, long)] file: String },
+    Validate {
+        #[arg(short, long)]
+        file: String,
+    },
 
     /// UAL parsing and compilation
     Ual {
@@ -35,11 +38,20 @@ enum Commands {
 #[derive(Subcommand)]
 enum UalCommands {
     /// Parse UAL into an AST
-    Parse { #[arg(short, long)] file: String },
+    Parse {
+        #[arg(short, long)]
+        file: String,
+    },
     /// Compile UAL into RCF and PALM operations
-    Compile { #[arg(short, long)] file: String },
+    Compile {
+        #[arg(short, long)]
+        file: String,
+    },
     /// Validate UAL commitments (RCF validation)
-    Validate { #[arg(short, long)] file: String },
+    Validate {
+        #[arg(short, long)]
+        file: String,
+    },
 }
 
 #[tokio::main]

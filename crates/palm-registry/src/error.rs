@@ -22,10 +22,7 @@ pub enum RegistryError {
     InstanceAlreadyExists(InstanceId),
 
     #[error("Version conflict: current {current}, expected {expected}")]
-    VersionConflict {
-        current: String,
-        expected: String,
-    },
+    VersionConflict { current: String, expected: String },
 
     #[error("Invalid spec: {0}")]
     InvalidSpec(String),

@@ -144,7 +144,7 @@ pub struct PartialAuditEntry {
 impl PartialAuditEntry {
     /// Convert to full entry with hashes
     pub fn finalize(self, previous_hash: Option<String>) -> AuditEntry {
-        use sha2::{Sha256, Digest};
+        use sha2::{Digest, Sha256};
 
         // Compute hash of this entry
         let hash_input = format!(
@@ -487,8 +487,7 @@ mod tests {
         assert_eq!(user.actor_type, ActorType::User);
         assert_eq!(user.name, Some("Alice".to_string()));
 
-        let agent = AuditActor::agent("agent-456", None)
-            .with_attribute("version", "1.0.0");
+        let agent = AuditActor::agent("agent-456", None).with_attribute("version", "1.0.0");
         assert_eq!(agent.actor_type, ActorType::Agent);
         assert!(agent.attributes.contains_key("version"));
     }

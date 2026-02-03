@@ -3,9 +3,9 @@
 //! The Resonance Architecture does NOT assume synchronized clocks.
 //! Time is defined relationally through temporal anchors.
 
-use serde::{Deserialize, Serialize};
-use chrono::{DateTime, Utc};
 use super::ids::{AnchorId, CommitmentId};
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 
 /// A temporal anchor - any event that allows ordering interactions
 ///

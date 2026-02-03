@@ -1,17 +1,12 @@
 //! Tracing initialization and export
 
+use opentelemetry::KeyValue;
 use opentelemetry_sdk::{
     runtime,
     trace::{Config, Tracer},
     Resource,
 };
-use opentelemetry::KeyValue;
-use tracing_subscriber::{
-    fmt,
-    layer::SubscriberExt,
-    util::SubscriberInitExt,
-    EnvFilter,
-};
+use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 
 /// Configuration for tracing initialization
 #[derive(Debug, Clone)]
@@ -84,8 +79,8 @@ impl TracingConfig {
 
 /// Initialize tracing with the given configuration
 pub fn init_tracing(config: &TracingConfig) -> crate::error::Result<Option<Tracer>> {
-    let env_filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new(&config.log_level));
+    let env_filter =
+        EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(&config.log_level));
 
     // Setup OpenTelemetry if endpoint is configured
     let tracer = if let Some(ref endpoint) = config.otlp_endpoint {
@@ -173,9 +168,11 @@ mod tests {
 
     #[test]
     fn test_config_with_otlp() {
-        let config = TracingConfig::new("palm-daemon")
-            .with_otlp_endpoint("http://localhost:4317");
+        let config = TracingConfig::new("palm-daemon").with_otlp_endpoint("http://localhost:4317");
 
-        assert_eq!(config.otlp_endpoint, Some("http://localhost:4317".to_string()));
+        assert_eq!(
+            config.otlp_endpoint,
+            Some("http://localhost:4317".to_string())
+        );
     }
 }

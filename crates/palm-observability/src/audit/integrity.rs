@@ -1,8 +1,8 @@
 //! Integrity verification for audit chains
 
 use super::entry::AuditEntry;
-use sha2::{Sha256, Digest};
 use crate::error::Result;
+use sha2::{Digest, Sha256};
 
 /// Manages the integrity chain for audit entries
 #[derive(Debug)]
@@ -94,10 +94,7 @@ impl IntegrityVerifier {
             if !Self::verify_entry(entry)? {
                 result.valid = false;
                 result.first_invalid_index = Some(i);
-                result.error_message = Some(format!(
-                    "Entry {} has invalid hash",
-                    entry.id
-                ));
+                result.error_message = Some(format!("Entry {} has invalid hash", entry.id));
                 return Ok(result);
             }
 
@@ -218,7 +215,9 @@ impl TamperDetectionResult {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::audit::entry::{AuditAction, AuditActor, AuditOutcome, AuditResource, AuditEntry as Entry};
+    use crate::audit::entry::{
+        AuditAction, AuditActor, AuditEntry as Entry, AuditOutcome, AuditResource,
+    };
 
     fn create_test_entry(previous_hash: Option<String>) -> AuditEntry {
         Entry::builder()

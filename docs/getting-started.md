@@ -477,10 +477,10 @@ Now that you understand the basics, explore:
 
 ## Need Help?
 
-- **Documentation**: [docs.maple.ai](https://docs.maple.ai)
+- **Documentation**: [docs.mapleai.org](https://docs.mapleai.org)
 - **GitHub Issues**: [github.com/mapleaiorg/maple/issues](https://github.com/mapleaiorg/maple/issues)
 - **Discord**: [discord.gg/maple-ai](https://discord.gg/maple-ai)
-- **Email**: hello@maple.ai
+- **Email**: hello@mapleai.org
 
 ---
 

@@ -158,13 +158,7 @@ impl InstanceMetrics {
     }
 
     /// Set instance count by status
-    pub fn set_status_count(
-        &self,
-        platform: &str,
-        deployment_id: &str,
-        status: &str,
-        count: i64,
-    ) {
+    pub fn set_status_count(&self, platform: &str, deployment_id: &str, status: &str, count: i64) {
         self.instances_by_status
             .with_label_values(&[platform, deployment_id, status])
             .set(count);

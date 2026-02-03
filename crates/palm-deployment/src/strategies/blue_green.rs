@@ -60,7 +60,10 @@ impl DeploymentExecutor for BlueGreenDeploymentExecutor {
         for instance in &green_instances {
             ctx.wait_for_presence(instance, Duration::from_secs(60))
                 .await?;
-            if ctx.wait_for_healthy(instance, Duration::from_secs(120)).await? {
+            if ctx
+                .wait_for_healthy(instance, Duration::from_secs(120))
+                .await?
+            {
                 healthy_count += 1;
             }
         }
@@ -97,7 +100,8 @@ impl DeploymentExecutor for BlueGreenDeploymentExecutor {
         }
 
         // Phase 4: Switch traffic (discovery routing, not HTTP)
-        ctx.switch_traffic(&blue_instances, &green_instances).await?;
+        ctx.switch_traffic(&blue_instances, &green_instances)
+            .await?;
 
         // Phase 5: Terminate blue instances
         let terminated = blue_instances.len() as u32;

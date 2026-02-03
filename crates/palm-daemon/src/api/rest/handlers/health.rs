@@ -3,8 +3,8 @@
 use crate::api::rest::state::AppState;
 use crate::error::ApiResult;
 use axum::{extract::State, Json};
-use serde::{Deserialize, Serialize};
 use palm_types::instance::HealthStatus;
+use serde::{Deserialize, Serialize};
 
 /// Health check response
 #[derive(Debug, Serialize)]
@@ -50,7 +50,10 @@ pub async fn daemon_status(State(state): State<AppState>) -> ApiResult<Json<Daem
     let instances = state.storage.list_instances().await?;
 
     let healthy = instances.iter().filter(|i| i.health.is_healthy()).count();
-    let unhealthy = instances.iter().filter(|i| matches!(i.health, HealthStatus::Unhealthy { .. })).count();
+    let unhealthy = instances
+        .iter()
+        .filter(|i| matches!(i.health, HealthStatus::Unhealthy { .. }))
+        .count();
 
     Ok(Json(DaemonStatusResponse {
         status: "healthy".to_string(),
@@ -78,7 +81,9 @@ pub struct HealthSummaryResponse {
 }
 
 /// Get fleet health summary
-pub async fn health_summary(State(state): State<AppState>) -> ApiResult<Json<HealthSummaryResponse>> {
+pub async fn health_summary(
+    State(state): State<AppState>,
+) -> ApiResult<Json<HealthSummaryResponse>> {
     let instances = state.storage.list_instances().await?;
 
     let mut healthy = 0;

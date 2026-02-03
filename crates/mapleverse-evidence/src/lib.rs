@@ -23,18 +23,26 @@ impl EvidenceStore {
     }
 
     /// Store evidence for a commitment
-    pub fn store(&self, commitment_id: CommitmentId, evidence: Evidence) -> Result<(), EvidenceError> {
-        let mut store = self.evidence.write().map_err(|_| EvidenceError::LockError)?;
+    pub fn store(
+        &self,
+        commitment_id: CommitmentId,
+        evidence: Evidence,
+    ) -> Result<(), EvidenceError> {
+        let mut store = self
+            .evidence
+            .write()
+            .map_err(|_| EvidenceError::LockError)?;
         store.entry(commitment_id).or_default().push(evidence);
         Ok(())
     }
 
     /// Store all evidence from a consequence
     pub fn store_consequence(&self, consequence: &Consequence) -> Result<(), EvidenceError> {
-        let mut store = self.evidence.write().map_err(|_| EvidenceError::LockError)?;
-        let entries = store
-            .entry(consequence.commitment_id.clone())
-            .or_default();
+        let mut store = self
+            .evidence
+            .write()
+            .map_err(|_| EvidenceError::LockError)?;
+        let entries = store.entry(consequence.commitment_id.clone()).or_default();
         entries.extend(consequence.evidence.iter().cloned());
         Ok(())
     }

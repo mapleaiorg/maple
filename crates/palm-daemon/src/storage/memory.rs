@@ -5,11 +5,14 @@ use crate::error::StorageError;
 use async_trait::async_trait;
 use palm_shared_state::{Activity, PlaygroundConfig, ResonatorStatus};
 use palm_types::{
-    AgentSpec, AgentSpecId, Deployment, DeploymentId, InstanceId, PalmEventEnvelope,
     instance::{AgentInstance, HealthStatus},
+    AgentSpec, AgentSpecId, Deployment, DeploymentId, InstanceId, PalmEventEnvelope,
 };
 use std::collections::HashMap;
-use std::sync::{Arc, atomic::{AtomicU64, Ordering}};
+use std::sync::{
+    atomic::{AtomicU64, Ordering},
+    Arc,
+};
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
@@ -73,11 +76,16 @@ impl SpecStorage for InMemoryStorage {
         Ok(specs.remove(id).is_some())
     }
 
-    async fn get_spec_by_name(&self, name: &str, version: Option<&str>) -> StorageResult<Option<AgentSpec>> {
+    async fn get_spec_by_name(
+        &self,
+        name: &str,
+        version: Option<&str>,
+    ) -> StorageResult<Option<AgentSpec>> {
         let specs = self.specs.read().await;
-        Ok(specs.values().find(|s| {
-            s.name == name && version.map_or(true, |v| s.version.to_string() == v)
-        }).cloned())
+        Ok(specs
+            .values()
+            .find(|s| s.name == name && version.map_or(true, |v| s.version.to_string() == v))
+            .cloned())
     }
 }
 
@@ -93,7 +101,10 @@ impl DeploymentStorage for InMemoryStorage {
         Ok(deployments.values().cloned().collect())
     }
 
-    async fn list_deployments_for_spec(&self, spec_id: &AgentSpecId) -> StorageResult<Vec<Deployment>> {
+    async fn list_deployments_for_spec(
+        &self,
+        spec_id: &AgentSpecId,
+    ) -> StorageResult<Vec<Deployment>> {
         let deployments = self.deployments.read().await;
         Ok(deployments
             .values()
@@ -126,7 +137,10 @@ impl InstanceStorage for InMemoryStorage {
         Ok(instances.values().cloned().collect())
     }
 
-    async fn list_instances_for_deployment(&self, deployment_id: &DeploymentId) -> StorageResult<Vec<AgentInstance>> {
+    async fn list_instances_for_deployment(
+        &self,
+        deployment_id: &DeploymentId,
+    ) -> StorageResult<Vec<AgentInstance>> {
         let instances = self.instances.read().await;
         Ok(instances
             .values()
@@ -176,7 +190,11 @@ impl EventStorage for InMemoryStorage {
         Ok(events[start..].to_vec())
     }
 
-    async fn get_events_for_deployment(&self, deployment_id: &DeploymentId, limit: usize) -> StorageResult<Vec<PalmEventEnvelope>> {
+    async fn get_events_for_deployment(
+        &self,
+        deployment_id: &DeploymentId,
+        limit: usize,
+    ) -> StorageResult<Vec<PalmEventEnvelope>> {
         let events = self.events.read().await;
         let deployment_str = deployment_id.to_string();
         let filtered: Vec<_> = events
@@ -189,7 +207,11 @@ impl EventStorage for InMemoryStorage {
         Ok(filtered[start..].to_vec())
     }
 
-    async fn get_events_for_instance(&self, instance_id: &InstanceId, limit: usize) -> StorageResult<Vec<PalmEventEnvelope>> {
+    async fn get_events_for_instance(
+        &self,
+        instance_id: &InstanceId,
+        limit: usize,
+    ) -> StorageResult<Vec<PalmEventEnvelope>> {
         let events = self.events.read().await;
         let instance_str = instance_id.to_string();
         let filtered: Vec<_> = events
@@ -205,7 +227,11 @@ impl EventStorage for InMemoryStorage {
 
 #[async_trait]
 impl SnapshotStorage for InMemoryStorage {
-    async fn create_snapshot(&self, instance_id: &InstanceId, reason: &str) -> StorageResult<String> {
+    async fn create_snapshot(
+        &self,
+        instance_id: &InstanceId,
+        reason: &str,
+    ) -> StorageResult<String> {
         let snapshot_id = Uuid::new_v4().to_string();
         let info = SnapshotInfo {
             id: snapshot_id.clone(),
@@ -230,7 +256,11 @@ impl SnapshotStorage for InMemoryStorage {
             .collect())
     }
 
-    async fn restore_snapshot(&self, instance_id: &InstanceId, snapshot_id: &str) -> StorageResult<()> {
+    async fn restore_snapshot(
+        &self,
+        instance_id: &InstanceId,
+        snapshot_id: &str,
+    ) -> StorageResult<()> {
         let snapshots = self.snapshots.read().await;
         let snapshot = snapshots
             .get(snapshot_id)
@@ -347,8 +377,8 @@ impl ActivityStorage for InMemoryStorage {
 mod tests {
     use super::*;
     use palm_types::{
-        DeploymentStrategy, PlatformProfile, ReplicaConfig,
         instance::{InstanceMetrics, InstancePlacement, InstanceStatus, ResonatorIdRef},
+        DeploymentStrategy, PlatformProfile, ReplicaConfig,
     };
 
     fn create_test_spec() -> AgentSpec {
@@ -436,7 +466,10 @@ mod tests {
         let retrieved = storage.get_instance(&instance.id).await.unwrap();
         assert!(retrieved.is_some());
 
-        let instances = storage.list_instances_for_deployment(&deployment.id).await.unwrap();
+        let instances = storage
+            .list_instances_for_deployment(&deployment.id)
+            .await
+            .unwrap();
         assert_eq!(instances.len(), 1);
     }
 
@@ -446,7 +479,10 @@ mod tests {
         let instance_id = InstanceId::generate();
 
         // Create snapshot
-        let snapshot_id = storage.create_snapshot(&instance_id, "manual").await.unwrap();
+        let snapshot_id = storage
+            .create_snapshot(&instance_id, "manual")
+            .await
+            .unwrap();
         assert!(!snapshot_id.is_empty());
 
         // List snapshots
@@ -454,7 +490,10 @@ mod tests {
         assert_eq!(snapshots.len(), 1);
 
         // Restore
-        storage.restore_snapshot(&instance_id, &snapshot_id).await.unwrap();
+        storage
+            .restore_snapshot(&instance_id, &snapshot_id)
+            .await
+            .unwrap();
 
         // Delete
         let deleted = storage.delete_snapshot(&snapshot_id).await.unwrap();

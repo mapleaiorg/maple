@@ -1,7 +1,7 @@
 //! Configuration for MAPLE Resonance Runtime
 
-use serde::{Deserialize, Serialize};
 pub use crate::types::*;
+use serde::{Deserialize, Serialize};
 
 /// Complete runtime configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -259,7 +259,7 @@ pub fn ibank_runtime_config() -> RuntimeConfig {
             allow_ibank_profiles: true,
         },
         safety: SafetyConfig {
-            human_agency_protection: false, // No humans
+            human_agency_protection: false,  // No humans
             commitment_accountability: true, // Critical for finance
             strict_invariants: true,
             coercion_detection: false,

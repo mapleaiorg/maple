@@ -419,10 +419,7 @@ impl FailingRecoveryExecutor {
 #[async_trait]
 impl RecoveryExecutor for FailingRecoveryExecutor {
     async fn execute(&self, instance_id: &InstanceId, action: &RecoveryAction) -> HealthResult<()> {
-        if self
-            .fail_actions
-            .contains(&std::mem::discriminant(action))
-        {
+        if self.fail_actions.contains(&std::mem::discriminant(action)) {
             Err(HealthError::RecoveryFailed {
                 instance_id: instance_id.clone(),
                 reason: format!("Simulated failure for action: {}", action),
@@ -472,10 +469,7 @@ mod tests {
         assessment.overall = OverallHealth::Unhealthy;
 
         let action = controller.evaluate_recovery(&assessment);
-        assert!(matches!(
-            action,
-            RecoveryAction::RestartGraceful { .. }
-        ));
+        assert!(matches!(action, RecoveryAction::RestartGraceful { .. }));
     }
 
     #[tokio::test]

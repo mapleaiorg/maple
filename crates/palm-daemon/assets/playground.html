@@ -222,13 +222,30 @@
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     }
 
-    input, select {
+    input, select, textarea {
       width: 100%;
       padding: 10px 12px;
       border-radius: 10px;
       border: 1px solid rgba(255, 255, 255, 0.12);
       background: rgba(10, 15, 20, 0.7);
       color: var(--text);
+    }
+
+    textarea {
+      min-height: 104px;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    .infer-output {
+      margin-top: 10px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(10, 15, 20, 0.72);
+      color: var(--text);
+      white-space: pre-wrap;
+      min-height: 88px;
     }
 
     button.primary {
@@ -348,6 +365,8 @@
                 <option value="local_llama">Local Llama</option>
                 <option value="open_ai">OpenAI</option>
                 <option value="anthropic">Anthropic</option>
+                <option value="grok">Grok (xAI)</option>
+                <option value="gemini">Gemini (Google)</option>
               </select>
               <input id="backend-model" placeholder="Model (e.g. llama3)" />
               <input id="backend-endpoint" placeholder="Endpoint (for local)" />
@@ -357,6 +376,23 @@
               <button type="submit" class="primary">Save</button>
               <span class="tag" id="backend-save-status">Idle</span>
             </div>
+          </form>
+          <h3 style="margin-top:18px;">Quick Inference</h3>
+          <form id="infer-form">
+            <div class="form-row">
+              <textarea id="infer-prompt" placeholder="Prompt"></textarea>
+              <textarea id="infer-system" placeholder="System prompt (optional)"></textarea>
+            </div>
+            <div class="form-row" style="margin-top:10px;">
+              <input id="infer-actor" placeholder="Actor id (optional)" />
+              <input id="infer-temperature" placeholder="Temperature (optional)" />
+              <input id="infer-max-tokens" placeholder="Max tokens (optional)" />
+            </div>
+            <div class="flex" style="margin-top:12px;">
+              <button type="submit" class="primary">Run Inference</button>
+              <span class="tag" id="infer-status">Idle</span>
+            </div>
+            <div id="infer-output" class="infer-output">No response yet.</div>
           </form>
         </div>
       </div>
@@ -592,6 +628,43 @@
       });
       status.textContent = 'Saved';
       await fetchState();
+    });
+
+    document.getElementById('infer-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const status = document.getElementById('infer-status');
+      const output = document.getElementById('infer-output');
+      const payload = {
+        prompt: document.getElementById('infer-prompt').value,
+        system_prompt: document.getElementById('infer-system').value || null,
+        actor_id: document.getElementById('infer-actor').value || null,
+        temperature: document.getElementById('infer-temperature').value ? Number(document.getElementById('infer-temperature').value) : null,
+        max_tokens: document.getElementById('infer-max-tokens').value ? Number(document.getElementById('infer-max-tokens').value) : null,
+      };
+
+      status.textContent = 'Running...';
+      output.textContent = 'Waiting for backend response...';
+
+      try {
+        const response = await fetch(`${API}/infer`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const body = await response.json();
+        if (!response.ok) {
+          throw new Error(body.error || 'Inference request failed');
+        }
+
+        const finish = body.finish_reason ? `\n\nfinish: ${body.finish_reason}` : '';
+        const usage = body.usage ? `\nusage: ${JSON.stringify(body.usage)}` : '';
+        output.textContent = `${body.output || '(empty output)'}\n\nbackend: ${body.backend_kind} · ${body.backend_model}\nlatency: ${body.latency_ms} ms${finish}${usage}`;
+        status.textContent = 'Done';
+        await fetchState();
+      } catch (error) {
+        output.textContent = String(error.message || error);
+        status.textContent = 'Failed';
+      }
     });
 
     document.getElementById('simulation-form').addEventListener('submit', async (event) => {

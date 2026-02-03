@@ -50,9 +50,7 @@ pub enum ProbeDetails {
     },
 
     /// Custom probe details
-    Custom {
-        data: serde_json::Value,
-    },
+    Custom { data: serde_json::Value },
 }
 
 /// Aggregated health assessment

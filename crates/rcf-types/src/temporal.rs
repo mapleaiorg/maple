@@ -17,7 +17,7 @@ impl TemporalAnchor {
             sequence: 0,
         }
     }
-    
+
     pub fn at(time: chrono::DateTime<chrono::Utc>) -> Self {
         Self {
             local_time: time,
@@ -28,7 +28,9 @@ impl TemporalAnchor {
 }
 
 impl Default for TemporalAnchor {
-    fn default() -> Self { Self::now() }
+    fn default() -> Self {
+        Self::now()
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -40,12 +42,21 @@ pub struct TemporalValidity {
 }
 
 impl TemporalValidity {
-    pub fn new(valid_from: chrono::DateTime<chrono::Utc>, valid_until: chrono::DateTime<chrono::Utc>) -> Self {
-        Self { valid_from: Some(valid_from), valid_until: Some(valid_until) }
+    pub fn new(
+        valid_from: chrono::DateTime<chrono::Utc>,
+        valid_until: chrono::DateTime<chrono::Utc>,
+    ) -> Self {
+        Self {
+            valid_from: Some(valid_from),
+            valid_until: Some(valid_until),
+        }
     }
 
     pub fn unbounded() -> Self {
-        Self { valid_from: None, valid_until: None }
+        Self {
+            valid_from: None,
+            valid_until: None,
+        }
     }
 
     pub fn from_now_secs(seconds: i64) -> Self {

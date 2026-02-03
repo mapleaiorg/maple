@@ -129,11 +129,9 @@ impl PolicyEvaluator {
         }
 
         // Create a composed gate from all configured gates
-        let mut composed = ComposedPolicyGate::new(
-            "evaluator",
-            format!("{:?} Policy Evaluator", self.platform),
-        )
-        .with_evaluation_mode(self.evaluation_mode);
+        let mut composed =
+            ComposedPolicyGate::new("evaluator", format!("{:?} Policy Evaluator", self.platform))
+                .with_evaluation_mode(self.evaluation_mode);
 
         for gate in gates.iter() {
             composed = composed.add_gate(Arc::clone(gate));
@@ -187,7 +185,11 @@ impl PolicyEvaluator {
                     "Policy denied operation"
                 );
             }
-            PolicyDecision::RequiresApproval { reason, policy_id, approvers } => {
+            PolicyDecision::RequiresApproval {
+                reason,
+                policy_id,
+                approvers,
+            } => {
                 info!(
                     request_id = %card.request_id,
                     operation = %card.operation,
@@ -198,7 +200,9 @@ impl PolicyEvaluator {
                     "Policy requires approval"
                 );
             }
-            PolicyDecision::Hold { reason, policy_id, .. } => {
+            PolicyDecision::Hold {
+                reason, policy_id, ..
+            } => {
                 info!(
                     request_id = %card.request_id,
                     operation = %card.operation,
@@ -317,7 +321,9 @@ mod tests {
 
         assert_eq!(evaluator.list_gates().await.len(), 1);
 
-        evaluator.add_gate(Arc::new(DenyAllPolicyGate::new("test"))).await;
+        evaluator
+            .add_gate(Arc::new(DenyAllPolicyGate::new("test")))
+            .await;
         assert_eq!(evaluator.list_gates().await.len(), 2);
 
         evaluator.remove_gate("deny-all").await;
@@ -337,8 +343,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_evaluator_with_card() {
-        let evaluator = PolicyEvaluator::new(PlatformProfile::Development)
-            .with_emit_audit_events(false);
+        let evaluator =
+            PolicyEvaluator::new(PlatformProfile::Development).with_emit_audit_events(false);
         let ctx = PolicyEvaluationContext::new("user-1", PlatformProfile::Development);
         let op = PalmOperation::CreateDeployment {
             spec_id: "test-spec".into(),

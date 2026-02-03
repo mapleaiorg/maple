@@ -133,9 +133,7 @@ pub async fn execute(
             }
 
             print_info("Restoring from snapshot...");
-            client
-                .restore_snapshot(&instance_id, &snapshot_id)
-                .await?;
+            client.restore_snapshot(&instance_id, &snapshot_id).await?;
             print_success(&format!(
                 "Restored instance {} from snapshot {}",
                 instance_id, snapshot_id

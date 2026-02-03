@@ -86,6 +86,19 @@ cargo run -p maple-cli -- palm playground set-backend --kind open_ai --model gpt
 
 # Anthropic
 cargo run -p maple-cli -- palm playground set-backend --kind anthropic --model claude-3-5-sonnet --api-key YOUR_KEY
+
+# Grok (xAI)
+cargo run -p maple-cli -- palm playground set-backend --kind grok --model grok-2-latest --api-key YOUR_KEY
+
+# Gemini (Google)
+cargo run -p maple-cli -- palm playground set-backend --kind gemini --model gemini-2.0-flash --api-key YOUR_KEY
+```
+
+Run one-shot inference on the active backend:
+
+```bash
+cargo run -p maple-cli -- palm playground infer "Summarize the latest system activity"
+cargo run -p maple-cli -- palm playground infer "Draft UAL for scaling deployment dep-123 to 5" --system-prompt "You are a MAPLE ops copilot"
 ```
 
 ## 6. Headless Runtime

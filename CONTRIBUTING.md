@@ -274,7 +274,7 @@ Closes #123
 
 - **GitHub Discussions**: [discussions](https://github.com/mapleaiorg/maple/discussions)
 - **Discord**: [discord.gg/maple-ai](https://discord.gg/maple-ai)
-- **Email**: hello@maple.ai
+- **Email**: hello@mapleai.org
 
 ## License
 

@@ -65,7 +65,10 @@ mod tests {
     fn test_registry_creation() {
         let registry = MetricsRegistry::new();
         // Record a metric value to ensure export works
-        registry.palm().deployment.record_operation("development", "create", "success", 1.0);
+        registry
+            .palm()
+            .deployment
+            .record_operation("development", "create", "success", 1.0);
         let output = registry.export();
         // Should have some metrics
         assert!(!output.is_empty());

@@ -39,7 +39,10 @@ impl HealthMetrics {
             .expect("Failed to register health_checks_total");
 
         let health_status = IntGaugeVec::new(
-            Opts::new("health_status", "Current health status (0=unknown, 1=healthy, 2=degraded, 3=unhealthy)"),
+            Opts::new(
+                "health_status",
+                "Current health status (0=unknown, 1=healthy, 2=degraded, 3=unhealthy)",
+            ),
             &["platform", "deployment_id", "instance_id"],
         )
         .expect("Failed to create health_status metric");
@@ -48,11 +51,8 @@ impl HealthMetrics {
             .expect("Failed to register health_status");
 
         let health_check_duration_seconds = HistogramVec::new(
-            HistogramOpts::new(
-                "health_check_duration_seconds",
-                "Health check duration",
-            )
-            .buckets(vec![0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0]),
+            HistogramOpts::new("health_check_duration_seconds", "Health check duration")
+                .buckets(vec![0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0]),
             &["platform", "check_type"],
         )
         .expect("Failed to create health_check_duration_seconds metric");
@@ -61,7 +61,10 @@ impl HealthMetrics {
             .expect("Failed to register health_check_duration_seconds");
 
         let consecutive_failures = IntGaugeVec::new(
-            Opts::new("consecutive_health_failures", "Consecutive health check failures"),
+            Opts::new(
+                "consecutive_health_failures",
+                "Consecutive health check failures",
+            ),
             &["platform", "deployment_id", "instance_id"],
         )
         .expect("Failed to create consecutive_failures metric");
@@ -79,11 +82,8 @@ impl HealthMetrics {
             .expect("Failed to register recoveries_total");
 
         let time_to_recovery_seconds = HistogramVec::new(
-            HistogramOpts::new(
-                "time_to_recovery_seconds",
-                "Time from unhealthy to healthy",
-            )
-            .buckets(vec![10.0, 30.0, 60.0, 120.0, 300.0, 600.0, 1800.0]),
+            HistogramOpts::new("time_to_recovery_seconds", "Time from unhealthy to healthy")
+                .buckets(vec![10.0, 30.0, 60.0, 120.0, 300.0, 600.0, 1800.0]),
             &["platform", "deployment_id"],
         )
         .expect("Failed to create time_to_recovery_seconds metric");

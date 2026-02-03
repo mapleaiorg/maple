@@ -65,7 +65,9 @@ impl BaseInvariantPolicy {
                     format!(
                         "Rate limit exceeded: {} operations/hour (max: {})",
                         usage.operations_per_hour,
-                        usage.max_operations_per_hour.unwrap_or(self.max_operations_per_hour)
+                        usage
+                            .max_operations_per_hour
+                            .unwrap_or(self.max_operations_per_hour)
                     ),
                     self.id(),
                 ));
@@ -148,7 +150,10 @@ impl PolicyGate for BaseInvariantPolicy {
         }
 
         // Check scale limits
-        if let PalmOperation::ScaleDeployment { target_replicas, .. } = operation {
+        if let PalmOperation::ScaleDeployment {
+            target_replicas, ..
+        } = operation
+        {
             if let Some(decision) = self.check_scale_limits(*target_replicas) {
                 return Ok(decision);
             }
@@ -236,8 +241,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_base_policy_custom_limits() {
-        let policy = BaseInvariantPolicy::new()
-            .with_max_instances_per_deployment(200);
+        let policy = BaseInvariantPolicy::new().with_max_instances_per_deployment(200);
 
         let ctx = PolicyEvaluationContext::new("user-1", PlatformProfile::Development);
         let op = PalmOperation::ScaleDeployment {

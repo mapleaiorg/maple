@@ -157,8 +157,7 @@ impl PlatformConformance {
 
     fn test_accountability_required(pack: &Arc<dyn PlatformPack>) -> PlatformTestResult {
         let policy = pack.policy_config();
-        let passed =
-            policy.accountability.require_proof && policy.accountability.require_pre_audit;
+        let passed = policy.accountability.require_proof && policy.accountability.require_pre_audit;
 
         PlatformTestResult {
             name: "accountability_required".to_string(),

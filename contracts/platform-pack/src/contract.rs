@@ -1,11 +1,11 @@
 //! Core Platform Pack contract definition
 
 use crate::{
-    PlatformPolicyConfig, PlatformHealthConfig, PlatformStateConfig,
-    PlatformResourceConfig, PlatformRecoveryConfig, PlatformMetadata,
+    PlatformHealthConfig, PlatformMetadata, PlatformPolicyConfig, PlatformRecoveryConfig,
+    PlatformResourceConfig, PlatformStateConfig,
 };
-use palm_types::PlatformProfile;
 use async_trait::async_trait;
+use palm_types::PlatformProfile;
 use serde::{Deserialize, Serialize};
 
 /// The Platform Pack trait - the primary contract for platform implementations
@@ -76,7 +76,8 @@ impl PlatformPackConfig {
 
     /// Load configuration from file
     pub async fn from_file(path: &str) -> Result<Self, PackError> {
-        let content = tokio::fs::read_to_string(path).await
+        let content = tokio::fs::read_to_string(path)
+            .await
             .map_err(|e| PackError::Io(e.to_string()))?;
         Self::from_toml(&content)
     }

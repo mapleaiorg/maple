@@ -148,8 +148,6 @@ impl CoreConformanceRequirements {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     // Tests would require mock pack implementation
     // Left as placeholder for now
 }

@@ -44,8 +44,8 @@ impl IBankAccountabilityPolicy {
         Self {
             require_actor_attribution: true,
             block_anonymous: true,
-            change_window_start: 6,  // 6 AM
-            change_window_end: 22,   // 10 PM
+            change_window_start: 6, // 6 AM
+            change_window_end: 22,  // 10 PM
             enforce_change_windows: true,
             max_operations_per_actor: 100,
         }
@@ -318,8 +318,8 @@ mod tests {
         let mut usage = QuotaUsage::default();
         usage.operations_per_hour = 150;
 
-        let ctx = PolicyEvaluationContext::new("user-1", PlatformProfile::IBank)
-            .with_quota_usage(usage);
+        let ctx =
+            PolicyEvaluationContext::new("user-1", PlatformProfile::IBank).with_quota_usage(usage);
         let op = PalmOperation::CreateDeployment {
             spec_id: "test-spec".into(),
         };
@@ -331,8 +331,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_ibank_change_window_production() {
-        let policy = IBankAccountabilityPolicy::new()
-            .with_change_window(9, 17); // 9 AM - 5 PM
+        let policy = IBankAccountabilityPolicy::new().with_change_window(9, 17); // 9 AM - 5 PM
 
         // Create context at 3 AM (outside window)
         let mut ctx = PolicyEvaluationContext::new("user-1", PlatformProfile::IBank)
@@ -350,8 +349,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_ibank_change_window_non_production() {
-        let policy = IBankAccountabilityPolicy::new()
-            .with_change_window(9, 17); // 9 AM - 5 PM
+        let policy = IBankAccountabilityPolicy::new().with_change_window(9, 17); // 9 AM - 5 PM
 
         // Create context at 3 AM (outside window) but in staging
         let mut ctx = PolicyEvaluationContext::new("user-1", PlatformProfile::IBank)
@@ -368,8 +366,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_ibank_system_actor_bypasses_window() {
-        let policy = IBankAccountabilityPolicy::new()
-            .with_change_window(9, 17);
+        let policy = IBankAccountabilityPolicy::new().with_change_window(9, 17);
 
         let mut ctx = PolicyEvaluationContext::new("health-monitor", PlatformProfile::IBank)
             .with_actor_type(ActorType::System)
@@ -418,8 +415,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_ibank_read_operations_outside_window() {
-        let policy = IBankAccountabilityPolicy::new()
-            .with_change_window(9, 17);
+        let policy = IBankAccountabilityPolicy::new().with_change_window(9, 17);
 
         let mut ctx = PolicyEvaluationContext::new("user-1", PlatformProfile::IBank)
             .with_environment("production");

@@ -56,19 +56,19 @@
 #![cfg_attr(feature = "strict-docs", warn(missing_docs))]
 #![cfg_attr(not(feature = "strict-docs"), allow(missing_docs))]
 
-pub mod manager;
 pub mod context;
-pub mod scheduler;
-pub mod strategies;
-pub mod routing;
-pub mod state;
 pub mod error;
+pub mod manager;
+pub mod routing;
+pub mod scheduler;
+pub mod state;
+pub mod strategies;
 
 // Re-exports
-pub use manager::{AllowAllPolicyGate, DeleteConfig, DeploymentManager, PolicyGate};
 pub use context::DeploymentContext;
-pub use scheduler::{DeploymentConfig, DeploymentScheduler, QueuedDeployment, UpdateConfig};
-pub use strategies::{DeploymentExecutor, DeploymentResult};
-pub use routing::DiscoveryRoutingManager;
-pub use state::{DeploymentStateStore, InMemoryDeploymentStateStore, StateStoreError};
 pub use error::{DeploymentError, Result};
+pub use manager::{AllowAllPolicyGate, DeleteConfig, DeploymentManager, PolicyGate};
+pub use routing::DiscoveryRoutingManager;
+pub use scheduler::{DeploymentConfig, DeploymentScheduler, QueuedDeployment, UpdateConfig};
+pub use state::{DeploymentStateStore, InMemoryDeploymentStateStore, StateStoreError};
+pub use strategies::{DeploymentExecutor, DeploymentResult};

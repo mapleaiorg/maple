@@ -10,7 +10,7 @@ use palm_registry::InstanceRegistry;
 use palm_types::*;
 use std::sync::Arc;
 use std::time::Duration;
-use tracing::{info, warn, instrument};
+use tracing::{info, instrument, warn};
 
 /// Context provided to deployment executors for instance management
 ///
@@ -83,9 +83,7 @@ impl DeploymentContext {
         };
 
         // Register in PALM registry
-        self.instance_registry
-            .register(instance.clone())
-            .await?;
+        self.instance_registry.register(instance.clone()).await?;
 
         info!(
             instance_id = %instance.id,
@@ -148,7 +146,9 @@ impl DeploymentContext {
             }
 
             // Execute health probe (simulated)
-            let probe_result = self.execute_health_probe(instance, &health_config.readiness).await;
+            let probe_result = self
+                .execute_health_probe(instance, &health_config.readiness)
+                .await;
 
             if probe_result.success {
                 consecutive_successes += 1;
@@ -280,12 +280,17 @@ impl DeploymentContext {
         old_instances: &[AgentInstance],
         new_instances: &[AgentInstance],
     ) -> Result<()> {
-        self.set_traffic_split(old_instances, new_instances, 100).await
+        self.set_traffic_split(old_instances, new_instances, 100)
+            .await
     }
 
     // --- Internal helpers ---
 
-    async fn execute_health_probe(&self, _instance: &AgentInstance, config: &ProbeConfig) -> ProbeResult {
+    async fn execute_health_probe(
+        &self,
+        _instance: &AgentInstance,
+        config: &ProbeConfig,
+    ) -> ProbeResult {
         let start = std::time::Instant::now();
 
         // In a real implementation, this would:
@@ -309,7 +314,9 @@ impl DeploymentContext {
                     }),
                 )
             }
-            ProbeType::CouplingCapacity { min_available_slots } => {
+            ProbeType::CouplingCapacity {
+                min_available_slots,
+            } => {
                 let available = 50u32;
                 (
                     available >= *min_available_slots,

@@ -60,32 +60,22 @@ impl std::fmt::Display for ResonatorIdRef {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum InstanceStatus {
     /// Instance is starting up
-    Starting {
-        phase: StartupPhase,
-    },
+    Starting { phase: StartupPhase },
 
     /// Instance is running normally
     Running,
 
     /// Instance is draining (preparing for termination)
-    Draining {
-        reason: DrainReason,
-    },
+    Draining { reason: DrainReason },
 
     /// Instance is being terminated
-    Terminating {
-        reason: TerminationReason,
-    },
+    Terminating { reason: TerminationReason },
 
     /// Instance has terminated
-    Terminated {
-        exit_code: Option<i32>,
-    },
+    Terminated { exit_code: Option<i32> },
 
     /// Instance is in error state
-    Error {
-        message: String,
-    },
+    Error { message: String },
 }
 
 /// Startup phases

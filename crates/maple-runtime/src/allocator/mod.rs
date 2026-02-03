@@ -2,9 +2,9 @@
 //!
 //! CRITICAL INVARIANT: Coupling MUST always be bounded by available attention.
 
-use dashmap::DashMap;
-use crate::types::*;
 use crate::types::AttentionConfig;
+use crate::types::*;
+use dashmap::DashMap;
 
 /// Attention Allocator manages attention budgets for all Resonators
 ///

@@ -381,10 +381,7 @@ impl InMemoryDiscoveryService {
                 // Would need load metrics
             }
             RoutingStrategy::AttentionAware => {
-                results.sort_by(|a, b| {
-                    b.available_attention
-                        .cmp(&a.available_attention)
-                });
+                results.sort_by(|a, b| b.available_attention.cmp(&a.available_attention));
             }
             RoutingStrategy::ZoneAffinity => {
                 if let Some(ref preferred) = query.preferred_zone {

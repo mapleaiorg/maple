@@ -250,7 +250,9 @@ impl AuditSink for CompositeSink {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::audit::entry::{AuditAction, AuditActor, AuditOutcome, AuditResource, AuditEntry as Entry};
+    use crate::audit::entry::{
+        AuditAction, AuditActor, AuditEntry as Entry, AuditOutcome, AuditResource,
+    };
 
     fn create_partial_entry() -> PartialAuditEntry {
         Entry::builder()

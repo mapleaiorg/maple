@@ -33,13 +33,21 @@ pub struct ContinuityRef {
 }
 
 impl ContinuityRef {
-    pub fn new() -> Self { Self::default() }
+    pub fn new() -> Self {
+        Self::default()
+    }
 
-    pub fn verify(&self) -> bool { true }
+    pub fn verify(&self) -> bool {
+        true
+    }
 
-    pub fn len(&self) -> usize { self.chain.len() }
+    pub fn len(&self) -> usize {
+        self.chain.len()
+    }
 
-    pub fn is_empty(&self) -> bool { self.chain.is_empty() }
+    pub fn is_empty(&self) -> bool {
+        self.chain.is_empty()
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -98,7 +106,9 @@ pub mod hex_bytes_32 {
             .collect::<Result<Vec<u8>, _>>()
             .map_err(serde::de::Error::custom)?;
 
-        bytes.try_into().map_err(|_| serde::de::Error::custom("invalid length for [u8; 32]"))
+        bytes
+            .try_into()
+            .map_err(|_| serde::de::Error::custom("invalid length for [u8; 32]"))
     }
 }
 
@@ -125,6 +135,8 @@ pub mod hex_bytes_64 {
             .collect::<Result<Vec<u8>, _>>()
             .map_err(serde::de::Error::custom)?;
 
-        bytes.try_into().map_err(|_| serde::de::Error::custom("invalid length for [u8; 64]"))
+        bytes
+            .try_into()
+            .map_err(|_| serde::de::Error::custom("invalid length for [u8; 64]"))
     }
 }

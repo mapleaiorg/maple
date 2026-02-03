@@ -9,8 +9,8 @@ use palm_deployment::{DeploymentStateStore, PolicyGate};
 use palm_health::HealthConfig;
 use palm_registry::{AgentRegistry, InstanceRegistry};
 use palm_state::{
-    AasClient, CouplingRuntime, MigrationRuntime, RuntimeStateGatherer,
-    RuntimeStateRestorer, ContinuityVerifier, StateManagerConfig, StateStorage,
+    AasClient, ContinuityVerifier, CouplingRuntime, MigrationRuntime, RuntimeStateGatherer,
+    RuntimeStateRestorer, StateManagerConfig, StateStorage,
 };
 use palm_types::PlatformProfile;
 use std::sync::Arc;
@@ -134,39 +134,39 @@ impl PalmControlPlaneBuilder {
 
     /// Build the control plane with all components
     pub fn build(self) -> Result<PalmControlPlane> {
-        let agent_registry = self.agent_registry.ok_or_else(|| {
-            ControlPlaneError::InvalidRequest("agent_registry required".into())
-        })?;
+        let agent_registry = self
+            .agent_registry
+            .ok_or_else(|| ControlPlaneError::InvalidRequest("agent_registry required".into()))?;
         let instance_registry = self.instance_registry.ok_or_else(|| {
             ControlPlaneError::InvalidRequest("instance_registry required".into())
         })?;
-        let policy_gate = self.policy_gate.ok_or_else(|| {
-            ControlPlaneError::InvalidRequest("policy_gate required".into())
-        })?;
-        let state_storage = self.state_storage.ok_or_else(|| {
-            ControlPlaneError::InvalidRequest("state_storage required".into())
-        })?;
+        let policy_gate = self
+            .policy_gate
+            .ok_or_else(|| ControlPlaneError::InvalidRequest("policy_gate required".into()))?;
+        let state_storage = self
+            .state_storage
+            .ok_or_else(|| ControlPlaneError::InvalidRequest("state_storage required".into()))?;
         let deployment_state_store = self.deployment_state_store.ok_or_else(|| {
             ControlPlaneError::InvalidRequest("deployment_state_store required".into())
         })?;
-        let state_gatherer = self.state_gatherer.ok_or_else(|| {
-            ControlPlaneError::InvalidRequest("state_gatherer required".into())
-        })?;
-        let state_restorer = self.state_restorer.ok_or_else(|| {
-            ControlPlaneError::InvalidRequest("state_restorer required".into())
-        })?;
+        let state_gatherer = self
+            .state_gatherer
+            .ok_or_else(|| ControlPlaneError::InvalidRequest("state_gatherer required".into()))?;
+        let state_restorer = self
+            .state_restorer
+            .ok_or_else(|| ControlPlaneError::InvalidRequest("state_restorer required".into()))?;
         let continuity_verifier = self.continuity_verifier.ok_or_else(|| {
             ControlPlaneError::InvalidRequest("continuity_verifier required".into())
         })?;
-        let coupling_runtime = self.coupling_runtime.ok_or_else(|| {
-            ControlPlaneError::InvalidRequest("coupling_runtime required".into())
-        })?;
+        let coupling_runtime = self
+            .coupling_runtime
+            .ok_or_else(|| ControlPlaneError::InvalidRequest("coupling_runtime required".into()))?;
         let migration_runtime = self.migration_runtime.ok_or_else(|| {
             ControlPlaneError::InvalidRequest("migration_runtime required".into())
         })?;
-        let aas_client = self.aas_client.ok_or_else(|| {
-            ControlPlaneError::InvalidRequest("aas_client required".into())
-        })?;
+        let aas_client = self
+            .aas_client
+            .ok_or_else(|| ControlPlaneError::InvalidRequest("aas_client required".into()))?;
 
         let health_config = self
             .health_config

@@ -7,15 +7,15 @@
 //!
 //! These are Resonance-native concepts, not traditional liveness/readiness probes.
 
-mod presence;
-mod coupling;
 mod attention;
+mod coupling;
 mod custom;
+mod presence;
 
-pub use presence::PresenceProbe;
-pub use coupling::CouplingProbe;
 pub use attention::AttentionProbe;
+pub use coupling::CouplingProbe;
 pub use custom::{CustomProbe, CustomProbeFactory};
+pub use presence::PresenceProbe;
 
 use async_trait::async_trait;
 use palm_types::InstanceId;

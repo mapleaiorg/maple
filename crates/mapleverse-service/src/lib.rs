@@ -8,7 +8,9 @@
 use mapleverse_connectors::{CommunicationConnector, ComputationConnector, DataConnector};
 use mapleverse_evidence::{EvidenceError, EvidenceStore};
 use mapleverse_executor::{Executor, ExecutorError};
-use mapleverse_types::{ExecutionParameters, ExecutionRequest, ExecutionRequestId, ExecutionResult};
+use mapleverse_types::{
+    ExecutionParameters, ExecutionRequest, ExecutionRequestId, ExecutionResult,
+};
 use rcf_commitment::{CommitmentId, RcfCommitment};
 use rcf_types::EffectDomain;
 use std::sync::Arc;
@@ -76,7 +78,11 @@ impl MapleverseService {
     }
 
     /// Abort an execution
-    pub fn abort(&self, request_id: &ExecutionRequestId, reason: &str) -> Result<(), MapleverseError> {
+    pub fn abort(
+        &self,
+        request_id: &ExecutionRequestId,
+        reason: &str,
+    ) -> Result<(), MapleverseError> {
         self.executor.abort(request_id, reason).map_err(Into::into)
     }
 
@@ -125,13 +131,11 @@ mod tests {
     fn test_mapleverse_execution() {
         let service = MapleverseService::new();
 
-        let commitment = CommitmentBuilder::new(
-            IdentityRef::new("test-agent"),
-            EffectDomain::Computation,
-        )
-        .with_scope(ScopeConstraint::default())
-        .build()
-        .unwrap();
+        let commitment =
+            CommitmentBuilder::new(IdentityRef::new("test-agent"), EffectDomain::Computation)
+                .with_scope(ScopeConstraint::default())
+                .build()
+                .unwrap();
 
         let result = service
             .execute(

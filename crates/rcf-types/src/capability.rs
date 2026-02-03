@@ -21,16 +21,31 @@ impl CapabilityRef {
         validity: TemporalValidity,
         issuer: IdentityRef,
     ) -> Self {
-        Self { capability_id: capability_id.into(), domain, scope, validity, issuer }
+        Self {
+            capability_id: capability_id.into(),
+            domain,
+            scope,
+            validity,
+            issuer,
+        }
     }
-    
-    pub fn is_valid(&self) -> bool { self.validity.is_valid_now() }
+
+    pub fn is_valid(&self) -> bool {
+        self.validity.is_valid_now()
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum EffectDomain {
-    Communication, Finance, Infrastructure, Data, Governance, Physical, Computation, Custom(String),
+    Communication,
+    Finance,
+    Infrastructure,
+    Data,
+    Governance,
+    Physical,
+    Computation,
+    Custom(String),
 }
 
 impl EffectDomain {
@@ -50,7 +65,10 @@ impl EffectDomain {
 
     /// Check if this is a critical domain requiring extra scrutiny
     pub fn is_critical(&self) -> bool {
-        matches!(self, EffectDomain::Finance | EffectDomain::Governance | EffectDomain::Infrastructure)
+        matches!(
+            self,
+            EffectDomain::Finance | EffectDomain::Governance | EffectDomain::Infrastructure
+        )
     }
 
     /// Check if domains match (for capability checking)
@@ -75,11 +93,19 @@ pub struct ScopeConstraint {
 
 impl ScopeConstraint {
     pub fn new(targets: Vec<String>, operations: Vec<String>) -> Self {
-        Self { targets, operations, limits: None }
+        Self {
+            targets,
+            operations,
+            limits: None,
+        }
     }
 
     pub fn wildcard() -> Self {
-        Self { targets: vec!["*".to_string()], operations: vec!["*".to_string()], limits: None }
+        Self {
+            targets: vec!["*".to_string()],
+            operations: vec!["*".to_string()],
+            limits: None,
+        }
     }
 
     pub fn global() -> Self {
@@ -92,11 +118,11 @@ impl ScopeConstraint {
 
     pub fn matches(&self, target: &str, operation: &str) -> bool {
         let target_match = self.targets.iter().any(|t| {
-            t == "*" || t == target || (t.ends_with('*') && target.starts_with(t.trim_end_matches('*')))
+            t == "*"
+                || t == target
+                || (t.ends_with('*') && target.starts_with(t.trim_end_matches('*')))
         });
-        let op_match = self.operations.iter().any(|o| {
-            o == "*" || o == operation
-        });
+        let op_match = self.operations.iter().any(|o| o == "*" || o == operation);
         target_match && op_match
     }
 }
@@ -116,9 +142,20 @@ pub struct ResourceLimits {
 }
 
 impl ResourceLimits {
-    pub fn new() -> Self { Self::default() }
-    
-    pub fn with_max_value(mut self, value: u64) -> Self { self.max_value = Some(value); self }
-    pub fn with_max_operations(mut self, ops: u64) -> Self { self.max_operations = Some(ops); self }
-    pub fn with_max_data_bytes(mut self, bytes: u64) -> Self { self.max_data_bytes = Some(bytes); self }
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn with_max_value(mut self, value: u64) -> Self {
+        self.max_value = Some(value);
+        self
+    }
+    pub fn with_max_operations(mut self, ops: u64) -> Self {
+        self.max_operations = Some(ops);
+        self
+    }
+    pub fn with_max_data_bytes(mut self, bytes: u64) -> Self {
+        self.max_data_bytes = Some(bytes);
+        self
+    }
 }

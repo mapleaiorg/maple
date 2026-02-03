@@ -178,7 +178,7 @@ impl EventForwarderBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use palm_types::{DeploymentId, AgentSpecId};
+    use palm_types::{AgentSpecId, DeploymentId};
     use tokio::time::{timeout, Duration};
 
     #[tokio::test]

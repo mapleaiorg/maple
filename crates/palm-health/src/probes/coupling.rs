@@ -130,13 +130,11 @@ impl Probe for CouplingProbe {
                 instance_id,
                 reason: e.to_string(),
             }),
-            Err(_) => {
-                Ok(ProbeResult::timeout(
-                    instance_id,
-                    ProbeType::Coupling,
-                    self.timeout_ms,
-                ))
-            }
+            Err(_) => Ok(ProbeResult::timeout(
+                instance_id,
+                ProbeType::Coupling,
+                self.timeout_ms,
+            )),
         }
     }
 }

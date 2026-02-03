@@ -2,8 +2,8 @@
 //!
 //! Presence is NOT binary (online/offline). It's a gradient.
 
-use serde::{Deserialize, Serialize};
 use super::temporal::TemporalAnchor;
+use serde::{Deserialize, Serialize};
 
 /// Presence state - gradient representation of a Resonator's availability
 ///

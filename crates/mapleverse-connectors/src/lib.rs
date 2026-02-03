@@ -95,11 +95,13 @@ impl ExecutionHandler for ComputationConnector {
         commitment: &RcfCommitment,
         _params: &ExecutionParameters,
     ) -> Result<Consequence, ExecutorError> {
-        Connector::execute(self, commitment).map_err(|e| ExecutorError::ExecutionFailed(e.to_string()))
+        Connector::execute(self, commitment)
+            .map_err(|e| ExecutorError::ExecutionFailed(e.to_string()))
     }
 
     fn rollback(&self, commitment: &RcfCommitment) -> Result<(), ExecutorError> {
-        Connector::rollback(self, commitment).map_err(|e| ExecutorError::RollbackFailed(e.to_string()))
+        Connector::rollback(self, commitment)
+            .map_err(|e| ExecutorError::RollbackFailed(e.to_string()))
     }
 
     fn can_handle(&self, domain: &EffectDomain) -> bool {
@@ -120,7 +122,10 @@ impl Connector for DataConnector {
             consequence_id: ConsequenceId::generate(),
             commitment_id: commitment.commitment_id.clone(),
             effect_domain: EffectDomain::Data,
-            description: format!("Data operation: {}", commitment.intended_outcome.description),
+            description: format!(
+                "Data operation: {}",
+                commitment.intended_outcome.description
+            ),
             evidence: vec![Evidence {
                 evidence_type: EvidenceType::StateSnapshot,
                 description: "Data state snapshot".to_string(),
@@ -152,11 +157,13 @@ impl ExecutionHandler for DataConnector {
         commitment: &RcfCommitment,
         _params: &ExecutionParameters,
     ) -> Result<Consequence, ExecutorError> {
-        Connector::execute(self, commitment).map_err(|e| ExecutorError::ExecutionFailed(e.to_string()))
+        Connector::execute(self, commitment)
+            .map_err(|e| ExecutorError::ExecutionFailed(e.to_string()))
     }
 
     fn rollback(&self, commitment: &RcfCommitment) -> Result<(), ExecutorError> {
-        Connector::rollback(self, commitment).map_err(|e| ExecutorError::RollbackFailed(e.to_string()))
+        Connector::rollback(self, commitment)
+            .map_err(|e| ExecutorError::RollbackFailed(e.to_string()))
     }
 
     fn can_handle(&self, domain: &EffectDomain) -> bool {
@@ -177,7 +184,10 @@ impl Connector for CommunicationConnector {
             consequence_id: ConsequenceId::generate(),
             commitment_id: commitment.commitment_id.clone(),
             effect_domain: EffectDomain::Communication,
-            description: format!("Communication sent: {}", commitment.intended_outcome.description),
+            description: format!(
+                "Communication sent: {}",
+                commitment.intended_outcome.description
+            ),
             evidence: vec![Evidence {
                 evidence_type: EvidenceType::ExternalReceipt,
                 description: "Message delivery receipt".to_string(),
@@ -204,11 +214,13 @@ impl ExecutionHandler for CommunicationConnector {
         commitment: &RcfCommitment,
         _params: &ExecutionParameters,
     ) -> Result<Consequence, ExecutorError> {
-        Connector::execute(self, commitment).map_err(|e| ExecutorError::ExecutionFailed(e.to_string()))
+        Connector::execute(self, commitment)
+            .map_err(|e| ExecutorError::ExecutionFailed(e.to_string()))
     }
 
     fn rollback(&self, commitment: &RcfCommitment) -> Result<(), ExecutorError> {
-        Connector::rollback(self, commitment).map_err(|e| ExecutorError::RollbackFailed(e.to_string()))
+        Connector::rollback(self, commitment)
+            .map_err(|e| ExecutorError::RollbackFailed(e.to_string()))
     }
 
     fn can_handle(&self, domain: &EffectDomain) -> bool {
@@ -247,13 +259,11 @@ mod tests {
     #[test]
     fn test_computation_connector() {
         let connector = ComputationConnector;
-        let commitment = CommitmentBuilder::new(
-            IdentityRef::new("test-agent"),
-            EffectDomain::Computation,
-        )
-        .with_scope(ScopeConstraint::default())
-        .build()
-        .unwrap();
+        let commitment =
+            CommitmentBuilder::new(IdentityRef::new("test-agent"), EffectDomain::Computation)
+                .with_scope(ScopeConstraint::default())
+                .build()
+                .unwrap();
 
         let consequence = Connector::execute(&connector, &commitment).unwrap();
         assert_eq!(consequence.effect_domain, EffectDomain::Computation);

@@ -1,15 +1,20 @@
 //! Playground API handlers
 
 use crate::api::rest::state::AppState;
-use crate::error::ApiResult;
+use crate::error::{ApiError, ApiResult};
+use crate::playground::service::PlaygroundServiceError;
 use axum::{
     extract::{Query, State},
-    response::{Html, sse::{Event, KeepAlive, Sse}},
+    response::{
+        sse::{Event, KeepAlive, Sse},
+        Html,
+    },
     Json,
 };
 use futures_util::stream::{self, Stream};
 use palm_shared_state::{
-    Activity, PlaygroundConfigPublic, PlaygroundConfigUpdate, SystemState, SystemStats,
+    Activity, PlaygroundConfigPublic, PlaygroundConfigUpdate, PlaygroundInferenceRequest,
+    PlaygroundInferenceResponse, SystemState, SystemStats,
 };
 use serde::Deserialize;
 use std::convert::Infallible;
@@ -34,9 +39,7 @@ fn default_limit() -> usize {
 }
 
 /// Aggregated playground state
-pub async fn playground_state(
-    State(state): State<AppState>,
-) -> ApiResult<Json<SystemState>> {
+pub async fn playground_state(State(state): State<AppState>) -> ApiResult<Json<SystemState>> {
     let config = state.playground.config_public().await;
     let backends = state.playground.backend_catalog().await;
     let agents = state.storage.list_instances().await?;
@@ -92,6 +95,24 @@ pub async fn list_playground_backends(
 ) -> ApiResult<Json<Vec<palm_shared_state::AiBackendPublic>>> {
     let list = state.playground.backend_catalog().await;
     Ok(Json(list))
+}
+
+/// Run an inference request against the active AI backend.
+pub async fn infer_playground_backend(
+    State(state): State<AppState>,
+    Json(request): Json<PlaygroundInferenceRequest>,
+) -> ApiResult<Json<PlaygroundInferenceResponse>> {
+    let response = state
+        .playground
+        .infer(request)
+        .await
+        .map_err(|err| match err {
+            PlaygroundServiceError::Validation(message) => ApiError::BadRequest(message),
+            PlaygroundServiceError::Inference(message) => ApiError::Internal(message),
+            PlaygroundServiceError::Storage(storage) => ApiError::Storage(storage),
+        })?;
+
+    Ok(Json(response))
 }
 
 /// List resonators

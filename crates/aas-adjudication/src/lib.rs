@@ -7,7 +7,7 @@
 
 use aas_types::{
     AdjudicatorInfo, AdjudicatorType, Condition, ConditionType, Decision, DecisionId,
-    PolicyDecisionCard, RiskAssessment, RiskLevel, Rationale,
+    PolicyDecisionCard, Rationale, RiskAssessment, RiskLevel,
 };
 use rcf_commitment::{CommitmentId, RcfCommitment};
 use serde::{Deserialize, Serialize};
@@ -33,7 +33,11 @@ impl Adjudicator {
     }
 
     /// Submit a commitment for adjudication
-    pub fn submit(&self, commitment: RcfCommitment, evaluation: PolicyEvaluationInput) -> Result<SubmissionReceipt, AdjudicationError> {
+    pub fn submit(
+        &self,
+        commitment: RcfCommitment,
+        evaluation: PolicyEvaluationInput,
+    ) -> Result<SubmissionReceipt, AdjudicationError> {
         let commitment_id = commitment.commitment_id.clone();
 
         let pending = PendingDecision {
@@ -43,7 +47,10 @@ impl Adjudicator {
             status: PendingStatus::Evaluating,
         };
 
-        let mut pending_decisions = self.pending_decisions.write().map_err(|_| AdjudicationError::LockError)?;
+        let mut pending_decisions = self
+            .pending_decisions
+            .write()
+            .map_err(|_| AdjudicationError::LockError)?;
         pending_decisions.insert(commitment_id.clone(), pending);
 
         Ok(SubmissionReceipt {
@@ -53,8 +60,14 @@ impl Adjudicator {
     }
 
     /// Process a commitment and produce a decision
-    pub fn adjudicate(&self, commitment_id: &CommitmentId) -> Result<PolicyDecisionCard, AdjudicationError> {
-        let mut pending_decisions = self.pending_decisions.write().map_err(|_| AdjudicationError::LockError)?;
+    pub fn adjudicate(
+        &self,
+        commitment_id: &CommitmentId,
+    ) -> Result<PolicyDecisionCard, AdjudicationError> {
+        let mut pending_decisions = self
+            .pending_decisions
+            .write()
+            .map_err(|_| AdjudicationError::LockError)?;
 
         let pending = pending_decisions
             .remove(commitment_id)
@@ -65,7 +78,10 @@ impl Adjudicator {
 
         // If human review is needed, queue it
         if decision == Decision::PendingHumanReview {
-            let mut queue = self.human_review_queue.write().map_err(|_| AdjudicationError::LockError)?;
+            let mut queue = self
+                .human_review_queue
+                .write()
+                .map_err(|_| AdjudicationError::LockError)?;
             queue.push(commitment_id.clone());
         }
 
@@ -85,7 +101,10 @@ impl Adjudicator {
         };
 
         // Record decision
-        let mut history = self.decision_history.write().map_err(|_| AdjudicationError::LockError)?;
+        let mut history = self
+            .decision_history
+            .write()
+            .map_err(|_| AdjudicationError::LockError)?;
         history.push(card.clone());
 
         Ok(card)
@@ -101,28 +120,38 @@ impl Adjudicator {
     ) -> Result<PolicyDecisionCard, AdjudicationError> {
         // Remove from human review queue
         {
-            let mut queue = self.human_review_queue.write().map_err(|_| AdjudicationError::LockError)?;
+            let mut queue = self
+                .human_review_queue
+                .write()
+                .map_err(|_| AdjudicationError::LockError)?;
             queue.retain(|id| id != commitment_id);
         }
 
-        let pending_decisions = self.pending_decisions.read().map_err(|_| AdjudicationError::LockError)?;
+        let pending_decisions = self
+            .pending_decisions
+            .read()
+            .map_err(|_| AdjudicationError::LockError)?;
 
         // Get original evaluation if still pending, otherwise use defaults
-        let (rationale, risk_assessment) = if let Some(pending) = pending_decisions.get(commitment_id) {
-            (pending.evaluation.rationale.clone(), pending.evaluation.risk_assessment.clone())
-        } else {
-            (
-                Rationale {
-                    summary: notes.unwrap_or_else(|| "Human review decision".to_string()),
-                    rule_references: vec![],
-                },
-                RiskAssessment {
-                    overall_risk: RiskLevel::Medium,
-                    risk_factors: vec![],
-                    mitigations: vec![],
-                },
-            )
-        };
+        let (rationale, risk_assessment) =
+            if let Some(pending) = pending_decisions.get(commitment_id) {
+                (
+                    pending.evaluation.rationale.clone(),
+                    pending.evaluation.risk_assessment.clone(),
+                )
+            } else {
+                (
+                    Rationale {
+                        summary: notes.unwrap_or_else(|| "Human review decision".to_string()),
+                        rule_references: vec![],
+                    },
+                    RiskAssessment {
+                        overall_risk: RiskLevel::Medium,
+                        risk_factors: vec![],
+                        mitigations: vec![],
+                    },
+                )
+            };
 
         drop(pending_decisions);
 
@@ -146,11 +175,17 @@ impl Adjudicator {
         };
 
         // Record decision
-        let mut history = self.decision_history.write().map_err(|_| AdjudicationError::LockError)?;
+        let mut history = self
+            .decision_history
+            .write()
+            .map_err(|_| AdjudicationError::LockError)?;
         history.push(card.clone());
 
         // Remove from pending
-        let mut pending = self.pending_decisions.write().map_err(|_| AdjudicationError::LockError)?;
+        let mut pending = self
+            .pending_decisions
+            .write()
+            .map_err(|_| AdjudicationError::LockError)?;
         pending.remove(commitment_id);
 
         Ok(card)
@@ -158,31 +193,49 @@ impl Adjudicator {
 
     /// Get pending human review items
     pub fn get_human_review_queue(&self) -> Result<Vec<CommitmentId>, AdjudicationError> {
-        let queue = self.human_review_queue.read().map_err(|_| AdjudicationError::LockError)?;
+        let queue = self
+            .human_review_queue
+            .read()
+            .map_err(|_| AdjudicationError::LockError)?;
         Ok(queue.clone())
     }
 
     /// Get decision history
-    pub fn get_decision_history(&self, limit: usize) -> Result<Vec<PolicyDecisionCard>, AdjudicationError> {
-        let history = self.decision_history.read().map_err(|_| AdjudicationError::LockError)?;
+    pub fn get_decision_history(
+        &self,
+        limit: usize,
+    ) -> Result<Vec<PolicyDecisionCard>, AdjudicationError> {
+        let history = self
+            .decision_history
+            .read()
+            .map_err(|_| AdjudicationError::LockError)?;
         Ok(history.iter().rev().take(limit).cloned().collect())
     }
 
     /// Determine the decision based on policy evaluation
-    fn determine_decision(&self, pending: &PendingDecision) -> Result<(Decision, Vec<Condition>), AdjudicationError> {
+    fn determine_decision(
+        &self,
+        pending: &PendingDecision,
+    ) -> Result<(Decision, Vec<Condition>), AdjudicationError> {
         let mut conditions = vec![];
 
         // Check if any rule triggered a denial
-        if pending.evaluation.rule_results.iter().any(|r| {
-            matches!(r.action, Some(RuleActionInput::Deny))
-        }) {
+        if pending
+            .evaluation
+            .rule_results
+            .iter()
+            .any(|r| matches!(r.action, Some(RuleActionInput::Deny)))
+        {
             return Ok((Decision::Denied, conditions));
         }
 
         // Check if human approval is required
-        if pending.evaluation.rule_results.iter().any(|r| {
-            matches!(r.action, Some(RuleActionInput::RequireHumanApproval))
-        }) {
+        if pending
+            .evaluation
+            .rule_results
+            .iter()
+            .any(|r| matches!(r.action, Some(RuleActionInput::RequireHumanApproval)))
+        {
             conditions.push(Condition {
                 condition_type: ConditionType::HumanApproval,
                 description: "Human approval required due to policy".to_string(),
@@ -191,9 +244,12 @@ impl Adjudicator {
         }
 
         // Check if additional info is needed
-        if pending.evaluation.rule_results.iter().any(|r| {
-            matches!(r.action, Some(RuleActionInput::RequireAdditionalInfo))
-        }) {
+        if pending
+            .evaluation
+            .rule_results
+            .iter()
+            .any(|r| matches!(r.action, Some(RuleActionInput::RequireAdditionalInfo)))
+        {
             conditions.push(Condition {
                 condition_type: ConditionType::AdditionalVerification,
                 description: "Additional information required".to_string(),
@@ -222,7 +278,10 @@ impl Adjudicator {
     }
 
     /// Calculate approval expiration based on commitment
-    fn calculate_expiration(&self, commitment: &RcfCommitment) -> Option<chrono::DateTime<chrono::Utc>> {
+    fn calculate_expiration(
+        &self,
+        commitment: &RcfCommitment,
+    ) -> Option<chrono::DateTime<chrono::Utc>> {
         // Default expiration based on temporal validity
         if let Some(expires) = commitment.temporal_validity.valid_until {
             Some(expires)
@@ -314,13 +373,11 @@ mod tests {
     fn test_adjudication_flow() {
         let adjudicator = Adjudicator::new();
 
-        let commitment = CommitmentBuilder::new(
-            IdentityRef::new("test-agent"),
-            EffectDomain::Computation,
-        )
-        .with_scope(ScopeConstraint::default())
-        .build()
-        .unwrap();
+        let commitment =
+            CommitmentBuilder::new(IdentityRef::new("test-agent"), EffectDomain::Computation)
+                .with_scope(ScopeConstraint::default())
+                .build()
+                .unwrap();
 
         let commitment_id = commitment.commitment_id.clone();
 

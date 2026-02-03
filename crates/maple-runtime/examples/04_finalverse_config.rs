@@ -12,8 +12,7 @@
 //! Run with: `cargo run --example 04_finalverse_config`
 
 use maple_runtime::{
-    MapleRuntime, ResonatorSpec, ResonatorProfile,
-    config::finalverse_runtime_config,
+    config::finalverse_runtime_config, MapleRuntime, ResonatorProfile, ResonatorSpec,
 };
 
 #[tokio::main]
@@ -69,7 +68,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("📊 Human Presence (Gradient, not Binary):");
         println!("   • Discoverability: {:.2}", presence.discoverability);
         println!("   • Responsiveness: {:.2}", presence.responsiveness);
-        println!("   • Coupling Readiness: {:.2}", presence.coupling_readiness);
+        println!(
+            "   • Coupling Readiness: {:.2}",
+            presence.coupling_readiness
+        );
         println!("   • Silent Mode: {}", presence.silent_mode);
         println!("\n   Note: Humans can be present without being willing to interact");
     }

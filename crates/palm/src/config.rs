@@ -40,8 +40,8 @@ impl CliConfig {
 
     /// Get the default configuration file path
     fn default_config_path() -> CliResult<PathBuf> {
-        let config_dir =
-            dirs::config_dir().ok_or_else(|| CliError::Config("Cannot find config directory".into()))?;
+        let config_dir = dirs::config_dir()
+            .ok_or_else(|| CliError::Config("Cannot find config directory".into()))?;
         Ok(config_dir.join("palm").join("config.toml"))
     }
 }

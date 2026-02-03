@@ -42,10 +42,16 @@ impl IngestionService {
             analysis_status: AnalysisStatus::Pending,
         };
 
-        let mut records = self.records.write().map_err(|_| IngestionError::LockError)?;
+        let mut records = self
+            .records
+            .write()
+            .map_err(|_| IngestionError::LockError)?;
         records.insert(record_id.clone(), record);
 
-        let mut index = self.commitment_index.write().map_err(|_| IngestionError::LockError)?;
+        let mut index = self
+            .commitment_index
+            .write()
+            .map_err(|_| IngestionError::LockError)?;
         index.insert(consequence.commitment_id, record_id.clone());
 
         Ok(record_id)
@@ -67,7 +73,10 @@ impl IngestionService {
 
     /// Mark a record as analyzed
     pub fn mark_analyzed(&self, record_id: &str) -> Result<(), IngestionError> {
-        let mut records = self.records.write().map_err(|_| IngestionError::LockError)?;
+        let mut records = self
+            .records
+            .write()
+            .map_err(|_| IngestionError::LockError)?;
 
         if let Some(record) = records.get_mut(record_id) {
             record.analysis_status = AnalysisStatus::Analyzed;
@@ -82,7 +91,10 @@ impl IngestionService {
         &self,
         commitment_id: &CommitmentId,
     ) -> Result<Option<ConsequenceRecord>, IngestionError> {
-        let index = self.commitment_index.read().map_err(|_| IngestionError::LockError)?;
+        let index = self
+            .commitment_index
+            .read()
+            .map_err(|_| IngestionError::LockError)?;
 
         if let Some(record_id) = index.get(commitment_id) {
             let records = self.records.read().map_err(|_| IngestionError::LockError)?;
@@ -144,7 +156,7 @@ pub enum IngestionError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mapleverse_types::{ConsequenceId, Evidence, EvidenceType, ReversibilityStatus};
+    use mapleverse_types::{ConsequenceId, ReversibilityStatus};
     use rcf_types::EffectDomain;
 
     #[test]

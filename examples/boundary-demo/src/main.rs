@@ -11,9 +11,7 @@ use colored::*;
 
 #[tokio::main]
 async fn main() {
-    tracing_subscriber::fmt()
-        .with_env_filter("info")
-        .init();
+    tracing_subscriber::fmt().with_env_filter("info").init();
 
     println!(
         "{}",
@@ -42,21 +40,36 @@ async fn main() {
     println!();
 
     // Initialize policy evaluators for each platform
-    let mapleverse_evaluator = PolicyEvaluator::new(PlatformProfile::Mapleverse)
-        .with_emit_audit_events(false);
-    let finalverse_evaluator = PolicyEvaluator::new(PlatformProfile::Finalverse)
-        .with_emit_audit_events(false);
-    let ibank_evaluator = PolicyEvaluator::new(PlatformProfile::IBank)
-        .with_emit_audit_events(false);
+    let mapleverse_evaluator =
+        PolicyEvaluator::new(PlatformProfile::Mapleverse).with_emit_audit_events(false);
+    let finalverse_evaluator =
+        PolicyEvaluator::new(PlatformProfile::Finalverse).with_emit_audit_events(false);
+    let ibank_evaluator =
+        PolicyEvaluator::new(PlatformProfile::IBank).with_emit_audit_events(false);
 
     // Demo scenarios
-    demo_delete_deployment(&mapleverse_evaluator, &finalverse_evaluator, &ibank_evaluator).await;
+    demo_delete_deployment(
+        &mapleverse_evaluator,
+        &finalverse_evaluator,
+        &ibank_evaluator,
+    )
+    .await;
     println!();
 
-    demo_scale_operation(&mapleverse_evaluator, &finalverse_evaluator, &ibank_evaluator).await;
+    demo_scale_operation(
+        &mapleverse_evaluator,
+        &finalverse_evaluator,
+        &ibank_evaluator,
+    )
+    .await;
     println!();
 
-    demo_force_recovery(&mapleverse_evaluator, &finalverse_evaluator, &ibank_evaluator).await;
+    demo_force_recovery(
+        &mapleverse_evaluator,
+        &finalverse_evaluator,
+        &ibank_evaluator,
+    )
+    .await;
     println!();
 
     demo_configuration_comparison();
@@ -72,8 +85,7 @@ async fn demo_delete_deployment(
 ) {
     println!(
         "{}",
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            .yellow()
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".yellow()
     );
     println!(
         "{}",
@@ -81,8 +93,7 @@ async fn demo_delete_deployment(
     );
     println!(
         "{}",
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            .yellow()
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".yellow()
     );
     println!();
 
@@ -118,8 +129,7 @@ async fn demo_delete_deployment(
 
     println!();
     println!("  {} (with human approval):", "Finalverse".green().bold());
-    let approval = HumanApproval::new("admin@finalverse.io")
-        .with_reason("Authorized deletion");
+    let approval = HumanApproval::new("admin@finalverse.io").with_reason("Authorized deletion");
     let ctx = PolicyEvaluationContext::new("operator-1", PlatformProfile::Finalverse)
         .with_human_approval(approval);
     let decision = finalverse.evaluate(&operation, &ctx).await.unwrap();
@@ -150,8 +160,7 @@ async fn demo_scale_operation(
 ) {
     println!(
         "{}",
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            .yellow()
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".yellow()
     );
     println!(
         "{}",
@@ -161,8 +170,7 @@ async fn demo_scale_operation(
     );
     println!(
         "{}",
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            .yellow()
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".yellow()
     );
     println!();
 
@@ -211,8 +219,7 @@ async fn demo_force_recovery(
 ) {
     println!(
         "{}",
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            .yellow()
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".yellow()
     );
     println!(
         "{}",
@@ -220,8 +227,7 @@ async fn demo_force_recovery(
     );
     println!(
         "{}",
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            .yellow()
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".yellow()
     );
     println!();
 
@@ -243,8 +249,8 @@ async fn demo_force_recovery(
 
     println!();
     println!("  {} (with human approval):", "Finalverse".green().bold());
-    let approval = HumanApproval::new("admin@finalverse.io")
-        .with_reason("Emergency recovery authorized");
+    let approval =
+        HumanApproval::new("admin@finalverse.io").with_reason("Emergency recovery authorized");
     let ctx = PolicyEvaluationContext::new("operator-1", PlatformProfile::Finalverse)
         .with_human_approval(approval);
     let decision = finalverse.evaluate(&operation, &ctx).await.unwrap();
@@ -256,8 +262,8 @@ async fn demo_force_recovery(
 
     println!();
     println!("  {} (with everything):", "iBank".magenta().bold());
-    let approval = HumanApproval::new("admin@ibank.com")
-        .with_reason("Force recovery with full audit trail");
+    let approval =
+        HumanApproval::new("admin@ibank.com").with_reason("Force recovery with full audit trail");
     let ctx = PolicyEvaluationContext::new("operator-1", PlatformProfile::IBank)
         .with_human_approval(approval);
     let decision = ibank.evaluate(&operation, &ctx).await.unwrap();
@@ -271,17 +277,12 @@ async fn demo_force_recovery(
 fn demo_configuration_comparison() {
     println!(
         "{}",
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            .yellow()
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".yellow()
     );
+    println!("{}", "  Configuration Comparison Table".yellow().bold());
     println!(
         "{}",
-        "  Configuration Comparison Table".yellow().bold()
-    );
-    println!(
-        "{}",
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            .yellow()
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".yellow()
     );
     println!();
 
@@ -427,12 +428,7 @@ fn print_decision(decision: &PolicyDecision, indent: &str) {
             );
         }
         PolicyDecision::Deny { reason, policy_id } => {
-            println!(
-                "{}Decision: {} - {}",
-                indent,
-                "DENY".red().bold(),
-                reason
-            );
+            println!("{}Decision: {} - {}", indent, "DENY".red().bold(), reason);
             println!("{}Policy: {}", indent, policy_id);
         }
         PolicyDecision::RequiresApproval {
@@ -450,16 +446,9 @@ fn print_decision(decision: &PolicyDecision, indent: &str) {
             println!("{}Policy: {}", indent, policy_id);
         }
         PolicyDecision::Hold {
-            reason,
-            policy_id,
-            ..
+            reason, policy_id, ..
         } => {
-            println!(
-                "{}Decision: {} - {}",
-                indent,
-                "HOLD".cyan().bold(),
-                reason
-            );
+            println!("{}Decision: {} - {}", indent, "HOLD".cyan().bold(), reason);
             println!("{}Policy: {}", indent, policy_id);
         }
     }

@@ -6,8 +6,8 @@
 #![deny(unsafe_code)]
 
 use eve_types::{
-    ArtifactContent, ArtifactId, ArtifactType, ConfidenceScore, ConsequenceRecord,
-    EveInsight, InsightType, LearningArtifact,
+    ArtifactContent, ArtifactId, ArtifactType, ConfidenceScore, ConsequenceRecord, EveInsight,
+    InsightType, LearningArtifact,
 };
 use rcf_types::EffectDomain;
 use serde::{Deserialize, Serialize};
@@ -52,7 +52,10 @@ impl EvaluationEngine {
         }
 
         // Store artifacts
-        let mut stored = self.artifacts.write().map_err(|_| EvaluationError::LockError)?;
+        let mut stored = self
+            .artifacts
+            .write()
+            .map_err(|_| EvaluationError::LockError)?;
         for artifact in &artifacts {
             stored.insert(artifact.artifact_id.clone(), artifact.clone());
         }
@@ -62,7 +65,10 @@ impl EvaluationEngine {
 
     /// Update domain statistics
     fn update_domain_stats(&self, record: &ConsequenceRecord) -> Result<(), EvaluationError> {
-        let mut stats = self.domain_stats.write().map_err(|_| EvaluationError::LockError)?;
+        let mut stats = self
+            .domain_stats
+            .write()
+            .map_err(|_| EvaluationError::LockError)?;
 
         let domain_stat = stats
             .entry(record.commitment_characteristics.domain.clone())
@@ -112,10 +118,7 @@ impl EvaluationEngine {
                         .collect(),
                     domain: domain.clone(),
                     content: ArtifactContent {
-                        summary: format!(
-                            "High concentration of {} domain consequences",
-                            domain
-                        ),
+                        summary: format!("High concentration of {} domain consequences", domain),
                         details: format!(
                             "{} out of {} consequences are in the {} domain",
                             count,
@@ -191,7 +194,10 @@ impl EvaluationEngine {
 
     /// Generate insights from artifacts
     pub fn generate_insights(&self) -> Result<Vec<EveInsight>, EvaluationError> {
-        let artifacts = self.artifacts.read().map_err(|_| EvaluationError::LockError)?;
+        let artifacts = self
+            .artifacts
+            .read()
+            .map_err(|_| EvaluationError::LockError)?;
 
         let mut insights = vec![];
 
@@ -226,7 +232,10 @@ impl EvaluationEngine {
 
     /// Get all artifacts
     pub fn get_artifacts(&self) -> Result<Vec<LearningArtifact>, EvaluationError> {
-        let artifacts = self.artifacts.read().map_err(|_| EvaluationError::LockError)?;
+        let artifacts = self
+            .artifacts
+            .read()
+            .map_err(|_| EvaluationError::LockError)?;
         Ok(artifacts.values().cloned().collect())
     }
 }
@@ -308,6 +317,8 @@ mod tests {
         let artifacts = engine.analyze_batch(&records).unwrap();
 
         // Should detect a pattern (high concentration of Computation domain)
-        assert!(artifacts.iter().any(|a| a.artifact_type == ArtifactType::Pattern));
+        assert!(artifacts
+            .iter()
+            .any(|a| a.artifact_type == ArtifactType::Pattern));
     }
 }

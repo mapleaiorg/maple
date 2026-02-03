@@ -13,7 +13,10 @@ pub enum DeploymentError {
     SpecNotFound(String),
 
     #[error("Invalid deployment state: {current}, expected one of: {expected:?}")]
-    InvalidState { current: String, expected: Vec<String> },
+    InvalidState {
+        current: String,
+        expected: Vec<String>,
+    },
 
     #[error("Health threshold not met: required {required:.2}, actual {actual:.2}")]
     HealthThresholdNotMet { required: f64, actual: f64 },
@@ -28,7 +31,10 @@ pub enum DeploymentError {
     ResonatorCreationFailed(String),
 
     #[error("Termination failed for instance {instance_id}: {reason}")]
-    TerminationFailed { instance_id: InstanceId, reason: String },
+    TerminationFailed {
+        instance_id: InstanceId,
+        reason: String,
+    },
 
     #[error("Timeout waiting for {operation}")]
     Timeout { operation: String },

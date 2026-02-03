@@ -178,19 +178,10 @@ impl ConformanceReport {
     pub fn to_text(&self) -> String {
         let mut output = String::new();
 
-        output.push_str(
-            "╔════════════════════════════════════════════════════════════╗\n",
-        );
-        output.push_str(
-            "║  PALM Platform Pack Conformance Report                     ║\n",
-        );
-        output.push_str(
-            "╠════════════════════════════════════════════════════════════╣\n",
-        );
-        output.push_str(&format!(
-            "║  Platform: {:<47} ║\n",
-            self.platform_name
-        ));
+        output.push_str("╔════════════════════════════════════════════════════════════╗\n");
+        output.push_str("║  PALM Platform Pack Conformance Report                     ║\n");
+        output.push_str("╠════════════════════════════════════════════════════════════╣\n");
+        output.push_str(&format!("║  Platform: {:<47} ║\n", self.platform_name));
         output.push_str(&format!(
             "║  Timestamp: {:<46} ║\n",
             self.timestamp.format("%Y-%m-%d %H:%M:%S UTC")
@@ -199,9 +190,7 @@ impl ConformanceReport {
             "║  Duration: {:<47} ║\n",
             format!("{:?}", self.duration)
         ));
-        output.push_str(
-            "╠════════════════════════════════════════════════════════════╣\n",
-        );
+        output.push_str("╠════════════════════════════════════════════════════════════╣\n");
 
         // Sort categories for consistent output
         let mut categories: Vec<_> = self.results.keys().collect();
@@ -213,10 +202,11 @@ impl ConformanceReport {
 
         for category in categories {
             let results = &self.results[category];
-            output.push_str(&format!("║  {} Tests:                                            \n", category));
-            output.push_str(
-                "╟────────────────────────────────────────────────────────────╢\n",
-            );
+            output.push_str(&format!(
+                "║  {} Tests:                                            \n",
+                category
+            ));
+            output.push_str("╟────────────────────────────────────────────────────────────╢\n");
 
             for result in results {
                 let status_icon = match result.status {
@@ -239,38 +229,24 @@ impl ConformanceReport {
                 }
             }
 
-            output.push_str(
-                "╟────────────────────────────────────────────────────────────╢\n",
-            );
+            output.push_str("╟────────────────────────────────────────────────────────────╢\n");
         }
 
-        output.push_str(
-            "╠════════════════════════════════════════════════════════════╣\n",
-        );
-        output.push_str(
-            "║  Summary:                                                  ║\n",
-        );
+        output.push_str("╠════════════════════════════════════════════════════════════╣\n");
+        output.push_str("║  Summary:                                                  ║\n");
         output.push_str(&format!(
             "║    Total: {:<5}  Passed: {:<5}  Failed: {:<5}  Skipped: {:<3} ║\n",
             self.summary.total, self.summary.passed, self.summary.failed, self.summary.skipped
         ));
-        output.push_str(
-            "║                                                            ║\n",
-        );
+        output.push_str("║                                                            ║\n");
 
         if self.summary.conformant {
-            output.push_str(
-                "║  Result: ✓ CONFORMANT                                      ║\n",
-            );
+            output.push_str("║  Result: ✓ CONFORMANT                                      ║\n");
         } else {
-            output.push_str(
-                "║  Result: ✗ NON-CONFORMANT                                  ║\n",
-            );
+            output.push_str("║  Result: ✗ NON-CONFORMANT                                  ║\n");
         }
 
-        output.push_str(
-            "╚════════════════════════════════════════════════════════════╝\n",
-        );
+        output.push_str("╚════════════════════════════════════════════════════════════╝\n");
 
         output
     }
@@ -294,7 +270,11 @@ mod tests {
 
     #[test]
     fn test_test_result_failed() {
-        let result = TestResult::failed("test_name", "error message".to_string(), Duration::from_millis(100));
+        let result = TestResult::failed(
+            "test_name",
+            "error message".to_string(),
+            Duration::from_millis(100),
+        );
         assert_eq!(result.status, TestStatus::Failed);
         assert_eq!(result.error, Some("error message".to_string()));
     }

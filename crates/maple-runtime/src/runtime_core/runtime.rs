@@ -1,16 +1,16 @@
 //! Main MAPLE Resonance Runtime implementation
 
+use crate::allocator::AttentionAllocator;
+use crate::config::RuntimeConfig;
+use crate::fabrics::{CouplingFabric, PresenceFabric};
+use crate::invariants::InvariantGuard;
+use crate::runtime_core::{ContinuityProof, ProfileManager, ResonatorHandle, ResonatorRegistry};
+use crate::scheduler::ResonanceScheduler;
+use crate::telemetry::RuntimeTelemetry;
+use crate::temporal::TemporalCoordinator;
+use crate::types::*;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use crate::types::*;
-use crate::runtime_core::{ResonatorRegistry, ProfileManager, ResonatorHandle, ContinuityProof};
-use crate::fabrics::{PresenceFabric, CouplingFabric};
-use crate::allocator::AttentionAllocator;
-use crate::invariants::InvariantGuard;
-use crate::temporal::TemporalCoordinator;
-use crate::scheduler::ResonanceScheduler;
-use crate::config::RuntimeConfig;
-use crate::telemetry::RuntimeTelemetry;
 
 /// The MAPLE Resonance Runtime - heart of the entire MAPLE ecosystem
 ///

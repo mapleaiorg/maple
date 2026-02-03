@@ -51,11 +51,17 @@ impl CapabilityRegistry {
         };
 
         // Store the grant
-        let mut capabilities = self.capabilities.write().map_err(|_| CapabilityError::LockError)?;
+        let mut capabilities = self
+            .capabilities
+            .write()
+            .map_err(|_| CapabilityError::LockError)?;
         capabilities.insert(capability_id.clone(), grant.clone());
 
         // Update agent's capability list
-        let mut agent_caps = self.agent_capabilities.write().map_err(|_| CapabilityError::LockError)?;
+        let mut agent_caps = self
+            .agent_capabilities
+            .write()
+            .map_err(|_| CapabilityError::LockError)?;
         agent_caps
             .entry(request.grantee)
             .or_default()
@@ -71,8 +77,14 @@ impl CapabilityRegistry {
         domain: &EffectDomain,
         scope: &ScopeConstraint,
     ) -> Result<CapabilityCheckResult, CapabilityError> {
-        let capabilities = self.capabilities.read().map_err(|_| CapabilityError::LockError)?;
-        let agent_caps = self.agent_capabilities.read().map_err(|_| CapabilityError::LockError)?;
+        let capabilities = self
+            .capabilities
+            .read()
+            .map_err(|_| CapabilityError::LockError)?;
+        let agent_caps = self
+            .agent_capabilities
+            .read()
+            .map_err(|_| CapabilityError::LockError)?;
 
         let cap_ids = match agent_caps.get(agent_id) {
             Some(ids) => ids,
@@ -114,12 +126,17 @@ impl CapabilityRegistry {
             }
         }
 
-        Ok(CapabilityCheckResult::denied("No matching capability found"))
+        Ok(CapabilityCheckResult::denied(
+            "No matching capability found",
+        ))
     }
 
     /// Revoke a capability
     pub fn revoke(&self, capability_id: &str, reason: &str) -> Result<(), CapabilityError> {
-        let mut capabilities = self.capabilities.write().map_err(|_| CapabilityError::LockError)?;
+        let mut capabilities = self
+            .capabilities
+            .write()
+            .map_err(|_| CapabilityError::LockError)?;
 
         if let Some(grant) = capabilities.get_mut(capability_id) {
             grant.capability.status = CapabilityStatus::Revoked;
@@ -134,9 +151,18 @@ impl CapabilityRegistry {
     }
 
     /// List all capabilities for an agent
-    pub fn list_for_agent(&self, agent_id: &AgentId) -> Result<Vec<CapabilityGrant>, CapabilityError> {
-        let capabilities = self.capabilities.read().map_err(|_| CapabilityError::LockError)?;
-        let agent_caps = self.agent_capabilities.read().map_err(|_| CapabilityError::LockError)?;
+    pub fn list_for_agent(
+        &self,
+        agent_id: &AgentId,
+    ) -> Result<Vec<CapabilityGrant>, CapabilityError> {
+        let capabilities = self
+            .capabilities
+            .read()
+            .map_err(|_| CapabilityError::LockError)?;
+        let agent_caps = self
+            .agent_capabilities
+            .read()
+            .map_err(|_| CapabilityError::LockError)?;
 
         let cap_ids = match agent_caps.get(agent_id) {
             Some(ids) => ids,
@@ -173,7 +199,9 @@ fn scope_matches(granted: &ScopeConstraint, requested: &ScopeConstraint) -> bool
     // Check target patterns
     for target in &requested.targets {
         let matched = granted.targets.iter().any(|g| {
-            g == "*" || g == target || (g.ends_with('*') && target.starts_with(g.trim_end_matches('*')))
+            g == "*"
+                || g == target
+                || (g.ends_with('*') && target.starts_with(g.trim_end_matches('*')))
         });
         if !matched {
             return false;
@@ -306,11 +334,7 @@ mod tests {
         registry.grant(request).unwrap();
 
         let result = registry
-            .check(
-                &grantee,
-                &EffectDomain::Data,
-                &ScopeConstraint::default(),
-            )
+            .check(&grantee, &EffectDomain::Data, &ScopeConstraint::default())
             .unwrap();
 
         assert!(result.authorized);

@@ -10,28 +10,18 @@ use serde::{Deserialize, Serialize};
 pub enum PalmOperation {
     // ========== Registry Operations ==========
     /// Create a new spec
-    CreateSpec {
-        spec_id: String,
-    },
+    CreateSpec { spec_id: String },
     /// Update an existing spec
-    UpdateSpec {
-        spec_id: String,
-    },
+    UpdateSpec { spec_id: String },
     /// Deprecate a spec
-    DeprecateSpec {
-        spec_id: String,
-    },
+    DeprecateSpec { spec_id: String },
 
     // ========== Deployment Operations ==========
     /// Create a new deployment
-    CreateDeployment {
-        spec_id: String,
-    },
+    CreateDeployment { spec_id: String },
 
     /// Update an existing deployment
-    UpdateDeployment {
-        deployment_id: String,
-    },
+    UpdateDeployment { deployment_id: String },
 
     /// Scale a deployment
     ScaleDeployment {
@@ -40,83 +30,53 @@ pub enum PalmOperation {
     },
 
     /// Delete a deployment
-    DeleteDeployment {
-        deployment_id: String,
-    },
+    DeleteDeployment { deployment_id: String },
 
     /// Rollback a deployment
-    RollbackDeployment {
-        deployment_id: String,
-    },
+    RollbackDeployment { deployment_id: String },
 
     /// Pause a deployment
-    PauseDeployment {
-        deployment_id: String,
-    },
+    PauseDeployment { deployment_id: String },
 
     /// Resume a deployment
-    ResumeDeployment {
-        deployment_id: String,
-    },
+    ResumeDeployment { deployment_id: String },
 
     // ========== Instance Operations ==========
     /// Restart an instance
-    RestartInstance {
-        instance_id: String,
-    },
+    RestartInstance { instance_id: String },
 
     /// Terminate an instance
-    TerminateInstance {
-        instance_id: String,
-    },
+    TerminateInstance { instance_id: String },
 
     /// Migrate an instance
-    MigrateInstance {
-        instance_id: String,
-    },
+    MigrateInstance { instance_id: String },
 
     /// Drain an instance
-    DrainInstance {
-        instance_id: String,
-    },
+    DrainInstance { instance_id: String },
 
     // ========== State Operations ==========
     /// Create a checkpoint
-    CreateCheckpoint {
-        instance_id: String,
-    },
+    CreateCheckpoint { instance_id: String },
 
     /// Restore from a checkpoint
-    RestoreCheckpoint {
-        instance_id: String,
-    },
+    RestoreCheckpoint { instance_id: String },
 
     /// Delete a checkpoint/snapshot
-    DeleteCheckpoint {
-        snapshot_id: String,
-    },
+    DeleteCheckpoint { snapshot_id: String },
 
     // ========== Health Operations ==========
     /// Trigger a health check
-    HealthCheck {
-        instance_id: String,
-    },
+    HealthCheck { instance_id: String },
 
     /// Force recovery
-    ForceRecovery {
-        instance_id: String,
-    },
+    ForceRecovery { instance_id: String },
 
     // ========== Administrative Operations ==========
     /// Configure a policy
-    ConfigurePolicy {
-        policy_name: String,
-    },
+    ConfigurePolicy { policy_name: String },
 
     /// View audit logs
-    ViewAuditLog {
-        filter: String,
-    },
+    ViewAuditLog { filter: String },
 }
 
 /// Context for policy evaluation
@@ -251,9 +211,7 @@ pub enum PolicyCondition {
     },
 
     /// Custom condition
-    Custom {
-        expression: String,
-    },
+    Custom { expression: String },
 }
 
 /// Policy action

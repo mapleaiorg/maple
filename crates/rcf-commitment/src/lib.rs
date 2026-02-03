@@ -324,7 +324,9 @@ impl CommitmentBuilder {
         };
 
         let limits = self.limits.unwrap_or_default();
-        let temporal_validity = self.temporal_validity.unwrap_or_else(TemporalValidity::unbounded);
+        let temporal_validity = self
+            .temporal_validity
+            .unwrap_or_else(TemporalValidity::unbounded);
         let evidence_requirements = self.evidence_requirements.unwrap_or_default();
 
         let commitment_id = CommitmentId::generate();

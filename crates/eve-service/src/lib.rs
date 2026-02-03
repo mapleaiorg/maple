@@ -8,9 +8,7 @@
 use eve_artifacts::{ArtifactStore, ArtifactStoreError};
 use eve_evaluation::{EvaluationEngine, EvaluationError};
 use eve_ingestion::{IngestionError, IngestionService};
-use eve_types::{
-    ArtifactQuery, CommitmentCharacteristics, EveInsight, LearningArtifact,
-};
+use eve_types::{ArtifactQuery, CommitmentCharacteristics, EveInsight, LearningArtifact};
 use mapleverse_types::Consequence;
 use std::sync::Arc;
 use thiserror::Error;

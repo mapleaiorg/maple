@@ -93,8 +93,7 @@ impl DeploymentExecutor for RollingDeploymentExecutor {
                             }
 
                             // Wait for health
-                            let timeout =
-                                Duration::from_secs(self.min_ready_seconds as u64 + 30);
+                            let timeout = Duration::from_secs(self.min_ready_seconds as u64 + 30);
                             match ctx.wait_for_healthy(&instance, timeout).await {
                                 Ok(true) => {
                                     new_instances.push(instance);

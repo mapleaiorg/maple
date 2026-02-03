@@ -5,7 +5,9 @@
 
 #![deny(unsafe_code)]
 
-use aas_adjudication::{Adjudicator, AdjudicationError, PolicyEvaluationInput, RuleActionInput, RuleResultInput};
+use aas_adjudication::{
+    AdjudicationError, Adjudicator, PolicyEvaluationInput, RuleActionInput, RuleResultInput,
+};
 use aas_capability::{CapabilityCheckResult, CapabilityError, CapabilityRegistry, GrantRequest};
 use aas_identity::{IdentityError, IdentityRegistry, RegistrationRequest, VerificationResult};
 use aas_ledger::{AccountabilityLedger, LedgerError, LedgerQuery, LedgerStatistics};
@@ -57,19 +59,28 @@ impl AasService {
     // ============ Identity Operations ============
 
     /// Register a new agent
-    pub fn register_agent(&self, request: RegistrationRequest) -> Result<aas_identity::RegisteredAgent, AasError> {
+    pub fn register_agent(
+        &self,
+        request: RegistrationRequest,
+    ) -> Result<aas_identity::RegisteredAgent, AasError> {
         self.identity.register(request).map_err(AasError::Identity)
     }
 
     /// Verify an identity
-    pub fn verify_identity(&self, identity: &rcf_types::IdentityRef) -> Result<VerificationResult, AasError> {
+    pub fn verify_identity(
+        &self,
+        identity: &rcf_types::IdentityRef,
+    ) -> Result<VerificationResult, AasError> {
         self.identity.verify(identity).map_err(AasError::Identity)
     }
 
     // ============ Capability Operations ============
 
     /// Grant a capability
-    pub fn grant_capability(&self, request: GrantRequest) -> Result<aas_capability::CapabilityGrant, AasError> {
+    pub fn grant_capability(
+        &self,
+        request: GrantRequest,
+    ) -> Result<aas_capability::CapabilityGrant, AasError> {
         self.capability.grant(request).map_err(AasError::Capability)
     }
 
@@ -80,14 +91,19 @@ impl AasService {
         domain: &EffectDomain,
         scope: &ScopeConstraint,
     ) -> Result<CapabilityCheckResult, AasError> {
-        self.capability.check(agent_id, domain, scope).map_err(AasError::Capability)
+        self.capability
+            .check(agent_id, domain, scope)
+            .map_err(AasError::Capability)
     }
 
     // ============ Commitment Processing ============
 
     /// Submit a commitment for adjudication
     /// This is the main entry point for the commitment boundary
-    pub fn submit_commitment(&self, commitment: RcfCommitment) -> Result<PolicyDecisionCard, AasError> {
+    pub fn submit_commitment(
+        &self,
+        commitment: RcfCommitment,
+    ) -> Result<PolicyDecisionCard, AasError> {
         // Step 1: Verify identity
         let verification = self.identity.verify(&commitment.principal)?;
         if !verification.valid {
@@ -98,11 +114,9 @@ impl AasService {
 
         // Step 2: Check capabilities
         let agent_id = AgentId::new(&commitment.principal.id);
-        let cap_check = self.capability.check(
-            &agent_id,
-            &commitment.effect_domain,
-            &commitment.scope,
-        )?;
+        let cap_check =
+            self.capability
+                .check(&agent_id, &commitment.effect_domain, &commitment.scope)?;
 
         if !cap_check.authorized {
             return Err(AasError::CapabilityDenied(
@@ -123,17 +137,25 @@ impl AasService {
         let policy_input = PolicyEvaluationInput {
             rationale: evaluation.rationale.clone(),
             risk_assessment: evaluation.risk_assessment.clone(),
-            rule_results: evaluation.rule_results.iter().map(|r| RuleResultInput {
-                rule_id: r.rule_id.clone(),
-                triggered: r.triggered,
-                action: r.action.as_ref().map(|a| match a {
-                    aas_policy::RuleAction::Allow => RuleActionInput::Allow,
-                    aas_policy::RuleAction::Deny => RuleActionInput::Deny,
-                    aas_policy::RuleAction::RequireHumanApproval => RuleActionInput::RequireHumanApproval,
-                    aas_policy::RuleAction::RequireAdditionalInfo => RuleActionInput::RequireAdditionalInfo,
-                    aas_policy::RuleAction::AddCondition(_) => RuleActionInput::Allow,
-                }),
-            }).collect(),
+            rule_results: evaluation
+                .rule_results
+                .iter()
+                .map(|r| RuleResultInput {
+                    rule_id: r.rule_id.clone(),
+                    triggered: r.triggered,
+                    action: r.action.as_ref().map(|a| match a {
+                        aas_policy::RuleAction::Allow => RuleActionInput::Allow,
+                        aas_policy::RuleAction::Deny => RuleActionInput::Deny,
+                        aas_policy::RuleAction::RequireHumanApproval => {
+                            RuleActionInput::RequireHumanApproval
+                        }
+                        aas_policy::RuleAction::RequireAdditionalInfo => {
+                            RuleActionInput::RequireAdditionalInfo
+                        }
+                        aas_policy::RuleAction::AddCondition(_) => RuleActionInput::Allow,
+                    }),
+                })
+                .collect(),
         };
 
         let commitment_id = commitment.commitment_id.clone();
@@ -143,14 +165,17 @@ impl AasService {
         let decision = self.adjudicator.adjudicate(&commitment_id)?;
 
         // Step 6: Record in ledger
-        self.ledger.record_commitment(commitment, decision.clone())?;
+        self.ledger
+            .record_commitment(commitment, decision.clone())?;
 
         Ok(decision)
     }
 
     /// Record that execution has started
     pub fn record_execution_started(&self, commitment_id: &CommitmentId) -> Result<(), AasError> {
-        self.ledger.record_execution_started(commitment_id).map_err(AasError::Ledger)
+        self.ledger
+            .record_execution_started(commitment_id)
+            .map_err(AasError::Ledger)
     }
 
     /// Record outcome (consequence)
@@ -159,14 +184,18 @@ impl AasService {
         commitment_id: &CommitmentId,
         outcome: CommitmentOutcome,
     ) -> Result<(), AasError> {
-        self.ledger.record_outcome(commitment_id, outcome).map_err(AasError::Ledger)
+        self.ledger
+            .record_outcome(commitment_id, outcome)
+            .map_err(AasError::Ledger)
     }
 
     // ============ Human Review Operations ============
 
     /// Get items pending human review
     pub fn get_pending_reviews(&self) -> Result<Vec<CommitmentId>, AasError> {
-        self.adjudicator.get_human_review_queue().map_err(AasError::Adjudication)
+        self.adjudicator
+            .get_human_review_queue()
+            .map_err(AasError::Adjudication)
     }
 
     /// Record a human review decision
@@ -185,8 +214,13 @@ impl AasService {
     // ============ Query Operations ============
 
     /// Get ledger entry by commitment
-    pub fn get_commitment(&self, commitment_id: &CommitmentId) -> Result<Option<LedgerEntry>, AasError> {
-        self.ledger.get_by_commitment(commitment_id).map_err(AasError::Ledger)
+    pub fn get_commitment(
+        &self,
+        commitment_id: &CommitmentId,
+    ) -> Result<Option<LedgerEntry>, AasError> {
+        self.ledger
+            .get_by_commitment(commitment_id)
+            .map_err(AasError::Ledger)
     }
 
     /// Get all entries for an agent
@@ -294,13 +328,11 @@ mod tests {
         .unwrap();
 
         // Step 3: Create and submit a commitment
-        let commitment = CommitmentBuilder::new(
-            agent.identity_ref.clone(),
-            EffectDomain::Computation,
-        )
-        .with_scope(ScopeConstraint::default())
-        .build()
-        .unwrap();
+        let commitment =
+            CommitmentBuilder::new(agent.identity_ref.clone(), EffectDomain::Computation)
+                .with_scope(ScopeConstraint::default())
+                .build()
+                .unwrap();
 
         let decision = aas.submit_commitment(commitment.clone()).unwrap();
 
@@ -308,7 +340,8 @@ mod tests {
         assert!(decision.decision.allows_execution());
 
         // Step 5: Record execution
-        aas.record_execution_started(&commitment.commitment_id).unwrap();
+        aas.record_execution_started(&commitment.commitment_id)
+            .unwrap();
 
         aas.record_outcome(
             &commitment.commitment_id,

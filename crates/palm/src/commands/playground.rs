@@ -2,9 +2,12 @@
 
 use crate::client::PalmClient;
 use crate::error::CliResult;
-use crate::output::{self, OutputFormat, print_info, print_success};
+use crate::output::{self, print_info, print_success, OutputFormat};
 use clap::Subcommand;
-use palm_shared_state::{Activity, AiBackendConfigUpdate, AiBackendPublic, PlaygroundConfigUpdate};
+use palm_shared_state::{
+    Activity, AiBackendConfigUpdate, AiBackendPublic, PlaygroundConfigUpdate,
+    PlaygroundInferenceRequest,
+};
 use serde::Serialize;
 use tabled::Tabled;
 
@@ -35,7 +38,7 @@ pub enum PlaygroundCommands {
 
     /// Set the active AI backend
     SetBackend {
-        /// Backend kind: local_llama, open_ai, anthropic
+        /// Backend kind: local_llama, open_ai, anthropic, grok, gemini
         #[arg(long)]
         kind: String,
         /// Model name
@@ -47,6 +50,24 @@ pub enum PlaygroundCommands {
         /// API key (for OpenAI/Anthropic)
         #[arg(long)]
         api_key: Option<String>,
+    },
+
+    /// Run a one-shot prompt on the active backend
+    Infer {
+        /// Prompt text to send to the active backend
+        prompt: String,
+        /// Optional system prompt
+        #[arg(long)]
+        system_prompt: Option<String>,
+        /// Optional actor id for activity attribution
+        #[arg(long)]
+        actor_id: Option<String>,
+        /// Optional temperature override
+        #[arg(long)]
+        temperature: Option<f32>,
+        /// Optional max token override
+        #[arg(long)]
+        max_tokens: Option<u32>,
     },
 }
 
@@ -166,7 +187,12 @@ pub async fn execute(
             output::print_output(rows, format);
             Ok(())
         }
-        PlaygroundCommands::SetBackend { kind, model, endpoint, api_key } => {
+        PlaygroundCommands::SetBackend {
+            kind,
+            model,
+            endpoint,
+            api_key,
+        } => {
             print_info("Updating backend configuration...");
             let update = PlaygroundConfigUpdate {
                 ai_backend: Some(AiBackendConfigUpdate {
@@ -174,6 +200,8 @@ pub async fn execute(
                         "local_llama" => palm_shared_state::AiBackendKind::LocalLlama,
                         "open_ai" => palm_shared_state::AiBackendKind::OpenAI,
                         "anthropic" => palm_shared_state::AiBackendKind::Anthropic,
+                        "grok" => palm_shared_state::AiBackendKind::Grok,
+                        "gemini" => palm_shared_state::AiBackendKind::Gemini,
                         other => {
                             return Err(crate::error::CliError::Config(format!(
                                 "Unknown backend kind: {}",
@@ -192,6 +220,24 @@ pub async fn execute(
 
             let config = client.update_playground_config(&update).await?;
             print_success(&format!("Active backend: {:?}", config.ai_backend.kind));
+            Ok(())
+        }
+        PlaygroundCommands::Infer {
+            prompt,
+            system_prompt,
+            actor_id,
+            temperature,
+            max_tokens,
+        } => {
+            let request = PlaygroundInferenceRequest {
+                prompt,
+                system_prompt,
+                actor_id,
+                temperature,
+                max_tokens,
+            };
+            let response = client.infer_playground_backend(&request).await?;
+            output::print_single(&response, format);
             Ok(())
         }
     }

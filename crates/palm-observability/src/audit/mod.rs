@@ -7,7 +7,7 @@ pub mod integrity;
 pub mod query;
 pub mod sink;
 
-pub use entry::{AuditEntry, AuditEntryBuilder, AuditAction, AuditOutcome};
+pub use entry::{AuditAction, AuditEntry, AuditEntryBuilder, AuditOutcome};
 pub use integrity::{IntegrityChain, IntegrityVerifier};
 pub use query::{AuditQuery, AuditQueryBuilder};
 pub use sink::{AuditSink, FileAuditSink, MemoryAuditSink};

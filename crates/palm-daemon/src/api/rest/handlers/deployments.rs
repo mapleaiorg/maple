@@ -7,8 +7,8 @@ use axum::{
     Json,
 };
 use palm_types::{
-    AgentSpecId, Deployment, DeploymentId, DeploymentStatus, DeploymentStrategy,
-    PlatformProfile, ReplicaConfig,
+    AgentSpecId, Deployment, DeploymentId, DeploymentStatus, DeploymentStrategy, PlatformProfile,
+    ReplicaConfig,
 };
 use serde::{Deserialize, Serialize};
 
@@ -60,7 +60,10 @@ pub async fn get_deployment(
     Ok(Json(DeploymentWithInstances {
         deployment,
         instance_count: instances.len(),
-        ready_count: instances.iter().filter(|i| i.health.is_operational()).count(),
+        ready_count: instances
+            .iter()
+            .filter(|i| i.health.is_operational())
+            .count(),
     }))
 }
 

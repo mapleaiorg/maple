@@ -31,18 +31,27 @@ impl ArtifactStore {
         let id = artifact.artifact_id.clone();
 
         // Store artifact
-        let mut artifacts = self.artifacts.write().map_err(|_| ArtifactStoreError::LockError)?;
+        let mut artifacts = self
+            .artifacts
+            .write()
+            .map_err(|_| ArtifactStoreError::LockError)?;
         artifacts.insert(id.clone(), artifact.clone());
 
         // Update domain index
-        let mut domain_index = self.domain_index.write().map_err(|_| ArtifactStoreError::LockError)?;
+        let mut domain_index = self
+            .domain_index
+            .write()
+            .map_err(|_| ArtifactStoreError::LockError)?;
         domain_index
             .entry(artifact.domain.clone())
             .or_default()
             .push(id.clone());
 
         // Update type index
-        let mut type_index = self.type_index.write().map_err(|_| ArtifactStoreError::LockError)?;
+        let mut type_index = self
+            .type_index
+            .write()
+            .map_err(|_| ArtifactStoreError::LockError)?;
         type_index
             .entry(artifact.artifact_type.clone())
             .or_default()
@@ -53,13 +62,19 @@ impl ArtifactStore {
 
     /// Get an artifact by ID
     pub fn get(&self, id: &ArtifactId) -> Result<Option<LearningArtifact>, ArtifactStoreError> {
-        let artifacts = self.artifacts.read().map_err(|_| ArtifactStoreError::LockError)?;
+        let artifacts = self
+            .artifacts
+            .read()
+            .map_err(|_| ArtifactStoreError::LockError)?;
         Ok(artifacts.get(id).cloned())
     }
 
     /// Query artifacts
     pub fn query(&self, query: ArtifactQuery) -> Result<Vec<LearningArtifact>, ArtifactStoreError> {
-        let artifacts = self.artifacts.read().map_err(|_| ArtifactStoreError::LockError)?;
+        let artifacts = self
+            .artifacts
+            .read()
+            .map_err(|_| ArtifactStoreError::LockError)?;
 
         let mut results: Vec<_> = artifacts
             .values()
@@ -113,15 +128,24 @@ impl ArtifactStore {
         &self,
         domain: &EffectDomain,
     ) -> Result<Vec<LearningArtifact>, ArtifactStoreError> {
-        let domain_index = self.domain_index.read().map_err(|_| ArtifactStoreError::LockError)?;
-        let artifacts = self.artifacts.read().map_err(|_| ArtifactStoreError::LockError)?;
+        let domain_index = self
+            .domain_index
+            .read()
+            .map_err(|_| ArtifactStoreError::LockError)?;
+        let artifacts = self
+            .artifacts
+            .read()
+            .map_err(|_| ArtifactStoreError::LockError)?;
 
         let ids = match domain_index.get(domain) {
             Some(ids) => ids,
             None => return Ok(vec![]),
         };
 
-        Ok(ids.iter().filter_map(|id| artifacts.get(id).cloned()).collect())
+        Ok(ids
+            .iter()
+            .filter_map(|id| artifacts.get(id).cloned())
+            .collect())
     }
 
     /// Get artifacts by type
@@ -129,27 +153,41 @@ impl ArtifactStore {
         &self,
         artifact_type: &ArtifactType,
     ) -> Result<Vec<LearningArtifact>, ArtifactStoreError> {
-        let type_index = self.type_index.read().map_err(|_| ArtifactStoreError::LockError)?;
-        let artifacts = self.artifacts.read().map_err(|_| ArtifactStoreError::LockError)?;
+        let type_index = self
+            .type_index
+            .read()
+            .map_err(|_| ArtifactStoreError::LockError)?;
+        let artifacts = self
+            .artifacts
+            .read()
+            .map_err(|_| ArtifactStoreError::LockError)?;
 
         let ids = match type_index.get(artifact_type) {
             Some(ids) => ids,
             None => return Ok(vec![]),
         };
 
-        Ok(ids.iter().filter_map(|id| artifacts.get(id).cloned()).collect())
+        Ok(ids
+            .iter()
+            .filter_map(|id| artifacts.get(id).cloned())
+            .collect())
     }
 
     /// Get statistics
     pub fn statistics(&self) -> Result<ArtifactStoreStats, ArtifactStoreError> {
-        let artifacts = self.artifacts.read().map_err(|_| ArtifactStoreError::LockError)?;
+        let artifacts = self
+            .artifacts
+            .read()
+            .map_err(|_| ArtifactStoreError::LockError)?;
 
         let total = artifacts.len();
         let mut by_type: HashMap<String, usize> = HashMap::new();
         let mut by_domain: HashMap<String, usize> = HashMap::new();
 
         for artifact in artifacts.values() {
-            *by_type.entry(format!("{:?}", artifact.artifact_type)).or_insert(0) += 1;
+            *by_type
+                .entry(format!("{:?}", artifact.artifact_type))
+                .or_insert(0) += 1;
             *by_domain.entry(format!("{}", artifact.domain)).or_insert(0) += 1;
         }
 

@@ -116,9 +116,7 @@ mod tests {
         let ibank_config = HealthConfig::for_platform(PlatformProfile::IBank);
 
         // Development should have lower thresholds
-        assert!(
-            dev_config.thresholds.presence_healthy < ibank_config.thresholds.presence_healthy
-        );
+        assert!(dev_config.thresholds.presence_healthy < ibank_config.thresholds.presence_healthy);
 
         // IBank should require human approval
         assert!(ibank_config.resilience.require_human_approval);

@@ -15,6 +15,8 @@ pub enum AiBackendKind {
     LocalLlama,
     OpenAI,
     Anthropic,
+    Grok,
+    Gemini,
 }
 
 /// Configuration for the active AI backend.
@@ -29,14 +31,18 @@ pub struct AiBackendConfig {
 }
 
 impl AiBackendConfig {
+    pub fn requires_api_key(&self) -> bool {
+        !matches!(self.kind, AiBackendKind::LocalLlama)
+    }
+
     pub fn is_configured(&self) -> bool {
-        match self.kind {
-            AiBackendKind::LocalLlama => self.endpoint.is_some(),
-            AiBackendKind::OpenAI | AiBackendKind::Anthropic => self
-                .api_key
+        if self.requires_api_key() {
+            self.api_key
                 .as_ref()
                 .map(|k| !k.trim().is_empty())
-                .unwrap_or(false),
+                .unwrap_or(false)
+        } else {
+            self.endpoint.is_some()
         }
     }
 
@@ -174,6 +180,58 @@ impl PlaygroundConfigUpdate {
         current.updated_at = Utc::now();
         current
     }
+}
+
+/// Inference request payload routed through the active playground backend.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PlaygroundInferenceRequest {
+    pub prompt: String,
+    pub system_prompt: Option<String>,
+    pub actor_id: Option<String>,
+    pub temperature: Option<f32>,
+    pub max_tokens: Option<u32>,
+}
+
+impl PlaygroundInferenceRequest {
+    pub fn validate(&self) -> Result<(), String> {
+        if self.prompt.trim().is_empty() {
+            return Err("prompt cannot be empty".to_string());
+        }
+
+        if let Some(temp) = self.temperature {
+            if !(0.0..=2.0).contains(&temp) {
+                return Err("temperature must be between 0.0 and 2.0".to_string());
+            }
+        }
+
+        if let Some(max_tokens) = self.max_tokens {
+            if max_tokens == 0 {
+                return Err("max_tokens must be greater than 0".to_string());
+            }
+        }
+
+        Ok(())
+    }
+}
+
+/// Token usage stats returned by an inference backend.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InferenceTokenUsage {
+    pub input_tokens: Option<u32>,
+    pub output_tokens: Option<u32>,
+    pub total_tokens: Option<u32>,
+}
+
+/// Inference response payload returned by playground APIs.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PlaygroundInferenceResponse {
+    pub backend_kind: AiBackendKind,
+    pub backend_model: String,
+    pub output: String,
+    pub latency_ms: u64,
+    pub created_at: DateTime<Utc>,
+    pub finish_reason: Option<String>,
+    pub usage: Option<InferenceTokenUsage>,
 }
 
 /// Activity actor type.

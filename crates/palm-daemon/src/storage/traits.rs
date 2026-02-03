@@ -4,8 +4,8 @@ use crate::error::StorageError;
 use async_trait::async_trait;
 use palm_shared_state::{Activity, PlaygroundConfig, ResonatorStatus};
 use palm_types::{
-    AgentSpec, AgentSpecId, Deployment, DeploymentId, InstanceId, PalmEventEnvelope,
-    instance::AgentInstance,
+    instance::AgentInstance, AgentSpec, AgentSpecId, Deployment, DeploymentId, InstanceId,
+    PalmEventEnvelope,
 };
 
 /// Result type for storage operations
@@ -44,7 +44,11 @@ pub trait SpecStorage: Send + Sync {
 
     /// Get spec by name and version
     #[allow(dead_code)]
-    async fn get_spec_by_name(&self, name: &str, version: Option<&str>) -> StorageResult<Option<AgentSpec>>;
+    async fn get_spec_by_name(
+        &self,
+        name: &str,
+        version: Option<&str>,
+    ) -> StorageResult<Option<AgentSpec>>;
 }
 
 /// Storage for deployments
@@ -57,7 +61,10 @@ pub trait DeploymentStorage: Send + Sync {
     async fn list_deployments(&self) -> StorageResult<Vec<Deployment>>;
 
     /// List deployments for a specific spec
-    async fn list_deployments_for_spec(&self, spec_id: &AgentSpecId) -> StorageResult<Vec<Deployment>>;
+    async fn list_deployments_for_spec(
+        &self,
+        spec_id: &AgentSpecId,
+    ) -> StorageResult<Vec<Deployment>>;
 
     /// Create or update a deployment
     async fn upsert_deployment(&self, deployment: Deployment) -> StorageResult<()>;
@@ -76,7 +83,10 @@ pub trait InstanceStorage: Send + Sync {
     async fn list_instances(&self) -> StorageResult<Vec<AgentInstance>>;
 
     /// List instances for a specific deployment
-    async fn list_instances_for_deployment(&self, deployment_id: &DeploymentId) -> StorageResult<Vec<AgentInstance>>;
+    async fn list_instances_for_deployment(
+        &self,
+        deployment_id: &DeploymentId,
+    ) -> StorageResult<Vec<AgentInstance>>;
 
     /// Create or update an instance
     async fn upsert_instance(&self, instance: AgentInstance) -> StorageResult<()>;
@@ -98,10 +108,18 @@ pub trait EventStorage: Send + Sync {
     async fn get_recent_events(&self, limit: usize) -> StorageResult<Vec<PalmEventEnvelope>>;
 
     /// Get events for a deployment
-    async fn get_events_for_deployment(&self, deployment_id: &DeploymentId, limit: usize) -> StorageResult<Vec<PalmEventEnvelope>>;
+    async fn get_events_for_deployment(
+        &self,
+        deployment_id: &DeploymentId,
+        limit: usize,
+    ) -> StorageResult<Vec<PalmEventEnvelope>>;
 
     /// Get events for an instance
-    async fn get_events_for_instance(&self, instance_id: &InstanceId, limit: usize) -> StorageResult<Vec<PalmEventEnvelope>>;
+    async fn get_events_for_instance(
+        &self,
+        instance_id: &InstanceId,
+        limit: usize,
+    ) -> StorageResult<Vec<PalmEventEnvelope>>;
 }
 
 /// Snapshot information
@@ -118,13 +136,21 @@ pub struct SnapshotInfo {
 #[async_trait]
 pub trait SnapshotStorage: Send + Sync {
     /// Create a snapshot for an instance
-    async fn create_snapshot(&self, instance_id: &InstanceId, reason: &str) -> StorageResult<String>;
+    async fn create_snapshot(
+        &self,
+        instance_id: &InstanceId,
+        reason: &str,
+    ) -> StorageResult<String>;
 
     /// List snapshots for an instance
     async fn list_snapshots(&self, instance_id: &InstanceId) -> StorageResult<Vec<SnapshotInfo>>;
 
     /// Restore from a snapshot
-    async fn restore_snapshot(&self, instance_id: &InstanceId, snapshot_id: &str) -> StorageResult<()>;
+    async fn restore_snapshot(
+        &self,
+        instance_id: &InstanceId,
+        snapshot_id: &str,
+    ) -> StorageResult<()>;
 
     /// Delete a snapshot
     #[allow(dead_code)]
@@ -166,5 +192,9 @@ pub trait ActivityStorage: Send + Sync {
     async fn store_activity(&self, activity: Activity) -> StorageResult<Activity>;
 
     /// List recent activities
-    async fn list_activities(&self, limit: usize, after_sequence: Option<u64>) -> StorageResult<Vec<Activity>>;
+    async fn list_activities(
+        &self,
+        limit: usize,
+        after_sequence: Option<u64>,
+    ) -> StorageResult<Vec<Activity>>;
 }

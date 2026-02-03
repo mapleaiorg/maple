@@ -1,8 +1,8 @@
 //! Coupling relationship types
 
-use serde::{Deserialize, Serialize};
 use super::ids::{CouplingId, ResonatorId};
 use super::temporal::TemporalAnchor;
+use serde::{Deserialize, Serialize};
 
 /// A coupling relationship between Resonators
 ///
@@ -16,7 +16,6 @@ pub struct Coupling {
     // ═══════════════════════════════════════════════════════════════════
     // COUPLING DIMENSIONS (from Resonance Architecture)
     // ═══════════════════════════════════════════════════════════════════
-
     /// Intensity: How much influence is allowed (0.0 to 1.0)
     pub strength: f64,
 
@@ -32,14 +31,12 @@ pub struct Coupling {
     // ═══════════════════════════════════════════════════════════════════
     // ATTENTION BINDING
     // ═══════════════════════════════════════════════════════════════════
-
     /// Attention allocated to this coupling
     pub attention_allocated: u64,
 
     // ═══════════════════════════════════════════════════════════════════
     // COUPLING HEALTH
     // ═══════════════════════════════════════════════════════════════════
-
     /// How well does meaning converge between these Resonators?
     pub meaning_convergence: f64,
 

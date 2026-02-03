@@ -1,8 +1,8 @@
 //! Commitment and consequence types
 
-use serde::{Deserialize, Serialize};
 use super::ids::{CommitmentId, ResonatorId};
 use super::temporal::TemporalAnchor;
+use serde::{Deserialize, Serialize};
 
 /// A commitment made by a Resonator
 ///
@@ -44,9 +44,7 @@ pub enum CommitmentContent {
     },
 
     /// Commitment to respect a boundary
-    Boundary {
-        description: String,
-    },
+    Boundary { description: String },
 
     /// Commitment to deliver a result
     Result {

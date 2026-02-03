@@ -80,21 +80,23 @@ impl RequestContext {
 
     /// Create a system context for internal operations
     pub fn system(platform: PlatformProfile, component: impl Into<String>) -> Self {
-        Self::new(platform, Actor::System {
-            component: component.into(),
-        })
+        Self::new(
+            platform,
+            Actor::System {
+                component: component.into(),
+            },
+        )
     }
 
     /// Create a user context
-    pub fn user(
-        platform: PlatformProfile,
-        user_id: impl Into<String>,
-        roles: Vec<String>,
-    ) -> Self {
-        Self::new(platform, Actor::User {
-            user_id: user_id.into(),
-            roles,
-        })
+    pub fn user(platform: PlatformProfile, user_id: impl Into<String>, roles: Vec<String>) -> Self {
+        Self::new(
+            platform,
+            Actor::User {
+                user_id: user_id.into(),
+                roles,
+            },
+        )
     }
 
     /// Create a service context
@@ -103,17 +105,23 @@ impl RequestContext {
         service_id: impl Into<String>,
         scopes: Vec<String>,
     ) -> Self {
-        Self::new(platform, Actor::Service {
-            service_id: service_id.into(),
-            scopes,
-        })
+        Self::new(
+            platform,
+            Actor::Service {
+                service_id: service_id.into(),
+                scopes,
+            },
+        )
     }
 
     /// Create a CLI context
     pub fn cli(platform: PlatformProfile, session_id: impl Into<String>) -> Self {
-        Self::new(platform, Actor::Cli {
-            session_id: session_id.into(),
-        })
+        Self::new(
+            platform,
+            Actor::Cli {
+                session_id: session_id.into(),
+            },
+        )
     }
 
     /// Check if the actor has a specific role (for User actors)
@@ -194,8 +202,7 @@ mod tests {
 
     #[test]
     fn test_correlation_id() {
-        let ctx = RequestContext::default()
-            .with_correlation_id("trace-123");
+        let ctx = RequestContext::default().with_correlation_id("trace-123");
 
         assert_eq!(ctx.correlation_id, Some("trace-123".into()));
     }

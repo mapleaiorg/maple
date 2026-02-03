@@ -3,11 +3,11 @@
 //! The Resonance Architecture does NOT assume synchronized clocks.
 //! Time is defined relationally through temporal anchors.
 
+use crate::types::TemporalConfig as TemporalCoordinatorConfig;
+use crate::types::*;
 use dashmap::DashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use crate::types::*;
-use crate::types::TemporalConfig as TemporalCoordinatorConfig;
 
 /// Temporal Coordinator manages temporal relationships without global clocks
 pub struct TemporalCoordinator {

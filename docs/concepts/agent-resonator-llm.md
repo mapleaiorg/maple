@@ -1,0 +1,63 @@
+# AI Agents, Resonators, and LLM Backends
+
+This note answers a common MAPLE architecture question: what is the relationship between an **AI agent**, a **Resonator**, and an **LLM backend**?
+
+## 1) Agent vs Resonator
+
+- In MAPLE, a **Resonator** is the persistent identity and lifecycle unit.
+- An **AI agent** is typically the behavior/process running as (or within) a Resonator identity.
+- PALM orchestrates fleets of agent instances (`AgentSpec`/`Deployment`/`AgentInstance`), while Resonator runtime owns continuity, presence, coupling, and attention.
+
+So in practice:
+
+`Agent behavior` + `Resonator identity/state` + `PALM orchestration` = deployable MAPLE agent system.
+
+## 2) Where LLMs fit
+
+LLMs (Ollama, GPT, Claude, Grok, Gemini) are **cognition engines**, not identity.
+
+- Resonator: identity, accountability, coupling, continuity.
+- LLM backend: text generation/reasoning service used by the Resonator/agent.
+- Commitments and governance still flow through MAPLE controls (UAL → RCF validation, policy/adjudication, evidence/audit).
+
+## 3) Supported Playground Backends
+
+- `local_llama` (default, Ollama-style endpoint)
+- `open_ai`
+- `anthropic`
+- `grok` (xAI OpenAI-compatible chat API)
+- `gemini` (Google Generative Language API)
+
+You can inspect and switch from CLI:
+
+```bash
+maple palm playground backends
+maple palm playground set-backend --kind local_llama --model llama3 --endpoint http://127.0.0.1:11434
+maple palm playground set-backend --kind open_ai --model gpt-4o-mini --api-key YOUR_KEY
+maple palm playground set-backend --kind anthropic --model claude-3-5-sonnet --api-key YOUR_KEY
+maple palm playground set-backend --kind grok --model grok-2-latest --api-key YOUR_KEY
+maple palm playground set-backend --kind gemini --model gemini-2.0-flash --api-key YOUR_KEY
+```
+
+## 4) One-shot Backend Inference
+
+Playground exposes a backend inference API and CLI command:
+
+```bash
+maple palm playground infer "Summarize current resonator activity"
+maple palm playground infer "Draft a UAL commit statement" --system-prompt "You are a MAPLE operator assistant"
+```
+
+This is useful for operator workflows and backend smoke-testing. Inference activity is recorded in Playground activity history for visibility.
+
+## 5) Governance Path for LLM-Generated Intent
+
+Recommended flow:
+
+1. LLM proposes intent in **UAL**.
+2. `ual-compiler` compiles to RCF commitments / PALM ops.
+3. `rcf-validator` validates commitment constraints.
+4. AAS policy/adjudication gates execution.
+5. EVE and audit trails record outcomes.
+
+This keeps LLMs in proposal/execution-assist mode while MAPLE preserves authority, accountability, and traceability.

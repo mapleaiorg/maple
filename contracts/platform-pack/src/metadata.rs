@@ -203,7 +203,8 @@ impl PlatformMetadata {
             name: "ibank".to_string(),
             display_name: "iBank".to_string(),
             version: "0.1.0".to_string(),
-            description: "Accountability-focused AI agent platform for financial services".to_string(),
+            description: "Accountability-focused AI agent platform for financial services"
+                .to_string(),
             author: "iBank Team".to_string(),
             license: "Proprietary".to_string(),
             homepage: Some("https://ibank.ai".to_string()),
@@ -284,21 +285,30 @@ mod tests {
     fn test_mapleverse_metadata() {
         let meta = PlatformMetadata::mapleverse();
         assert_eq!(meta.name, "mapleverse");
-        assert!(meta.compatibility.required_features.contains(&"live_migration".to_string()));
+        assert!(meta
+            .compatibility
+            .required_features
+            .contains(&"live_migration".to_string()));
     }
 
     #[test]
     fn test_finalverse_metadata() {
         let meta = PlatformMetadata::finalverse();
         assert_eq!(meta.name, "finalverse");
-        assert!(meta.compatibility.required_features.contains(&"human_approval".to_string()));
+        assert!(meta
+            .compatibility
+            .required_features
+            .contains(&"human_approval".to_string()));
     }
 
     #[test]
     fn test_ibank_metadata() {
         let meta = PlatformMetadata::ibank();
         assert_eq!(meta.name, "ibank");
-        assert!(meta.compatibility.required_features.contains(&"commitment_accounting".to_string()));
+        assert!(meta
+            .compatibility
+            .required_features
+            .contains(&"commitment_accounting".to_string()));
         assert!(meta.extra.contains_key("compliance_level"));
     }
 
@@ -314,9 +324,9 @@ mod tests {
         };
 
         assert!(!meta.is_compatible_with_palm("0.1.0")); // Too old
-        assert!(meta.is_compatible_with_palm("0.2.0"));  // Min version
-        assert!(meta.is_compatible_with_palm("0.5.0"));  // In range
-        assert!(meta.is_compatible_with_palm("1.0.0"));  // Max version
+        assert!(meta.is_compatible_with_palm("0.2.0")); // Min version
+        assert!(meta.is_compatible_with_palm("0.5.0")); // In range
+        assert!(meta.is_compatible_with_palm("1.0.0")); // Max version
         assert!(!meta.is_compatible_with_palm("1.1.0")); // Too new
     }
 }

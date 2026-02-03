@@ -1,8 +1,8 @@
 //! Error types for MAPLE Resonance Runtime
 
-use thiserror::Error;
-use super::ids::ResonatorId;
 use super::coupling::CouplingValidationError;
+use super::ids::ResonatorId;
+use thiserror::Error;
 
 /// Runtime bootstrap errors
 #[derive(Debug, Error)]
@@ -212,9 +212,13 @@ pub enum TemporalError {
 impl From<AttentionError> for CouplingError {
     fn from(err: AttentionError) -> Self {
         match err {
-            AttentionError::InsufficientAttention { requested, available } => {
-                CouplingError::InsufficientAttention { requested, available }
-            }
+            AttentionError::InsufficientAttention {
+                requested,
+                available,
+            } => CouplingError::InsufficientAttention {
+                requested,
+                available,
+            },
             _ => CouplingError::ValidationFailed(err.to_string()),
         }
     }

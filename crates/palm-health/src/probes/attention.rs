@@ -120,13 +120,11 @@ impl Probe for AttentionProbe {
                 instance_id,
                 reason: e.to_string(),
             }),
-            Err(_) => {
-                Ok(ProbeResult::timeout(
-                    instance_id,
-                    ProbeType::Attention,
-                    self.timeout_ms,
-                ))
-            }
+            Err(_) => Ok(ProbeResult::timeout(
+                instance_id,
+                ProbeType::Attention,
+                self.timeout_ms,
+            )),
         }
     }
 }

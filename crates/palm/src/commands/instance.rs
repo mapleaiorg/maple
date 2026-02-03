@@ -120,12 +120,10 @@ fn format_status(status: &InstanceStatus) -> String {
         InstanceStatus::Running => "Running".to_string(),
         InstanceStatus::Draining { reason } => format!("Draining ({:?})", reason),
         InstanceStatus::Terminating { reason } => format!("Terminating ({:?})", reason),
-        InstanceStatus::Terminated { exit_code } => {
-            match exit_code {
-                Some(code) => format!("Terminated ({})", code),
-                None => "Terminated".to_string(),
-            }
-        }
+        InstanceStatus::Terminated { exit_code } => match exit_code {
+            Some(code) => format!("Terminated ({})", code),
+            None => "Terminated".to_string(),
+        },
         InstanceStatus::Error { message } => format!("Error: {}", message),
     }
 }

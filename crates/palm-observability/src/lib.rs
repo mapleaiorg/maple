@@ -128,7 +128,11 @@ mod tests {
         let handle = init(config).await.unwrap();
 
         // Record a metric to ensure the registry works
-        handle.metrics.palm().deployment.record_operation("test", "create", "success", 1.0);
+        handle
+            .metrics
+            .palm()
+            .deployment
+            .record_operation("test", "create", "success", 1.0);
 
         // Metrics should be initialized and exportable
         assert!(!handle.metrics.export().is_empty());

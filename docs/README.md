@@ -13,6 +13,7 @@ Welcome to the MAPLE AI Framework documentation.
 | [Conformance Guide](conformance.md) | Testing platform pack compliance |
 | [API Reference](api/README.md) | Complete API documentation |
 | [UAL (Universal Agent Language)](concepts/ual.md) | Agent/human interaction language |
+| [Agents, Resonators, and LLMs](concepts/agent-resonator-llm.md) | Mental model + backend integration |
 
 ## Quick Links
 

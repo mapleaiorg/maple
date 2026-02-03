@@ -141,8 +141,10 @@ impl HealthMonitor {
         info!(instance_id = %instance_id, "Registering instance for health monitoring");
 
         // Create initial assessment
-        self.assessments
-            .insert(instance_id.clone(), HealthAssessment::new(instance_id.clone()));
+        self.assessments.insert(
+            instance_id.clone(),
+            HealthAssessment::new(instance_id.clone()),
+        );
 
         // Create monitor state
         self.instances.insert(
@@ -440,7 +442,10 @@ impl HealthMonitor {
                 }
 
                 // Execute recovery
-                let outcome = self.resilience.execute_recovery(instance_id, action).await?;
+                let outcome = self
+                    .resilience
+                    .execute_recovery(instance_id, action)
+                    .await?;
 
                 let _ = self.event_tx.send(HealthEvent::RecoveryCompleted {
                     instance_id: instance_id.clone(),

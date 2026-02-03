@@ -1,12 +1,12 @@
 //! Resonance Scheduler - attention-aware task scheduling
 
-use std::collections::{BinaryHeap, HashMap};
+use crate::config::SchedulingConfig;
+use crate::runtime_core::{DeferralReason, RejectionReason, ScheduleHandle, TaskId};
+use crate::types::*;
 use std::cmp::Ordering;
+use std::collections::{BinaryHeap, HashMap};
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use crate::types::*;
-use crate::runtime_core::{ScheduleHandle, TaskId, RejectionReason, DeferralReason};
-use crate::config::SchedulingConfig;
 
 /// Schedules resonance processing respecting attention budgets
 pub struct ResonanceScheduler {
@@ -145,11 +145,7 @@ pub struct ResonanceTask {
 }
 
 impl ResonanceTask {
-    pub fn new(
-        target: ResonatorId,
-        attention_class: AttentionClass,
-        payload: TaskPayload,
-    ) -> Self {
+    pub fn new(target: ResonatorId, attention_class: AttentionClass, payload: TaskPayload) -> Self {
         Self {
             id: TaskId::generate(),
             target,

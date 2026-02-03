@@ -119,12 +119,8 @@ impl ComposedPolicyGate {
             let decision = gate.evaluate(operation, context).await?;
             let duration_us = start.elapsed().as_micros() as u64;
 
-            let record = PolicyEvaluationRecord::new(
-                gate.id(),
-                gate.name(),
-                decision.clone(),
-                duration_us,
-            );
+            let record =
+                PolicyEvaluationRecord::new(gate.id(), gate.name(), decision.clone(), duration_us);
             card.add_evaluation(record);
 
             match self.evaluation_mode {
@@ -143,10 +139,8 @@ impl ComposedPolicyGate {
                     }
                 }
                 EvaluationMode::MostRestrictive => {
-                    most_restrictive_decision = Some(Self::more_restrictive(
-                        most_restrictive_decision,
-                        decision,
-                    ));
+                    most_restrictive_decision =
+                        Some(Self::more_restrictive(most_restrictive_decision, decision));
                 }
             }
         }
@@ -163,10 +157,7 @@ impl ComposedPolicyGate {
     }
 
     /// Compare two decisions and return the more restrictive one
-    fn more_restrictive(
-        current: Option<PolicyDecision>,
-        new: PolicyDecision,
-    ) -> PolicyDecision {
+    fn more_restrictive(current: Option<PolicyDecision>, new: PolicyDecision) -> PolicyDecision {
         match current {
             None => new,
             Some(current) => {

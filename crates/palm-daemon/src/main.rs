@@ -33,7 +33,12 @@ struct Cli {
     config: Option<String>,
 
     /// Listen address
-    #[arg(short, long, env = "PALM_LISTEN_ADDR", default_value = "127.0.0.1:8080")]
+    #[arg(
+        short,
+        long,
+        env = "PALM_LISTEN_ADDR",
+        default_value = "127.0.0.1:8080"
+    )]
     listen: String,
 
     /// Platform profile

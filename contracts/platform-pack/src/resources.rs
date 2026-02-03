@@ -332,10 +332,7 @@ impl PlatformResourceConfig {
                 .into_iter()
                 .collect(),
                 preferred_labels: HashMap::new(),
-                anti_affinity: vec![
-                    "database".to_string(),
-                    "external".to_string(),
-                ],
+                anti_affinity: vec!["database".to_string(), "external".to_string()],
                 topology_spread: TopologySpread {
                     enabled: true,
                     max_skew: 1,

@@ -14,19 +14,19 @@
 //! iBank accountability-focused) without architectural fragmentation.
 
 pub mod contract;
-pub mod policy;
 pub mod health;
-pub mod state;
-pub mod resources;
-pub mod recovery;
 pub mod metadata;
+pub mod policy;
+pub mod recovery;
+pub mod resources;
+pub mod state;
 pub mod validation;
 
-pub use contract::{PlatformPack, PlatformPackConfig, PlatformCapabilities, PackError};
-pub use policy::PlatformPolicyConfig;
+pub use contract::{PackError, PlatformCapabilities, PlatformPack, PlatformPackConfig};
 pub use health::PlatformHealthConfig;
-pub use state::PlatformStateConfig;
-pub use resources::PlatformResourceConfig;
-pub use recovery::PlatformRecoveryConfig;
 pub use metadata::PlatformMetadata;
-pub use validation::{validate_pack, ValidationResult, ValidationError};
+pub use policy::PlatformPolicyConfig;
+pub use recovery::PlatformRecoveryConfig;
+pub use resources::PlatformResourceConfig;
+pub use state::PlatformStateConfig;
+pub use validation::{validate_pack, ValidationError, ValidationResult};

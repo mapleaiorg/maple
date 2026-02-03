@@ -3,10 +3,10 @@
 use crate::playground::PlaygroundService;
 use crate::scheduler::Scheduler;
 use crate::storage::Storage;
+use palm_shared_state::Activity;
+use palm_types::PalmEventEnvelope;
 use std::sync::Arc;
 use tokio::sync::broadcast;
-use palm_types::PalmEventEnvelope;
-use palm_shared_state::Activity;
 
 /// Shared application state
 #[derive(Clone)]

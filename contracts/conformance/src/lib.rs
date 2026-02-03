@@ -31,13 +31,13 @@
 //! println!("{}", report.to_text());
 //! ```
 
-pub mod framework;
-pub mod reports;
-pub mod core_tests;
 pub mod behavioral_tests;
-pub mod platform_tests;
+pub mod core_tests;
+pub mod framework;
 pub mod harness;
+pub mod platform_tests;
+pub mod reports;
 
 pub use framework::{ConformanceConfig, ConformanceRunner};
-pub use reports::{ConformanceReport, ReportSummary, TestCategory, TestResult, TestStatus};
 pub use harness::TestHarness;
+pub use reports::{ConformanceReport, ReportSummary, TestCategory, TestResult, TestStatus};

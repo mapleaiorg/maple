@@ -59,7 +59,10 @@ impl ResonatorRegistry {
     /// Persist all continuity records
     pub async fn persist_all_continuity(&self) -> Result<(), String> {
         // Placeholder: In real implementation, would persist to durable storage
-        tracing::info!("Persisting {} Resonator continuity records", self.resonators.len());
+        tracing::info!(
+            "Persisting {} Resonator continuity records",
+            self.resonators.len()
+        );
         Ok(())
     }
 

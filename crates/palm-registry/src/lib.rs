@@ -16,15 +16,15 @@
 #![cfg_attr(feature = "strict-docs", warn(missing_docs))]
 #![cfg_attr(not(feature = "strict-docs"), allow(missing_docs))]
 
-pub mod error;
 pub mod agent;
-pub mod instance;
 pub mod discovery;
+pub mod error;
+pub mod instance;
 pub mod memory;
 
 // Re-exports
-pub use error::{RegistryError, Result};
 pub use agent::AgentRegistry;
-pub use instance::InstanceRegistry;
 pub use discovery::{DiscoveryQuery, DiscoveryResult, DiscoveryService, RoutingStrategy};
+pub use error::{RegistryError, Result};
+pub use instance::InstanceRegistry;
 pub use memory::{InMemoryAgentRegistry, InMemoryDiscoveryService, InMemoryInstanceRegistry};

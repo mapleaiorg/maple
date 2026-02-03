@@ -11,8 +11,7 @@
 //! Run with: `cargo run --example 03_mapleverse_config`
 
 use maple_runtime::{
-    MapleRuntime, ResonatorSpec, ResonatorProfile,
-    config::mapleverse_runtime_config,
+    config::mapleverse_runtime_config, MapleRuntime, ResonatorProfile, ResonatorSpec,
 };
 
 #[tokio::main]

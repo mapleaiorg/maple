@@ -11,9 +11,8 @@
 //! Run with: `cargo run --example 02_resonator_coupling`
 
 use maple_runtime::{
-    MapleRuntime, ResonatorSpec, CouplingParams,
-    CouplingScope, CouplingPersistence, SymmetryType,
-    config::RuntimeConfig,
+    config::RuntimeConfig, CouplingParams, CouplingPersistence, CouplingScope, MapleRuntime,
+    ResonatorSpec, SymmetryType,
 };
 
 #[tokio::main]
@@ -49,7 +48,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         symmetry: SymmetryType::Symmetric,
     };
 
-    let coupling = resonator_a.couple_with(resonator_b.id, coupling_params).await?;
+    let coupling = resonator_a
+        .couple_with(resonator_b.id, coupling_params)
+        .await?;
     println!("✅ Coupling established: {}", coupling.id);
 
     // Check coupling state

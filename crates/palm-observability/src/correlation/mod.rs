@@ -4,4 +4,4 @@
 
 pub mod engine;
 
-pub use engine::{CorrelationEngine, CorrelationId, CorrelatedEvent, EventCorrelation};
+pub use engine::{CorrelatedEvent, CorrelationEngine, CorrelationId, EventCorrelation};

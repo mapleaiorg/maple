@@ -32,7 +32,12 @@ struct Cli {
     config: Option<String>,
 
     /// PALM daemon endpoint
-    #[arg(short, long, env = "PALM_ENDPOINT", default_value = "http://localhost:8080")]
+    #[arg(
+        short,
+        long,
+        env = "PALM_ENDPOINT",
+        default_value = "http://localhost:8080"
+    )]
     endpoint: String,
 
     /// Output format (table, json, yaml)
@@ -121,8 +126,7 @@ where
     let filter = if cli.verbose { "debug" } else { "info" };
     tracing_subscriber::registry()
         .with(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| filter.into()),
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| filter.into()),
         )
         .with(tracing_subscriber::fmt::layer().without_time())
         .init();

@@ -6,8 +6,8 @@
 #![deny(unsafe_code)]
 
 use aas_types::{
-    AgentId, CommitmentLifecycle, CommitmentOutcome, LedgerEntry, LedgerEntryId,
-    LifecycleStatus, PolicyDecisionCard,
+    AgentId, CommitmentLifecycle, CommitmentOutcome, LedgerEntry, LedgerEntryId, LifecycleStatus,
+    PolicyDecisionCard,
 };
 use rcf_commitment::{CommitmentId, RcfCommitment};
 use serde::{Deserialize, Serialize};
@@ -71,22 +71,36 @@ impl AccountabilityLedger {
         entries.insert(entry_id.clone(), entry);
 
         // Update commitment index
-        let mut commitment_index = self.commitment_index.write().map_err(|_| LedgerError::LockError)?;
+        let mut commitment_index = self
+            .commitment_index
+            .write()
+            .map_err(|_| LedgerError::LockError)?;
         commitment_index.insert(commitment.commitment_id, entry_id.clone());
 
         // Update agent index
-        let mut agent_index = self.agent_index.write().map_err(|_| LedgerError::LockError)?;
-        agent_index.entry(agent_id).or_default().push(entry_id.clone());
+        let mut agent_index = self
+            .agent_index
+            .write()
+            .map_err(|_| LedgerError::LockError)?;
+        agent_index
+            .entry(agent_id)
+            .or_default()
+            .push(entry_id.clone());
 
         Ok(entry_id)
     }
 
     /// Record execution start
-    pub fn record_execution_started(&self, commitment_id: &CommitmentId) -> Result<(), LedgerError> {
+    pub fn record_execution_started(
+        &self,
+        commitment_id: &CommitmentId,
+    ) -> Result<(), LedgerError> {
         let entry_id = self.get_entry_id(commitment_id)?;
 
         let mut entries = self.entries.write().map_err(|_| LedgerError::LockError)?;
-        let entry = entries.get_mut(&entry_id).ok_or_else(|| LedgerError::NotFound(entry_id.0.clone()))?;
+        let entry = entries
+            .get_mut(&entry_id)
+            .ok_or_else(|| LedgerError::NotFound(entry_id.0.clone()))?;
 
         entry.lifecycle.status = LifecycleStatus::Executing;
         entry.lifecycle.execution_started_at = Some(chrono::Utc::now());
@@ -104,7 +118,9 @@ impl AccountabilityLedger {
         let entry_id = self.get_entry_id(commitment_id)?;
 
         let mut entries = self.entries.write().map_err(|_| LedgerError::LockError)?;
-        let entry = entries.get_mut(&entry_id).ok_or_else(|| LedgerError::NotFound(entry_id.0.clone()))?;
+        let entry = entries
+            .get_mut(&entry_id)
+            .ok_or_else(|| LedgerError::NotFound(entry_id.0.clone()))?;
 
         entry.lifecycle.status = if outcome.success {
             LifecycleStatus::Completed
@@ -119,8 +135,14 @@ impl AccountabilityLedger {
     }
 
     /// Get an entry by commitment ID
-    pub fn get_by_commitment(&self, commitment_id: &CommitmentId) -> Result<Option<LedgerEntry>, LedgerError> {
-        let commitment_index = self.commitment_index.read().map_err(|_| LedgerError::LockError)?;
+    pub fn get_by_commitment(
+        &self,
+        commitment_id: &CommitmentId,
+    ) -> Result<Option<LedgerEntry>, LedgerError> {
+        let commitment_index = self
+            .commitment_index
+            .read()
+            .map_err(|_| LedgerError::LockError)?;
 
         if let Some(entry_id) = commitment_index.get(commitment_id) {
             let entries = self.entries.read().map_err(|_| LedgerError::LockError)?;
@@ -132,7 +154,10 @@ impl AccountabilityLedger {
 
     /// Get all entries for an agent
     pub fn get_by_agent(&self, agent_id: &AgentId) -> Result<Vec<LedgerEntry>, LedgerError> {
-        let agent_index = self.agent_index.read().map_err(|_| LedgerError::LockError)?;
+        let agent_index = self
+            .agent_index
+            .read()
+            .map_err(|_| LedgerError::LockError)?;
         let entries = self.entries.read().map_err(|_| LedgerError::LockError)?;
 
         let entry_ids = match agent_index.get(agent_id) {
@@ -222,7 +247,10 @@ impl AccountabilityLedger {
 
     /// Get entry ID for a commitment
     fn get_entry_id(&self, commitment_id: &CommitmentId) -> Result<LedgerEntryId, LedgerError> {
-        let commitment_index = self.commitment_index.read().map_err(|_| LedgerError::LockError)?;
+        let commitment_index = self
+            .commitment_index
+            .read()
+            .map_err(|_| LedgerError::LockError)?;
         commitment_index
             .get(commitment_id)
             .cloned()
@@ -274,8 +302,8 @@ pub enum LedgerError {
 mod tests {
     use super::*;
     use aas_types::{
-        AdjudicatorInfo, AdjudicatorType, Decision, DecisionId, Rationale,
-        RiskAssessment, RiskLevel,
+        AdjudicatorInfo, AdjudicatorType, Decision, DecisionId, Rationale, RiskAssessment,
+        RiskLevel,
     };
     use rcf_commitment::CommitmentBuilder;
     use rcf_types::{EffectDomain, IdentityRef, ScopeConstraint};
@@ -284,13 +312,11 @@ mod tests {
     fn test_record_and_retrieve() {
         let ledger = AccountabilityLedger::new();
 
-        let commitment = CommitmentBuilder::new(
-            IdentityRef::new("test-agent"),
-            EffectDomain::Computation,
-        )
-        .with_scope(ScopeConstraint::default())
-        .build()
-        .unwrap();
+        let commitment =
+            CommitmentBuilder::new(IdentityRef::new("test-agent"), EffectDomain::Computation)
+                .with_scope(ScopeConstraint::default())
+                .build()
+                .unwrap();
 
         let commitment_id = commitment.commitment_id.clone();
 

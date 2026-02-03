@@ -7,19 +7,19 @@
 #![cfg_attr(not(feature = "strict-docs"), allow(missing_docs))]
 #![warn(rust_2018_idioms)]
 
-mod resonance;
-mod identity;
-mod temporal;
 mod capability;
-mod uncertainty;
 mod errors;
+mod identity;
+mod resonance;
+mod temporal;
+mod uncertainty;
 
-pub use resonance::*;
-pub use identity::*;
-pub use temporal::*;
 pub use capability::*;
-pub use uncertainty::*;
 pub use errors::*;
+pub use identity::*;
+pub use resonance::*;
+pub use temporal::*;
+pub use uncertainty::*;
 
 /// Schema version
 pub const SCHEMA_VERSION: &str = "1.0.0";

@@ -16,7 +16,8 @@ pub trait InstanceRegistry: Send + Sync {
     async fn get(&self, id: &InstanceId) -> Result<Option<AgentInstance>>;
 
     /// List all instances for a deployment
-    async fn list_for_deployment(&self, deployment_id: &DeploymentId) -> Result<Vec<AgentInstance>>;
+    async fn list_for_deployment(&self, deployment_id: &DeploymentId)
+        -> Result<Vec<AgentInstance>>;
 
     /// List all instances
     async fn list_all(&self) -> Result<Vec<AgentInstance>>;

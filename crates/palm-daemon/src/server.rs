@@ -7,8 +7,8 @@ use crate::error::{DaemonError, DaemonResult};
 use crate::playground::PlaygroundService;
 use crate::scheduler::Scheduler;
 use crate::storage::{InMemoryStorage, PostgresStorage, Storage};
-use palm_types::PalmEventEnvelope;
 use palm_shared_state::Activity;
+use palm_types::PalmEventEnvelope;
 use std::sync::Arc;
 use tokio::net::TcpListener;
 use tokio::sync::{broadcast, mpsc};
@@ -30,7 +30,11 @@ impl Server {
         // Create storage
         let storage: Arc<dyn Storage> = match &config.storage {
             StorageConfig::Memory => Arc::new(InMemoryStorage::new()),
-            StorageConfig::Postgres { url, max_connections, connect_timeout_secs } => {
+            StorageConfig::Postgres {
+                url,
+                max_connections,
+                connect_timeout_secs,
+            } => {
                 let pg = PostgresStorage::new(url, *max_connections, *connect_timeout_secs)
                     .await
                     .map_err(DaemonError::Storage)?;

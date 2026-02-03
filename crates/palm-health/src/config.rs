@@ -171,12 +171,7 @@ impl Default for HealthThresholds {
 
 impl HealthThresholds {
     /// Calculate overall health score from individual dimensions.
-    pub fn calculate_overall_score(
-        &self,
-        presence: f64,
-        coupling: f64,
-        attention: f64,
-    ) -> f64 {
+    pub fn calculate_overall_score(&self, presence: f64, coupling: f64, attention: f64) -> f64 {
         let total_weight = self.presence_weight + self.coupling_weight + self.attention_weight;
 
         (presence * self.presence_weight

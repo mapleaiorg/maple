@@ -23,35 +23,35 @@
 #![cfg_attr(feature = "strict-docs", warn(missing_docs))]
 #![cfg_attr(not(feature = "strict-docs"), allow(missing_docs))]
 
-pub mod ids;
-pub mod platform;
-pub mod spec;
 pub mod deployment;
-pub mod instance;
-pub mod health;
-pub mod policy;
 pub mod events;
+pub mod health;
+pub mod ids;
+pub mod instance;
+pub mod platform;
+pub mod policy;
+pub mod spec;
 
 // Re-export main types
-pub use ids::{AgentSpecId, DeploymentId, InstanceId, NodeId};
-pub use platform::PlatformProfile;
-pub use spec::{
-    AgentSpec, AutonomyLevel, CapabilityRef, HealthConfig, ProbeConfig, ProbeType,
-    ResonatorProfileConfig, ResourceRequirements, RiskTolerance, SpecValidationError,
-};
 pub use deployment::{
     CanarySuccessCriteria, Deployment, DeploymentStatus, DeploymentStrategy, ReplicaConfig,
 };
-pub use instance::{
-    AgentInstance, DrainReason, HealthStatus, InstanceMetrics, InstancePlacement, InstanceStatus,
-    ResonatorIdRef, StartupPhase, TerminationReason,
-};
+pub use events::{EventSeverity, EventSource, PalmEvent, PalmEventEnvelope};
 pub use health::{
     AlertCategory, AlertSeverity, HealthAlert, HealthAssessment, HealthDimensions, ProbeDetails,
     ProbeResult,
 };
+pub use ids::{AgentSpecId, DeploymentId, InstanceId, NodeId};
+pub use instance::{
+    AgentInstance, DrainReason, HealthStatus, InstanceMetrics, InstancePlacement, InstanceStatus,
+    ResonatorIdRef, StartupPhase, TerminationReason,
+};
+pub use platform::PlatformProfile;
 pub use policy::{
     OperationType, PalmOperation, PolicyAction, PolicyCondition, PolicyContext, PolicyDecision,
     PolicyError, PolicyRule,
 };
-pub use events::{EventSeverity, EventSource, PalmEvent, PalmEventEnvelope};
+pub use spec::{
+    AgentSpec, AutonomyLevel, CapabilityRef, HealthConfig, ProbeConfig, ProbeType,
+    ResonatorProfileConfig, ResourceRequirements, RiskTolerance, SpecValidationError,
+};

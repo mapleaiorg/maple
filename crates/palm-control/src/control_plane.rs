@@ -127,7 +127,10 @@ impl PalmControlPlane {
         ));
 
         // Create health monitor
-        let health_monitor = Arc::new(HealthMonitor::new(health_config, resilience_controller.clone()));
+        let health_monitor = Arc::new(HealthMonitor::new(
+            health_config,
+            resilience_controller.clone(),
+        ));
 
         // Create state manager
         let state_manager = Arc::new(StateManager::new(
@@ -163,7 +166,11 @@ impl PalmControlPlane {
 
     /// Register a new agent specification
     #[instrument(skip(self, spec), fields(spec_name = %spec.name))]
-    pub async fn register_spec(&self, spec: AgentSpec, ctx: &RequestContext) -> Result<AgentSpecId> {
+    pub async fn register_spec(
+        &self,
+        spec: AgentSpec,
+        ctx: &RequestContext,
+    ) -> Result<AgentSpecId> {
         self.check_policy(
             &ControlPlaneOperation::RegisterSpec {
                 spec_id: spec.id.clone(),
@@ -224,7 +231,12 @@ impl PalmControlPlane {
 
         let deployment = self
             .deployment_manager
-            .create_deployment(spec_id, config.strategy, config.replicas, &ctx.policy_context)
+            .create_deployment(
+                spec_id,
+                config.strategy,
+                config.replicas,
+                &ctx.policy_context,
+            )
             .await?;
 
         info!(deployment_id = %deployment.id, "Deployment created");
@@ -407,7 +419,10 @@ impl PalmControlPlane {
 
     /// List instances for a deployment
     pub async fn list_instances(&self, deployment_id: &DeploymentId) -> Result<Vec<AgentInstance>> {
-        Ok(self.instance_registry.list_for_deployment(deployment_id).await?)
+        Ok(self
+            .instance_registry
+            .list_for_deployment(deployment_id)
+            .await?)
     }
 
     /// Restart an instance
@@ -526,7 +541,10 @@ impl PalmControlPlane {
         };
 
         let to_node_id = NodeId::new(to_node);
-        let result = self.state_manager.migrate(&instance_info, &to_node_id).await?;
+        let result = self
+            .state_manager
+            .migrate(&instance_info, &to_node_id)
+            .await?;
 
         info!(
             old_instance_id = %instance_id,
@@ -540,7 +558,11 @@ impl PalmControlPlane {
 
     /// Drain an instance (prepare for graceful shutdown)
     #[instrument(skip(self), fields(instance_id = %instance_id))]
-    pub async fn drain_instance(&self, instance_id: &InstanceId, ctx: &RequestContext) -> Result<()> {
+    pub async fn drain_instance(
+        &self,
+        instance_id: &InstanceId,
+        ctx: &RequestContext,
+    ) -> Result<()> {
         self.check_policy(
             &ControlPlaneOperation::DrainInstance {
                 instance_id: instance_id.clone(),
@@ -605,7 +627,10 @@ impl PalmControlPlane {
             resonator_id: ResonatorId::generate(), // Would come from instance
         };
 
-        let snapshot_id = self.state_manager.checkpoint(&instance_info, reason).await?;
+        let snapshot_id = self
+            .state_manager
+            .checkpoint(&instance_info, reason)
+            .await?;
 
         Ok(snapshot_id)
     }
@@ -693,7 +718,11 @@ impl PalmControlPlane {
 
     /// Force recovery action on an instance
     #[instrument(skip(self), fields(instance_id = %instance_id))]
-    pub async fn force_recovery(&self, instance_id: &InstanceId, ctx: &RequestContext) -> Result<()> {
+    pub async fn force_recovery(
+        &self,
+        instance_id: &InstanceId,
+        ctx: &RequestContext,
+    ) -> Result<()> {
         self.check_policy(
             &ControlPlaneOperation::ForceRecovery {
                 instance_id: instance_id.clone(),
@@ -949,17 +978,6 @@ mod tests {
 
     #[tokio::test]
     async fn test_policy_enforcement() {
-        let cp = create_test_control_plane();
-
-        // Create a context that requires human approval for IBank
-        let ctx = RequestContext::new(
-            PlatformProfile::IBank,
-            crate::context::Actor::User {
-                user_id: "test".into(),
-                roles: vec![],
-            },
-        );
-
         // Destructive operations should be denied without human approval
         let op = ControlPlaneOperation::DeleteDeployment {
             deployment_id: DeploymentId::generate(),

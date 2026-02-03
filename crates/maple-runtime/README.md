@@ -459,8 +459,8 @@ Designed from day one for **100M+ concurrent Resonators**.
 
 ## 📞 Contact
 
-- **Website**: https://maple.ai
-- **Documentation**: https://docs.maple.ai
+- **Website**: https://mapleai.org
+- **Documentation**: https://docs.mapleai.org
 - **Issues**: https://github.com/mapleaiorg/maple/issues
 - **Discord**: https://discord.gg/maple-ai
 

@@ -115,37 +115,34 @@
 #![warn(clippy::all)]
 
 // Core modules
-pub mod types;
-pub mod runtime_core;
-pub mod fabrics;
 pub mod allocator;
-pub mod invariants;
-pub mod temporal;
-pub mod scheduler;
 pub mod config;
+pub mod fabrics;
+pub mod invariants;
+pub mod runtime_core;
+pub mod scheduler;
 pub mod telemetry;
+pub mod temporal;
+pub mod types;
 
 // Re-exports for convenience
 pub use runtime_core::{
-    MapleRuntime, ResonatorHandle, CouplingHandle, ScheduleHandle,
-    ResonatorSpec, ResonatorIdentitySpec, ContinuityProof,
+    ContinuityProof, CouplingHandle, MapleRuntime, ResonatorHandle, ResonatorIdentitySpec,
+    ResonatorSpec, ScheduleHandle,
 };
 
 pub use types::{
-    ResonatorId, ResonatorProfile, PresenceState, PresenceConfig,
-    Coupling, CouplingParams, CouplingScope, CouplingPersistence, SymmetryType,
-    AttentionBudget, AttentionBudgetSpec, AttentionClass,
-    Commitment, CommitmentContent, CommitmentStatus,
-    TemporalAnchor, LocalTimestamp,
+    AttentionBudget, AttentionBudgetSpec, AttentionClass, Commitment, CommitmentContent,
+    CommitmentStatus, Coupling, CouplingParams, CouplingPersistence, CouplingScope, LocalTimestamp,
+    PresenceConfig, PresenceState, ResonatorId, ResonatorProfile, SymmetryType, TemporalAnchor,
 };
 
 pub use invariants::{ArchitecturalInvariant, InvariantViolation};
 
 // Error types
 pub use types::{
-    BootstrapError, ShutdownError, RegistrationError, ResumeError,
-    PresenceError, CouplingError, AttentionError, CommitmentError,
-    SchedulingError, TemporalError,
+    AttentionError, BootstrapError, CommitmentError, CouplingError, PresenceError,
+    RegistrationError, ResumeError, SchedulingError, ShutdownError, TemporalError,
 };
 
 #[cfg(test)]

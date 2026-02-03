@@ -122,13 +122,11 @@ impl PlatformPolicyConfig {
         Self {
             human_approval: HumanApprovalConfig {
                 always_required: vec![],
-                threshold_required: vec![
-                    ThresholdApproval {
-                        operation: "scale".to_string(),
-                        threshold_type: "instance_count".to_string(),
-                        threshold_value: 100,
-                    },
-                ],
+                threshold_required: vec![ThresholdApproval {
+                    operation: "scale".to_string(),
+                    threshold_type: "instance_count".to_string(),
+                    threshold_value: 100,
+                }],
                 approval_timeout_secs: 300,
                 allow_auto_approval: true,
             },
