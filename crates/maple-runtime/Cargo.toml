@@ -1,10 +1,14 @@
 [package]
 name = "maple-runtime"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["MAPLE Team"]
 description = "MAPLE Resonance Runtime - Foundational AI framework for Mapleverse, Finalverse, and iBank"
 license = "MIT OR Apache-2.0"
+repository = "https://github.com/mapleaiorg/maple"
+homepage = "https://github.com/mapleaiorg/maple"
+documentation = "https://docs.rs/maple-runtime"
+readme = "README.md"
 
 [dependencies]
 # Async runtime

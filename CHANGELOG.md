@@ -44,6 +44,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Conformance testing guide
 - API reference
 
+## [0.1.1] - 2026-02-03
+
+### Fixed
+
+- `maple-runtime`: first explicit `signal_presence()` after `register_resonator()` could incorrectly return `PresenceError::RateLimitExceeded`.
+- `maple-runtime`: restored resonators can send an immediate explicit presence signal without tripping startup rate limiting.
+
+### Documentation
+
+- Updated getting started guidance for the initial presence signaling path.
+
 ## [0.1.0] - 2026-02-01
 
 ### Added
@@ -53,5 +64,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Platform pack system
 - Documentation
 
-[Unreleased]: https://github.com/mapleaiorg/maple/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/mapleaiorg/maple/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/mapleaiorg/maple/releases/tag/v0.1.1
 [0.1.0]: https://github.com/mapleaiorg/maple/releases/tag/v0.1.0

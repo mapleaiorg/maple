@@ -5,7 +5,7 @@
 use crate::config::PresenceConfig as PresenceFabricConfig;
 use crate::types::*;
 use dashmap::DashMap;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 /// Presence Fabric manages presence states for all Resonators
 ///
@@ -28,6 +28,13 @@ struct PresenceStateWithMetadata {
 }
 
 impl PresenceFabric {
+    fn initial_last_update(min_signal_interval_ms: u64) -> Instant {
+        // Registration/restore should not consume the first explicit signal budget.
+        Instant::now()
+            .checked_sub(Duration::from_millis(min_signal_interval_ms))
+            .unwrap_or_else(Instant::now)
+    }
+
     pub fn new(config: &PresenceFabricConfig) -> Self {
         Self {
             states: DashMap::new(),
@@ -48,7 +55,7 @@ impl PresenceFabric {
 
         let metadata = PresenceStateWithMetadata {
             state,
-            last_update: Instant::now(),
+            last_update: Self::initial_last_update(self.config.min_signal_interval_ms),
         };
 
         self.states.insert(*resonator, metadata);
@@ -152,7 +159,7 @@ impl PresenceFabric {
     ) -> Result<(), String> {
         let metadata = PresenceStateWithMetadata {
             state: state.clone(),
-            last_update: Instant::now(),
+            last_update: Self::initial_last_update(self.config.min_signal_interval_ms),
         };
 
         self.states.insert(*resonator, metadata);

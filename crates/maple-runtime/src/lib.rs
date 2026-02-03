@@ -195,12 +195,13 @@ mod tests {
         let spec = ResonatorSpec::default();
         let resonator = runtime.register_resonator(spec).await.unwrap();
 
-        // Wait a bit to avoid rate limiting from initialization
-        tokio::time::sleep(tokio::time::Duration::from_millis(1100)).await;
-
         let presence = PresenceState::new();
         let result = resonator.signal_presence(presence).await;
         assert!(result.is_ok(), "Presence signaling failed: {:?}", result);
+
+        // A second immediate signal should still be rate-limited.
+        let result = resonator.signal_presence(PresenceState::new()).await;
+        assert!(matches!(result, Err(PresenceError::RateLimitExceeded)));
     }
 
     #[tokio::test]
