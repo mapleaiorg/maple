@@ -1,0 +1,24 @@
+[package]
+name = "workflow-engine"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Workflow Orchestrator Runtime — coordinates commitment programs, never executes actions directly"
+
+[dependencies]
+workflow-types = { workspace = true }
+collective-types = { workspace = true }
+rcf-types = { workspace = true }
+rcf-commitment = { workspace = true }
+resonator-types = { workspace = true }
+serde = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }

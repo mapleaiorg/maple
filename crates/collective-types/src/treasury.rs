@@ -138,11 +138,7 @@ pub struct Escrow {
 }
 
 impl Escrow {
-    pub fn new(
-        amount: Amount,
-        depositor: ResonatorId,
-        beneficiary: ResonatorId,
-    ) -> Self {
+    pub fn new(amount: Amount, depositor: ResonatorId, beneficiary: ResonatorId) -> Self {
         Self {
             id: EscrowId::generate(),
             amount,
@@ -207,11 +203,7 @@ pub struct Allocation {
 }
 
 impl Allocation {
-    pub fn new(
-        resonator_id: ResonatorId,
-        amount: Amount,
-        purpose: impl Into<String>,
-    ) -> Self {
+    pub fn new(resonator_id: ResonatorId, amount: Amount, purpose: impl Into<String>) -> Self {
         Self {
             resonator_id,
             amount,
@@ -240,8 +232,8 @@ impl Treasury {
     /// Create a new treasury with a default operating account
     pub fn new(collective_id: CollectiveId) -> Self {
         let mut accounts = HashMap::new();
-        let operating = Account::new("Operating", AccountType::Operating)
-            .with_id(AccountId::new("operating"));
+        let operating =
+            Account::new("Operating", AccountType::Operating).with_id(AccountId::new("operating"));
         accounts.insert(operating.id.clone(), operating);
 
         Self {
@@ -380,8 +372,8 @@ mod tests {
 
     #[test]
     fn test_account_operations() {
-        let mut account = Account::new("Test", AccountType::Operating)
-            .with_balance(Amount::new(1000));
+        let mut account =
+            Account::new("Test", AccountType::Operating).with_balance(Amount::new(1000));
 
         assert_eq!(account.balance, Amount::new(1000));
 

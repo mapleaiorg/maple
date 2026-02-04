@@ -9,7 +9,9 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// Attention units — the fundamental resource in resonance economics
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Default)]
+#[derive(
+    Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Default,
+)]
 pub struct AttentionUnits(pub u64);
 
 impl AttentionUnits {
@@ -55,7 +57,9 @@ impl std::ops::Sub for AttentionUnits {
 }
 
 /// Financial amount (generic currency units)
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Default)]
+#[derive(
+    Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Default,
+)]
 pub struct Amount(pub u64);
 
 impl Amount {
@@ -230,18 +234,17 @@ impl AttentionPool {
             });
         }
 
-        let current = self.allocations.entry(resonator).or_insert(AttentionUnits::zero());
+        let current = self
+            .allocations
+            .entry(resonator)
+            .or_insert(AttentionUnits::zero());
         *current = current.saturating_add(amount);
         self.allocated = self.allocated.saturating_add(amount);
         Ok(())
     }
 
     /// Release attention from a resonator
-    pub fn release(
-        &mut self,
-        resonator: &ResonatorId,
-        amount: AttentionUnits,
-    ) {
+    pub fn release(&mut self, resonator: &ResonatorId, amount: AttentionUnits) {
         if let Some(current) = self.allocations.get_mut(resonator) {
             let release_amount = if amount > *current { *current } else { amount };
             *current = current.saturating_sub(release_amount);
@@ -306,7 +309,10 @@ mod tests {
         let b = AttentionUnits::new(50);
         assert_eq!(a + b, AttentionUnits::new(150));
         assert_eq!(a - b, AttentionUnits::new(50));
-        assert_eq!(a.saturating_sub(AttentionUnits::new(200)), AttentionUnits::zero());
+        assert_eq!(
+            a.saturating_sub(AttentionUnits::new(200)),
+            AttentionUnits::zero()
+        );
         assert_eq!(format!("{}", a), "100au");
     }
 
@@ -343,11 +349,13 @@ mod tests {
         let res1 = ResonatorId::new("res-1");
         let res2 = ResonatorId::new("res-2");
 
-        pool.allocate(res1.clone(), AttentionUnits::new(300)).unwrap();
+        pool.allocate(res1.clone(), AttentionUnits::new(300))
+            .unwrap();
         assert_eq!(pool.available(), AttentionUnits::new(700));
         assert_eq!(pool.allocation_for(&res1), AttentionUnits::new(300));
 
-        pool.allocate(res2.clone(), AttentionUnits::new(500)).unwrap();
+        pool.allocate(res2.clone(), AttentionUnits::new(500))
+            .unwrap();
         assert_eq!(pool.available(), AttentionUnits::new(200));
 
         // Try to over-allocate

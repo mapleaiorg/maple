@@ -1,0 +1,20 @@
+[package]
+name = "workflow-dsl"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Workflow DSL parser and compiler for MAPLE — define commitment programs declaratively"
+
+[dependencies]
+workflow-types = { workspace = true }
+collective-types = { workspace = true }
+resonator-types = { workspace = true }
+serde = { workspace = true }
+chrono = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }

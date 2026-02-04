@@ -1,0 +1,26 @@
+[package]
+name = "ibank-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Core iBank runtime, protocol, and invariant enforcement"
+
+[dependencies]
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+blake3 = { workspace = true }
+chrono = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sqlx = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+uuid = { workspace = true }
+
+maple-runtime = { path = "../../../crates/maple-runtime" }
+rcf-commitment = { path = "../../../crates/rcf-commitment" }
+rcf-types = { path = "../../../crates/rcf-types" }
+
+[dev-dependencies]
+tokio = { workspace = true }

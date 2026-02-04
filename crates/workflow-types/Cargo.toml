@@ -1,0 +1,23 @@
+[package]
+name = "workflow-types"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Workflow domain types for MAPLE — commitment programs as receipt-gated graphs"
+
+[dependencies]
+collective-types = { workspace = true }
+rcf-types = { workspace = true }
+rcf-commitment = { workspace = true }
+resonator-types = { workspace = true }
+
+serde = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }

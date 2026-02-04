@@ -38,19 +38,17 @@ impl Server {
                 url,
                 max_connections,
                 connect_timeout_secs,
-            } => {
-                match PostgresStorage::new(url, *max_connections, *connect_timeout_secs).await {
-                    Ok(pg) => Arc::new(pg),
-                    Err(err) if Self::should_fallback_to_memory(&config.platform) => {
-                        tracing::warn!(
+            } => match PostgresStorage::new(url, *max_connections, *connect_timeout_secs).await {
+                Ok(pg) => Arc::new(pg),
+                Err(err) if Self::should_fallback_to_memory(&config.platform) => {
+                    tracing::warn!(
                             "PostgreSQL initialization failed in Development profile: {}. Falling back to in-memory storage (non-persistent).",
                             err
                         );
-                        Arc::new(InMemoryStorage::new())
-                    }
-                    Err(err) => return Err(DaemonError::Storage(err)),
+                    Arc::new(InMemoryStorage::new())
                 }
-            }
+                Err(err) => return Err(DaemonError::Storage(err)),
+            },
         };
 
         // Create event + activity channels

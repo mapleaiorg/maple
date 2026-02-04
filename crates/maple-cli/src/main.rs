@@ -255,14 +255,16 @@ async fn handle_doctor(args: DoctorArgs) -> Result<(), Box<dyn std::error::Error
         }
     }
 
-    let storage_type = std::env::var("PALM_STORAGE_TYPE").unwrap_or_else(|_| "postgres".to_string());
+    let storage_type =
+        std::env::var("PALM_STORAGE_TYPE").unwrap_or_else(|_| "postgres".to_string());
     match storage_type.as_str() {
         "memory" => {
             print_warn("Storage mode is memory (non-persistent)");
         }
         "postgres" => {
-            let pg_url = std::env::var("PALM_STORAGE_URL")
-                .unwrap_or_else(|_| "postgres://postgres:postgres@localhost:5432/maple".to_string());
+            let pg_url = std::env::var("PALM_STORAGE_URL").unwrap_or_else(|_| {
+                "postgres://postgres:postgres@localhost:5432/maple".to_string()
+            });
             match check_postgres_reachable(&pg_url).await {
                 Ok((host, port)) => {
                     print_ok(&format!("PostgreSQL reachable at {}:{}", host, port));
@@ -281,42 +283,47 @@ async fn handle_doctor(args: DoctorArgs) -> Result<(), Box<dyn std::error::Error
         }
     }
 
-    let (ollama_models, ollama_error) = match fetch_ollama_models(&client, &args.ollama_endpoint).await
-    {
-        Ok(models) => {
-            print_ok(&format!(
-                "Ollama reachable with {} local model(s)",
-                models.len()
-            ));
-            (models, None)
-        }
-        Err(err) => {
-            failed += 1;
-            print_fail(&format!("Ollama check failed: {}", err));
-            (Vec::new(), Some(err))
-        }
-    };
+    let (ollama_models, ollama_error) =
+        match fetch_ollama_models(&client, &args.ollama_endpoint).await {
+            Ok(models) => {
+                print_ok(&format!(
+                    "Ollama reachable with {} local model(s)",
+                    models.len()
+                ));
+                (models, None)
+            }
+            Err(err) => {
+                failed += 1;
+                print_fail(&format!("Ollama check failed: {}", err));
+                (Vec::new(), Some(err))
+            }
+        };
 
     if ollama_error.is_none() {
         let expected_model = match args.model {
             Some(model) => Some(model),
-            None => match fetch_playground_backend(&client, &args.endpoint).await {
-                Ok(Some((kind, model))) => {
-                    print_ok(&format!(
-                        "Playground backend configured: kind={}, model={}",
-                        kind, model
-                    ));
-                    Some(model)
+            None => {
+                match fetch_playground_backend(&client, &args.endpoint).await {
+                    Ok(Some((kind, model))) => {
+                        print_ok(&format!(
+                            "Playground backend configured: kind={}, model={}",
+                            kind, model
+                        ));
+                        Some(model)
+                    }
+                    Ok(None) => {
+                        print_warn("Playground backend not available (daemon unreachable or endpoint missing)");
+                        None
+                    }
+                    Err(err) => {
+                        print_warn(&format!(
+                            "Could not read playground backend config: {}",
+                            err
+                        ));
+                        None
+                    }
                 }
-                Ok(None) => {
-                    print_warn("Playground backend not available (daemon unreachable or endpoint missing)");
-                    None
-                }
-                Err(err) => {
-                    print_warn(&format!("Could not read playground backend config: {}", err));
-                    None
-                }
-            },
+            }
         };
 
         let expected_model = expected_model.unwrap_or_else(|| "llama3".to_string());
@@ -466,8 +473,12 @@ async fn daemon_start(
     foreground: bool,
     daemon_bin: Option<String>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let endpoint = std::env::var("PALM_ENDPOINT").unwrap_or_else(|_| "http://localhost:8080".to_string());
-    if check_daemon_health(&build_http_client()?, &endpoint).await.is_ok() {
+    let endpoint =
+        std::env::var("PALM_ENDPOINT").unwrap_or_else(|_| "http://localhost:8080".to_string());
+    if check_daemon_health(&build_http_client()?, &endpoint)
+        .await
+        .is_ok()
+    {
         print_warn("PALM daemon already appears to be running");
         return Ok(());
     }
@@ -500,7 +511,10 @@ async fn daemon_start(
     }
 
     if foreground {
-        print_ok(&format!("Starting daemon in foreground with {}", command_label));
+        print_ok(&format!(
+            "Starting daemon in foreground with {}",
+            command_label
+        ));
         let status = cmd.status()?;
         if status.success() {
             return Ok(());
@@ -603,10 +617,7 @@ async fn daemon_status(endpoint: &str) -> Result<(), Box<dyn std::error::Error>>
 }
 
 async fn request_api_shutdown(client: &Client, endpoint: &str) -> bool {
-    let url = format!(
-        "{}/api/v1/system/shutdown",
-        endpoint.trim_end_matches('/')
-    );
+    let url = format!("{}/api/v1/system/shutdown", endpoint.trim_end_matches('/'));
     match client.post(url).json(&serde_json::json!({})).send().await {
         Ok(resp) => resp.status().is_success(),
         Err(_) => false,

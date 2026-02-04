@@ -3,7 +3,7 @@
 //! The membership graph tracks all members, their roles, statuses,
 //! and budgets. It is the source of truth for "who's in".
 
-use crate::{CollectiveId, CollectiveError, CollectiveResult, RoleId};
+use crate::{CollectiveError, CollectiveId, CollectiveResult, RoleId};
 use chrono::{DateTime, Utc};
 use resonator_types::ResonatorId;
 use serde::{Deserialize, Serialize};

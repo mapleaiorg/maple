@@ -171,11 +171,7 @@ pub struct RoleBinding {
 }
 
 impl RoleBinding {
-    pub fn new(
-        resonator_id: ResonatorId,
-        role_id: RoleId,
-        granted_by: ResonatorId,
-    ) -> Self {
+    pub fn new(resonator_id: ResonatorId, role_id: RoleId, granted_by: ResonatorId) -> Self {
         Self {
             resonator_id,
             role_id,
@@ -300,17 +296,12 @@ mod tests {
     fn test_role_registry() {
         let mut registry = RoleRegistry::new();
 
-        let role = Role::new("Admin", "System administrator")
-            .with_id(RoleId::new("admin"));
+        let role = Role::new("Admin", "System administrator").with_id(RoleId::new("admin"));
         registry.register_role(role);
 
         let resonator = ResonatorId::new("res-1");
         let granter = ResonatorId::new("founder");
-        let binding = RoleBinding::new(
-            resonator.clone(),
-            RoleId::new("admin"),
-            granter,
-        );
+        let binding = RoleBinding::new(resonator.clone(), RoleId::new("admin"), granter);
         registry.bind(binding);
 
         assert!(registry.has_role(&resonator, &RoleId::new("admin")));

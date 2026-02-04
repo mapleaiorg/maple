@@ -43,6 +43,12 @@ members = [
 
     # Collective Layer (MAPLE v2)
     "crates/collective-types",
+    "crates/collective-runtime",
+
+    # Workflow Engine (MAPLE v2)
+    "crates/workflow-types",
+    "crates/workflow-engine",
+    "crates/workflow-dsl",
     "crates/resonator-identity",
     "crates/resonator-meaning",
     "crates/resonator-intent",
@@ -174,6 +180,10 @@ resonator-client = { path = "crates/resonator-client" }
 maple-runtime = { path = "crates/maple-runtime" }
 maple-integration = { path = "crates/maple-integration" }
 collective-types = { path = "crates/collective-types" }
+collective-runtime = { path = "crates/collective-runtime" }
+workflow-types = { path = "crates/workflow-types" }
+workflow-engine = { path = "crates/workflow-engine" }
+workflow-dsl = { path = "crates/workflow-dsl" }
 
 # PALM crates
 palm-types = { path = "crates/palm-types" }

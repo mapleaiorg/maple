@@ -1,0 +1,153 @@
+syntax = "proto3";
+
+package ibank.v1;
+
+service IBankService {
+  rpc Health(HealthRequest) returns (HealthReply);
+  rpc Handle(HandleRequest) returns (HandleResponse);
+  rpc ListPending(ListPendingRequest) returns (ListPendingResponse);
+  rpc ApprovePending(ApprovePendingRequest) returns (HandleResponse);
+  rpc RejectPending(RejectPendingRequest) returns (RejectPendingResponse);
+}
+
+message HealthRequest {}
+
+message HealthReply {
+  string status = 1;
+  string service = 2;
+}
+
+message HumanApproval {
+  bool approved = 1;
+  string approver_id = 2;
+  optional string note = 3;
+  int64 approved_at_unix_ms = 4;
+}
+
+message HandleRequest {
+  optional string trace_id = 1;
+  string origin_actor = 2;
+  string counterparty_actor = 3;
+  string transaction_type = 4;
+  uint64 amount_minor = 5;
+  string currency = 6;
+  string rail = 7;
+  string destination = 8;
+  string jurisdiction = 9;
+  string user_intent = 10;
+  optional float ambiguity_hint = 11;
+  uint32 counterparty_risk = 12;
+  uint32 anomaly_score = 13;
+  float model_uncertainty = 14;
+  repeated string compliance_flags = 15;
+  map<string, string> metadata = 16;
+  HumanApproval approval = 17;
+}
+
+message MeaningField {
+  string summary = 1;
+  string inferred_action = 2;
+  repeated string ambiguity_notes = 3;
+  float ambiguity_score = 4;
+  float confidence = 5;
+  int64 formed_at_unix_ms = 6;
+}
+
+message ConfidenceProfile {
+  float meaning_confidence = 1;
+  float model_confidence = 2;
+  float overall_confidence = 3;
+  bool blocking_ambiguity = 4;
+  repeated string notes = 5;
+}
+
+message IntentRecord {
+  string objective = 1;
+  string rationale = 2;
+  ConfidenceProfile confidence = 3;
+  int64 stabilized_at_unix_ms = 4;
+}
+
+message RiskBreakdown {
+  uint32 amount = 1;
+  uint32 counterparty = 2;
+  uint32 jurisdiction = 3;
+  uint32 anomaly = 4;
+  uint32 model_uncertainty = 5;
+}
+
+message RiskReport {
+  uint32 score = 1;
+  repeated string reasons = 2;
+  RiskBreakdown factors = 3;
+  uint32 fraud_score = 4;
+  bool blocking_ambiguity = 5;
+  bool requires_hybrid = 6;
+  bool denied = 7;
+}
+
+message RouteResult {
+  string connector = 1;
+  string external_reference = 2;
+  int64 settled_at_unix_ms = 3;
+}
+
+enum HandleStatus {
+  HANDLE_STATUS_UNSPECIFIED = 0;
+  HANDLE_STATUS_EXECUTED_AUTONOMOUS = 1;
+  HANDLE_STATUS_EXECUTED_HYBRID = 2;
+  HANDLE_STATUS_PENDING_HUMAN_APPROVAL = 3;
+  HANDLE_STATUS_DENIED = 4;
+  HANDLE_STATUS_FAILED = 5;
+}
+
+enum ExecutionMode {
+  EXECUTION_MODE_UNSPECIFIED = 0;
+  EXECUTION_MODE_PURE_AI = 1;
+  EXECUTION_MODE_HYBRID = 2;
+}
+
+message HandleResponse {
+  string trace_id = 1;
+  optional string commitment_id = 2;
+  HandleStatus status = 3;
+  optional ExecutionMode mode = 4;
+  string decision_reason = 5;
+  MeaningField meaning = 6;
+  IntentRecord intent = 7;
+  RiskReport risk_report = 8;
+  RouteResult route = 9;
+}
+
+message PendingApproval {
+  string trace_id = 1;
+  optional string commitment_id = 2;
+  string decision_reason = 3;
+  RiskReport risk_report = 4;
+  HandleRequest request = 5;
+  int64 queued_at_unix_ms = 6;
+  int64 updated_at_unix_ms = 7;
+}
+
+message ListPendingRequest {}
+
+message ListPendingResponse {
+  repeated PendingApproval items = 1;
+}
+
+message ApprovePendingRequest {
+  string trace_id = 1;
+  string approver_id = 2;
+  optional string note = 3;
+}
+
+message RejectPendingRequest {
+  string trace_id = 1;
+  string approver_id = 2;
+  optional string note = 3;
+}
+
+message RejectPendingResponse {
+  string trace_id = 1;
+  string status = 2;
+}

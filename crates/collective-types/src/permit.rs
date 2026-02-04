@@ -128,7 +128,9 @@ impl Permit {
 
     /// Check remaining uses (None = unlimited)
     pub fn remaining_uses(&self) -> Option<u64> {
-        self.limits.max_uses.map(|max| max.saturating_sub(self.use_count))
+        self.limits
+            .max_uses
+            .map(|max| max.saturating_sub(self.use_count))
     }
 }
 
@@ -170,14 +172,12 @@ impl PermitScope {
 
     /// Check if this scope covers a specific target
     pub fn covers_target(&self, target: &str) -> bool {
-        self.targets.is_empty()
-            || self.targets.iter().any(|t| t == "*" || t == target)
+        self.targets.is_empty() || self.targets.iter().any(|t| t == "*" || t == target)
     }
 
     /// Check if this scope covers a specific operation
     pub fn covers_operation(&self, operation: &str) -> bool {
-        self.operations.is_empty()
-            || self.operations.iter().any(|o| o == "*" || o == operation)
+        self.operations.is_empty() || self.operations.iter().any(|o| o == "*" || o == operation)
     }
 }
 

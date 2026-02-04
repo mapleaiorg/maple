@@ -1,0 +1,18 @@
+[package]
+name = "ibank-adapters"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Pluggable iBank connector adapters"
+
+[dependencies]
+async-trait = { workspace = true }
+chrono = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+ibank-core = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }

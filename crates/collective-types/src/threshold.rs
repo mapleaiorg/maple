@@ -204,10 +204,7 @@ pub struct ThresholdCommitment {
 
 impl ThresholdCommitment {
     /// Create a new threshold commitment
-    pub fn new(
-        action_description: impl Into<String>,
-        threshold: ThresholdPolicy,
-    ) -> Self {
+    pub fn new(action_description: impl Into<String>, threshold: ThresholdPolicy) -> Self {
         Self {
             id: ThresholdCommitmentId::generate(),
             action_description: action_description.into(),
@@ -251,11 +248,9 @@ impl ThresholdCommitment {
 
             ThresholdPolicy::MofN { m, .. } => self.signatures.len() >= *m as usize,
 
-            ThresholdPolicy::RoleBased { required_roles } => {
-                required_roles.iter().all(|role| {
-                    self.signatures.iter().any(|sig| sig.has_role(role))
-                })
-            }
+            ThresholdPolicy::RoleBased { required_roles } => required_roles
+                .iter()
+                .all(|role| self.signatures.iter().any(|sig| sig.has_role(role))),
 
             ThresholdPolicy::RiskTiered { tiers } => {
                 let action_value = self.value.unwrap_or(0);
@@ -321,8 +316,7 @@ mod tests {
 
     #[test]
     fn test_single_signer() {
-        let mut commitment =
-            ThresholdCommitment::new("Test action", ThresholdPolicy::SingleSigner);
+        let mut commitment = ThresholdCommitment::new("Test action", ThresholdPolicy::SingleSigner);
 
         assert!(!commitment.is_satisfied());
 
@@ -332,8 +326,7 @@ mod tests {
 
     #[test]
     fn test_m_of_n() {
-        let mut commitment =
-            ThresholdCommitment::new("Test action", ThresholdPolicy::m_of_n(2, 3));
+        let mut commitment = ThresholdCommitment::new("Test action", ThresholdPolicy::m_of_n(2, 3));
 
         assert!(!commitment.is_satisfied());
 
@@ -348,23 +341,18 @@ mod tests {
     fn test_role_based() {
         let mut commitment = ThresholdCommitment::new(
             "Test action",
-            ThresholdPolicy::role_based(vec![
-                RoleId::new("admin"),
-                RoleId::new("auditor"),
-            ]),
+            ThresholdPolicy::role_based(vec![RoleId::new("admin"), RoleId::new("auditor")]),
         );
 
         // Only admin signed
         commitment.add_signature(
-            CommitmentSignature::new(ResonatorId::new("res-1"))
-                .with_role(RoleId::new("admin")),
+            CommitmentSignature::new(ResonatorId::new("res-1")).with_role(RoleId::new("admin")),
         );
         assert!(!commitment.is_satisfied());
 
         // Now auditor signed too
         commitment.add_signature(
-            CommitmentSignature::new(ResonatorId::new("res-2"))
-                .with_role(RoleId::new("auditor")),
+            CommitmentSignature::new(ResonatorId::new("res-2")).with_role(RoleId::new("auditor")),
         );
         assert!(commitment.is_satisfied());
     }
@@ -378,28 +366,26 @@ mod tests {
             },
         );
 
-        commitment.add_signature(
-            CommitmentSignature::new(ResonatorId::new("res-1")).with_weight(40),
-        );
+        commitment
+            .add_signature(CommitmentSignature::new(ResonatorId::new("res-1")).with_weight(40));
         assert!(!commitment.is_satisfied());
         assert_eq!(commitment.total_weight(), 40);
 
-        commitment.add_signature(
-            CommitmentSignature::new(ResonatorId::new("res-2")).with_weight(60),
-        );
+        commitment
+            .add_signature(CommitmentSignature::new(ResonatorId::new("res-2")).with_weight(60));
         assert!(commitment.is_satisfied());
         assert_eq!(commitment.total_weight(), 100);
     }
 
     #[test]
     fn test_majority() {
-        let mut commitment =
-            ThresholdCommitment::new("Test action", ThresholdPolicy::majority(5));
+        let mut commitment = ThresholdCommitment::new("Test action", ThresholdPolicy::majority(5));
 
         for i in 0..2 {
-            commitment.add_signature(CommitmentSignature::new(ResonatorId::new(
-                format!("res-{}", i),
-            )));
+            commitment.add_signature(CommitmentSignature::new(ResonatorId::new(format!(
+                "res-{}",
+                i
+            ))));
         }
         assert!(!commitment.is_satisfied()); // 2 of 5, need 3
 
@@ -409,8 +395,7 @@ mod tests {
 
     #[test]
     fn test_duplicate_signer_ignored() {
-        let mut commitment =
-            ThresholdCommitment::new("Test action", ThresholdPolicy::m_of_n(2, 3));
+        let mut commitment = ThresholdCommitment::new("Test action", ThresholdPolicy::m_of_n(2, 3));
 
         commitment.add_signature(CommitmentSignature::new(ResonatorId::new("res-1")));
         commitment.add_signature(CommitmentSignature::new(ResonatorId::new("res-1")));
@@ -445,9 +430,6 @@ mod tests {
     fn test_threshold_commitment_id() {
         let id = ThresholdCommitmentId::generate();
         assert!(!id.0.is_empty());
-        assert_eq!(
-            format!("{}", ThresholdCommitmentId::new("tc-1")),
-            "tc-1"
-        );
+        assert_eq!(format!("{}", ThresholdCommitmentId::new("tc-1")), "tc-1");
     }
 }

@@ -269,7 +269,9 @@ impl AuditJournal {
 
     /// Get a dispute by ID
     pub fn get_dispute_mut(&mut self, dispute_id: &str) -> Option<&mut DisputeRecord> {
-        self.disputes.iter_mut().find(|d| d.dispute_id == dispute_id)
+        self.disputes
+            .iter_mut()
+            .find(|d| d.dispute_id == dispute_id)
     }
 }
 
@@ -368,11 +370,8 @@ mod tests {
 
     #[test]
     fn test_dispute_escalate_dismiss() {
-        let mut dispute = DisputeRecord::new(
-            ResonatorId::new("a"),
-            ResonatorId::new("b"),
-            "Test dispute",
-        );
+        let mut dispute =
+            DisputeRecord::new(ResonatorId::new("a"), ResonatorId::new("b"), "Test dispute");
 
         dispute.escalate();
         assert_eq!(dispute.status, DisputeStatus::Escalated);
