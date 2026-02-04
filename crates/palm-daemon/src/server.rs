@@ -8,10 +8,10 @@ use crate::playground::PlaygroundService;
 use crate::scheduler::Scheduler;
 use crate::storage::{InMemoryStorage, PostgresStorage, Storage};
 use palm_shared_state::Activity;
-use palm_types::PalmEventEnvelope;
+use palm_types::{PalmEventEnvelope, PlatformProfile};
 use std::sync::Arc;
 use tokio::net::TcpListener;
-use tokio::sync::{broadcast, mpsc};
+use tokio::sync::{broadcast, mpsc, watch};
 
 /// PALM Daemon Server
 pub struct Server {
@@ -25,6 +25,10 @@ pub struct Server {
 }
 
 impl Server {
+    fn should_fallback_to_memory(platform: &PlatformProfile) -> bool {
+        matches!(platform, PlatformProfile::Development)
+    }
+
     /// Create a new server with the given configuration
     pub async fn new(config: DaemonConfig) -> DaemonResult<Self> {
         // Create storage
@@ -35,10 +39,17 @@ impl Server {
                 max_connections,
                 connect_timeout_secs,
             } => {
-                let pg = PostgresStorage::new(url, *max_connections, *connect_timeout_secs)
-                    .await
-                    .map_err(DaemonError::Storage)?;
-                Arc::new(pg)
+                match PostgresStorage::new(url, *max_connections, *connect_timeout_secs).await {
+                    Ok(pg) => Arc::new(pg),
+                    Err(err) if Self::should_fallback_to_memory(&config.platform) => {
+                        tracing::warn!(
+                            "PostgreSQL initialization failed in Development profile: {}. Falling back to in-memory storage (non-persistent).",
+                            err
+                        );
+                        Arc::new(InMemoryStorage::new())
+                    }
+                    Err(err) => return Err(DaemonError::Storage(err)),
+                }
             }
         };
 
@@ -72,6 +83,7 @@ impl Server {
     /// Run the server
     pub async fn run(self) -> DaemonResult<()> {
         let addr = self.config.server.listen_addr;
+        let (shutdown_tx, mut shutdown_rx) = watch::channel(false);
 
         // Create app state
         let state = AppState::new(
@@ -80,6 +92,7 @@ impl Server {
             self.event_tx.clone(),
             self.activity_tx.clone(),
             self.playground.clone(),
+            shutdown_tx,
         );
 
         // Create router
@@ -106,7 +119,16 @@ impl Server {
 
         // Run server with graceful shutdown
         axum::serve(listener, app)
-            .with_graceful_shutdown(shutdown_signal())
+            .with_graceful_shutdown(async move {
+                tokio::select! {
+                    _ = shutdown_signal() => {},
+                    changed = shutdown_rx.changed() => {
+                        if changed.is_ok() && *shutdown_rx.borrow() {
+                            tracing::info!("Received API shutdown request");
+                        }
+                    }
+                }
+            })
             .await
             .map_err(|e| crate::error::DaemonError::Server(e.to_string()))?;
 
@@ -116,6 +138,25 @@ impl Server {
         self.scheduler.stop().await;
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_storage_fallback_only_for_development() {
+        assert!(Server::should_fallback_to_memory(
+            &PlatformProfile::Development
+        ));
+        assert!(!Server::should_fallback_to_memory(
+            &PlatformProfile::Mapleverse
+        ));
+        assert!(!Server::should_fallback_to_memory(
+            &PlatformProfile::Finalverse
+        ));
+        assert!(!Server::should_fallback_to_memory(&PlatformProfile::IBank));
     }
 }
 

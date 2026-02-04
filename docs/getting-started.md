@@ -104,12 +104,49 @@ MAPLE can run headless, but if you want a control plane with persistence, monito
 # Start the PALM daemon (API + control plane)
 cargo run -p palm-daemon
 
+# Or via maple lifecycle command
+maple daemon start --platform mapleverse
+
 # Check connectivity
 cargo run -p maple-cli -- status
 
 # Real-time monitoring
 cargo run -p maple-cli -- events watch
 cargo run -p maple-cli -- playground activities --limit 50
+```
+
+Run local diagnostics:
+
+```bash
+maple doctor
+```
+
+By default the daemon uses PostgreSQL at `postgres://postgres:postgres@localhost:5432/maple`. In `development` profile, if PostgreSQL is unavailable, it falls back to in-memory storage so local onboarding still works.
+
+You can also force in-memory mode:
+
+```bash
+PALM_STORAGE_TYPE=memory cargo run -p palm-daemon
+```
+
+For first-time local PostgreSQL setup (Docker):
+
+```bash
+docker run --name maple-postgres \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=maple \
+  -p 5432:5432 \
+  -v maple_pgdata:/var/lib/postgresql/data \
+  -d postgres:16
+```
+
+Then run PALM with explicit PostgreSQL settings:
+
+```bash
+PALM_STORAGE_TYPE=postgres \
+PALM_STORAGE_URL=postgres://postgres:postgres@localhost:5432/maple \
+cargo run -p palm-daemon -- --platform mapleverse
 ```
 
 The Playground UI is optional and available at:

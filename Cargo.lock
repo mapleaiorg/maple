@@ -1741,6 +1741,7 @@ dependencies = [
  "maple-integration",
  "palm",
  "rcf-validator",
+ "reqwest",
  "serde",
  "serde_json",
  "tokio",

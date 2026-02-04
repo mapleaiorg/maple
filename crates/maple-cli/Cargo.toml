@@ -15,6 +15,7 @@ clap = { version = "4.4", features = ["derive"] }
 palm = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
+reqwest = { workspace = true }
 ual-parser = { workspace = true }
 ual-compiler = { workspace = true }
 ual-types = { workspace = true }

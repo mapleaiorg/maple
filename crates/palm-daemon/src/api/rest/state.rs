@@ -6,7 +6,7 @@ use crate::storage::Storage;
 use palm_shared_state::Activity;
 use palm_types::PalmEventEnvelope;
 use std::sync::Arc;
-use tokio::sync::broadcast;
+use tokio::sync::{broadcast, watch};
 
 /// Shared application state
 #[derive(Clone)]
@@ -31,6 +31,9 @@ pub struct AppState {
 
     /// Daemon start time
     pub started_at: chrono::DateTime<chrono::Utc>,
+
+    /// Graceful shutdown signal sender
+    pub shutdown_tx: watch::Sender<bool>,
 }
 
 impl AppState {
@@ -41,6 +44,7 @@ impl AppState {
         event_tx: broadcast::Sender<PalmEventEnvelope>,
         activity_tx: broadcast::Sender<Activity>,
         playground: Arc<PlaygroundService>,
+        shutdown_tx: watch::Sender<bool>,
     ) -> Self {
         Self {
             storage,
@@ -50,6 +54,7 @@ impl AppState {
             playground,
             version: env!("CARGO_PKG_VERSION").to_string(),
             started_at: chrono::Utc::now(),
+            shutdown_tx,
         }
     }
 

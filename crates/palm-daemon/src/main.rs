@@ -106,7 +106,7 @@ async fn main() -> DaemonResult<()> {
  |  __/ ___ \| |___| |  | |
  |_| /_/   \_\_____|_|  |_|
 
-  Platform Agent Lifecycle Manager
+  MapleAI - Platform Agent Lifecycle Manager
   Version: {}
   Platform: {:?}
   Listening: {}

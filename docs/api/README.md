@@ -103,6 +103,12 @@ All endpoints are under `/api/v1`.
 | `GET` | `/playground/activities` | Activity list (supports `limit` and `after_sequence`) |
 | `GET` | `/playground/activities/stream` | Activity stream (SSE) |
 
+### System Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/system/shutdown` | Request graceful PALM daemon shutdown |
+
 Supported backend kinds: `local_llama`, `open_ai`, `anthropic`, `grok`, `gemini`.
 
 `simulation` config now also supports:

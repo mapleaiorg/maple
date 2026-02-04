@@ -176,6 +176,12 @@ async fn infer_ollama(
     if !response.status().is_success() {
         let status = response.status();
         let body = response.text().await.unwrap_or_default();
+        if status == reqwest::StatusCode::NOT_FOUND && body.contains("model") {
+            return Err(format!(
+                "ollama model '{}' not found. Run `ollama pull {}` (or switch backend model), then retry.",
+                backend.model, backend.model
+            ));
+        }
         return Err(format!("ollama error {}: {}", status, truncate(&body, 320)));
     }
 

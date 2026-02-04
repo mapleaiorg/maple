@@ -30,6 +30,9 @@ cargo install --path crates/maple-cli --bin maple && cargo install --path crates
 ```bash
 # Start PALM daemon (API + control plane)
 cargo run -p palm-daemon
+
+# Or use maple lifecycle commands
+maple daemon start --platform mapleverse
 ```
 
 Defaults:
@@ -38,7 +41,83 @@ Defaults:
 - API: `http://127.0.0.1:8080`
 - Playground UI: `http://127.0.0.1:8080/playground`
 
+Development behavior: if PostgreSQL is not reachable, the daemon now falls back to in-memory storage so you can still boot and explore. For durable state, run PostgreSQL and keep the default storage config.
+
+Force in-memory mode explicitly:
+
+```bash
+PALM_STORAGE_TYPE=memory cargo run -p palm-daemon
+```
+
 You can override settings with a config file via `PALM_CONFIG` or `--config`. Environment overrides use the `PALM_` prefix.
+
+Daemon lifecycle commands:
+
+```bash
+# Show health + managed PID state
+maple daemon status
+
+# Graceful stop via API (fallback to PID terminate)
+maple daemon stop
+
+# Alias
+maple daemon shutdown
+```
+
+### First-Time Local Setup (PostgreSQL + Ollama)
+
+If this is your first local run, do these once.
+
+1. Start PostgreSQL (recommended: Docker)
+
+```bash
+docker run --name maple-postgres \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=maple \
+  -p 5432:5432 \
+  -v maple_pgdata:/var/lib/postgresql/data \
+  -d postgres:16
+```
+
+2. Verify PostgreSQL is ready
+
+```bash
+docker exec maple-postgres pg_isready -U postgres -d maple
+```
+
+3. Start PALM daemon with explicit PostgreSQL settings
+
+```bash
+PALM_STORAGE_TYPE=postgres \
+PALM_STORAGE_URL=postgres://postgres:postgres@localhost:5432/maple \
+cargo run -p palm-daemon -- --platform mapleverse
+```
+
+4. Start Ollama and pull a model used by Playground inference
+
+```bash
+ollama serve
+ollama pull llama3
+```
+
+5. If you use a different local model, set backend model explicitly
+
+```bash
+cargo run -p maple-cli -- playground set-backend \
+  --kind local_llama \
+  --model llama3 \
+  --endpoint http://127.0.0.1:11434
+```
+
+### Run Doctor Checks
+
+Use the built-in doctor to validate daemon, storage, and Ollama/model readiness:
+
+```bash
+maple doctor
+maple doctor --model llama3.2
+```
 
 ## 3. Real-Time Monitoring from the CLI
 

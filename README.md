@@ -71,6 +71,10 @@ Examples:
 # Start the PALM daemon (API + control plane)
 cargo run -p palm-daemon
 
+# Or manage it with maple lifecycle commands
+maple daemon start --platform mapleverse
+maple daemon status
+
 # Install the CLI binaries (no cargo run required)
 cargo install --path crates/maple-cli --bin maple && cargo install --path crates/palm --bin palm
 
@@ -83,6 +87,25 @@ cargo run -p palm -- events watch
 
 # Open the web dashboard (optional)
 open http://localhost:8080/playground
+
+# Run local readiness checks (daemon + storage + Ollama/model)
+maple doctor
+```
+
+The PALM daemon defaults to PostgreSQL (`postgres://postgres:postgres@localhost:5432/maple`). In `development` profile, it falls back to in-memory storage if PostgreSQL is unreachable so local startup does not block.
+
+You can force in-memory mode with `PALM_STORAGE_TYPE=memory`.
+
+First-time local PostgreSQL setup (Docker):
+
+```bash
+docker run --name maple-postgres \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=maple \
+  -p 5432:5432 \
+  -v maple_pgdata:/var/lib/postgresql/data \
+  -d postgres:16
 ```
 
 ---

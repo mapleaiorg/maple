@@ -12,7 +12,7 @@ This document outlines the development roadmap for MAPLE (Multi-Agent Platform f
 
 ---
 
-## Phase 1: Foundation (Q1-Q2 2024) ✅ CURRENT
+## Phase 1: Foundation (Q1-Q2 2026) ✅ CURRENT
 
 **Status**: In Progress
 
@@ -45,7 +45,7 @@ Establish the core Resonance Runtime with fundamental architectural innovations.
 
 ---
 
-## Phase 2: Cognitive Pipeline (Q3-Q4 2024)
+## Phase 2: Cognitive Pipeline (Q3-Q4 2026)
 
 **Status**: Planned
 
@@ -99,7 +99,7 @@ Complete the full cognitive pipeline from presence to consequence.
 
 ---
 
-## Phase 3: Distribution (Q1-Q2 2025)
+## Phase 3: Distribution (Q1-Q2 2027)
 
 **Status**: Planned
 
@@ -149,7 +149,7 @@ Enable distributed deployment across multiple nodes for massive scale.
 
 ---
 
-## Phase 4: Platforms (Q3-Q4 2025)
+## Phase 4: Platforms (Q3-Q4 2027)
 
 **Status**: Planned
 
@@ -317,19 +317,19 @@ Build a thriving ecosystem around MAPLE.
 
 ## Release Schedule
 
-### 2024
+### 2026
 - **Q1**: v0.1.0 - Foundation (current)
 - **Q2**: v0.2.0 - Cognitive Pipeline
 - **Q3**: v0.3.0 - Cognitive Pipeline Complete
 - **Q4**: v0.4.0 - Distribution Preview
 
-### 2025
+### 2027
 - **Q1**: v0.5.0 - Distributed Runtime
 - **Q2**: v0.6.0 - Persistence Layer
 - **Q3**: v1.0.0 - Platform Alphas
 - **Q4**: v1.1.0 - Platform Betas
 
-### 2026
+### 2027
 - **Q1**: v1.2.0 - Ecosystem Features
 - **Q2**: v2.0.0 - Production Ready
 - **Q3+**: Continuous enhancement
@@ -364,6 +364,6 @@ Priority areas for contributions:
 
 ---
 
-**Last Updated**: January 2024
+**Last Updated**: January 2026
 
 **Built with 🍁 by the MAPLE Team**
