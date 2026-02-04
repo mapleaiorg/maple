@@ -1,0 +1,18 @@
+[package]
+name = "collective-types"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Collective Resonator domain types - multi-agent organization primitives"
+
+[dependencies]
+rcf-types.workspace = true
+rcf-commitment.workspace = true
+resonator-types.workspace = true
+serde.workspace = true
+chrono.workspace = true
+uuid.workspace = true
+thiserror.workspace = true

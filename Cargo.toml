@@ -40,6 +40,9 @@ members = [
 
     # Phase 3: Cognition Layer
     "crates/resonator-types",
+
+    # Collective Layer (MAPLE v2)
+    "crates/collective-types",
     "crates/resonator-identity",
     "crates/resonator-meaning",
     "crates/resonator-intent",
@@ -170,6 +173,7 @@ resonator-runtime = { path = "crates/resonator-runtime" }
 resonator-client = { path = "crates/resonator-client" }
 maple-runtime = { path = "crates/maple-runtime" }
 maple-integration = { path = "crates/maple-integration" }
+collective-types = { path = "crates/collective-types" }
 
 # PALM crates
 palm-types = { path = "crates/palm-types" }

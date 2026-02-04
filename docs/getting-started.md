@@ -115,6 +115,17 @@ cargo run -p maple-cli -- events watch
 cargo run -p maple-cli -- playground activities --limit 50
 ```
 
+```bash
+# 1) doctor
+cargo run -p maple-cli -- doctor
+
+# 2) start daemon via CLI
+cargo run -p maple-cli -- daemon start --platform ibank --storage memory
+
+# 3) stop daemon without Ctrl+C
+cargo run -p maple-cli -- daemon stop
+```
+
 Run local diagnostics:
 
 ```bash
