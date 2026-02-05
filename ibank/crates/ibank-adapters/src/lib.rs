@@ -12,6 +12,10 @@ use ibank_core::aggregation::{
 use ibank_core::connectors::SettlementConnector;
 use ibank_core::error::IBankError;
 use ibank_core::types::{AccountableWireMessage, ConnectorReceipt};
+use ibank_core::{
+    ChainAdapter, ChainBridgeLeg, ChainLegSettlement, CompensationActionResult, RailAdapter,
+    RailBridgeLeg, RailLegSettlement,
+};
 use std::collections::BTreeMap;
 
 /// Mock ACH connector for deterministic local settlement simulation.
@@ -61,6 +65,104 @@ impl SettlementConnector for MockChainConnector {
             rail: self.rail().to_string(),
             settled_at: Utc::now(),
             metadata,
+        })
+    }
+}
+
+/// Mock chain bridge adapter for commitment-authorized on-chain legs.
+#[derive(Debug, Clone, Default)]
+pub struct MockEvmBridgeAdapter;
+
+#[async_trait]
+impl ChainAdapter for MockEvmBridgeAdapter {
+    fn adapter_id(&self) -> &'static str {
+        "evm-mock"
+    }
+
+    fn networks(&self) -> Vec<String> {
+        vec!["ethereum".to_string(), "base-sepolia".to_string()]
+    }
+
+    async fn execute_transfer(
+        &self,
+        leg: &ChainBridgeLeg,
+        wire: &AccountableWireMessage,
+    ) -> Result<ChainLegSettlement, IBankError> {
+        if wire.commitment_ref.is_none() {
+            return Err(IBankError::InvariantViolation(
+                "bridge chain leg requires commitment reference".to_string(),
+            ));
+        }
+
+        let digest_input = format!(
+            "{}:{}:{}:{}:{}",
+            leg.leg_id, leg.network, leg.asset, wire.trace_id, wire.message_id
+        );
+        let digest = blake3::hash(digest_input.as_bytes()).to_hex().to_string();
+        Ok(ChainLegSettlement {
+            tx_hash: format!("0x{}", &digest[..32]),
+            settled_at: Utc::now(),
+        })
+    }
+
+    async fn compensate_transfer(
+        &self,
+        leg: &ChainBridgeLeg,
+        settlement: &ChainLegSettlement,
+        reason: &str,
+    ) -> Result<CompensationActionResult, IBankError> {
+        Ok(CompensationActionResult {
+            action_reference: format!("revert:{}:{}", leg.leg_id, settlement.tx_hash),
+            detail: format!("queued on-chain compensation: {reason}"),
+        })
+    }
+}
+
+/// Mock rail bridge adapter for commitment-authorized off-chain legs.
+#[derive(Debug, Clone, Default)]
+pub struct MockRailBridgeAdapter;
+
+#[async_trait]
+impl RailAdapter for MockRailBridgeAdapter {
+    fn adapter_id(&self) -> &'static str {
+        "rail-mock"
+    }
+
+    fn rails(&self) -> Vec<String> {
+        vec!["ach".to_string(), "pix".to_string(), "card".to_string()]
+    }
+
+    async fn execute_transfer(
+        &self,
+        leg: &RailBridgeLeg,
+        wire: &AccountableWireMessage,
+    ) -> Result<RailLegSettlement, IBankError> {
+        if wire.commitment_ref.is_none() {
+            return Err(IBankError::InvariantViolation(
+                "bridge rail leg requires commitment reference".to_string(),
+            ));
+        }
+
+        let digest_input = format!(
+            "{}:{}:{}:{}:{}",
+            leg.leg_id, leg.rail, leg.currency, wire.trace_id, wire.message_id
+        );
+        let digest = blake3::hash(digest_input.as_bytes()).to_hex().to_string();
+        Ok(RailLegSettlement {
+            rail_reference: format!("{}-{}", leg.rail, &digest[..16]),
+            settled_at: Utc::now(),
+        })
+    }
+
+    async fn compensate_transfer(
+        &self,
+        leg: &RailBridgeLeg,
+        settlement: &RailLegSettlement,
+        reason: &str,
+    ) -> Result<CompensationActionResult, IBankError> {
+        Ok(CompensationActionResult {
+            action_reference: format!("refund:{}:{}", leg.leg_id, settlement.rail_reference),
+            detail: format!("queued rail compensation: {reason}"),
         })
     }
 }
@@ -318,7 +420,9 @@ fn fixed_time(ts: i64) -> chrono::DateTime<Utc> {
 mod tests {
     use super::*;
     use ibank_core::aggregation::{AggregationUser, AssetPair, TimeRange};
-    use ibank_core::types::{AccountableWireMessage, AuditWitness, OriginProof, TransferPayload};
+    use ibank_core::types::{
+        AccountableWireMessage, AuditWitness, CommitmentReference, OriginProof, TransferPayload,
+    };
 
     fn sample_message() -> AccountableWireMessage {
         AccountableWireMessage {
@@ -348,6 +452,15 @@ mod tests {
         }
     }
 
+    fn sample_bridge_message() -> AccountableWireMessage {
+        let mut message = sample_message();
+        message.commitment_ref = Some(CommitmentReference {
+            commitment_id: "commitment-1".to_string(),
+            commitment_hash: "hash-commitment-1".to_string(),
+        });
+        message
+    }
+
     #[test]
     fn ach_adapter_returns_receipt() {
         let connector = MockAchConnector;
@@ -360,6 +473,54 @@ mod tests {
         let connector = AlwaysFailConnector::new("wire", "forced");
         let err = connector.execute(&sample_message()).unwrap_err();
         assert!(matches!(err, IBankError::ConnectorFailure { .. }));
+    }
+
+    #[tokio::test]
+    async fn evm_bridge_adapter_executes_deterministically() {
+        let adapter = MockEvmBridgeAdapter;
+        let settlement = adapter
+            .execute_transfer(
+                &ChainBridgeLeg {
+                    leg_id: "leg-chain-1".to_string(),
+                    adapter_id: "evm-mock".to_string(),
+                    network: "base-sepolia".to_string(),
+                    asset: "USDC".to_string(),
+                    asset_kind: ibank_core::ChainAssetKind::Stablecoin,
+                    from_address: "0xaaa".to_string(),
+                    to_address: "0xbbb".to_string(),
+                    amount_minor: 10_000,
+                    memo: Some("bridge".to_string()),
+                },
+                &sample_bridge_message(),
+            )
+            .await
+            .unwrap();
+
+        assert!(settlement.tx_hash.starts_with("0x"));
+        assert_eq!(settlement.tx_hash.len(), 34);
+    }
+
+    #[tokio::test]
+    async fn rail_bridge_adapter_requires_commitment_reference() {
+        let adapter = MockRailBridgeAdapter;
+        let err = adapter
+            .execute_transfer(
+                &RailBridgeLeg {
+                    leg_id: "leg-rail-1".to_string(),
+                    adapter_id: "rail-mock".to_string(),
+                    rail: "ach".to_string(),
+                    currency: "USD".to_string(),
+                    from_account: "acct-a".to_string(),
+                    to_account: "acct-b".to_string(),
+                    amount_minor: 10_000,
+                    memo: Some("bridge".to_string()),
+                },
+                &sample_message(),
+            )
+            .await
+            .unwrap_err();
+
+        assert!(matches!(err, IBankError::InvariantViolation(_)));
     }
 
     #[tokio::test]

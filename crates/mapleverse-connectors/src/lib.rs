@@ -5,9 +5,9 @@
 
 #![deny(unsafe_code)]
 
-use mapleverse_executor::{ExecutionHandler, ExecutorError};
-use mapleverse_types::{
-    Consequence, ConsequenceId, Evidence, EvidenceType, ExecutionParameters, ReversibilityStatus,
+use mapleverse_executor::{
+    Consequence, ConsequenceId, Evidence, EvidenceType, ExecutionHandler, ExecutionParameters,
+    ExecutorError, ReversibilityStatus,
 };
 use rcf_commitment::{RcfCommitment, Reversibility};
 use rcf_types::EffectDomain;
@@ -96,12 +96,12 @@ impl ExecutionHandler for ComputationConnector {
         _params: &ExecutionParameters,
     ) -> Result<Consequence, ExecutorError> {
         Connector::execute(self, commitment)
-            .map_err(|e| ExecutorError::ExecutionFailed(e.to_string()))
+            .map_err(|e: ConnectorError| ExecutorError::ExecutionFailed(e.to_string()))
     }
 
     fn rollback(&self, commitment: &RcfCommitment) -> Result<(), ExecutorError> {
         Connector::rollback(self, commitment)
-            .map_err(|e| ExecutorError::RollbackFailed(e.to_string()))
+            .map_err(|e: ConnectorError| ExecutorError::RollbackFailed(e.to_string()))
     }
 
     fn can_handle(&self, domain: &EffectDomain) -> bool {
@@ -158,12 +158,12 @@ impl ExecutionHandler for DataConnector {
         _params: &ExecutionParameters,
     ) -> Result<Consequence, ExecutorError> {
         Connector::execute(self, commitment)
-            .map_err(|e| ExecutorError::ExecutionFailed(e.to_string()))
+            .map_err(|e: ConnectorError| ExecutorError::ExecutionFailed(e.to_string()))
     }
 
     fn rollback(&self, commitment: &RcfCommitment) -> Result<(), ExecutorError> {
         Connector::rollback(self, commitment)
-            .map_err(|e| ExecutorError::RollbackFailed(e.to_string()))
+            .map_err(|e: ConnectorError| ExecutorError::RollbackFailed(e.to_string()))
     }
 
     fn can_handle(&self, domain: &EffectDomain) -> bool {
@@ -215,12 +215,12 @@ impl ExecutionHandler for CommunicationConnector {
         _params: &ExecutionParameters,
     ) -> Result<Consequence, ExecutorError> {
         Connector::execute(self, commitment)
-            .map_err(|e| ExecutorError::ExecutionFailed(e.to_string()))
+            .map_err(|e: ConnectorError| ExecutorError::ExecutionFailed(e.to_string()))
     }
 
     fn rollback(&self, commitment: &RcfCommitment) -> Result<(), ExecutorError> {
         Connector::rollback(self, commitment)
-            .map_err(|e| ExecutorError::RollbackFailed(e.to_string()))
+            .map_err(|e: ConnectorError| ExecutorError::RollbackFailed(e.to_string()))
     }
 
     fn can_handle(&self, domain: &EffectDomain) -> bool {

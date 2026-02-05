@@ -5,11 +5,28 @@
 
 #![deny(unsafe_code)]
 
-use mapleverse_types::Consequence;
 use rcf_commitment::CommitmentId;
 use rcf_types::EffectDomain;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+/// A consequence - the observable effect of a commitment execution
+/// (Local definition for EVE layer - decoupled from mapleverse-types)
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Consequence {
+    /// Unique consequence identifier
+    pub consequence_id: String,
+    /// The commitment that produced this consequence
+    pub commitment_id: CommitmentId,
+    /// Effect domain
+    pub effect_domain: EffectDomain,
+    /// Description of the consequence
+    pub description: String,
+    /// When the consequence occurred
+    pub occurred_at: chrono::DateTime<chrono::Utc>,
+    /// Whether the consequence is reversible
+    pub reversible: bool,
+}
 
 /// A learning artifact from consequence analysis
 #[derive(Clone, Debug, Serialize, Deserialize)]

@@ -1,222 +1,67 @@
-//! Mapleverse Types - The execution layer types
+//! # MapleVerse Types
 //!
-//! The Mapleverse is where approved commitments become actual effects.
-//! It has NO cognitive capabilities - it only executes what AAS approves.
+//! Core types for MapleVerse - a **pure AI-agent civilization** simulation.
+//!
+//! ## CRITICAL INVARIANT: NO HUMAN PROFILES
+//!
+//! MapleVerse is a pure AI-agent civilization. Human profiles are **runtime rejected**.
+//! This is not a policy - it's a fundamental architectural constraint enforced at every layer.
+//!
+//! ## Core Principles
+//!
+//! 1. **Agents Only**: Every entity is an AI agent or a collective of AI agents
+//! 2. **Receipts are Truth**: Reputation comes ONLY from verified commitment receipts
+//! 3. **Attention is Scarce**: Attention regenerates per epoch, is tradeable, and bounds action
+//! 4. **Collectives are First-Class**: Groups have their own identity, reputation, and attention
+//! 5. **Regions Structure the World**: Agents exist in regions, migration only to neighbors
+//!
+//! ## Module Organization
+//!
+//! - [`config`]: World configuration with human profile rejection
+//! - [`entity`]: Agent and collective entity definitions
+//! - [`economy`]: MAPLE tokens and attention economics
+//! - [`reputation`]: Receipt-based reputation system
+//! - [`world`]: Regions, geography, and world structure
+//! - [`event`]: Epoch-based events and world state changes
+//! - [`errors`]: Error types for the MapleVerse layer
 
 #![deny(unsafe_code)]
+#![warn(missing_docs)]
+#![warn(clippy::all)]
 
-use aas_types::CommitmentOutcome;
-use rcf_commitment::{CommitmentId, RcfCommitment};
-use rcf_types::EffectDomain;
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+pub mod config;
+pub mod economy;
+pub mod entity;
+pub mod errors;
+pub mod event;
+pub mod reputation;
+pub mod world;
 
-/// An execution request from AAS
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ExecutionRequest {
-    pub request_id: ExecutionRequestId,
-    pub commitment: RcfCommitment,
-    pub decision_id: String,
-    pub requested_at: chrono::DateTime<chrono::Utc>,
-    pub execution_parameters: ExecutionParameters,
-}
+// Re-export commonly used types
+pub use config::{MapleVerseConfig, WorldParameters};
+pub use economy::{Amount, AttentionBudget, AttentionUnits, MapleBalance};
+pub use entity::{CollectiveEntity, EntityId, EntityKind, IndividualEntity, MapleVerseEntity};
+pub use errors::MapleVerseError;
+pub use event::{Epoch, EpochId, EpochSummary, WorldEvent, WorldEventId};
+pub use reputation::{ReputationReceipt, ReputationScore, ReputationSource};
+pub use world::{Region, RegionId, WorldTopology};
 
-/// Unique identifier for an execution request
-#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub struct ExecutionRequestId(pub String);
+/// The current MapleVerse protocol version
+pub const PROTOCOL_VERSION: &str = "2.0.0";
 
-impl ExecutionRequestId {
-    pub fn generate() -> Self {
-        Self(uuid::Uuid::new_v4().to_string())
-    }
-}
+/// Maximum agents supported in a single MapleVerse instance
+pub const MAX_AGENTS: u64 = 100_000_000; // 100M agents
 
-/// Parameters for execution
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct ExecutionParameters {
-    pub timeout_secs: Option<u64>,
-    pub retry_policy: Option<RetryPolicy>,
-    pub monitoring_level: MonitoringLevel,
-    pub rollback_on_failure: bool,
-    pub custom_params: HashMap<String, String>,
-}
-
-/// Retry policy for failed executions
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct RetryPolicy {
-    pub max_retries: u32,
-    pub backoff_secs: u64,
-    pub exponential_backoff: bool,
-}
-
-/// Level of monitoring during execution
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
-pub enum MonitoringLevel {
-    #[default]
-    Standard,
-    Enhanced,
-    Full,
-}
-
-/// Result of an execution
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ExecutionResult {
-    pub request_id: ExecutionRequestId,
-    pub commitment_id: CommitmentId,
-    pub status: ExecutionStatus,
-    pub consequence: Option<Consequence>,
-    pub started_at: chrono::DateTime<chrono::Utc>,
-    pub completed_at: Option<chrono::DateTime<chrono::Utc>>,
-    pub execution_trace: Vec<ExecutionEvent>,
-}
-
-impl ExecutionResult {
-    pub fn to_outcome(&self) -> CommitmentOutcome {
-        CommitmentOutcome {
-            success: matches!(self.status, ExecutionStatus::Completed),
-            description: self.status.description().to_string(),
-            completed_at: self.completed_at.unwrap_or_else(chrono::Utc::now),
-        }
-    }
-}
-
-/// Status of an execution
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum ExecutionStatus {
-    Pending,
-    Running,
-    Completed,
-    Failed(String),
-    TimedOut,
-    Aborted(String),
-    RolledBack,
-}
-
-impl ExecutionStatus {
-    pub fn description(&self) -> &str {
-        match self {
-            ExecutionStatus::Pending => "Execution pending",
-            ExecutionStatus::Running => "Execution in progress",
-            ExecutionStatus::Completed => "Execution completed successfully",
-            ExecutionStatus::Failed(msg) => msg,
-            ExecutionStatus::TimedOut => "Execution timed out",
-            ExecutionStatus::Aborted(msg) => msg,
-            ExecutionStatus::RolledBack => "Execution rolled back",
-        }
-    }
-
-    pub fn is_terminal(&self) -> bool {
-        !matches!(self, ExecutionStatus::Pending | ExecutionStatus::Running)
-    }
-
-    pub fn is_success(&self) -> bool {
-        matches!(self, ExecutionStatus::Completed)
-    }
-}
-
-/// A consequence - the observable effect of an execution
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Consequence {
-    pub consequence_id: ConsequenceId,
-    pub commitment_id: CommitmentId,
-    pub effect_domain: EffectDomain,
-    pub description: String,
-    pub evidence: Vec<Evidence>,
-    pub occurred_at: chrono::DateTime<chrono::Utc>,
-    pub reversibility_status: ReversibilityStatus,
-}
-
-/// Unique identifier for a consequence
-#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub struct ConsequenceId(pub String);
-
-impl ConsequenceId {
-    pub fn generate() -> Self {
-        Self(uuid::Uuid::new_v4().to_string())
-    }
-}
-
-/// Evidence of a consequence
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Evidence {
-    pub evidence_type: EvidenceType,
-    pub description: String,
-    pub data: Vec<u8>,
-    pub timestamp: chrono::DateTime<chrono::Utc>,
-}
-
-/// Types of evidence
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum EvidenceType {
-    Log,
-    StateSnapshot,
-    ExternalReceipt,
-    Signature,
-    Hash,
-    Custom(String),
-}
-
-/// Reversibility status of a consequence
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum ReversibilityStatus {
-    Reversible,
-    PartiallyReversible,
-    Irreversible,
-    Reversed,
-}
-
-/// An event during execution
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ExecutionEvent {
-    pub event_id: String,
-    pub event_type: ExecutionEventType,
-    pub description: String,
-    pub timestamp: chrono::DateTime<chrono::Utc>,
-    pub data: Option<HashMap<String, String>>,
-}
-
-/// Types of execution events
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum ExecutionEventType {
-    Started,
-    StepCompleted,
-    StepFailed,
-    CheckpointReached,
-    RollbackInitiated,
-    Completed,
-    Failed,
-}
-
-/// A connector configuration
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ConnectorConfig {
-    pub connector_id: String,
-    pub connector_type: ConnectorType,
-    pub domain: EffectDomain,
-    pub config: HashMap<String, String>,
-    pub enabled: bool,
-}
-
-/// Types of connectors
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum ConnectorType {
-    FileSystem,
-    Network,
-    Database,
-    Api,
-    MessageQueue,
-    Custom(String),
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_execution_status() {
-        assert!(!ExecutionStatus::Running.is_terminal());
-        assert!(ExecutionStatus::Completed.is_terminal());
-        assert!(ExecutionStatus::Completed.is_success());
-        assert!(!ExecutionStatus::Failed("error".to_string()).is_success());
-    }
+/// Prelude module for convenient imports
+pub mod prelude {
+    //! Convenient re-exports for MapleVerse types
+    pub use super::config::{MapleVerseConfig, WorldParameters};
+    pub use super::economy::{Amount, AttentionBudget, AttentionUnits, MapleBalance};
+    pub use super::entity::{
+        CollectiveEntity, EntityId, EntityKind, IndividualEntity, MapleVerseEntity,
+    };
+    pub use super::errors::MapleVerseError;
+    pub use super::event::{Epoch, EpochId, EpochSummary, WorldEvent, WorldEventId};
+    pub use super::reputation::{ReputationReceipt, ReputationScore, ReputationSource};
+    pub use super::world::{Region, RegionId, WorldTopology};
 }

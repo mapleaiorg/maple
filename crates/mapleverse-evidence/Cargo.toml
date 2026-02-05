@@ -5,7 +5,7 @@ edition.workspace = true
 description = "Mapleverse Evidence - Evidence collection and management"
 
 [dependencies]
-mapleverse-types = { workspace = true }
+mapleverse-executor = { workspace = true }
 rcf-types = { workspace = true }
 rcf-commitment = { workspace = true }
 serde = { workspace = true }

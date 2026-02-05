@@ -57,3 +57,16 @@ Even with a custom connector, iBank still requires:
 - explicit outcome record on success/failure
 
 The connector only handles side-effect execution, not policy/invariant decisions.
+
+## Optional: Add Bridge Adapters
+
+For multi-leg bridge execution (`/v1/bridge/execute`), implement:
+
+- `ChainAdapter` for on-chain legs.
+- `RailAdapter` for off-chain legs.
+
+Both adapters must:
+
+1. Require a commitment reference on the accountable wire message.
+2. Return leg settlement references.
+3. Implement compensation callbacks for partial-failure recovery.

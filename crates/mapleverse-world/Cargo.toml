@@ -1,11 +1,12 @@
 [package]
-name = "mapleverse-types"
+name = "mapleverse-world"
 version.workspace = true
 edition.workspace = true
-description = "MapleVerse Types - Pure AI-agent civilization simulation (NO HUMANS)"
+description = "MapleVerse World - World state management for pure AI-agent civilization"
 
 [dependencies]
 # Core MAPLE dependencies
+mapleverse-types = { path = "../mapleverse-types" }
 collective-types = { path = "../collective-types" }
 resonator-types = { path = "../resonator-types" }
 rcf-types = { path = "../rcf-types" }
@@ -23,13 +24,12 @@ uuid = { workspace = true }
 # Time handling
 chrono = { workspace = true }
 
+# Async runtime
+tokio = { version = "1.0", features = ["sync"] }
+
 [dev-dependencies]
 tokio = { version = "1.0", features = ["full", "test-util"] }
 serde_json = { workspace = true }
 
 [features]
 default = []
-# DANGER: Enable human profiles (BREAKS MapleVerse purity guarantee)
-# This feature exists ONLY for testing infrastructure, NEVER for production
-# Any use of this feature in production is a CRITICAL violation
-unsafe-human-profiles = []

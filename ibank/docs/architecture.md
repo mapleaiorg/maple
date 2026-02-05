@@ -14,8 +14,22 @@ iBank runs financial actions on top of MAPLE with strict accountability:
 ## Crate Layout
 
 - `ibank/crates/ibank-core`: policy engine, stage machine, aggregation layer, commitment model, accountable protocol, router, append-only ledger, and storage backends.
-- `ibank/crates/ibank-adapters`: settlement connectors (ACH/chain mock plus failure connector).
+- `ibank/crates/ibank-adapters`: settlement connectors plus bridge adapters (on-chain/off-chain/hybrid fixtures).
 - `ibank/crates/ibank-service`: REST + gRPC surface, pending approval queue persistence.
+
+## Agentic Commerce
+
+`AgenticCommerceAgent` in `ibank/crates/ibank-core/src/commerce.rs` implements:
+
+- `Discover -> Quote -> Commit -> Pay -> Track -> After-sales/Dispute`
+
+Key controls:
+
+- Discovery phase is plan-only and never initiates payment side effects.
+- Payment initiation maps to iBank handle flow, forcing commitment creation before settlement.
+- Commitment context is enriched with merchant/rail/reversibility/dispute-policy references.
+- Tracking updates include temporal anchors and are appended to audit.
+- Disputes escalate to hybrid by default and create escalation cases.
 
 ## Single Entrypoint
 
@@ -33,8 +47,10 @@ It orchestrates:
 4. Decide route:
    - Pure AI if within autonomous bounds and ambiguity does not block.
    - Hybrid if thresholds are exceeded, dispute/fraud/compliance flags trigger, or ambiguity blocks.
-5. Build commitment before any side effect.
-6. Route only through accountable wire verification and risk checks.
+5. Run explicit compliance gate (KYC/AML/sanctions/fraud/jurisdiction) and produce `ComplianceDecision`.
+6. Generate redacted `ComplianceProof` and embed it into commitment platform data.
+7. Build commitment before any side effect.
+8. Route only through accountable wire verification and risk checks.
 
 ## Stage Enforcement
 
@@ -69,6 +85,40 @@ Default core thresholds include:
 - Pure AI cap: `$10,000` (`1_000_000` minor units)
 - Hard deny cap: `$250,000` (`25_000_000` minor units)
 - Fraud and ambiguity/uncertainty thresholds for mandatory hybrid
+
+## Compliance Gate
+
+`RiskPolicyEngine::evaluate_compliance` is an explicit gate with three outcomes:
+
+- `Green`
+- `ReviewRequired`
+- `Block`
+
+It evaluates:
+
+- KYC status
+- AML status
+- sanctions status
+- fraud/anomaly bounds
+- jurisdiction policy bounds
+- model/compliance uncertainty
+
+Hard block examples:
+
+- sanctions hit
+- invalid KYC
+- AML blocked
+
+Uncertainty rule:
+
+- uncertainty never auto-greens; it triggers `ReviewRequired` and adds deterministic risk penalty.
+
+`RiskPolicyEngine::generate_compliance_proof` produces commitment-safe proof:
+
+- `policy_version`
+- decision outcome
+- reason codes
+- hashed evidence references (`evidence_hashes`) for redacted auditability
 
 ## Commitment-First Consequence
 
@@ -106,6 +156,42 @@ Before commitment declaration, runtime builds a `UnifiedLedgerView` from all reg
 4. Risk bounds pass for the selected execution mode.
 5. Connector executes and outcome is recorded.
 
+## Blockchain Bridge
+
+The bridge layer (`ibank/crates/ibank-core/src/bridge.rs`) executes commitment-authorized multi-leg routes:
+
+- on-chain only
+- off-chain only
+- hybrid (`fiat -> stablecoin -> local rail` style)
+
+Execution follows an explicit state machine:
+
+1. `Proposed`
+2. `Authorized` (commitment must already exist in ledger)
+3. `Executing`
+4. `Settled` or `Failed`
+5. `Recorded`
+
+For each leg:
+
+1. append audit (`bridge_leg_prepared`)
+2. emit accountable wire message (origin proof + audit witness + commitment reference)
+3. execute adapter leg
+4. append leg result audit
+
+If a multi-leg flow fails after one or more legs settle, bridge runs compensating actions in reverse order and persists:
+
+- explicit failed outcome
+- recovery plan details
+- final `UnifiedBridgeReceipt` with all completed leg references and compensation artifacts
+
+`UnifiedBridgeReceipt` includes:
+
+- `commitment_id`
+- all rail references / chain tx hashes
+- `snapshot_hash` from commitment platform data (sourced from Unified Ledger View attestation)
+- final status and recovery plan
+
 ## Ledger Model
 
 `AppendOnlyLedger` (`ibank/crates/ibank-core/src/ledger.rs`) stores:
@@ -140,6 +226,10 @@ Postgres bootstrap behavior:
 `ibank-service` wraps core engine for app/API use:
 
 - REST endpoints: `/v1/handle`, `/v1/approvals/pending`, approve/reject routes.
+- REST workflow case endpoint: `/v1/approvals/case/{trace_id}` for full state + attestation history.
+- REST bridge endpoint: `/v1/bridge/execute` for commitment-authorized multi-leg execution.
+- REST bridge receipt endpoint: `/v1/bridge/receipts` for ops/audit retrieval.
+- REST compliance endpoint: `/v1/compliance/trace/{trace_id}` for compliance-proof inspection.
 - REST ledger query endpoint: `/v1/ledger/entries` with filter/pagination for audit tooling.
 - REST snapshot endpoint: `/v1/ledger/snapshot/latest` for dashboard/ops unified view retrieval.
 - gRPC service: `ibank.v1.IBankService` (proto-first contract).
@@ -152,8 +242,16 @@ Postgres bootstrap behavior:
 Approval path:
 
 1. Hybrid-required request is queued.
-2. Human approves or rejects explicitly.
-3. Re-run with approval metadata for execution, or persist rejection outcome.
+2. Queue materializes an `EscalationCase` (case id, commitment id, risk report, evidence bundle, recommended actions).
+3. Human submits signed `HumanAttestation` (`approve | deny | modify`) with timestamp/anchor and optional constraints.
+4. Attestation is persisted into append-only audit (`human_attestation_recorded`).
+5. System resumes execution (approve/modify) or writes explicit failure outcome (deny).
+
+Workflow states:
+
+- `open -> in_review -> approved|denied -> executed|closed`
+
+The public `handle` endpoint ignores inbound `approval` fields so high-risk flows cannot bypass attestation workflow.
 
 ## Reliability Characteristics
 

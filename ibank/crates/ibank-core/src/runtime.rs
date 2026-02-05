@@ -2,6 +2,9 @@ use crate::aggregation::{
     AggregationConnector, AggregationUser, AssetPair, TimeRange, UnifiedLedgerAssembler,
     UnifiedLedgerView,
 };
+use crate::bridge::{
+    BridgeExecutionRequest, BridgeExecutor, ChainAdapter, RailAdapter, UnifiedBridgeReceipt,
+};
 use crate::connectors::{ConnectorRegistry, SettlementConnector};
 use crate::error::IBankError;
 use crate::flow::ConsequenceStageMachine;
@@ -12,8 +15,9 @@ use crate::router::IBankRouter;
 use crate::storage::{LedgerStorageConfig, PersistentLedger};
 use crate::types::{
     AuditWitness, CommitmentParties, CommitmentRecord, CommitmentReference, CommitmentScopeContext,
-    CommitmentTemporalBounds, ConfidenceProfile, ConsequenceRecord, ExecutionMode, HandleRequest,
-    HandleResponse, HandleStatus, IBankPlatformCommitmentData, IntentRecord, MeaningField,
+    CommitmentTemporalBounds, ComplianceDecision, ComplianceProof, ConfidenceProfile,
+    ConsequenceRecord, ExecutionMode, HandleRequest, HandleResponse, HandleStatus,
+    HumanAttestation, IBankPlatformCommitmentData, IntentRecord, MeaningField,
     RegulatoryComplianceData, RiskAssessmentData, RiskReport, RouteResult, TransferIntent,
     TransferPayload,
 };
@@ -60,6 +64,7 @@ pub struct IBankEngine {
     latest_unified_snapshots: tokio::sync::RwLock<HashMap<String, LatestUnifiedSnapshot>>,
     ledger: Arc<AsyncMutex<PersistentLedger>>,
     connectors: Arc<Mutex<ConnectorRegistry>>,
+    bridge: Arc<BridgeExecutor>,
     router: IBankRouter,
     policy: RiskPolicyEngine,
     origin_authority: OriginAuthority,
@@ -103,6 +108,11 @@ impl IBankEngine {
             ledger.clone(),
             authority.clone(),
         );
+        let bridge = Arc::new(BridgeExecutor::new(
+            ledger.clone(),
+            authority.clone(),
+            config.origin_key_id.clone(),
+        ));
 
         Ok(Self {
             maple,
@@ -111,6 +121,7 @@ impl IBankEngine {
             latest_unified_snapshots: tokio::sync::RwLock::new(HashMap::new()),
             ledger,
             connectors,
+            bridge,
             router,
             policy,
             origin_authority: authority,
@@ -128,6 +139,28 @@ impl IBankEngine {
             .map_err(|_| IBankError::Ledger("connector lock poisoned".to_string()))?;
         registry.register(connector);
         Ok(())
+    }
+
+    pub async fn register_chain_adapter(
+        &self,
+        adapter: Arc<dyn ChainAdapter>,
+    ) -> Result<(), IBankError> {
+        self.bridge.register_chain_adapter(adapter).await
+    }
+
+    pub async fn register_rail_adapter(
+        &self,
+        adapter: Arc<dyn RailAdapter>,
+    ) -> Result<(), IBankError> {
+        self.bridge.register_rail_adapter(adapter).await
+    }
+
+    /// Execute a bridge route (on-chain/off-chain/hybrid) under commitment authorization.
+    pub async fn execute_bridge_route(
+        &self,
+        request: BridgeExecutionRequest,
+    ) -> Result<UnifiedBridgeReceipt, IBankError> {
+        self.bridge.execute(request).await
     }
 
     pub async fn register_aggregation_connector(
@@ -188,6 +221,35 @@ impl IBankEngine {
         Ok(ledger.entries().to_vec())
     }
 
+    /// Return bridge unified receipts reconstructed from append-only audit records.
+    ///
+    /// Bridge executor persists each finalized receipt as an audit stage
+    /// (`bridge_unified_receipt`) so operators can query completed executions without
+    /// introducing mutable side tables.
+    pub async fn bridge_receipts(&self) -> Result<Vec<UnifiedBridgeReceipt>, IBankError> {
+        let ledger = self.ledger.lock().await;
+
+        ledger
+            .entries()
+            .iter()
+            .filter(|entry| entry.kind == LedgerEntryKind::Audit)
+            .filter_map(|entry| {
+                let stage = entry.payload.get("stage").and_then(|v| v.as_str());
+                if stage == Some("bridge_unified_receipt") {
+                    Some(entry.payload.get("detail").and_then(|v| v.as_str()))
+                } else {
+                    None
+                }
+            })
+            .flatten()
+            .map(|detail| {
+                serde_json::from_str::<UnifiedBridgeReceipt>(detail).map_err(|e| {
+                    IBankError::Serialization(format!("bridge receipt decode failed: {e}"))
+                })
+            })
+            .collect()
+    }
+
     pub async fn verify_ledger_chain(&self) -> Result<bool, IBankError> {
         let ledger = self.ledger.lock().await;
         Ok(ledger.verify_chain())
@@ -216,6 +278,35 @@ impl IBankEngine {
             _ => format!("hybrid request rejected by {approver_id}"),
         };
         self.record_failure(trace_id, commitment_id, detail).await
+    }
+
+    /// Persist a signed human attestation into the append-only audit trail.
+    pub async fn record_human_attestation(
+        &self,
+        trace_id: &str,
+        commitment_id: Option<String>,
+        attestation: &HumanAttestation,
+    ) -> Result<(), IBankError> {
+        self.append_audit_stage(
+            trace_id,
+            commitment_id,
+            "human_attestation_recorded",
+            serde_json::to_string(attestation)
+                .map_err(|e| IBankError::Serialization(e.to_string()))?,
+        )
+        .await
+    }
+
+    /// Persist an external audit stage tied to a trace/commitment.
+    pub async fn record_external_audit(
+        &self,
+        trace_id: &str,
+        commitment_id: Option<String>,
+        stage: &str,
+        detail: String,
+    ) -> Result<(), IBankError> {
+        self.append_audit_stage(trace_id, commitment_id, stage, detail)
+            .await
     }
 
     /// Single iBank API/App entrypoint.
@@ -256,9 +347,18 @@ impl IBankEngine {
         let meaning = self.parse_meaning_field(&request);
         let intent_record = self.stabilize_request_intent(&request, &meaning);
         let transfer_intent = self.transfer_intent_from_request(&request, &trace_id, &meaning);
-        let risk_decision = self.policy.evaluate(&transfer_intent, AutonomyMode::PureAi);
+        let compliance_decision = self.policy.evaluate_compliance(&transfer_intent);
+        let risk_decision = self.policy.evaluate_with_compliance(
+            &transfer_intent,
+            AutonomyMode::PureAi,
+            &compliance_decision,
+        );
         let risk_report = extract_risk_report(&risk_decision);
-        let decision_reason = render_decision_reason(&risk_decision, &risk_report);
+        let decision_reason = format!(
+            "{} | {}",
+            render_decision_reason(&risk_decision, &risk_report),
+            render_compliance_decision(&compliance_decision)
+        );
 
         let execution = match risk_decision {
             RiskDecision::Allow(_) => self
@@ -390,7 +490,26 @@ impl IBankEngine {
         )
         .await?;
 
-        let pre_risk = self.policy.evaluate(&intent, AutonomyMode::PureAi);
+        let compliance_decision = self.policy.evaluate_compliance(&intent);
+        let compliance_proof = self.policy.generate_compliance_proof(&compliance_decision);
+        self.append_audit_stage(
+            &intent.trace_id,
+            None,
+            "compliance_gated",
+            format!(
+                "decision={} reason_codes={} evidence_hashes={}",
+                compliance_label(&compliance_decision),
+                compliance_proof.reason_codes.join(","),
+                compliance_proof.evidence_hashes.join(",")
+            ),
+        )
+        .await?;
+
+        let pre_risk = self.policy.evaluate_with_compliance(
+            &intent,
+            AutonomyMode::PureAi,
+            &compliance_decision,
+        );
         let risk_report = extract_risk_report(&pre_risk);
         self.append_audit_stage(
             &intent.trace_id,
@@ -437,6 +556,8 @@ impl IBankEngine {
             &intent,
             &intent_record,
             &risk_report,
+            &compliance_decision,
+            &compliance_proof,
             &unified_view.snapshot_hash,
         ) {
             Ok(record) => record,
@@ -751,6 +872,8 @@ impl IBankEngine {
         transfer: &TransferIntent,
         intent: &IntentRecord,
         risk: &RiskReport,
+        compliance_decision: &ComplianceDecision,
+        compliance_proof: &ComplianceProof,
         state_snapshot_hash: &str,
     ) -> Result<CommitmentRecord, IBankError> {
         let limits = ResourceLimits::new()
@@ -768,7 +891,7 @@ impl IBankEngine {
             Reversibility::Reversible
         };
 
-        let commitment = CommitmentBuilder::new(
+        let mut commitment_builder = CommitmentBuilder::new(
             IdentityRef::new(transfer.origin_actor.clone()),
             EffectDomain::Finance,
         )
@@ -792,8 +915,33 @@ impl IBankEngine {
         .with_policy_tag(format!("transaction_type:{}", transfer.transaction_type))
         .with_policy_tag(format!("risk_score:{}", risk.score))
         .with_policy_tag(format!("jurisdiction:{}", transfer.jurisdiction))
-        .build()
-        .map_err(|e| IBankError::InvariantViolation(format!("commitment build failed: {e}")))?;
+        .with_policy_tag(format!(
+            "compliance_decision:{}",
+            compliance_label(compliance_decision)
+        ));
+
+        if let Some(merchant_id) = transfer.metadata.get("merchant_id") {
+            commitment_builder =
+                commitment_builder.with_policy_tag(format!("merchant:{merchant_id}"));
+        }
+        if let Some(dispute_policy_ref) = transfer.metadata.get("dispute_policy_ref") {
+            commitment_builder =
+                commitment_builder.with_policy_tag(format!("dispute_policy:{dispute_policy_ref}"));
+        }
+        if let Some(reversibility_window_secs) = transfer.metadata.get("reversibility_window_secs")
+        {
+            commitment_builder = commitment_builder.with_policy_tag(format!(
+                "reversibility_window_secs:{reversibility_window_secs}"
+            ));
+        }
+        if let Some(commerce_rail) = transfer.metadata.get("commerce_rail") {
+            commitment_builder =
+                commitment_builder.with_policy_tag(format!("commerce_rail:{commerce_rail}"));
+        }
+
+        let commitment = commitment_builder
+            .build()
+            .map_err(|e| IBankError::InvariantViolation(format!("commitment build failed: {e}")))?;
 
         let temporal_bounds = CommitmentTemporalBounds {
             not_before: Utc::now(),
@@ -801,19 +949,21 @@ impl IBankEngine {
         };
 
         let compliance = RegulatoryComplianceData {
-            status: if transfer.compliance_flags.is_empty() {
-                "pending_standard_checks".to_string()
-            } else {
-                "flagged_for_review".to_string()
+            status: match compliance_decision.state {
+                crate::types::ComplianceDecisionState::Green => "green".to_string(),
+                crate::types::ComplianceDecisionState::ReviewRequired => {
+                    "review_required".to_string()
+                }
+                crate::types::ComplianceDecisionState::Block => "blocked".to_string(),
             },
-            required_checks: if transfer.compliance_flags.is_empty() {
+            required_checks: if compliance_decision.reasons.is_empty() {
                 vec![
                     "kyc".to_string(),
                     "aml".to_string(),
                     "sanctions".to_string(),
                 ]
             } else {
-                transfer.compliance_flags.clone()
+                compliance_decision.reasons.clone()
             },
             // Placeholders are explicit by design and are replaced by integration layers.
             proof_placeholders: vec![
@@ -831,19 +981,37 @@ impl IBankEngine {
                 reasons: risk.reasons.clone(),
             },
             regulatory_compliance: compliance,
+            compliance_proof: compliance_proof.clone(),
             state_snapshot_hash: state_snapshot_hash.to_string(),
         };
+
+        let mut constraints = vec![
+            format!("max_amount_minor={}", transfer.amount_minor),
+            format!("jurisdiction={}", transfer.jurisdiction),
+            "requires_commitment_id=true".to_string(),
+        ];
+        if let Some(merchant_id) = transfer.metadata.get("merchant_id") {
+            constraints.push(format!("merchant_id={merchant_id}"));
+        }
+        if let Some(dispute_policy_ref) = transfer.metadata.get("dispute_policy_ref") {
+            constraints.push(format!("dispute_policy_ref={dispute_policy_ref}"));
+        }
+        if let Some(reversibility_window_secs) = transfer.metadata.get("reversibility_window_secs")
+        {
+            constraints.push(format!(
+                "reversibility_window_secs={reversibility_window_secs}"
+            ));
+        }
+        if let Some(commerce_rail) = transfer.metadata.get("commerce_rail") {
+            constraints.push(format!("commerce_rail={commerce_rail}"));
+        }
 
         Ok(CommitmentRecord {
             commitment,
             scope: CommitmentScopeContext {
                 action: transfer.transaction_type.clone(),
                 resources: vec![transfer.destination.clone(), transfer.rail.clone()],
-                constraints: vec![
-                    format!("max_amount_minor={}", transfer.amount_minor),
-                    format!("jurisdiction={}", transfer.jurisdiction),
-                    "requires_commitment_id=true".to_string(),
-                ],
+                constraints,
             },
             parties: CommitmentParties {
                 principal: transfer.origin_actor.clone(),
@@ -979,6 +1147,26 @@ fn render_decision_reason(decision: &RiskDecision, report: &RiskReport) -> Strin
     format!("{prefix}: {}", report.reasons.join("; "))
 }
 
+fn compliance_label(decision: &ComplianceDecision) -> &'static str {
+    match decision.state {
+        crate::types::ComplianceDecisionState::Green => "green",
+        crate::types::ComplianceDecisionState::ReviewRequired => "review_required",
+        crate::types::ComplianceDecisionState::Block => "block",
+    }
+}
+
+fn render_compliance_decision(decision: &ComplianceDecision) -> String {
+    if decision.reasons.is_empty() {
+        return format!("compliance={}", compliance_label(decision));
+    }
+
+    format!(
+        "compliance={} reason_codes={}",
+        compliance_label(decision),
+        decision.reasons.join(",")
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1047,6 +1235,31 @@ mod tests {
         assert!(entries
             .iter()
             .any(|entry| entry.kind == LedgerEntryKind::Commitment));
+        let commitment_entry = entries
+            .iter()
+            .find(|entry| {
+                entry.kind == LedgerEntryKind::Commitment
+                    && entry.commitment_id == response.commitment_id
+            })
+            .expect("commitment entry should exist");
+        assert_eq!(
+            commitment_entry
+                .payload
+                .get("platform")
+                .and_then(|v| v.get("compliance_proof"))
+                .and_then(|v| v.get("policy_version"))
+                .and_then(|v| v.as_str()),
+            Some("ibank-compliance-v1")
+        );
+        assert_eq!(
+            commitment_entry
+                .payload
+                .get("platform")
+                .and_then(|v| v.get("compliance_proof"))
+                .and_then(|v| v.get("decision"))
+                .and_then(|v| v.as_str()),
+            Some("green")
+        );
         assert!(entries.iter().any(|entry| {
             entry.kind == LedgerEntryKind::Audit
                 && entry

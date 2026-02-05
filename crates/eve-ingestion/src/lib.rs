@@ -4,8 +4,7 @@
 
 #![deny(unsafe_code)]
 
-use eve_types::{AnalysisStatus, CommitmentCharacteristics, ConsequenceRecord};
-use mapleverse_types::Consequence;
+use eve_types::{AnalysisStatus, CommitmentCharacteristics, Consequence, ConsequenceRecord};
 use rcf_commitment::CommitmentId;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -156,7 +155,6 @@ pub enum IngestionError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mapleverse_types::{ConsequenceId, ReversibilityStatus};
     use rcf_types::EffectDomain;
 
     #[test]
@@ -164,13 +162,12 @@ mod tests {
         let service = IngestionService::new();
 
         let consequence = Consequence {
-            consequence_id: ConsequenceId::generate(),
+            consequence_id: uuid::Uuid::new_v4().to_string(),
             commitment_id: CommitmentId::generate(),
             effect_domain: EffectDomain::Computation,
             description: "Test consequence".to_string(),
-            evidence: vec![],
             occurred_at: chrono::Utc::now(),
-            reversibility_status: ReversibilityStatus::Irreversible,
+            reversible: false,
         };
 
         let characteristics = CommitmentCharacteristics {

@@ -58,6 +58,7 @@ Operational workflow:
 1. Request arrives.
 2. If hybrid is required, item is queued with trace id and decision rationale.
 3. Approver approves or rejects with explicit identity and note.
+   - Include signed attestation (`approve|deny|modify`, signature, anchor, optional constraints).
 4. Outcome is persisted and queue updated atomically.
 
 Queue endpoint checks:
@@ -65,6 +66,17 @@ Queue endpoint checks:
 - `/v1/approvals/pending`: backlog and SLA monitoring.
 - `/v1/approvals/{trace_id}/approve`: controlled release to execution.
 - `/v1/approvals/{trace_id}/reject`: explicit risk refusal trail.
+
+## Bridge Execution Controls
+
+For on-chain/off-chain/hybrid transfer paths, use `POST /v1/bridge/execute`.
+
+Required controls:
+
+1. Require `commitment_id` from prior commitment declaration.
+2. Enforce adapter allowlists by `adapter_id`.
+3. Record per-leg audit events and wire message ids.
+4. Require compensation runbooks for multi-leg partial failure.
 
 ## Incident and Failure Handling
 

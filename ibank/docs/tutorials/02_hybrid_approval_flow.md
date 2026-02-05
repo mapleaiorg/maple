@@ -38,13 +38,23 @@ curl -s http://127.0.0.1:8091/v1/approvals/pending
 ```
 
 Capture the `trace_id` from the response.
+Each pending item includes:
+
+- `escalation_case` (case id, evidence bundle, recommended actions)
+- `workflow_state` (starts as `open`)
+
+Inspect full case state and attestation history:
+
+```bash
+curl -s http://127.0.0.1:8091/v1/approvals/case/<trace_id>
+```
 
 ## Step 3A: Approve
 
 ```bash
 curl -s -X POST http://127.0.0.1:8091/v1/approvals/<trace_id>/approve \
   -H 'content-type: application/json' \
-  -d '{"approver_id":"risk-officer-1","note":"manual review passed"}'
+  -d '{"approver_id":"risk-officer-1","decision":"approve","signature":"sig-approve-1","anchor":"attestation://ops/approve-1","note":"manual review passed"}'
 ```
 
 Expected status: `executed_hybrid`.
@@ -54,7 +64,7 @@ Expected status: `executed_hybrid`.
 ```bash
 curl -s -X POST http://127.0.0.1:8091/v1/approvals/<trace_id>/reject \
   -H 'content-type: application/json' \
-  -d '{"approver_id":"risk-officer-1","note":"counterparty mismatch"}'
+  -d '{"approver_id":"risk-officer-1","decision":"deny","signature":"sig-deny-1","anchor":"attestation://ops/deny-1","note":"counterparty mismatch"}'
 ```
 
 Expected payload:
@@ -64,6 +74,16 @@ Expected payload:
 ```
 
 The rejection is explicit and persisted as an outcome record.
+
+## Step 3C: Modify (Optional Path)
+
+```bash
+curl -s -X POST http://127.0.0.1:8091/v1/approvals/<trace_id>/approve \
+  -H 'content-type: application/json' \
+  -d '{"approver_id":"risk-officer-1","decision":"modify","signature":"sig-modify-1","anchor":"attestation://ops/modify-1","constraints":[{"key":"max_amount_minor","value":"500000"},{"key":"require_check","value":"manual_kyc_required"}]}'
+```
+
+This resumes execution with attestation constraints applied.
 
 ## Step 4: Confirm Queue Persistence
 

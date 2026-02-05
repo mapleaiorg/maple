@@ -9,6 +9,7 @@ description = "REST service for iBank core orchestration and persisted hybrid ap
 [dependencies]
 anyhow = { workspace = true }
 axum = { workspace = true }
+blake3 = { workspace = true }
 chrono = { workspace = true }
 clap = { workspace = true }
 ibank-adapters = { workspace = true }

@@ -963,7 +963,6 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "eve-types",
- "mapleverse-types",
  "rcf-commitment",
  "rcf-types",
  "serde",
@@ -977,7 +976,6 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "eve-types",
- "mapleverse-types",
  "rcf-commitment",
  "rcf-types",
  "serde",
@@ -994,7 +992,6 @@ dependencies = [
  "eve-evaluation",
  "eve-ingestion",
  "eve-types",
- "mapleverse-types",
  "rcf-commitment",
  "rcf-types",
  "serde",
@@ -1007,7 +1004,6 @@ name = "eve-types"
 version = "0.1.0"
 dependencies = [
  "chrono",
- "mapleverse-types",
  "rcf-commitment",
  "rcf-types",
  "serde",
@@ -1824,7 +1820,6 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "mapleverse-executor",
- "mapleverse-types",
  "rcf-commitment",
  "rcf-types",
  "serde",
@@ -1837,7 +1832,7 @@ name = "mapleverse-evidence"
 version = "0.1.0"
 dependencies = [
  "chrono",
- "mapleverse-types",
+ "mapleverse-executor",
  "rcf-commitment",
  "rcf-types",
  "serde",
@@ -1849,9 +1844,7 @@ dependencies = [
 name = "mapleverse-executor"
 version = "0.1.0"
 dependencies = [
- "aas-types",
  "chrono",
- "mapleverse-types",
  "rcf-commitment",
  "rcf-types",
  "serde",
@@ -1868,7 +1861,6 @@ dependencies = [
  "mapleverse-connectors",
  "mapleverse-evidence",
  "mapleverse-executor",
- "mapleverse-types",
  "rcf-commitment",
  "rcf-types",
  "serde",
@@ -1880,13 +1872,32 @@ dependencies = [
 name = "mapleverse-types"
 version = "0.1.0"
 dependencies = [
- "aas-types",
  "chrono",
- "mrp-types",
+ "collective-types",
  "rcf-commitment",
  "rcf-types",
+ "resonator-types",
  "serde",
+ "serde_json",
  "thiserror",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "mapleverse-world"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "collective-types",
+ "mapleverse-types",
+ "rcf-commitment",
+ "rcf-types",
+ "resonator-types",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
  "uuid",
 ]
 

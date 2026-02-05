@@ -8,8 +8,7 @@
 use eve_artifacts::{ArtifactStore, ArtifactStoreError};
 use eve_evaluation::{EvaluationEngine, EvaluationError};
 use eve_ingestion::{IngestionError, IngestionService};
-use eve_types::{ArtifactQuery, CommitmentCharacteristics, EveInsight, LearningArtifact};
-use mapleverse_types::Consequence;
+use eve_types::{ArtifactQuery, CommitmentCharacteristics, Consequence, EveInsight, LearningArtifact};
 use std::sync::Arc;
 use thiserror::Error;
 
@@ -122,7 +121,6 @@ pub enum EveError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mapleverse_types::{ConsequenceId, ReversibilityStatus};
     use rcf_commitment::CommitmentId;
     use rcf_types::EffectDomain;
 
@@ -133,13 +131,12 @@ mod tests {
         // Ingest some consequences
         for _ in 0..10 {
             let consequence = Consequence {
-                consequence_id: ConsequenceId::generate(),
+                consequence_id: uuid::Uuid::new_v4().to_string(),
                 commitment_id: CommitmentId::generate(),
                 effect_domain: EffectDomain::Computation,
                 description: "Test".to_string(),
-                evidence: vec![],
                 occurred_at: chrono::Utc::now(),
-                reversibility_status: ReversibilityStatus::Irreversible,
+                reversible: false,
             };
 
             let characteristics = CommitmentCharacteristics {

@@ -244,6 +244,60 @@ impl HumanApproval {
     }
 }
 
+/// Hybrid workflow decision from a human reviewer.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum AttestationDecision {
+    Approve,
+    Deny,
+    Modify,
+}
+
+/// Optional reviewer-provided constraints applied when decision is `Modify`.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct AttestationConstraint {
+    pub key: String,
+    pub value: String,
+}
+
+/// Human attestation captured for hybrid workflow actions.
+///
+/// The attestation is auditable evidence that a specific reviewer made a signed
+/// decision bound to a timestamp and anchor reference.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct HumanAttestation {
+    pub attestation_id: String,
+    pub decision: AttestationDecision,
+    pub signer_id: String,
+    pub signature: String,
+    pub anchor: String,
+    pub attested_at: DateTime<Utc>,
+    pub constraints: Vec<AttestationConstraint>,
+    pub note: Option<String>,
+}
+
+/// Workflow states for escalation handling.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum EscalationWorkflowState {
+    Open,
+    InReview,
+    Approved,
+    Denied,
+    Executed,
+    Closed,
+}
+
+/// Escalation case built when hybrid mode is required.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EscalationCase {
+    pub case_id: String,
+    pub commitment_id: Option<String>,
+    pub risk_report: Option<RiskReport>,
+    pub evidence_bundle: Vec<String>,
+    pub recommended_actions: Vec<String>,
+}
+
 /// API/App request entering the single iBank orchestration entrypoint.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HandleRequest {
@@ -337,6 +391,81 @@ pub struct RegulatoryComplianceData {
     pub proof_placeholders: Vec<String>,
 }
 
+/// Compliance decision outcome used by explicit policy gate.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum ComplianceDecisionState {
+    Green,
+    ReviewRequired,
+    Block,
+}
+
+/// Explicit compliance gate result with explainable reason codes and evidence pointers.
+///
+/// `evidence_pointers` are raw internal references and may contain sensitive details.
+/// Use `ComplianceProof` for redacted commitment storage.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ComplianceDecision {
+    pub state: ComplianceDecisionState,
+    pub reasons: Vec<String>,
+    pub evidence_pointers: Vec<String>,
+    pub uncertainty_score: u8,
+}
+
+impl ComplianceDecision {
+    pub fn green(reasons: Vec<String>, evidence_pointers: Vec<String>) -> Self {
+        Self {
+            state: ComplianceDecisionState::Green,
+            reasons,
+            evidence_pointers,
+            uncertainty_score: 0,
+        }
+    }
+
+    pub fn review_required(
+        reasons: Vec<String>,
+        evidence_pointers: Vec<String>,
+        uncertainty_score: u8,
+    ) -> Self {
+        Self {
+            state: ComplianceDecisionState::ReviewRequired,
+            reasons,
+            evidence_pointers,
+            uncertainty_score,
+        }
+    }
+
+    pub fn block(reasons: Vec<String>, evidence_pointers: Vec<String>) -> Self {
+        Self {
+            state: ComplianceDecisionState::Block,
+            reasons,
+            evidence_pointers,
+            uncertainty_score: 0,
+        }
+    }
+
+    pub fn is_green(&self) -> bool {
+        self.state == ComplianceDecisionState::Green
+    }
+
+    pub fn is_review_required(&self) -> bool {
+        self.state == ComplianceDecisionState::ReviewRequired
+    }
+
+    pub fn is_block(&self) -> bool {
+        self.state == ComplianceDecisionState::Block
+    }
+}
+
+/// Redacted compliance artifact persisted inside commitment platform data.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ComplianceProof {
+    pub policy_version: String,
+    pub decision: ComplianceDecisionState,
+    pub reason_codes: Vec<String>,
+    pub evidence_hashes: Vec<String>,
+}
+
 /// Platform-specific risk snapshot embedded in commitment records.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RiskAssessmentData {
@@ -352,6 +481,7 @@ pub struct IBankPlatformCommitmentData {
     pub value: String,
     pub risk_assessment: RiskAssessmentData,
     pub regulatory_compliance: RegulatoryComplianceData,
+    pub compliance_proof: ComplianceProof,
     pub state_snapshot_hash: String,
 }
 

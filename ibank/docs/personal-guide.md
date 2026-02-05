@@ -17,6 +17,8 @@ This guide is for a single operator or builder running iBank locally with safe d
 4. iBank either executes (Pure AI) or queues for approval (Hybrid).
 5. Any external action must have a commitment id first.
 
+For cross-rail routes (on-chain/off-chain/hybrid), execute with `POST /v1/bridge/execute` using an existing commitment id.
+
 ## Start Service
 
 ```bash
@@ -104,7 +106,7 @@ curl -s http://127.0.0.1:8091/v1/approvals/pending
 ```bash
 curl -s -X POST http://127.0.0.1:8091/v1/approvals/<trace_id>/approve \
   -H 'content-type: application/json' \
-  -d '{"approver_id":"ops-user","note":"approved"}'
+  -d '{"approver_id":"ops-user","decision":"approve","signature":"sig-1","anchor":"attestation://ops/1","note":"approved"}'
 ```
 
 ## Reject a Pending Item
@@ -112,7 +114,7 @@ curl -s -X POST http://127.0.0.1:8091/v1/approvals/<trace_id>/approve \
 ```bash
 curl -s -X POST http://127.0.0.1:8091/v1/approvals/<trace_id>/reject \
   -H 'content-type: application/json' \
-  -d '{"approver_id":"ops-user","note":"not enough evidence"}'
+  -d '{"approver_id":"ops-user","decision":"deny","signature":"sig-2","anchor":"attestation://ops/2","note":"not enough evidence"}'
 ```
 
 This writes an explicit rejection outcome and removes the queue item.

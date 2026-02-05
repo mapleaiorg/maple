@@ -5,7 +5,6 @@ edition.workspace = true
 description = "Mapleverse Service - Unified execution service"
 
 [dependencies]
-mapleverse-types = { workspace = true }
 mapleverse-executor = { workspace = true }
 mapleverse-connectors = { workspace = true }
 mapleverse-evidence = { workspace = true }

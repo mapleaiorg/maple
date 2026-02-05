@@ -20,6 +20,10 @@ From `ibank-core`:
 - `HandleStatus` / `ExecutionMode`
 - `MeaningField`, `IntentRecord`, `RiskReport`
 - `CommitmentRecord` and `AccountableWireMessage`
+- `ComplianceDecision` and `ComplianceProof`
+- `EscalationCase`, `EscalationWorkflowState`, `HumanAttestation`
+- `BridgeExecutionRequest`, `BridgeLeg`, and `UnifiedBridgeReceipt`
+- `CommerceIntent`, `AgenticCommerceAgent`, `CommerceOrder`, and tracking/dispute result types
 
 ## Integrating in Rust
 
@@ -66,11 +70,75 @@ cfg.ledger_storage = LedgerStorageConfig::postgres(
 Service routes:
 
 - `POST /v1/handle`
+- `POST /v1/bridge/execute`
+- `GET /v1/bridge/receipts`
+- `GET /v1/compliance/trace/{trace_id}`
 - `GET /v1/ledger/entries`
 - `GET /v1/ledger/snapshot/latest`
 - `GET /v1/approvals/pending`
+- `GET /v1/approvals/case/{trace_id}`
 - `POST /v1/approvals/{trace_id}/approve`
 - `POST /v1/approvals/{trace_id}/reject`
+
+Approval attestation payload supports:
+
+- `decision`: `approve | deny | modify`
+- `signature`
+- `anchor`
+- `constraints` (for modify)
+
+## Executing Bridge Routes
+
+Bridge execution is commitment-authorized and designed for on-chain/off-chain/hybrid paths.
+
+Core API:
+
+```rust
+use ibank_core::{BridgeExecutionRequest, BridgeLeg, ChainAssetKind, ChainBridgeLeg, RailBridgeLeg};
+
+let request = BridgeExecutionRequest::new(
+    "exec-1",
+    "trace-1",
+    commitment_id,
+    "issuer-a",
+    "merchant-b",
+    vec![
+        BridgeLeg::Chain(ChainBridgeLeg {
+            leg_id: "leg-chain-1".to_string(),
+            adapter_id: "evm-mock".to_string(),
+            network: "base-sepolia".to_string(),
+            asset: "USDC".to_string(),
+            asset_kind: ChainAssetKind::Stablecoin,
+            from_address: "0xaaa".to_string(),
+            to_address: "0xbbb".to_string(),
+            amount_minor: 25_000,
+            memo: Some("fiat->stablecoin".to_string()),
+        }),
+        BridgeLeg::Rail(RailBridgeLeg {
+            leg_id: "leg-rail-1".to_string(),
+            adapter_id: "rail-mock".to_string(),
+            rail: "ach".to_string(),
+            currency: "USD".to_string(),
+            from_account: "acct-a".to_string(),
+            to_account: "acct-b".to_string(),
+            amount_minor: 25_000,
+            memo: Some("stablecoin->local rail".to_string()),
+        }),
+    ],
+);
+
+let receipt = engine.execute_bridge_route(request).await?;
+```
+
+Register bridge adapters:
+
+```rust
+use ibank_adapters::{MockEvmBridgeAdapter, MockRailBridgeAdapter};
+use std::sync::Arc;
+
+engine.register_chain_adapter(Arc::new(MockEvmBridgeAdapter)).await?;
+engine.register_rail_adapter(Arc::new(MockRailBridgeAdapter)).await?;
+```
 
 ## gRPC Integration
 
@@ -147,9 +215,26 @@ Reference implementations:
 - `OpenBankingAggregationConnector` in `ibank/crates/ibank-adapters/src/lib.rs`
 - `CryptoWalletAggregationConnector` in `ibank/crates/ibank-adapters/src/lib.rs`
 
+## Adding Bridge Adapters
+
+Bridge adapters are separate from settlement connectors and support leg-level compensation.
+
+- On-chain adapters implement `ChainAdapter`.
+- Rail adapters implement `RailAdapter`.
+
+Required adapter behavior:
+
+1. Reject leg execution if commitment reference is missing from accountable wire message.
+2. Return deterministic leg receipts (`tx_hash` or rail reference).
+3. Implement compensating action callback used on partial-failure recovery.
+
 ## Extending Policy
 
 You can adjust deterministic thresholds via `RiskPolicyConfig`.
+
+Compliance-specific thresholds and block rules are configured under:
+
+- `RiskPolicyConfig::compliance` (`CompliancePolicyConfig`)
 
 If adding new policy factors:
 

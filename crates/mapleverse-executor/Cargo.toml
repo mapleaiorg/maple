@@ -5,10 +5,8 @@ edition.workspace = true
 description = "Mapleverse Executor - Execution engine"
 
 [dependencies]
-mapleverse-types = { workspace = true }
 rcf-types = { workspace = true }
 rcf-commitment = { workspace = true }
-aas-types = { workspace = true }
 serde = { workspace = true }
 chrono = { workspace = true }
 uuid = { workspace = true }

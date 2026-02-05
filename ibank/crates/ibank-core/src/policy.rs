@@ -1,10 +1,45 @@
-use crate::types::{RiskBreakdown, RiskReport, TransferIntent};
+use crate::types::{
+    ComplianceDecision, ComplianceProof, RiskBreakdown, RiskReport, TransferIntent,
+};
+use std::collections::BTreeSet;
 
 /// Operational autonomy mode for a decision.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AutonomyMode {
     PureAi,
     Hybrid,
+}
+
+/// Explicit compliance gate policy configuration.
+#[derive(Debug, Clone)]
+pub struct CompliancePolicyConfig {
+    pub policy_version: String,
+    /// Fraud/anomaly scores at or above this threshold cannot run pure autonomous mode.
+    pub pure_ai_fraud_threshold: u8,
+    /// Counterparty risk at or above this threshold requires review.
+    pub pure_ai_counterparty_threshold: u8,
+    /// Jurisdiction scores at or above this threshold require review.
+    pub pure_ai_jurisdiction_threshold: u8,
+    /// Explicit fraud/anomaly hard block.
+    pub block_fraud_threshold: u8,
+    /// Any uncertainty at/above this value cannot be auto-green.
+    pub uncertainty_review_threshold: f32,
+    /// Risk score uplift applied when compliance is uncertain.
+    pub uncertainty_risk_penalty: u8,
+}
+
+impl Default for CompliancePolicyConfig {
+    fn default() -> Self {
+        Self {
+            policy_version: "ibank-compliance-v1".to_string(),
+            pure_ai_fraud_threshold: 60,
+            pure_ai_counterparty_threshold: 70,
+            pure_ai_jurisdiction_threshold: 70,
+            block_fraud_threshold: 95,
+            uncertainty_review_threshold: 0.30,
+            uncertainty_risk_penalty: 20,
+        }
+    }
 }
 
 /// Deterministic risk policy configuration.
@@ -22,6 +57,8 @@ pub struct RiskPolicyConfig {
     pub fraud_hybrid_threshold: u8,
     /// Risk score at/above this value requires hybrid review.
     pub hybrid_score_threshold: u8,
+    /// Compliance gate policy.
+    pub compliance: CompliancePolicyConfig,
 }
 
 impl Default for RiskPolicyConfig {
@@ -35,6 +72,7 @@ impl Default for RiskPolicyConfig {
             uncertainty_hybrid_threshold: 0.45,
             fraud_hybrid_threshold: 70,
             hybrid_score_threshold: 65,
+            compliance: CompliancePolicyConfig::default(),
         }
     }
 }
@@ -47,7 +85,7 @@ pub enum RiskDecision {
     Deny(RiskReport),
 }
 
-/// Deterministic risk engine.
+/// Deterministic risk + compliance policy engine.
 ///
 /// This logic is intentionally rule-based and free of probabilistic side effects,
 /// so the same input always yields the same decision.
@@ -65,8 +103,162 @@ impl RiskPolicyEngine {
         &self.config
     }
 
+    /// Evaluate explicit compliance gate with reason codes and evidence pointers.
+    pub fn evaluate_compliance(&self, intent: &TransferIntent) -> ComplianceDecision {
+        let mut block_reasons = BTreeSet::new();
+        let mut review_reasons = BTreeSet::new();
+        let mut uncertainty_score = 0_u8;
+        let evidence_pointers = compliance_evidence_pointers(intent);
+
+        let kyc_status = intent
+            .metadata
+            .get("kyc_status")
+            .map(|value| value.to_ascii_lowercase());
+        let aml_status = intent
+            .metadata
+            .get("aml_status")
+            .map(|value| value.to_ascii_lowercase());
+        let sanctions_status = intent
+            .metadata
+            .get("sanctions_status")
+            .map(|value| value.to_ascii_lowercase());
+
+        if has_flag(intent, "sanctions_hit")
+            || matches!(
+                sanctions_status.as_deref(),
+                Some("hit" | "blocked" | "positive_match")
+            )
+        {
+            block_reasons.insert("SANCTIONS_HIT".to_string());
+        }
+
+        if has_flag(intent, "invalid_kyc")
+            || matches!(
+                kyc_status.as_deref(),
+                Some("invalid" | "rejected" | "failed")
+            )
+        {
+            block_reasons.insert("INVALID_KYC".to_string());
+        }
+
+        if has_flag(intent, "aml_blocked") || matches!(aml_status.as_deref(), Some("blocked")) {
+            block_reasons.insert("AML_BLOCKED".to_string());
+        }
+
+        if has_flag(intent, "missing_kyc")
+            || has_flag(intent, "manual_kyc_required")
+            || matches!(kyc_status.as_deref(), Some("missing" | "pending"))
+        {
+            review_reasons.insert("MISSING_KYC".to_string());
+        }
+
+        if matches!(kyc_status.as_deref(), Some("unknown")) {
+            review_reasons.insert("KYC_UNKNOWN".to_string());
+            uncertainty_score = uncertainty_score.max(65);
+        }
+
+        if has_flag(intent, "aml_review")
+            || matches!(aml_status.as_deref(), Some("review" | "pending"))
+        {
+            review_reasons.insert("AML_REVIEW_REQUIRED".to_string());
+        }
+
+        if matches!(aml_status.as_deref(), Some("unknown")) {
+            review_reasons.insert("AML_UNKNOWN".to_string());
+            uncertainty_score = uncertainty_score.max(60);
+        }
+
+        if matches!(sanctions_status.as_deref(), Some("unknown")) {
+            review_reasons.insert("SANCTIONS_UNKNOWN".to_string());
+            uncertainty_score = uncertainty_score.max(70);
+        }
+
+        let jurisdiction = jurisdiction_score(&intent.jurisdiction);
+        if jurisdiction >= self.config.compliance.pure_ai_jurisdiction_threshold {
+            review_reasons.insert("JURISDICTION_POLICY_REVIEW".to_string());
+        }
+
+        if intent.anomaly_score >= self.config.compliance.block_fraud_threshold {
+            block_reasons.insert("FRAUD_BLOCK".to_string());
+        } else if intent.anomaly_score >= self.config.compliance.pure_ai_fraud_threshold {
+            review_reasons.insert("FRAUD_ESCALATION".to_string());
+        }
+
+        if intent.counterparty_risk >= self.config.compliance.pure_ai_counterparty_threshold {
+            review_reasons.insert("COUNTERPARTY_RISK_REVIEW".to_string());
+        }
+
+        if intent.model_uncertainty >= self.config.compliance.uncertainty_review_threshold
+            || has_flag(intent, "compliance_uncertain")
+        {
+            review_reasons.insert("MODEL_UNCERTAINTY_REVIEW".to_string());
+            uncertainty_score = uncertainty_score.max(scale_uncertainty(intent.model_uncertainty));
+        }
+
+        if evidence_pointers.is_empty() {
+            review_reasons.insert("MISSING_EVIDENCE".to_string());
+            uncertainty_score = uncertainty_score.max(80);
+        }
+
+        if !block_reasons.is_empty() {
+            return ComplianceDecision::block(
+                block_reasons.into_iter().collect(),
+                evidence_pointers,
+            );
+        }
+
+        if !review_reasons.is_empty() {
+            return ComplianceDecision::review_required(
+                review_reasons.into_iter().collect(),
+                evidence_pointers,
+                uncertainty_score,
+            );
+        }
+
+        ComplianceDecision::green(
+            vec!["BASELINE_CHECKS_PASSED".to_string()],
+            evidence_pointers,
+        )
+    }
+
+    /// Build a redacted compliance proof suitable for commitment platform data.
+    pub fn generate_compliance_proof(&self, decision: &ComplianceDecision) -> ComplianceProof {
+        let mut evidence_hashes = decision
+            .evidence_pointers
+            .iter()
+            .map(|pointer| blake3::hash(pointer.as_bytes()).to_hex().to_string())
+            .collect::<Vec<_>>();
+        evidence_hashes.sort();
+        evidence_hashes.dedup();
+
+        let mut reason_codes = decision.reasons.clone();
+        reason_codes.sort();
+        reason_codes.dedup();
+
+        ComplianceProof {
+            policy_version: self.config.compliance.policy_version.clone(),
+            decision: decision.state.clone(),
+            reason_codes,
+            evidence_hashes,
+        }
+    }
+
     pub fn evaluate(&self, intent: &TransferIntent, mode: AutonomyMode) -> RiskDecision {
-        let mut reasons = Vec::new();
+        let compliance = self.evaluate_compliance(intent);
+        self.evaluate_with_compliance(intent, mode, &compliance)
+    }
+
+    pub fn evaluate_with_compliance(
+        &self,
+        intent: &TransferIntent,
+        mode: AutonomyMode,
+        compliance: &ComplianceDecision,
+    ) -> RiskDecision {
+        let mut reasons = compliance
+            .reasons
+            .iter()
+            .map(|reason| format!("compliance:{reason}"))
+            .collect::<Vec<_>>();
 
         // Hard-deny conditions are deterministic and independent of autonomy mode.
         if intent.amount_minor > self.config.hard_limit_amount_minor {
@@ -91,28 +283,25 @@ impl RiskPolicyEngine {
             });
         }
 
-        for flag in &intent.compliance_flags {
-            if matches!(flag.as_str(), "sanctions_hit" | "aml_blocked") {
-                reasons.push(format!("compliance flag '{}' enforces deny", flag));
-                return RiskDecision::Deny(RiskReport {
-                    score: 100,
-                    reasons,
-                    factors: RiskBreakdown {
-                        amount: amount_score(
-                            intent.amount_minor,
-                            self.config.pure_ai_max_amount_minor,
-                        ),
-                        counterparty: intent.counterparty_risk.min(100),
-                        jurisdiction: jurisdiction_score(&intent.jurisdiction),
-                        anomaly: intent.anomaly_score.min(100),
-                        model_uncertainty: scale_uncertainty(intent.model_uncertainty),
-                    },
-                    fraud_score: intent.anomaly_score.min(100),
-                    blocking_ambiguity: false,
-                    requires_hybrid: false,
-                    denied: true,
-                });
+        if compliance.is_block() {
+            if reasons.is_empty() {
+                reasons.push("compliance:block".to_string());
             }
+            return RiskDecision::Deny(RiskReport {
+                score: 100,
+                reasons,
+                factors: RiskBreakdown {
+                    amount: amount_score(intent.amount_minor, self.config.pure_ai_max_amount_minor),
+                    counterparty: intent.counterparty_risk.min(100),
+                    jurisdiction: jurisdiction_score(&intent.jurisdiction),
+                    anomaly: intent.anomaly_score.min(100),
+                    model_uncertainty: scale_uncertainty(intent.model_uncertainty),
+                },
+                fraud_score: intent.anomaly_score.min(100),
+                blocking_ambiguity: false,
+                requires_hybrid: false,
+                denied: true,
+            });
         }
 
         let amount_factor = amount_score(intent.amount_minor, self.config.pure_ai_max_amount_minor);
@@ -123,7 +312,7 @@ impl RiskPolicyEngine {
 
         // Weighted deterministic score over all required factors.
         // Integer arithmetic keeps results stable across platforms.
-        let score = ((amount_factor as u16 * 30
+        let mut score = ((amount_factor as u16 * 30
             + counterparty_factor as u16 * 20
             + jurisdiction_factor as u16 * 20
             + anomaly_factor as u16 * 20
@@ -145,6 +334,16 @@ impl RiskPolicyEngine {
             ));
         }
 
+        if compliance.uncertainty_score > 0 {
+            let penalty = self
+                .config
+                .compliance
+                .uncertainty_risk_penalty
+                .min(compliance.uncertainty_score.max(1));
+            score = score.saturating_add(penalty);
+            reasons.push(format!("compliance uncertainty elevated risk by {penalty}"));
+        }
+
         if intent.dispute_flag || intent.transaction_type.eq_ignore_ascii_case("dispute") {
             reasons.push("dispute workflow requires human approval".to_string());
         }
@@ -163,13 +362,8 @@ impl RiskPolicyEngine {
             ));
         }
 
-        if intent
-            .compliance_flags
-            .iter()
-            .any(|f| matches!(f.as_str(), "pep_review" | "manual_kyc_required"))
-        {
-            reasons.push("compliance review requires hybrid approval".to_string());
-        }
+        let compliance_requires_review = compliance.is_review_required();
+        let compliance_uncertain = compliance.uncertainty_score > 0;
 
         let requires_hybrid = intent.amount_minor > self.config.pure_ai_max_amount_minor
             || blocking_ambiguity
@@ -177,10 +371,8 @@ impl RiskPolicyEngine {
             || intent.dispute_flag
             || anomaly_factor >= self.config.fraud_hybrid_threshold
             || score >= self.config.hybrid_score_threshold
-            || intent
-                .compliance_flags
-                .iter()
-                .any(|f| matches!(f.as_str(), "pep_review" | "manual_kyc_required"));
+            || compliance_requires_review
+            || compliance_uncertain;
 
         let report = RiskReport {
             score,
@@ -229,6 +421,28 @@ fn scale_uncertainty(uncertainty: f32) -> u8 {
     (uncertainty.clamp(0.0, 1.0) * 100.0) as u8
 }
 
+fn has_flag(intent: &TransferIntent, expected: &str) -> bool {
+    intent
+        .compliance_flags
+        .iter()
+        .any(|flag| flag.eq_ignore_ascii_case(expected))
+}
+
+fn compliance_evidence_pointers(intent: &TransferIntent) -> Vec<String> {
+    let mut pointers = intent
+        .metadata
+        .iter()
+        .filter(|(key, _)| key.starts_with("evidence_"))
+        .map(|(_, value)| value.clone())
+        .collect::<Vec<_>>();
+    pointers.push(format!("proof://{}/kyc", intent.trace_id));
+    pointers.push(format!("proof://{}/aml", intent.trace_id));
+    pointers.push(format!("proof://{}/sanctions", intent.trace_id));
+    pointers.sort();
+    pointers.dedup();
+    pointers
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -244,6 +458,45 @@ mod tests {
             "invoice payment",
         )
         .with_risk_inputs("US", 10, 10, 0.05)
+    }
+
+    #[test]
+    fn sanctioned_counterparty_results_in_block() {
+        let engine = RiskPolicyEngine::new(RiskPolicyConfig::default());
+        let mut intent = base_intent(50_000);
+        intent.compliance_flags.push("sanctions_hit".to_string());
+
+        let decision = engine.evaluate_compliance(&intent);
+        assert!(decision.is_block());
+        assert!(decision
+            .reasons
+            .iter()
+            .any(|reason| reason == "SANCTIONS_HIT"));
+    }
+
+    #[test]
+    fn missing_kyc_results_in_review_required() {
+        let engine = RiskPolicyEngine::new(RiskPolicyConfig::default());
+        let mut intent = base_intent(50_000);
+        intent
+            .metadata
+            .insert("kyc_status".to_string(), "missing".to_string());
+
+        let decision = engine.evaluate_compliance(&intent);
+        assert!(decision.is_review_required());
+        assert!(decision
+            .reasons
+            .iter()
+            .any(|reason| reason == "MISSING_KYC"));
+    }
+
+    #[test]
+    fn low_risk_results_in_green() {
+        let engine = RiskPolicyEngine::new(RiskPolicyConfig::default());
+        let intent = base_intent(50_000);
+
+        let decision = engine.evaluate_compliance(&intent);
+        assert!(decision.is_green());
     }
 
     #[test]
@@ -302,6 +555,24 @@ mod tests {
         match engine.evaluate(&intent, AutonomyMode::PureAi) {
             RiskDecision::RequireHybrid(report) => {
                 assert!(report.fraud_score >= 90);
+            }
+            other => panic!("expected hybrid requirement, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn uncertainty_must_not_auto_green() {
+        let engine = RiskPolicyEngine::new(RiskPolicyConfig::default());
+        let intent = base_intent(50_000).with_risk_inputs("US", 10, 10, 0.65);
+        let decision = engine.evaluate_compliance(&intent);
+        assert!(decision.is_review_required());
+
+        match engine.evaluate_with_compliance(&intent, AutonomyMode::PureAi, &decision) {
+            RiskDecision::RequireHybrid(report) => {
+                assert!(report
+                    .reasons
+                    .iter()
+                    .any(|reason| reason.contains("compliance uncertainty elevated risk")));
             }
             other => panic!("expected hybrid requirement, got {:?}", other),
         }

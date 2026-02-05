@@ -5,7 +5,6 @@ edition.workspace = true
 description = "Mapleverse Connectors - Domain-specific execution adapters"
 
 [dependencies]
-mapleverse-types = { workspace = true }
 mapleverse-executor = { workspace = true }
 rcf-types = { workspace = true }
 rcf-commitment = { workspace = true }

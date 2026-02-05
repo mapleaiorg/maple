@@ -76,14 +76,13 @@ impl EvaluationEngine {
 
         domain_stat.total_consequences += 1;
 
-        // Track success/failure based on reversibility status
-        match &record.consequence.reversibility_status {
-            mapleverse_types::ReversibilityStatus::Reversed => {
-                domain_stat.reversed_count += 1;
-            }
-            _ => {
-                domain_stat.successful_count += 1;
-            }
+        // Track success/failure based on reversibility
+        // Note: In EVE's model, we track reversible vs irreversible consequences
+        // The "reversed_count" is a misnomer - it tracks reversible consequences
+        if record.consequence.reversible {
+            domain_stat.reversed_count += 1;
+        } else {
+            domain_stat.successful_count += 1;
         }
 
         Ok(())
@@ -146,28 +145,18 @@ impl EvaluationEngine {
         records: &[ConsequenceRecord],
     ) -> Result<Option<LearningArtifact>, EvaluationError> {
         // Simple anomaly detection: look for unusual reversibility patterns
-        let reversed_count = records
+        let reversible_count = records
             .iter()
-            .filter(|r| {
-                matches!(
-                    r.consequence.reversibility_status,
-                    mapleverse_types::ReversibilityStatus::Reversed
-                )
-            })
+            .filter(|r| r.consequence.reversible)
             .count();
 
-        if reversed_count as f64 / records.len() as f64 > 0.3 {
+        if reversible_count as f64 / records.len() as f64 > 0.3 {
             return Ok(Some(LearningArtifact {
                 artifact_id: ArtifactId::generate(),
                 artifact_type: ArtifactType::Anomaly,
                 source_commitment_ids: records
                     .iter()
-                    .filter(|r| {
-                        matches!(
-                            r.consequence.reversibility_status,
-                            mapleverse_types::ReversibilityStatus::Reversed
-                        )
-                    })
+                    .filter(|r| r.consequence.reversible)
                     .map(|r| r.consequence.commitment_id.clone())
                     .collect(),
                 domain: records
@@ -175,10 +164,10 @@ impl EvaluationEngine {
                     .map(|r| r.commitment_characteristics.domain.clone())
                     .unwrap_or(EffectDomain::Computation),
                 content: ArtifactContent {
-                    summary: "High rollback rate detected".to_string(),
+                    summary: "High reversible consequence rate detected".to_string(),
                     details: format!(
-                        "{} out of {} consequences were rolled back",
-                        reversed_count,
+                        "{} out of {} consequences are reversible",
+                        reversible_count,
                         records.len()
                     ),
                     data: HashMap::new(),
@@ -276,21 +265,19 @@ pub enum EvaluationError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use eve_types::CommitmentCharacteristics;
-    use mapleverse_types::{ConsequenceId, ReversibilityStatus};
+    use eve_types::{CommitmentCharacteristics, Consequence};
     use rcf_commitment::CommitmentId;
 
     fn create_test_record(domain: EffectDomain) -> ConsequenceRecord {
         ConsequenceRecord {
             record_id: uuid::Uuid::new_v4().to_string(),
-            consequence: mapleverse_types::Consequence {
-                consequence_id: ConsequenceId::generate(),
+            consequence: Consequence {
+                consequence_id: uuid::Uuid::new_v4().to_string(),
                 commitment_id: CommitmentId::generate(),
                 effect_domain: domain.clone(),
                 description: "Test".to_string(),
-                evidence: vec![],
                 occurred_at: chrono::Utc::now(),
-                reversibility_status: ReversibilityStatus::Irreversible,
+                reversible: false,
             },
             commitment_characteristics: CommitmentCharacteristics {
                 domain,

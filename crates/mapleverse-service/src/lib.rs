@@ -7,9 +7,9 @@
 
 use mapleverse_connectors::{CommunicationConnector, ComputationConnector, DataConnector};
 use mapleverse_evidence::{EvidenceError, EvidenceStore};
-use mapleverse_executor::{Executor, ExecutorError};
-use mapleverse_types::{
-    ExecutionParameters, ExecutionRequest, ExecutionRequestId, ExecutionResult,
+use mapleverse_executor::{
+    Evidence, ExecutionParameters, ExecutionRequest, ExecutionRequestId, ExecutionResult, Executor,
+    ExecutorError,
 };
 use rcf_commitment::{CommitmentId, RcfCommitment};
 use rcf_types::EffectDomain;
@@ -90,7 +90,7 @@ impl MapleverseService {
     pub fn get_evidence(
         &self,
         commitment_id: &CommitmentId,
-    ) -> Result<Vec<mapleverse_types::Evidence>, MapleverseError> {
+    ) -> Result<Vec<Evidence>, MapleverseError> {
         self.evidence_store.get(commitment_id).map_err(Into::into)
     }
 

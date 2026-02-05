@@ -49,6 +49,9 @@ members = [
     "crates/workflow-types",
     "crates/workflow-engine",
     "crates/workflow-dsl",
+
+    # Mapleverse World (MAPLE v2 - AI-only civilization)
+    "crates/mapleverse-world",
     "crates/resonator-identity",
     "crates/resonator-meaning",
     "crates/resonator-intent",
