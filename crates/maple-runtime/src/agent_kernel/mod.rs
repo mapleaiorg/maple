@@ -4,12 +4,28 @@
 //! `Agent = Resonator + Profile + CapabilitySet + ContractSet + State`.
 //! All consequential capability calls flow through this kernel so the
 //! commitment boundary cannot be bypassed.
+//!
+//! The implementation maps directly to the 8 architectural invariants:
+//! - #1 Presence precedes meaning: `assert_presence_precedes_meaning`.
+//! - #2 Meaning precedes intent: `assert_meaning_precedes_intent`.
+//! - #3 Intent precedes commitment: `assert_intent_precedes_commitment`.
+//! - #4 Commitment precedes consequence: `assert_commitment_precedes_consequence`
+//!   and [`CommitmentGateway`].
+//! - #5 Coupling bounded by attention: represented by `AgentState.attention_budget`
+//!   and `AgentState.coupling_graph`.
+//! - #6 Safety overrides optimization: policy/capability checks happen before
+//!   every consequential execution.
+//! - #7 Human agency cannot be bypassed: profile + policy gates must pass
+//!   before execution.
+//! - #8 Failure must be explicit: typed errors + explicit journal/audit writes.
 
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
-use aas_capability::GrantRequest;
+use aas_capability::{CapabilityRegistry, GrantRequest};
 use aas_identity::{AgentMetadata, AgentType, RegistrationRequest};
+use aas_ledger::AccountabilityLedger;
+use aas_policy::{EvaluationContext, PolicyEngine};
 use aas_service::AasService;
 use aas_types::{AgentId, CommitmentOutcome, Decision, PolicyDecisionCard};
 use async_trait::async_trait;
@@ -17,8 +33,15 @@ use maple_storage::{AgentCheckpoint, AuditAppend, MapleStorage, QueryWindow};
 use rcf_commitment::{CommitmentBuilder, CommitmentId as RcfCommitmentId, RcfCommitment};
 use rcf_types::{CapabilityRef, EffectDomain, IdentityRef, ScopeConstraint, TemporalValidity};
 use rcf_validator::RcfValidator;
+use resonator_commitment::{ContractEngine, InMemoryContractEngine};
+use resonator_profiles::{builtin_profile, ProfileArchetype};
+use resonator_types::{
+    AttentionBudget as ResonatorAttentionBudget, CouplingGraph as ResonatorCouplingGraph,
+    ResonatorProfile as CanonicalResonatorProfile,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use sha2::{Digest, Sha256};
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
@@ -44,11 +67,147 @@ pub struct AgentExecutionProfile {
 impl Default for AgentExecutionProfile {
     fn default() -> Self {
         Self {
-            name: "default".to_string(),
+            name: "coordination".to_string(),
             min_intent_confidence: 0.65,
             require_commitment_for_consequence: true,
         }
     }
+}
+
+/// Journal stage names used by the resonance loop event schema.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum StageName {
+    Meaning,
+    Intent,
+    Commitment,
+    Consequence,
+}
+
+impl std::fmt::Display for StageName {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let value = match self {
+            StageName::Meaning => "meaning",
+            StageName::Intent => "intent",
+            StageName::Commitment => "commitment",
+            StageName::Consequence => "consequence",
+        };
+        write!(f, "{}", value)
+    }
+}
+
+/// Journal event kinds for explicit stage and consequence logging.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum JournalEventKind {
+    StageTransition {
+        from: StageName,
+        to: StageName,
+    },
+    ToolCallIssued {
+        capability_id: String,
+        contract_id: String,
+    },
+    ToolCallResult {
+        capability_id: String,
+        contract_id: String,
+        success: bool,
+        message: String,
+    },
+    AccountabilityRecorded {
+        contract_id: String,
+        receipt_hash: String,
+    },
+}
+
+/// Journal entry captured in the agent execution shell.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct JournalEntry {
+    pub timestamp: chrono::DateTime<chrono::Utc>,
+    pub resonator_id: String,
+    pub kind: JournalEventKind,
+}
+
+/// Short memory handle for immediate cognition context.
+pub trait ShortMemoryHandle: Send + Sync {
+    fn write(&self, key: &str, value: Value);
+    fn read(&self, key: &str) -> Option<Value>;
+}
+
+/// Journal summary handle for stage transitions and accountability records.
+pub trait JournalSummaryHandle: Send + Sync {
+    fn append(&self, entry: JournalEntry);
+    fn recent(&self, limit: usize) -> Vec<JournalEntry>;
+}
+
+#[derive(Default)]
+pub struct InMemoryShortMemory {
+    values: std::sync::RwLock<HashMap<String, Value>>,
+}
+
+impl ShortMemoryHandle for InMemoryShortMemory {
+    fn write(&self, key: &str, value: Value) {
+        if let Ok(mut guard) = self.values.write() {
+            guard.insert(key.to_string(), value);
+        }
+    }
+
+    fn read(&self, key: &str) -> Option<Value> {
+        self.values
+            .read()
+            .ok()
+            .and_then(|guard| guard.get(key).cloned())
+    }
+}
+
+#[derive(Default)]
+pub struct InMemoryJournalSummary {
+    entries: std::sync::RwLock<Vec<JournalEntry>>,
+}
+
+impl JournalSummaryHandle for InMemoryJournalSummary {
+    fn append(&self, entry: JournalEntry) {
+        if let Ok(mut guard) = self.entries.write() {
+            guard.push(entry);
+        }
+    }
+
+    fn recent(&self, limit: usize) -> Vec<JournalEntry> {
+        let Some(guard) = self.entries.read().ok() else {
+            return Vec::new();
+        };
+        if limit == 0 || guard.len() <= limit {
+            return guard.clone();
+        }
+        guard[guard.len() - limit..].to_vec()
+    }
+}
+
+/// Agent state composition surface:
+///
+/// `Agent = Resonator + governance handles + execution shell`.
+///
+/// This struct is intentionally composed from existing crates (resonator-types,
+/// resonator-profiles, AAS, RCF) rather than introducing duplicate concepts.
+///
+/// Invariant mapping:
+/// - #5 Coupling bounded by attention: `attention_budget` + `coupling_graph`
+///   are first-class fields so execution can be bounded and audited.
+/// - #6 Safety overrides optimization: policy/capability/ledger handles are
+///   always present in state and used before any side-effect.
+/// - #7 Human agency cannot be bypassed: profile + policy handles govern
+///   what autonomous execution is permitted.
+#[derive(Clone)]
+pub struct AgentState {
+    pub resonator_id: ResonatorId,
+    pub identity: IdentityRef,
+    pub profile: CanonicalResonatorProfile,
+    pub attention_budget: ResonatorAttentionBudget,
+    pub coupling_graph: ResonatorCouplingGraph,
+    pub contract_engine: Arc<dyn ContractEngine>,
+    pub capability_registry: Arc<CapabilityRegistry>,
+    pub policy_engine: Arc<PolicyEngine>,
+    pub ledger: Arc<AccountabilityLedger>,
+    pub short_memory: Arc<dyn ShortMemoryHandle>,
+    pub journal: Arc<dyn JournalSummaryHandle>,
 }
 
 /// Capability descriptor bound to an agent.
@@ -85,20 +244,21 @@ impl CapabilityDescriptor {
 }
 
 /// Immutable view of agent composition stored in the kernel.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct AgentHost {
     pub resonator_id: ResonatorId,
     pub profile: AgentExecutionProfile,
     pub aas_agent_id: AgentId,
     pub identity_ref: IdentityRef,
+    pub agent_state: AgentState,
     pub capability_set: HashMap<String, CapabilityDescriptor>,
     pub contract_set: HashSet<RcfCommitmentId>,
-    pub state: AgentState,
+    pub lifecycle: AgentLifecycleState,
 }
 
 /// Runtime state of an agent host.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum AgentState {
+pub enum AgentLifecycleState {
     Idle,
     FormingMeaning,
     StabilizingIntent,
@@ -282,6 +442,43 @@ pub struct AgentAuditEvent {
     pub commitment_id: Option<String>,
 }
 
+/// Context passed into [`CommitmentGateway::execute`].
+pub struct CommitmentExecutionContext<'a> {
+    pub agent_state: &'a AgentState,
+    pub aas_agent_id: &'a AgentId,
+    pub resonator_id: ResonatorId,
+    pub capability: &'a CapabilityDescriptor,
+    pub executor: Arc<dyn CapabilityExecutor>,
+}
+
+/// Typed receipt emitted after gateway execution.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CommitmentExecutionReceipt {
+    pub receipt_id: String,
+    pub contract_id: String,
+    pub capability_id: String,
+    pub issued_at: chrono::DateTime<chrono::Utc>,
+    pub receipt_hash: String,
+    pub tool_result: CapabilityExecution,
+}
+
+/// Explicit execution errors for invariant/policy/capability/contract boundaries.
+#[derive(Debug, thiserror::Error)]
+pub enum CommitmentExecutionError {
+    #[error("InvariantViolation: {0}")]
+    InvariantViolation(String),
+    #[error("PolicyDenied: {0}")]
+    PolicyDenied(String),
+    #[error("CapabilityDenied: {0}")]
+    CapabilityDenied(String),
+    #[error("ContractMissing: {0}")]
+    ContractMissing(String),
+    #[error("ToolFailure: {0}")]
+    ToolFailure(String),
+    #[error("ReceiptWriteFailure: {0}")]
+    ReceiptWriteFailure(String),
+}
+
 /// Commitment gateway wraps validator + AAS submission + lifecycle recording.
 #[derive(Clone)]
 pub struct CommitmentGateway {
@@ -325,6 +522,194 @@ impl CommitmentGateway {
     ) -> Result<PolicyDecisionCard, AgentKernelError> {
         self.assert_binding(&commitment, principal, capability, expected_capability_id)?;
         self.authorize(commitment).await
+    }
+
+    /// The only path to consequence execution.
+    ///
+    /// Invariant mapping:
+    /// - commitment precedes consequence (checks contract existence + active status)
+    /// - safety overrides optimization (policy + capability checks before tool calls)
+    /// - failure must be explicit (tool/persistence failures are returned as typed errors)
+    pub async fn execute(
+        &self,
+        capability_id: &str,
+        params: Value,
+        contract_id: &RcfCommitmentId,
+        context: CommitmentExecutionContext<'_>,
+    ) -> Result<CommitmentExecutionReceipt, CommitmentExecutionError> {
+        // a) contract exists and is active
+        let stored = context
+            .agent_state
+            .contract_engine
+            .get_contract(contract_id)
+            .map_err(|e| CommitmentExecutionError::ContractMissing(e.to_string()))?
+            .ok_or_else(|| {
+                CommitmentExecutionError::ContractMissing(format!(
+                    "contract {} does not exist",
+                    contract_id
+                ))
+            })?;
+        if !matches!(stored.status, resonator_commitment::ContractStatus::Active) {
+            return Err(CommitmentExecutionError::ContractMissing(format!(
+                "contract {} is not active",
+                contract_id
+            )));
+        }
+
+        // b) profile allows contract type
+        if !context
+            .agent_state
+            .profile
+            .domains
+            .iter()
+            .any(|domain| domain.matches(&stored.contract.effect_domain))
+        {
+            return Err(CommitmentExecutionError::PolicyDenied(format!(
+                "profile `{}` does not permit domain {}",
+                context.agent_state.profile.name, stored.contract.effect_domain
+            )));
+        }
+
+        // c) policy engine approves requested capability usage for this contract
+        let policy_eval = context
+            .agent_state
+            .policy_engine
+            .evaluate(
+                &stored.contract,
+                &EvaluationContext {
+                    agent_id: context.aas_agent_id.clone(),
+                    capabilities: vec![capability_id.to_string()],
+                    metadata: HashMap::new(),
+                },
+            )
+            .map_err(|e| CommitmentExecutionError::PolicyDenied(e.to_string()))?;
+        if !policy_eval.decision.allows_execution() {
+            return Err(CommitmentExecutionError::PolicyDenied(format!(
+                "policy decision {:?} blocks capability `{}`",
+                policy_eval.decision, capability_id
+            )));
+        }
+
+        // d) capability constraints pass
+        let cap_check = context
+            .agent_state
+            .capability_registry
+            .check(
+                context.aas_agent_id,
+                &context.capability.domain,
+                &context.capability.scope,
+            )
+            .map_err(|e| CommitmentExecutionError::CapabilityDenied(e.to_string()))?;
+        if !cap_check.authorized {
+            return Err(CommitmentExecutionError::CapabilityDenied(
+                cap_check
+                    .denial_reason
+                    .unwrap_or_else(|| "capability constraints denied execution".to_string()),
+            ));
+        }
+
+        context.agent_state.journal.append(JournalEntry {
+            timestamp: chrono::Utc::now(),
+            resonator_id: context.resonator_id.to_string(),
+            kind: JournalEventKind::ToolCallIssued {
+                capability_id: capability_id.to_string(),
+                contract_id: contract_id.0.clone(),
+            },
+        });
+
+        self.aas
+            .record_execution_started(contract_id)
+            .await
+            .map_err(|e| CommitmentExecutionError::ReceiptWriteFailure(e.to_string()))?;
+
+        // e) execute tool via connector adapter
+        let invocation = CapabilityInvocation {
+            resonator_id: context.resonator_id,
+            capability_name: capability_id.to_string(),
+            args: params,
+            commitment_id: Some(contract_id.clone()),
+        };
+
+        let tool_result = match context.executor.execute(&invocation).await {
+            Ok(result) => result,
+            Err(err) => {
+                context.agent_state.journal.append(JournalEntry {
+                    timestamp: chrono::Utc::now(),
+                    resonator_id: context.resonator_id.to_string(),
+                    kind: JournalEventKind::ToolCallResult {
+                        capability_id: capability_id.to_string(),
+                        contract_id: contract_id.0.clone(),
+                        success: false,
+                        message: err.to_string(),
+                    },
+                });
+                self.aas
+                    .record_outcome(
+                        contract_id,
+                        CommitmentOutcome {
+                            success: false,
+                            description: err.to_string(),
+                            completed_at: chrono::Utc::now(),
+                        },
+                    )
+                    .await
+                    .map_err(|e| CommitmentExecutionError::ReceiptWriteFailure(e.to_string()))?;
+                return Err(CommitmentExecutionError::ToolFailure(err.to_string()));
+            }
+        };
+
+        // f) write ToolCallResult to journal
+        context.agent_state.journal.append(JournalEntry {
+            timestamp: chrono::Utc::now(),
+            resonator_id: context.resonator_id.to_string(),
+            kind: JournalEventKind::ToolCallResult {
+                capability_id: capability_id.to_string(),
+                contract_id: contract_id.0.clone(),
+                success: true,
+                message: tool_result.summary.clone(),
+            },
+        });
+
+        self.aas
+            .record_outcome(
+                contract_id,
+                CommitmentOutcome {
+                    success: true,
+                    description: tool_result.summary.clone(),
+                    completed_at: chrono::Utc::now(),
+                },
+            )
+            .await
+            .map_err(|e| CommitmentExecutionError::ReceiptWriteFailure(e.to_string()))?;
+
+        let serializable = serde_json::json!({
+            "contract_id": contract_id.0,
+            "capability_id": capability_id,
+            "summary": tool_result.summary,
+            "timestamp": chrono::Utc::now(),
+        });
+        let payload = serde_json::to_vec(&serializable)
+            .map_err(|e| CommitmentExecutionError::ReceiptWriteFailure(e.to_string()))?;
+        let receipt_hash = format!("{:x}", Sha256::digest(&payload));
+
+        // g) write AccountabilityRecorded with receipt hash to journal
+        context.agent_state.journal.append(JournalEntry {
+            timestamp: chrono::Utc::now(),
+            resonator_id: context.resonator_id.to_string(),
+            kind: JournalEventKind::AccountabilityRecorded {
+                contract_id: contract_id.0.clone(),
+                receipt_hash: receipt_hash.clone(),
+            },
+        });
+
+        Ok(CommitmentExecutionReceipt {
+            receipt_id: format!("receipt-{}", Uuid::new_v4()),
+            contract_id: contract_id.0.clone(),
+            capability_id: capability_id.to_string(),
+            issued_at: chrono::Utc::now(),
+            receipt_hash,
+            tool_result,
+        })
     }
 
     fn assert_binding(
@@ -533,14 +918,32 @@ impl AgentKernel {
             capability_set.insert(cap.name.clone(), cap.clone());
         }
 
+        let canonical_profile = builtin_profile(ProfileArchetype::from_profile_name(
+            &registration.profile.name,
+        ));
+        let agent_state = AgentState {
+            resonator_id: resonator.id,
+            identity: registered.identity_ref.clone(),
+            profile: canonical_profile,
+            attention_budget: ResonatorAttentionBudget::default(),
+            coupling_graph: ResonatorCouplingGraph::default(),
+            contract_engine: Arc::new(InMemoryContractEngine::new()),
+            capability_registry: self.aas.capability_handle(),
+            policy_engine: self.aas.policy_handle(),
+            ledger: self.aas.ledger_handle(),
+            short_memory: Arc::new(InMemoryShortMemory::default()),
+            journal: Arc::new(InMemoryJournalSummary::default()),
+        };
+
         let host = AgentHost {
             resonator_id: resonator.id,
             profile: registration.profile,
             aas_agent_id: registered.agent_id,
             identity_ref: registered.identity_ref,
+            agent_state,
             capability_set,
             contract_set: HashSet::new(),
-            state: AgentState::Idle,
+            lifecycle: AgentLifecycleState::Idle,
         };
 
         self.agents.write().await.insert(resonator.id, host.clone());
@@ -599,7 +1002,7 @@ impl AgentKernel {
             .cloned()
             .ok_or_else(|| AgentKernelError::AgentNotFound(request.resonator_id.to_string()))?;
 
-        host.state = AgentState::FormingMeaning;
+        host.lifecycle = AgentLifecycleState::FormingMeaning;
 
         self.assert_presence_precedes_meaning(&host)?;
 
@@ -623,8 +1026,23 @@ impl AgentKernel {
             .await
             .map_err(|e| AgentKernelError::Model(e.to_string()))?;
 
+        host.agent_state.short_memory.write(
+            "last_meaning_summary",
+            Value::String(model_response.cognition.meaning_summary.clone()),
+        );
+        host.agent_state.short_memory.write(
+            "last_intent",
+            Value::String(model_response.cognition.intent.clone()),
+        );
+
         self.assert_meaning_precedes_intent(model_response.cognition.confidence)?;
-        host.state = AgentState::StabilizingIntent;
+        host.lifecycle = AgentLifecycleState::StabilizingIntent;
+        self.record_stage_transition(
+            &host.agent_state,
+            host.resonator_id,
+            StageName::Meaning,
+            StageName::Intent,
+        );
 
         let selected_tool = request.override_tool.clone().or_else(|| {
             model_response
@@ -673,7 +1091,7 @@ impl AgentKernel {
             None
         };
 
-        host.state = AgentState::Idle;
+        host.lifecycle = AgentLifecycleState::Idle;
         self.agents
             .write()
             .await
@@ -750,7 +1168,7 @@ impl AgentKernel {
             .map_err(|e| AgentKernelError::Aas(e.to_string()))?;
 
         if !cap_check.authorized {
-            host.state = AgentState::Failed;
+            host.lifecycle = AgentLifecycleState::Failed;
             self.append_audit(AgentAuditEvent {
                 event_id: format!("audit-{}", Uuid::new_v4()),
                 timestamp: chrono::Utc::now(),
@@ -770,7 +1188,7 @@ impl AgentKernel {
         let commitment_id = if capability.consequential
             && host.profile.require_commitment_for_consequence
         {
-            host.state = AgentState::AwaitingCommitment;
+            host.lifecycle = AgentLifecycleState::AwaitingCommitment;
             let commitment = if let Some(commitment) = commitment {
                 commitment
             } else {
@@ -788,8 +1206,11 @@ impl AgentKernel {
                 })
                 .await?;
                 self.persist_checkpoint(host, None).await?;
-                return Err(AgentKernelError::MissingCommitment {
-                    capability: capability_name.clone(),
+                return Err(AgentKernelError::ContractMissing {
+                    reason: format!(
+                        "missing explicit commitment for consequential capability `{}`",
+                        capability_name
+                    ),
                 });
             };
 
@@ -811,7 +1232,7 @@ impl AgentKernel {
             {
                 Ok(decision) => decision,
                 Err(err) => {
-                    host.state = AgentState::Failed;
+                    host.lifecycle = AgentLifecycleState::Failed;
                     self.append_audit(AgentAuditEvent {
                         event_id: format!("audit-{}", Uuid::new_v4()),
                         timestamp: chrono::Utc::now(),
@@ -828,7 +1249,7 @@ impl AgentKernel {
             };
 
             if !decision.decision.allows_execution() {
-                host.state = AgentState::Failed;
+                host.lifecycle = AgentLifecycleState::Failed;
                 self.append_audit(AgentAuditEvent {
                     event_id: format!("audit-{}", Uuid::new_v4()),
                     timestamp: chrono::Utc::now(),
@@ -843,18 +1264,29 @@ impl AgentKernel {
                 return Err(AgentKernelError::ApprovalRequired(decision.decision));
             }
 
+            match host
+                .agent_state
+                .contract_engine
+                .register_contract(commitment.clone())
+            {
+                Ok(_) => {}
+                Err(resonator_commitment::ContractEngineError::AlreadyExists(_)) => {}
+                Err(err) => return Err(AgentKernelError::Storage(err.to_string())),
+            }
+
+            self.record_stage_transition(
+                &host.agent_state,
+                host.resonator_id,
+                StageName::Intent,
+                StageName::Commitment,
+            );
             host.contract_set.insert(commitment.commitment_id.clone());
             Some(commitment.commitment_id)
         } else {
             None
         };
 
-        if let Some(ref cid) = commitment_id {
-            self.assert_commitment_precedes_consequence(cid)?;
-            self.gateway.record_execution_started(cid).await?;
-        }
-
-        host.state = AgentState::Executing;
+        host.lifecycle = AgentLifecycleState::Executing;
         self.persist_checkpoint(host, commitment_id.as_ref().map(|c| c.0.clone()))
             .await?;
 
@@ -866,59 +1298,104 @@ impl AgentKernel {
             .cloned()
             .ok_or_else(|| AgentKernelError::ExecutorMissing(capability_name.clone()))?;
 
-        let invocation = CapabilityInvocation {
-            resonator_id: host.resonator_id,
-            capability_name: capability_name.clone(),
-            args,
-            commitment_id: commitment_id.clone(),
-        };
+        if let Some(ref cid) = commitment_id {
+            self.assert_commitment_precedes_consequence(cid)?;
+            let gateway_result = self
+                .gateway
+                .execute(
+                    &capability_name,
+                    args.clone(),
+                    cid,
+                    CommitmentExecutionContext {
+                        agent_state: &host.agent_state,
+                        aas_agent_id: &host.aas_agent_id,
+                        resonator_id: host.resonator_id,
+                        capability: &capability,
+                        executor,
+                    },
+                )
+                .await;
 
-        let outcome = executor.execute(&invocation).await;
-
-        match outcome {
-            Ok(mut execution) => {
-                if let Some(ref cid) = commitment_id {
-                    self.gateway
-                        .record_success(cid, execution.summary.clone())
-                        .await?;
+            match gateway_result {
+                Ok(receipt) => {
+                    self.record_stage_transition(
+                        &host.agent_state,
+                        host.resonator_id,
+                        StageName::Commitment,
+                        StageName::Consequence,
+                    );
+                    let mut execution = receipt.tool_result.clone();
                     execution.payload["commitment_id"] = Value::String(cid.0.clone());
-                }
+                    execution.payload["receipt_hash"] = Value::String(receipt.receipt_hash.clone());
 
-                self.append_audit(AgentAuditEvent {
-                    event_id: format!("audit-{}", Uuid::new_v4()),
-                    timestamp: chrono::Utc::now(),
-                    resonator_id: host.resonator_id.to_string(),
-                    stage: "capability_execute".to_string(),
-                    success: true,
-                    message: execution.summary.clone(),
-                    commitment_id: commitment_id.as_ref().map(|c| c.0.clone()),
-                })
-                .await?;
-                self.persist_checkpoint(host, commitment_id.as_ref().map(|c| c.0.clone()))
+                    self.append_audit(AgentAuditEvent {
+                        event_id: format!("audit-{}", Uuid::new_v4()),
+                        timestamp: chrono::Utc::now(),
+                        resonator_id: host.resonator_id.to_string(),
+                        stage: "capability_execute".to_string(),
+                        success: true,
+                        message: execution.summary.clone(),
+                        commitment_id: Some(cid.0.clone()),
+                    })
                     .await?;
-
-                Ok(execution)
+                    self.persist_checkpoint(host, Some(cid.0.clone())).await?;
+                    Ok(execution)
+                }
+                Err(err) => {
+                    host.lifecycle = AgentLifecycleState::Failed;
+                    let mapped = map_gateway_error(err);
+                    self.append_audit(AgentAuditEvent {
+                        event_id: format!("audit-{}", Uuid::new_v4()),
+                        timestamp: chrono::Utc::now(),
+                        resonator_id: host.resonator_id.to_string(),
+                        stage: "capability_execute".to_string(),
+                        success: false,
+                        message: mapped.to_string(),
+                        commitment_id: Some(cid.0.clone()),
+                    })
+                    .await?;
+                    self.persist_checkpoint(host, Some(cid.0.clone())).await?;
+                    Err(mapped)
+                }
             }
-            Err(err) => {
-                host.state = AgentState::Failed;
-                if let Some(ref cid) = commitment_id {
-                    self.gateway.record_failure(cid, err.to_string()).await?;
-                }
+        } else {
+            let invocation = CapabilityInvocation {
+                resonator_id: host.resonator_id,
+                capability_name: capability_name.clone(),
+                args,
+                commitment_id: None,
+            };
 
-                self.append_audit(AgentAuditEvent {
-                    event_id: format!("audit-{}", Uuid::new_v4()),
-                    timestamp: chrono::Utc::now(),
-                    resonator_id: host.resonator_id.to_string(),
-                    stage: "capability_execute".to_string(),
-                    success: false,
-                    message: err.to_string(),
-                    commitment_id: commitment_id.as_ref().map(|c| c.0.clone()),
-                })
-                .await?;
-                self.persist_checkpoint(host, commitment_id.as_ref().map(|c| c.0.clone()))
+            match executor.execute(&invocation).await {
+                Ok(execution) => {
+                    self.append_audit(AgentAuditEvent {
+                        event_id: format!("audit-{}", Uuid::new_v4()),
+                        timestamp: chrono::Utc::now(),
+                        resonator_id: host.resonator_id.to_string(),
+                        stage: "capability_execute".to_string(),
+                        success: true,
+                        message: execution.summary.clone(),
+                        commitment_id: None,
+                    })
                     .await?;
-
-                Err(AgentKernelError::CapabilityExecution(err.to_string()))
+                    self.persist_checkpoint(host, None).await?;
+                    Ok(execution)
+                }
+                Err(err) => {
+                    host.lifecycle = AgentLifecycleState::Failed;
+                    self.append_audit(AgentAuditEvent {
+                        event_id: format!("audit-{}", Uuid::new_v4()),
+                        timestamp: chrono::Utc::now(),
+                        resonator_id: host.resonator_id.to_string(),
+                        stage: "capability_execute".to_string(),
+                        success: false,
+                        message: err.to_string(),
+                        commitment_id: None,
+                    })
+                    .await?;
+                    self.persist_checkpoint(host, None).await?;
+                    Err(AgentKernelError::ToolFailure(err.to_string()))
+                }
             }
         }
     }
@@ -991,6 +1468,20 @@ impl AgentKernel {
             .map_err(Into::into)
     }
 
+    fn record_stage_transition(
+        &self,
+        agent_state: &AgentState,
+        resonator_id: ResonatorId,
+        from: StageName,
+        to: StageName,
+    ) {
+        agent_state.journal.append(JournalEntry {
+            timestamp: chrono::Utc::now(),
+            resonator_id: resonator_id.to_string(),
+            kind: JournalEventKind::StageTransition { from, to },
+        });
+    }
+
     async fn append_audit(&self, event: AgentAuditEvent) -> Result<String, AgentKernelError> {
         let event_id = event.event_id.clone();
         self.storage
@@ -1016,7 +1507,7 @@ impl AgentKernel {
         let checkpoint = AgentCheckpoint {
             resonator_id: host.resonator_id.to_string(),
             profile_name: host.profile.name.clone(),
-            state: format!("{:?}", host.state),
+            state: format!("{:?}", host.lifecycle),
             active_commitments: host.contract_set.iter().map(|c| c.0.clone()).collect(),
             last_audit_event_id,
             metadata: serde_json::json!({
@@ -1077,6 +1568,25 @@ fn scope_covers(granted_scope: &ScopeConstraint, required_scope: &ScopeConstrain
     })
 }
 
+fn map_gateway_error(err: CommitmentExecutionError) -> AgentKernelError {
+    match err {
+        CommitmentExecutionError::InvariantViolation(msg) => {
+            AgentKernelError::InvariantContractViolation(msg)
+        }
+        CommitmentExecutionError::PolicyDenied(msg) => AgentKernelError::PolicyDenied(msg),
+        CommitmentExecutionError::CapabilityDenied(msg) => {
+            AgentKernelError::CapabilityDeniedDetail(msg)
+        }
+        CommitmentExecutionError::ContractMissing(msg) => {
+            AgentKernelError::ContractMissing { reason: msg }
+        }
+        CommitmentExecutionError::ToolFailure(msg) => AgentKernelError::ToolFailure(msg),
+        CommitmentExecutionError::ReceiptWriteFailure(msg) => {
+            AgentKernelError::ReceiptWriteFailure(msg)
+        }
+    }
+}
+
 /// Capability execution errors.
 #[derive(Debug, thiserror::Error)]
 pub enum CapabilityExecutionError {
@@ -1111,8 +1621,23 @@ pub enum AgentKernelError {
     #[error("capability denied")]
     CapabilityDenied,
 
-    #[error("missing explicit commitment for consequential capability `{capability}`")]
-    MissingCommitment { capability: String },
+    #[error("capability denied: {0}")]
+    CapabilityDeniedDetail(String),
+
+    #[error("policy denied: {0}")]
+    PolicyDenied(String),
+
+    #[error("contract missing: {reason}")]
+    ContractMissing { reason: String },
+
+    #[error("tool failure: {0}")]
+    ToolFailure(String),
+
+    #[error("receipt write failure: {0}")]
+    ReceiptWriteFailure(String),
+
+    #[error("invariant violation in contract execution: {0}")]
+    InvariantContractViolation(String),
 
     #[error("commitment validation failed: {0}")]
     CommitmentValidation(String),
@@ -1144,7 +1669,7 @@ mod tests {
     use rcf_types::TemporalValidity;
 
     #[tokio::test]
-    async fn dangerous_capability_denied_without_commitment() {
+    async fn dangerous_capability_denied_without_contract() {
         let runtime = MapleRuntime::bootstrap(RuntimeConfig::default())
             .await
             .unwrap();
@@ -1164,10 +1689,7 @@ mod tests {
         req.override_args = Some(serde_json::json!({"amount": 500, "to": "demo"}));
 
         let err = kernel.handle(req).await.err().expect("must fail");
-        assert!(matches!(
-            err,
-            AgentKernelError::MissingCommitment { capability } if capability == "simulate_transfer"
-        ));
+        assert!(matches!(err, AgentKernelError::ContractMissing { .. }));
     }
 
     #[tokio::test]
@@ -1221,6 +1743,15 @@ mod tests {
             .expect("ledger entry");
         assert!(entry.outcome.is_some());
         assert!(entry.outcome.unwrap().success);
+
+        let hosts = kernel.agents.read().await;
+        let current_host = hosts
+            .get(&host.resonator_id)
+            .expect("host should remain registered");
+        let recent = current_host.agent_state.journal.recent(32);
+        assert!(recent
+            .iter()
+            .any(|entry| matches!(entry.kind, JournalEventKind::AccountabilityRecorded { .. })));
     }
 
     #[tokio::test]
@@ -1250,7 +1781,7 @@ mod tests {
             req.override_args = Some(serde_json::json!({"amount": 500, "to": "demo"}));
 
             let err = kernel.handle(req).await.err().expect("must fail");
-            assert!(matches!(err, AgentKernelError::MissingCommitment { .. }));
+            assert!(matches!(err, AgentKernelError::ContractMissing { .. }));
         }
     }
 

@@ -41,6 +41,14 @@ In `maple-runtime`, all backends now share a normalized adapter contract:
 Provider modules live under `crates/maple-runtime/src/cognition/`:
 `llama`, `openai`, `anthropic`, `gemini`, `grok`.
 
+All adapters share the same hardening path:
+
+1. strict schema parse
+2. deterministic repair pass
+3. deterministic fallback with **no tool suggestion**
+
+This guarantees malformed model output never bypasses runtime gates.
+
 You can inspect and switch from CLI:
 
 ```bash

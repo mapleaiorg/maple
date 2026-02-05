@@ -39,6 +39,8 @@ impl ExecutionRequestId {
 /// Parameters for execution
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct ExecutionParameters {
+    /// Explicit executable contract reference required for any consequence path.
+    pub commitment_ref: Option<CommitmentId>,
     pub timeout_secs: Option<u64>,
     pub retry_policy: Option<RetryPolicy>,
     pub monitoring_level: MonitoringLevel,
@@ -209,6 +211,38 @@ impl Executor {
         let commitment_id = request.commitment.commitment_id.clone();
         let started_at = chrono::Utc::now();
 
+        // Hard boundary: consequences require an explicit commitment reference.
+        // A missing/mismatched reference is recorded as a failed execution event,
+        // then returned as an error so callers cannot ignore enforcement.
+        let provided_ref = match request.execution_parameters.commitment_ref.as_ref() {
+            Some(reference) => reference,
+            None => {
+                let result = rejected_result(
+                    &request_id,
+                    &commitment_id,
+                    "Execution rejected: missing commitment reference".to_string(),
+                );
+                self.persist_result(result.clone())?;
+                return Err(ExecutorError::MissingCommitmentReference);
+            }
+        };
+
+        if provided_ref != &commitment_id {
+            let result = rejected_result(
+                &request_id,
+                &commitment_id,
+                format!(
+                    "Execution rejected: commitment reference mismatch (expected {}, got {})",
+                    commitment_id, provided_ref
+                ),
+            );
+            self.persist_result(result.clone())?;
+            return Err(ExecutorError::CommitmentReferenceMismatch {
+                expected: commitment_id.0,
+                got: provided_ref.0.clone(),
+            });
+        }
+
         // Initialize result
         let mut result = ExecutionResult {
             request_id: request_id.clone(),
@@ -227,13 +261,7 @@ impl Executor {
         };
 
         // Store initial state
-        {
-            let mut executions = self
-                .executions
-                .write()
-                .map_err(|_| ExecutorError::LockError)?;
-            executions.insert(request_id.clone(), result.clone());
-        }
+        self.persist_result(result.clone())?;
 
         // Get handler for domain
         let handlers = self.handlers.read().map_err(|_| ExecutorError::LockError)?;
@@ -275,13 +303,7 @@ impl Executor {
         }
 
         // Update stored result
-        {
-            let mut executions = self
-                .executions
-                .write()
-                .map_err(|_| ExecutorError::LockError)?;
-            executions.insert(request_id, result.clone());
-        }
+        self.persist_result(result.clone())?;
 
         Ok(result)
     }
@@ -334,6 +356,15 @@ impl Executor {
             handler.rollback(commitment)?;
         }
 
+        Ok(())
+    }
+
+    fn persist_result(&self, result: ExecutionResult) -> Result<(), ExecutorError> {
+        let mut executions = self
+            .executions
+            .write()
+            .map_err(|_| ExecutorError::LockError)?;
+        executions.insert(result.request_id.clone(), result);
         Ok(())
     }
 }
@@ -429,8 +460,46 @@ pub enum ExecutorError {
     #[error("Rollback failed: {0}")]
     RollbackFailed(String),
 
+    #[error("Missing explicit commitment reference")]
+    MissingCommitmentReference,
+
+    #[error("Commitment reference mismatch: expected {expected}, got {got}")]
+    CommitmentReferenceMismatch { expected: String, got: String },
+
     #[error("Lock error")]
     LockError,
+}
+
+fn rejected_result(
+    request_id: &ExecutionRequestId,
+    commitment_id: &CommitmentId,
+    message: String,
+) -> ExecutionResult {
+    let now = chrono::Utc::now();
+    ExecutionResult {
+        request_id: request_id.clone(),
+        commitment_id: commitment_id.clone(),
+        status: ExecutionStatus::Failed(message.clone()),
+        consequence: None,
+        started_at: now,
+        completed_at: Some(now),
+        execution_trace: vec![
+            ExecutionEvent {
+                event_id: uuid::Uuid::new_v4().to_string(),
+                event_type: ExecutionEventType::Started,
+                description: "Execution started".to_string(),
+                timestamp: now,
+                data: None,
+            },
+            ExecutionEvent {
+                event_id: uuid::Uuid::new_v4().to_string(),
+                event_type: ExecutionEventType::Failed,
+                description: message,
+                timestamp: now,
+                data: None,
+            },
+        ],
+    }
 }
 
 #[cfg(test)]
@@ -457,14 +526,52 @@ mod tests {
 
         let request = ExecutionRequest {
             request_id: ExecutionRequestId::generate(),
+            commitment: commitment.clone(),
+            decision_id: "test-decision".to_string(),
+            requested_at: chrono::Utc::now(),
+            execution_parameters: ExecutionParameters {
+                commitment_ref: Some(commitment.commitment_id.clone()),
+                ..ExecutionParameters::default()
+            },
+        };
+
+        let result = executor.execute(request).unwrap();
+        assert!(result.status.is_success());
+        assert!(result.consequence.is_some());
+    }
+
+    #[test]
+    fn test_executor_rejects_missing_commitment_ref_and_persists_failure() {
+        let executor = Executor::new();
+        executor
+            .register_handler(
+                EffectDomain::Computation,
+                MockHandler::new(EffectDomain::Computation),
+            )
+            .unwrap();
+
+        let commitment =
+            CommitmentBuilder::new(IdentityRef::new("test-agent"), EffectDomain::Computation)
+                .with_scope(ScopeConstraint::default())
+                .build()
+                .unwrap();
+
+        let request_id = ExecutionRequestId::generate();
+        let request = ExecutionRequest {
+            request_id: request_id.clone(),
             commitment,
             decision_id: "test-decision".to_string(),
             requested_at: chrono::Utc::now(),
             execution_parameters: ExecutionParameters::default(),
         };
 
-        let result = executor.execute(request).unwrap();
-        assert!(result.status.is_success());
-        assert!(result.consequence.is_some());
+        let err = executor.execute(request).expect_err("must reject");
+        assert!(matches!(err, ExecutorError::MissingCommitmentReference));
+
+        let persisted = executor
+            .get_status(&request_id)
+            .unwrap()
+            .expect("rejection should be persisted");
+        assert!(matches!(persisted.status, ExecutionStatus::Failed(_)));
     }
 }

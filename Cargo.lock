@@ -1803,6 +1803,8 @@ version = "0.1.1"
 dependencies = [
  "aas-capability",
  "aas-identity",
+ "aas-ledger",
+ "aas-policy",
  "aas-service",
  "aas-types",
  "anyhow",
@@ -1818,7 +1820,9 @@ dependencies = [
  "rcf-meaning",
  "rcf-types",
  "rcf-validator",
+ "resonator-commitment",
  "resonator-profiles",
+ "resonator-types",
  "serde",
  "serde_json",
  "sha2",
@@ -2024,8 +2028,12 @@ dependencies = [
 name = "mrp-service"
 version = "0.1.0"
 dependencies = [
+ "chrono",
+ "mrp-transport",
  "mrp-types",
+ "rcf-commitment",
  "rcf-types",
+ "serde",
  "thiserror",
 ]
 
@@ -2033,8 +2041,11 @@ dependencies = [
 name = "mrp-transport"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "mrp-types",
+ "rcf-commitment",
  "rcf-types",
+ "serde",
  "thiserror",
 ]
 
@@ -2339,10 +2350,14 @@ dependencies = [
  "async-trait",
  "chrono",
  "colored",
+ "mapleverse-executor",
+ "mapleverse-service",
  "palm-conformance",
  "palm-platform-pack",
  "palm-policy",
  "palm-types",
+ "rcf-commitment",
+ "rcf-types",
  "serde_json",
  "tokio",
  "tracing",

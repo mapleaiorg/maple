@@ -17,6 +17,7 @@ Welcome to the MAPLE AI Framework documentation.
 | [Agents, Resonators, and LLMs](concepts/agent-resonator-llm.md) | Mental model + backend integration |
 | [Agent Kernel Composition](concepts/agent-kernel-composition.md) | Non-bypassable `Agent = Resonator + Profile + Capability + Contracts` runtime model |
 | [Storage Layer](concepts/storage-layer.md) | Source-of-truth + AI-memory storage architecture |
+| [Staged Rollout Checklist](staged-rollout-checklist.md) | Stage 1-5 implementation status, files, and release commands |
 
 ## Quick Links
 

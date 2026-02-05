@@ -29,7 +29,8 @@ Implemented in `crates/maple-runtime/src/cognition/mod.rs`:
 - `LlamaAdapter` (default) with strict schema parsing.
 - Repair passes for malformed JSON output.
 - Deterministic fallback that never suggests executable tools.
-- `VendorAdapter` for OpenAI / Anthropic / Gemini / Grok using the same parser and guard behavior.
+- Provider-specific adapters for OpenAI / Anthropic / Gemini / Grok using the same parser and guard behavior.
+- Normalized contracts: `ModelProviderConfig`, `ModelUsage`, and `ModelAdapterError`.
 
 ## Consequential execution rule
 
@@ -38,6 +39,25 @@ For consequential capability calls (example: `simulate_transfer`):
 - If no explicit commitment is provided, runtime returns `MissingCommitment`.
 - If commitment exists but AAS decision is not executable, runtime returns `ApprovalRequired`.
 - If approved, execution starts and outcome is written to AAS ledger and MAPLE storage.
+- Connector/executor boundaries also require explicit commitment references (`no commitment, no consequence`).
+
+## API and CLI Observation Surfaces
+
+Daemon endpoints:
+
+- `GET /api/v1/agent/status`
+- `POST /api/v1/agent/handle`
+- `GET /api/v1/agent/audit`
+- `GET /api/v1/agent/commitments`
+- `GET /api/v1/agent/commitments/:id`
+
+CLI:
+
+- `maple agent status`
+- `maple agent handle ...`
+- `maple agent audit --limit N`
+- `maple agent commitments --limit N`
+- `maple agent commitment --id <commitment_id>`
 
 ## Persistence behavior
 
@@ -62,6 +82,17 @@ The demo shows:
 - Safe capability succeeds without commitment.
 - Dangerous capability denied without commitment.
 - Dangerous capability succeeds with commitment and emits receipt + audit logs.
+
+Ops/platform boundary demo:
+
+```bash
+cargo run -p palm-boundary-demo --offline
+```
+
+This includes a dedicated execution-boundary scenario showing:
+
+- rejection when execution parameters omit commitment reference
+- success when explicit commitment reference is present
 
 ## Tests
 

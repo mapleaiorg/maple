@@ -51,8 +51,12 @@ rcf-validator = { workspace = true }
 aas-types = { workspace = true }
 aas-identity = { workspace = true }
 aas-capability = { workspace = true }
+aas-policy = { workspace = true }
+aas-ledger = { workspace = true }
 aas-service = { workspace = true }
+resonator-types = { workspace = true }
 resonator-profiles = { workspace = true }
+resonator-commitment = { workspace = true }
 maple-storage = { workspace = true }
 
 [dev-dependencies]

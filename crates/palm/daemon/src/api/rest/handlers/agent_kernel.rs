@@ -254,15 +254,171 @@ pub async fn agent_kernel_commitment(
 
 fn map_agent_error(err: AgentKernelError) -> ApiError {
     match err {
-        AgentKernelError::MissingCommitment { .. }
-        | AgentKernelError::ApprovalRequired(_)
-        | AgentKernelError::CapabilityDenied => ApiError::PolicyDenied(err.to_string()),
+        AgentKernelError::ContractMissing { reason }
+            if reason.contains("missing explicit commitment") =>
+        {
+            ApiError::PolicyDenied(format!("contract missing: {}", reason))
+        }
+        AgentKernelError::ContractMissing { reason } => {
+            ApiError::BadRequest(format!("contract missing: {}", reason))
+        }
+        AgentKernelError::ApprovalRequired(_)
+        | AgentKernelError::CapabilityDenied
+        | AgentKernelError::PolicyDenied(_)
+        | AgentKernelError::CapabilityDeniedDetail(_) => ApiError::PolicyDenied(err.to_string()),
         AgentKernelError::UnknownCapability(_)
-        | AgentKernelError::ModelAdapterMissing(_)
         | AgentKernelError::CommitmentValidation(_)
         | AgentKernelError::CommitmentCapabilityMismatch { .. } => {
             ApiError::BadRequest(err.to_string())
         }
+        AgentKernelError::ModelAdapterMissing(_) => ApiError::Internal(err.to_string()),
         _ => ApiError::Internal(err.to_string()),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::api::create_router;
+    use crate::api::rest::state::AppState;
+    use crate::config::SchedulerConfig;
+    use crate::error::ApiError;
+    use crate::playground::PlaygroundService;
+    use crate::scheduler::Scheduler;
+    use crate::storage::{InMemoryStorage, Storage};
+    use axum::body::{to_bytes, Body};
+    use axum::http::{Request, StatusCode};
+    use axum::response::IntoResponse;
+    use maple_runtime::{
+        config::RuntimeConfig, AgentKernel, AgentKernelError, AgentRegistration, MapleRuntime,
+    };
+    use palm_shared_state::Activity;
+    use palm_types::{PalmEventEnvelope, PlatformProfile};
+    use std::sync::Arc;
+    use tokio::sync::{broadcast, watch};
+    use tower::util::ServiceExt;
+
+    async fn test_app() -> axum::Router {
+        let storage: Arc<dyn Storage> = Arc::new(InMemoryStorage::new());
+        let (event_tx, _) = broadcast::channel::<PalmEventEnvelope>(64);
+        let (activity_tx, _) = broadcast::channel::<Activity>(64);
+        let (scheduler, _reconcile_rx) = Scheduler::with_platform(
+            SchedulerConfig::default(),
+            Arc::clone(&storage),
+            event_tx.clone(),
+            activity_tx.clone(),
+            PlatformProfile::Development,
+        );
+
+        let playground = PlaygroundService::new(Arc::clone(&storage), activity_tx.clone())
+            .await
+            .expect("playground should initialize");
+
+        let runtime = MapleRuntime::bootstrap(RuntimeConfig::default())
+            .await
+            .expect("runtime should bootstrap");
+        let agent_kernel = Arc::new(AgentKernel::new(runtime));
+        let host = agent_kernel
+            .register_agent(AgentRegistration::default())
+            .await
+            .expect("agent should register");
+
+        let (shutdown_tx, _shutdown_rx) = watch::channel(false);
+        let state = AppState::new(
+            storage,
+            scheduler,
+            event_tx,
+            activity_tx,
+            playground,
+            agent_kernel,
+            host.resonator_id,
+            shutdown_tx,
+        );
+
+        create_router(state)
+    }
+
+    #[tokio::test]
+    async fn dangerous_handle_without_commitment_returns_policy_denied() {
+        let app = test_app().await;
+        let payload = serde_json::json!({
+            "prompt": "transfer 500 usd to demo account",
+            "backend": "local_llama",
+            "tool": "simulate_transfer",
+            "args": { "amount": 500, "to": "demo" },
+            "with_commitment": false
+        });
+
+        let request = Request::builder()
+            .method("POST")
+            .uri("/api/v1/agent-kernel/handle")
+            .header("content-type", "application/json")
+            .body(Body::from(payload.to_string()))
+            .expect("request should build");
+
+        let response = app.oneshot(request).await.expect("request should complete");
+        assert_eq!(response.status(), StatusCode::FORBIDDEN);
+
+        let body = to_bytes(response.into_body(), usize::MAX)
+            .await
+            .expect("body should read");
+        let error = serde_json::from_slice::<serde_json::Value>(&body)
+            .expect("error response should deserialize");
+        assert_eq!(error["code"], "POLICY_DENIED");
+        assert!(
+            error["error"]
+                .as_str()
+                .unwrap_or_default()
+                .contains("contract missing"),
+            "expected contract-missing error, got: {}",
+            error["error"]
+        );
+    }
+
+    #[tokio::test]
+    async fn dangerous_alias_handle_without_commitment_returns_policy_denied() {
+        let app = test_app().await;
+        let payload = serde_json::json!({
+            "prompt": "transfer 500 usd to demo account",
+            "backend": "local_llama",
+            "tool": "simulate_transfer",
+            "args": { "amount": 500, "to": "demo" },
+            "with_commitment": false
+        });
+
+        let request = Request::builder()
+            .method("POST")
+            .uri("/api/v1/agent/handle")
+            .header("content-type", "application/json")
+            .body(Body::from(payload.to_string()))
+            .expect("request should build");
+
+        let response = app.oneshot(request).await.expect("request should complete");
+        assert_eq!(response.status(), StatusCode::FORBIDDEN);
+
+        let body = to_bytes(response.into_body(), usize::MAX)
+            .await
+            .expect("body should read");
+        let error = serde_json::from_slice::<serde_json::Value>(&body)
+            .expect("error response should deserialize");
+        assert_eq!(error["code"], "POLICY_DENIED");
+        assert!(
+            error["error"]
+                .as_str()
+                .unwrap_or_default()
+                .contains("contract missing"),
+            "expected contract-missing error, got: {}",
+            error["error"]
+        );
+    }
+
+    #[test]
+    fn contract_missing_with_explicit_reference_maps_to_bad_request() {
+        let api_error = super::map_agent_error(AgentKernelError::ContractMissing {
+            reason: "contract contract:test does not exist".to_string(),
+        });
+        assert!(matches!(&api_error, ApiError::BadRequest(_)));
+
+        let status = api_error.into_response().status();
+        assert_eq!(status, StatusCode::BAD_REQUEST);
     }
 }

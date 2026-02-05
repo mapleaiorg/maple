@@ -45,7 +45,11 @@ impl Default for ConnectorRegistry {
 /// Trait for domain connectors
 pub trait Connector {
     fn supported_domain(&self) -> EffectDomain;
-    fn execute(&self, commitment: &RcfCommitment) -> Result<Consequence, ConnectorError>;
+    fn execute(
+        &self,
+        commitment: &RcfCommitment,
+        params: &ExecutionParameters,
+    ) -> Result<Consequence, ConnectorError>;
     fn rollback(&self, commitment: &RcfCommitment) -> Result<(), ConnectorError>;
     fn validate(&self, commitment: &RcfCommitment) -> Result<(), ConnectorError>;
 }
@@ -58,7 +62,12 @@ impl Connector for ComputationConnector {
         EffectDomain::Computation
     }
 
-    fn execute(&self, commitment: &RcfCommitment) -> Result<Consequence, ConnectorError> {
+    fn execute(
+        &self,
+        commitment: &RcfCommitment,
+        params: &ExecutionParameters,
+    ) -> Result<Consequence, ConnectorError> {
+        enforce_commitment_ref(commitment, params)?;
         // Simulated computation execution
         Ok(Consequence {
             consequence_id: ConsequenceId::generate(),
@@ -93,9 +102,9 @@ impl ExecutionHandler for ComputationConnector {
     fn execute(
         &self,
         commitment: &RcfCommitment,
-        _params: &ExecutionParameters,
+        params: &ExecutionParameters,
     ) -> Result<Consequence, ExecutorError> {
-        Connector::execute(self, commitment)
+        Connector::execute(self, commitment, params)
             .map_err(|e: ConnectorError| ExecutorError::ExecutionFailed(e.to_string()))
     }
 
@@ -117,7 +126,12 @@ impl Connector for DataConnector {
         EffectDomain::Data
     }
 
-    fn execute(&self, commitment: &RcfCommitment) -> Result<Consequence, ConnectorError> {
+    fn execute(
+        &self,
+        commitment: &RcfCommitment,
+        params: &ExecutionParameters,
+    ) -> Result<Consequence, ConnectorError> {
+        enforce_commitment_ref(commitment, params)?;
         Ok(Consequence {
             consequence_id: ConsequenceId::generate(),
             commitment_id: commitment.commitment_id.clone(),
@@ -155,9 +169,9 @@ impl ExecutionHandler for DataConnector {
     fn execute(
         &self,
         commitment: &RcfCommitment,
-        _params: &ExecutionParameters,
+        params: &ExecutionParameters,
     ) -> Result<Consequence, ExecutorError> {
-        Connector::execute(self, commitment)
+        Connector::execute(self, commitment, params)
             .map_err(|e: ConnectorError| ExecutorError::ExecutionFailed(e.to_string()))
     }
 
@@ -179,7 +193,12 @@ impl Connector for CommunicationConnector {
         EffectDomain::Communication
     }
 
-    fn execute(&self, commitment: &RcfCommitment) -> Result<Consequence, ConnectorError> {
+    fn execute(
+        &self,
+        commitment: &RcfCommitment,
+        params: &ExecutionParameters,
+    ) -> Result<Consequence, ConnectorError> {
+        enforce_commitment_ref(commitment, params)?;
         Ok(Consequence {
             consequence_id: ConsequenceId::generate(),
             commitment_id: commitment.commitment_id.clone(),
@@ -212,9 +231,9 @@ impl ExecutionHandler for CommunicationConnector {
     fn execute(
         &self,
         commitment: &RcfCommitment,
-        _params: &ExecutionParameters,
+        params: &ExecutionParameters,
     ) -> Result<Consequence, ExecutorError> {
-        Connector::execute(self, commitment)
+        Connector::execute(self, commitment, params)
             .map_err(|e: ConnectorError| ExecutorError::ExecutionFailed(e.to_string()))
     }
 
@@ -248,6 +267,29 @@ pub enum ConnectorError {
 
     #[error("Timeout")]
     Timeout,
+
+    #[error("Missing explicit commitment reference")]
+    MissingCommitmentReference,
+
+    #[error("Commitment reference mismatch: expected {expected}, got {got}")]
+    CommitmentReferenceMismatch { expected: String, got: String },
+}
+
+fn enforce_commitment_ref(
+    commitment: &RcfCommitment,
+    params: &ExecutionParameters,
+) -> Result<(), ConnectorError> {
+    let reference = params
+        .commitment_ref
+        .as_ref()
+        .ok_or(ConnectorError::MissingCommitmentReference)?;
+    if reference != &commitment.commitment_id {
+        return Err(ConnectorError::CommitmentReferenceMismatch {
+            expected: commitment.commitment_id.0.clone(),
+            got: reference.0.clone(),
+        });
+    }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -265,7 +307,11 @@ mod tests {
                 .build()
                 .unwrap();
 
-        let consequence = Connector::execute(&connector, &commitment).unwrap();
+        let params = ExecutionParameters {
+            commitment_ref: Some(commitment.commitment_id.clone()),
+            ..ExecutionParameters::default()
+        };
+        let consequence = Connector::execute(&connector, &commitment, &params).unwrap();
         assert_eq!(consequence.effect_domain, EffectDomain::Computation);
     }
 }

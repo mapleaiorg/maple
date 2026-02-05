@@ -2,6 +2,7 @@
 //! - safe capability executes without commitment
 //! - dangerous capability is denied without commitment
 //! - dangerous capability succeeds with explicit commitment
+//! - commitment lifecycle is persisted with explicit timestamps
 
 use maple_runtime::{
     config::RuntimeConfig, AgentHandleRequest, AgentKernel, AgentRegistration, MapleRuntime,
@@ -73,6 +74,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("Transfer action summary: {}", action.summary);
         println!("Receipt payload: {}", action.payload);
     }
+
+    let stored = kernel
+        .storage()
+        .get_commitment(&commitment.commitment_id)
+        .await?
+        .ok_or("missing persisted commitment record")?;
+    println!(
+        "Persisted lifecycle: status={:?} declared={} started={} completed={}",
+        stored.lifecycle_status,
+        stored.created_at,
+        stored
+            .execution_started_at
+            .map(|v| v.to_string())
+            .unwrap_or_else(|| "-".to_string()),
+        stored
+            .execution_completed_at
+            .map(|v| v.to_string())
+            .unwrap_or_else(|| "-".to_string())
+    );
 
     let audits = kernel.audit_events().await;
     println!("Audit events recorded: {}", audits.len());

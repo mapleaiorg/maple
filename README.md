@@ -117,6 +117,18 @@ docker run --name maple-postgres \
   -d postgres:16
 ```
 
+### Release Playbook (Stage-Gated)
+
+For first-time contributors and release prep, use:
+
+- [`docs/staged-rollout-checklist.md`](docs/staged-rollout-checklist.md)
+
+It maps Stage 1-5 to:
+
+- exact files touched
+- acceptance commands per stage
+- final workspace release gate command
+
 ---
 
 ## 📦 Project Structure

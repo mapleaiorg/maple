@@ -13,6 +13,10 @@ palm-platform-pack = { path = "../../contracts/platform-pack" }
 palm-types = { path = "../../crates/palm/types" }
 palm-policy = { path = "../../crates/palm/policy" }
 palm-conformance = { path = "../../contracts/conformance" }
+mapleverse-service = { workspace = true }
+mapleverse-executor = { workspace = true }
+rcf-commitment = { workspace = true }
+rcf-types = { workspace = true }
 
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 tracing = "0.1"

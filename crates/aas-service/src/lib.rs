@@ -275,9 +275,19 @@ impl AasService {
         &self.capability
     }
 
+    /// Get capability registry handle.
+    pub fn capability_handle(&self) -> Arc<CapabilityRegistry> {
+        Arc::clone(&self.capability)
+    }
+
     /// Get policy engine
     pub fn policy(&self) -> &PolicyEngine {
         &self.policy
+    }
+
+    /// Get policy engine handle.
+    pub fn policy_handle(&self) -> Arc<PolicyEngine> {
+        Arc::clone(&self.policy)
     }
 
     /// Get adjudicator
@@ -288,6 +298,11 @@ impl AasService {
     /// Get ledger
     pub fn ledger(&self) -> &AccountabilityLedger {
         &self.ledger
+    }
+
+    /// Get ledger handle.
+    pub fn ledger_handle(&self) -> Arc<AccountabilityLedger> {
+        Arc::clone(&self.ledger)
     }
 }
 

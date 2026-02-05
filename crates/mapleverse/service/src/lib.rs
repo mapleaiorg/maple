@@ -141,7 +141,10 @@ mod tests {
             .execute(
                 commitment.clone(),
                 "test-decision".to_string(),
-                ExecutionParameters::default(),
+                ExecutionParameters {
+                    commitment_ref: Some(commitment.commitment_id.clone()),
+                    ..ExecutionParameters::default()
+                },
             )
             .unwrap();
 

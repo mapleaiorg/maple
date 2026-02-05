@@ -3,9 +3,13 @@
 //! This demo shows how the same operations behave differently
 //! across Mapleverse, Finalverse, and iBank platform packs.
 
+use mapleverse_executor::ExecutionParameters;
+use mapleverse_service::MapleverseService;
 use palm_policy::{HumanApproval, PolicyDecision, PolicyEvaluationContext, PolicyEvaluator};
 use palm_types::policy::PalmOperation;
 use palm_types::PlatformProfile;
+use rcf_commitment::{CommitmentBuilder, IntendedOutcome};
+use rcf_types::{EffectDomain, IdentityRef, ScopeConstraint};
 
 use colored::*;
 
@@ -72,6 +76,9 @@ async fn main() {
     .await;
     println!();
 
+    demo_no_commitment_no_consequence().await;
+    println!();
+
     demo_configuration_comparison();
 
     println!();
@@ -110,7 +117,7 @@ async fn demo_delete_deployment(
     let decision = mapleverse.evaluate(&operation, &ctx).await.unwrap();
     print_decision(&decision, "    ");
     println!(
-        "    {} Mapleverse prioritizes throughput - allows quick deletions",
+        "    {} Current Mapleverse policy-pack outcome is shown above",
         "→".cyan()
     );
 
@@ -123,7 +130,7 @@ async fn demo_delete_deployment(
     let decision = finalverse.evaluate(&operation, &ctx).await.unwrap();
     print_decision(&decision, "    ");
     println!(
-        "    {} Finalverse requires human approval for destructive operations",
+        "    {} Current Finalverse policy-pack outcome is shown above",
         "→".cyan()
     );
 
@@ -148,7 +155,7 @@ async fn demo_delete_deployment(
     let decision = ibank.evaluate(&operation, &ctx).await.unwrap();
     print_decision(&decision, "    ");
     println!(
-        "    {} iBank requires full accountability trail for all operations",
+        "    {} Current iBank policy-pack outcome is shown above",
         "→".cyan()
     );
 }
@@ -187,7 +194,7 @@ async fn demo_scale_operation(
     let decision = mapleverse.evaluate(&operation, &ctx).await.unwrap();
     print_decision(&decision, "    ");
     println!(
-        "    {} Mapleverse allows rapid scaling without approval",
+        "    {} Current Mapleverse policy-pack outcome is shown above",
         "→".cyan()
     );
 
@@ -197,7 +204,7 @@ async fn demo_scale_operation(
     let decision = finalverse.evaluate(&operation, &ctx).await.unwrap();
     print_decision(&decision, "    ");
     println!(
-        "    {} Finalverse may require approval for large scale operations",
+        "    {} Current Finalverse policy-pack outcome is shown above",
         "→".cyan()
     );
 
@@ -207,7 +214,7 @@ async fn demo_scale_operation(
     let decision = ibank.evaluate(&operation, &ctx).await.unwrap();
     print_decision(&decision, "    ");
     println!(
-        "    {} iBank requires accountability proof for all operations",
+        "    {} Current iBank policy-pack outcome is shown above",
         "→".cyan()
     );
 }
@@ -243,7 +250,7 @@ async fn demo_force_recovery(
     let decision = mapleverse.evaluate(&operation, &ctx).await.unwrap();
     print_decision(&decision, "    ");
     println!(
-        "    {} Mapleverse allows force recovery for fast restoration",
+        "    {} Current Mapleverse policy-pack outcome is shown above",
         "→".cyan()
     );
 
@@ -256,7 +263,7 @@ async fn demo_force_recovery(
     let decision = finalverse.evaluate(&operation, &ctx).await.unwrap();
     print_decision(&decision, "    ");
     println!(
-        "    {} Finalverse requires human approval for force operations",
+        "    {} Current Finalverse policy-pack outcome is shown above",
         "→".cyan()
     );
 
@@ -269,9 +276,89 @@ async fn demo_force_recovery(
     let decision = ibank.evaluate(&operation, &ctx).await.unwrap();
     print_decision(&decision, "    ");
     println!(
-        "    {} iBank may block or require extra accountability for force operations!",
+        "    {} Current iBank policy-pack outcome is shown above",
         "→".red().bold()
     );
+}
+
+async fn demo_no_commitment_no_consequence() {
+    println!(
+        "{}",
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".yellow()
+    );
+    println!(
+        "{}",
+        "  Scenario 4: Execution Boundary (No Commitment, No Consequence)"
+            .yellow()
+            .bold()
+    );
+    println!(
+        "{}",
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".yellow()
+    );
+    println!();
+
+    let service = MapleverseService::new();
+    let commitment =
+        CommitmentBuilder::new(IdentityRef::new("demo-agent"), EffectDomain::Computation)
+            .with_scope(ScopeConstraint::default())
+            .with_outcome(IntendedOutcome::new("Run safe computation task"))
+            .build()
+            .unwrap();
+
+    println!("  Operation: execute commitment-bound computation");
+    println!(
+        "  Commitment ID: {}",
+        commitment.commitment_id.0.as_str().cyan()
+    );
+
+    println!();
+    println!("  {} :", "Without explicit commitment ref".red().bold());
+    let denied = service.execute(
+        commitment.clone(),
+        "decision-demo-1".to_string(),
+        ExecutionParameters::default(),
+    );
+    match denied {
+        Ok(_) => println!("    {} unexpected success", "✗".red()),
+        Err(err) => {
+            println!("    {} denied as expected: {}", "✓".green(), err);
+            println!(
+                "    {} boundary enforced before consequence execution",
+                "→".cyan()
+            );
+        }
+    }
+
+    println!();
+    println!("  {} :", "With explicit commitment ref".green().bold());
+    let approved = service.execute(
+        commitment.clone(),
+        "decision-demo-2".to_string(),
+        ExecutionParameters {
+            commitment_ref: Some(commitment.commitment_id.clone()),
+            ..ExecutionParameters::default()
+        },
+    );
+    match approved {
+        Ok(result) => {
+            println!(
+                "    {} executed with status: {:?}",
+                "✓".green(),
+                result.status
+            );
+            println!(
+                "    {} consequence id: {}",
+                "→".cyan(),
+                result
+                    .consequence
+                    .as_ref()
+                    .map(|c| c.consequence_id.0.clone())
+                    .unwrap_or_else(|| "-".to_string())
+            );
+        }
+        Err(err) => println!("    {} unexpected error: {}", "✗".red(), err),
+    }
 }
 
 fn demo_configuration_comparison() {

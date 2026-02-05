@@ -52,6 +52,59 @@ pub struct ResonatorProfile {
     pub constraints: Vec<ProfileConstraint>,
 }
 
+/// Attention budget attached to an agent shell.
+///
+/// This is the canonical budget shape used when AgentKernel composes
+/// Resonator cognition with governance/execution surfaces.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct AttentionBudget {
+    pub total: u64,
+    pub allocated: u64,
+    pub reserved: u64,
+}
+
+impl AttentionBudget {
+    pub fn available(&self) -> u64 {
+        self.total
+            .saturating_sub(self.allocated.saturating_add(self.reserved))
+    }
+}
+
+impl Default for AttentionBudget {
+    fn default() -> Self {
+        Self {
+            total: 100,
+            allocated: 0,
+            reserved: 0,
+        }
+    }
+}
+
+/// Coupling edge metadata for one relation.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct CouplingEdge {
+    pub target: ResonatorId,
+    pub strength: f64,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+}
+
+/// Lightweight coupling graph view used by runtime composition.
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct CouplingGraph {
+    pub edges: HashMap<ResonatorId, Vec<CouplingEdge>>,
+}
+
+impl CouplingGraph {
+    pub fn upsert_edge(&mut self, source: ResonatorId, edge: CouplingEdge) {
+        let entry = self.edges.entry(source).or_default();
+        if let Some(existing) = entry.iter_mut().find(|current| current.target == edge.target) {
+            *existing = edge;
+            return;
+        }
+        entry.push(edge);
+    }
+}
+
 /// Risk tolerance level
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum RiskTolerance {
