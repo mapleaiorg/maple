@@ -63,6 +63,10 @@ members = [
     # MAPLE Core Runtime
     "crates/maple-runtime",
     "crates/maple/storage",
+    "crates/maple/model-openai",
+    "crates/maple/model-anthropic",
+    "crates/maple/model-gemini",
+    "crates/maple/model-grok",
 
     # PALM - Fleet Orchestration Layer
     "crates/palm/types",
@@ -183,6 +187,10 @@ resonator-runtime = { path = "crates/resonator/runtime" }
 resonator-client = { path = "crates/resonator/client" }
 maple-runtime = { path = "crates/maple-runtime" }
 maple-storage = { path = "crates/maple/storage" }
+maple-model-openai = { path = "crates/maple/model-openai" }
+maple-model-anthropic = { path = "crates/maple/model-anthropic" }
+maple-model-gemini = { path = "crates/maple/model-gemini" }
+maple-model-grok = { path = "crates/maple/model-grok" }
 maple-integration = { path = "crates/maple-integration" }
 collective-types = { path = "crates/collective-types" }
 collective-runtime = { path = "crates/collective-runtime" }
