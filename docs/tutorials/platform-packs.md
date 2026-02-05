@@ -66,8 +66,8 @@ edition = "2021"
 
 [dependencies]
 palm-platform-pack = { path = "../contracts/platform-pack" }
-palm-types = { path = "../crates/palm-types" }
-palm-policy = { path = "../crates/palm-policy" }
+palm-types = { path = "../crates/palm/types" }
+palm-policy = { path = "../crates/palm/policy" }
 
 async-trait = "0.1"
 serde = { version = "1.0", features = ["derive"] }
@@ -375,4 +375,4 @@ PlatformPolicyConfig {
 
 - Read the [Architecture Guide](../architecture.md)
 - Review the [Conformance Guide](../conformance.md)
-- Study the canonical packs in `crates/mapleverse-pack`, `crates/finalverse-pack`, and `crates/ibank-pack`
+- Study the runtime-facing layer crates in `crates/mapleverse/*`, `crates/palm/*`, and `crates/resonator/*`

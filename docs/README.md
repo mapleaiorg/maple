@@ -7,6 +7,7 @@ Welcome to the MAPLE AI Framework documentation.
 | Document | Description |
 |----------|-------------|
 | [Architecture Guide](architecture.md) | Deep dive into MAPLE architecture |
+| [Repository Structure](repo-structure.md) | Layered crate organization (`palm/*`, `resonator/*`, `mapleverse/*`) |
 | [Getting Started](getting-started.md) | Build your first MAPLE app |
 | [Platform Packs Tutorial](tutorials/platform-packs.md) | Creating custom platform packs |
 | [Operations Tutorial](tutorials/operations.md) | Daemon, CLI, and Playground workflows |
@@ -15,6 +16,7 @@ Welcome to the MAPLE AI Framework documentation.
 | [UAL (Universal Agent Language)](concepts/ual.md) | Agent/human interaction language |
 | [Agents, Resonators, and LLMs](concepts/agent-resonator-llm.md) | Mental model + backend integration |
 | [Agent Kernel Composition](concepts/agent-kernel-composition.md) | Non-bypassable `Agent = Resonator + Profile + Capability + Contracts` runtime model |
+| [Storage Layer](concepts/storage-layer.md) | Source-of-truth + AI-memory storage architecture |
 
 ## Quick Links
 

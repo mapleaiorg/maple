@@ -1,0 +1,40 @@
+[package]
+name = "palm-health"
+version = "0.1.0"
+edition = "2021"
+description = "PALM - Health monitoring and resilience for Resonator fleets"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/anthropic/maple"
+
+[dependencies]
+palm-types = { path = "../types" }
+palm-registry = { path = "../registry" }
+
+# Async runtime
+async-trait = "0.1"
+tokio = { version = "1", features = ["sync", "time", "rt"] }
+futures = "0.3"
+
+# Concurrent collections
+dashmap = "5.5"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+
+# Error handling
+thiserror = "1.0"
+
+# Observability
+tracing = "0.1"
+
+# Time and identifiers
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.0", features = ["v4"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full", "test-util"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[features]
+default = []
+test-utils = []

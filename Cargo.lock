@@ -1806,6 +1806,7 @@ dependencies = [
  "chrono",
  "config",
  "dashmap",
+ "maple-storage",
  "metrics",
  "petgraph",
  "rcf-commitment",
@@ -1813,6 +1814,7 @@ dependencies = [
  "rcf-meaning",
  "rcf-types",
  "rcf-validator",
+ "resonator-profiles",
  "serde",
  "serde_json",
  "sha2",
@@ -1821,6 +1823,24 @@ dependencies = [
  "tokio-test",
  "tracing",
  "tracing-subscriber",
+ "uuid",
+]
+
+[[package]]
+name = "maple-storage"
+version = "0.1.0"
+dependencies = [
+ "aas-types",
+ "async-trait",
+ "blake3",
+ "chrono",
+ "rcf-commitment",
+ "rcf-types",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror",
+ "tokio",
  "uuid",
 ]
 
@@ -2375,6 +2395,7 @@ dependencies = [
  "config",
  "futures-util",
  "maple-runtime",
+ "maple-storage",
  "palm-control",
  "palm-deployment",
  "palm-health",
@@ -3231,13 +3252,8 @@ dependencies = [
 name = "resonator-profiles"
 version = "0.1.0"
 dependencies = [
- "aas-types",
- "chrono",
- "mrp-types",
- "rcf-commitment",
- "rcf-intent",
- "rcf-meaning",
  "rcf-types",
+ "resonator-types",
  "serde",
  "thiserror",
 ]

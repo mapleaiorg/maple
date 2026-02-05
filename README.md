@@ -76,7 +76,7 @@ maple daemon start --platform mapleverse
 maple daemon status
 
 # Install the CLI binaries (no cargo run required)
-cargo install --path crates/maple-cli --bin maple && cargo install --path crates/palm --bin palm
+cargo install --path crates/maple-cli --bin maple && cargo install --path crates/palm/cli --bin palm
 
 # Real-time monitoring in the terminal (umbrella CLI)
 cargo run -p maple-cli -- events watch
@@ -123,6 +123,14 @@ docker run --name maple-postgres \
 
 This monorepo contains the complete MAPLE ecosystem:
 
+Layered component folders:
+
+- `crates/palm/*` for PALM operational/control-plane components
+- `crates/resonator/*` for Resonator cognition/lifecycle components
+- `crates/mapleverse/*` for Mapleverse execution/service components
+
+See also: [Repository Structure Guide](docs/repo-structure.md)
+
 ### 🧠 Core Runtime
 
 #### **[maple-runtime](crates/maple-runtime/)** - The Heart of MAPLE
@@ -140,41 +148,41 @@ The foundational Resonance Runtime powering all MAPLE platforms.
 
 ### 🎭 Resonator Layer
 
-**[resonator-types](crates/resonator-types/)** - Core types for Resonators
+**[resonator-types](crates/resonator/types/)** - Core types for Resonators
 - Identity, presence, coupling definitions
 - Profile types (Human, World, Coordination, IBank)
 
-**[resonator-runtime](crates/resonator-runtime/)** - Resonator execution engine
+**[resonator-runtime](crates/resonator/runtime/)** - Resonator execution engine
 - Resonator lifecycle management
 - State management
 - Event processing
 
-**[resonator-identity](crates/resonator-identity/)** - Identity and continuity
+**[resonator-identity](crates/resonator/identity/)** - Identity and continuity
 - Persistent identity across restarts
 - Continuity proofs
 - Identity verification
 
-**[resonator-meaning](crates/resonator-meaning/)** - Meaning formation
+**[resonator-meaning](crates/resonator/meaning/)** - Meaning formation
 - Semantic understanding
 - Context building
 - Meaning convergence tracking
 
-**[resonator-intent](crates/resonator-intent/)** - Intent stabilization
+**[resonator-intent](crates/resonator/intent/)** - Intent stabilization
 - Intent formation from meaning
 - Intent validation
 - Intent tracking
 
-**[resonator-commitment](crates/resonator-commitment/)** - Commitment management
+**[resonator-commitment](crates/resonator/commitment/)** - Commitment management
 - Commitment creation and tracking
 - Audit trails
 - Consequence management
 
-**[resonator-profiles](crates/resonator-profiles/)** - Profile system
+**[resonator-profiles](crates/resonator/profiles/)** - Profile system
 - Profile validation
 - Cross-profile rules
 - Safety constraints
 
-**[resonator-client](crates/resonator-client/)** - Client libraries
+**[resonator-client](crates/resonator/client/)** - Client libraries
 - High-level API for applications
 - Simplified Resonator interaction
 
@@ -207,11 +215,11 @@ The foundational Resonance Runtime powering all MAPLE platforms.
 
 ### 🌍 Mapleverse Platform
 
-- **[mapleverse-types](crates/mapleverse-types/)** - Platform types
-- **[mapleverse-executor](crates/mapleverse-executor/)** - Agent execution
-- **[mapleverse-connectors](crates/mapleverse-connectors/)** - External integrations
-- **[mapleverse-evidence](crates/mapleverse-evidence/)** - Evidence collection
-- **[mapleverse-service](crates/mapleverse-service/)** - Mapleverse service
+- **[mapleverse-types](crates/mapleverse/types/)** - Platform types
+- **[mapleverse-executor](crates/mapleverse/executor/)** - Agent execution
+- **[mapleverse-connectors](crates/mapleverse/connectors/)** - External integrations
+- **[mapleverse-evidence](crates/mapleverse/evidence/)** - Evidence collection
+- **[mapleverse-service](crates/mapleverse/service/)** - Mapleverse service
 
 ### 📚 Evidence & Verification Engine (EVE)
 
@@ -225,8 +233,8 @@ The foundational Resonance Runtime powering all MAPLE platforms.
 
 - **[maple-integration](crates/maple-integration/)** - Integration tests
 - **[maple-cli](crates/maple-cli/)** - Umbrella CLI (`maple` + `maple palm ...`)
-- **[palm](crates/palm/)** - Direct operations CLI (backwards compatible)
-- **[palm-daemon](crates/palm-daemon/)** - Control plane + API service
+- **[palm](crates/palm/cli/)** - Direct operations CLI (backwards compatible)
+- **[palm-daemon](crates/palm/daemon/)** - Control plane + API service
 
 ---
 

@@ -18,6 +18,7 @@ The `AgentKernel` in `crates/maple-runtime/src/agent_kernel/mod.rs` enforces:
 
 - `AgentKernel`: orchestrates cognition + gating + capability execution.
 - `CommitmentGateway`: validates RCF commitment, submits to AAS, records outcome.
+- `MapleStorage` integration: persists commitments, audit chain, and checkpoints.
 - `CapabilityExecutor`: pluggable tool adapter interface.
 - `ModelAdapter`: pluggable cognition backend interface.
 
@@ -36,7 +37,17 @@ For consequential capability calls (example: `simulate_transfer`):
 
 - If no explicit commitment is provided, runtime returns `MissingCommitment`.
 - If commitment exists but AAS decision is not executable, runtime returns `ApprovalRequired`.
-- If approved, execution starts and outcome is written to AAS ledger.
+- If approved, execution starts and outcome is written to AAS ledger and MAPLE storage.
+
+## Persistence behavior
+
+`AgentKernel` now persists:
+
+- `AgentAuditEvent` into `AuditStore` (append-only, hash-linked records).
+- commitment decisions + lifecycle transitions into `CommitmentStore`.
+- runtime host state into `AgentStateStore` checkpoints.
+
+Default runtime uses in-memory storage; production should provide PostgreSQL-backed storage.
 
 ## Demo
 

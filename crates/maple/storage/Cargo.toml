@@ -1,0 +1,28 @@
+[package]
+name = "maple-storage"
+version.workspace = true
+edition.workspace = true
+description = "Unified storage abstractions for MAPLE runtime state, commitments, audit, and semantic memory"
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+async-trait = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+blake3 = { workspace = true }
+rcf-commitment = { workspace = true }
+rcf-types = { workspace = true }
+aas-types = { workspace = true }
+sqlx = { workspace = true, optional = true }
+
+[dev-dependencies]
+tokio = { workspace = true }
+
+[features]
+default = []
+strict-docs = []
+postgres = ["dep:sqlx"]

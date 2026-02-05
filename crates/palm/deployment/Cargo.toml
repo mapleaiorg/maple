@@ -1,0 +1,42 @@
+[package]
+name = "palm-deployment"
+version = "0.1.0"
+edition = "2021"
+description = "PALM - Deployment orchestration for Resonator fleets"
+
+[features]
+strict-docs = []
+
+[dependencies]
+palm-types = { path = "../types" }
+palm-registry = { path = "../registry" }
+
+# Async
+async-trait = "0.1"
+tokio = { version = "1", features = ["sync", "time", "rt"] }
+futures = "0.3"
+
+# Data structures
+dashmap = "5.5"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling
+thiserror = "1.0"
+
+# Logging
+tracing = "0.1"
+
+# IDs
+uuid = { version = "1.0", features = ["v4"] }
+
+# Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# Versioning
+semver = { version = "1.0", features = ["serde"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }

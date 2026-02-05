@@ -11,8 +11,9 @@ use std::sync::Arc;
 use aas_capability::GrantRequest;
 use aas_identity::{AgentMetadata, AgentType, RegistrationRequest};
 use aas_service::AasService;
-use aas_types::{AgentId, CommitmentOutcome, Decision, PolicyDecisionCard};
+use aas_types::{AgentId, CommitmentOutcome, Decision, LifecycleStatus, PolicyDecisionCard};
 use async_trait::async_trait;
+use maple_storage::{AgentCheckpoint, AuditAppend, MapleStorage, QueryWindow};
 use rcf_commitment::{CommitmentBuilder, CommitmentId as RcfCommitmentId, RcfCommitment};
 use rcf_types::{CapabilityRef, EffectDomain, IdentityRef, ScopeConstraint, TemporalValidity};
 use rcf_validator::RcfValidator;
@@ -311,6 +312,80 @@ impl CommitmentGateway {
         Ok(decision)
     }
 
+    /// Validate that a commitment is explicitly bound to the capability being executed,
+    /// then authorize it through the full RCF + AAS boundary.
+    pub fn authorize_for_capability(
+        &self,
+        commitment: RcfCommitment,
+        principal: &IdentityRef,
+        capability: &CapabilityDescriptor,
+        expected_capability_id: &str,
+    ) -> Result<PolicyDecisionCard, AgentKernelError> {
+        self.assert_binding(&commitment, principal, capability, expected_capability_id)?;
+        self.authorize(commitment)
+    }
+
+    fn assert_binding(
+        &self,
+        commitment: &RcfCommitment,
+        principal: &IdentityRef,
+        capability: &CapabilityDescriptor,
+        expected_capability_id: &str,
+    ) -> Result<(), AgentKernelError> {
+        if commitment.principal.id != principal.id {
+            return Err(AgentKernelError::CommitmentCapabilityMismatch {
+                capability: expected_capability_id.to_string(),
+                commitment_id: commitment.commitment_id.0.clone(),
+                reason: "commitment principal does not match agent identity".to_string(),
+            });
+        }
+
+        if !commitment.is_valid_at(chrono::Utc::now()) {
+            return Err(AgentKernelError::CommitmentCapabilityMismatch {
+                capability: expected_capability_id.to_string(),
+                commitment_id: commitment.commitment_id.0.clone(),
+                reason: "commitment is outside temporal validity bounds".to_string(),
+            });
+        }
+
+        if commitment.effect_domain != capability.domain {
+            return Err(AgentKernelError::CommitmentCapabilityMismatch {
+                capability: expected_capability_id.to_string(),
+                commitment_id: commitment.commitment_id.0.clone(),
+                reason: format!(
+                    "effect domain mismatch: expected {}, got {}",
+                    capability.domain, commitment.effect_domain
+                ),
+            });
+        }
+
+        if !scope_covers(&commitment.scope, &capability.scope) {
+            return Err(AgentKernelError::CommitmentCapabilityMismatch {
+                capability: expected_capability_id.to_string(),
+                commitment_id: commitment.commitment_id.0.clone(),
+                reason: "commitment scope does not cover capability scope".to_string(),
+            });
+        }
+
+        // Prefer explicit capability-id binding. This ensures one capability commitment
+        // cannot be replayed for a different consequential capability.
+        let explicit_match = commitment
+            .required_capabilities
+            .iter()
+            .any(|cap| cap.capability_id == expected_capability_id);
+
+        if !explicit_match {
+            return Err(AgentKernelError::CommitmentCapabilityMismatch {
+                capability: expected_capability_id.to_string(),
+                commitment_id: commitment.commitment_id.0.clone(),
+                reason: "required_capabilities does not include expected capability binding"
+                    .to_string(),
+            });
+        }
+
+        Ok(())
+    }
+
     pub fn record_execution_started(
         &self,
         commitment_id: &RcfCommitmentId,
@@ -361,15 +436,22 @@ pub struct AgentKernel {
     runtime: MapleRuntime,
     aas: Arc<AasService>,
     gateway: CommitmentGateway,
+    storage: Arc<dyn MapleStorage>,
     agents: Arc<RwLock<HashMap<ResonatorId, AgentHost>>>,
     capability_executors: Arc<RwLock<HashMap<String, Arc<dyn CapabilityExecutor>>>>,
     model_adapters: Arc<RwLock<HashMap<ModelBackend, Arc<dyn ModelAdapter>>>>,
-    audit_log: Arc<RwLock<Vec<AgentAuditEvent>>>,
 }
 
 impl AgentKernel {
     /// Create a kernel with default adapters and built-in safe/dangerous capabilities.
     pub fn new(runtime: MapleRuntime) -> Self {
+        let storage: Arc<dyn MapleStorage> =
+            Arc::new(maple_storage::memory::InMemoryMapleStorage::new());
+        Self::new_with_storage(runtime, storage)
+    }
+
+    /// Create a kernel with explicit storage backend.
+    pub fn new_with_storage(runtime: MapleRuntime, storage: Arc<dyn MapleStorage>) -> Self {
         let aas = Arc::new(AasService::new());
         let gateway = CommitmentGateway::new(Arc::clone(&aas));
 
@@ -377,11 +459,16 @@ impl AgentKernel {
             runtime,
             aas,
             gateway,
+            storage,
             agents: Arc::new(RwLock::new(HashMap::new())),
             capability_executors: Arc::new(RwLock::new(Self::default_capability_executors())),
             model_adapters: Arc::new(RwLock::new(Self::default_model_adapters())),
-            audit_log: Arc::new(RwLock::new(Vec::new())),
         }
+    }
+
+    /// Access the configured storage backend.
+    pub fn storage(&self) -> Arc<dyn MapleStorage> {
+        Arc::clone(&self.storage)
     }
 
     /// Register a custom capability executor.
@@ -452,6 +539,7 @@ impl AgentKernel {
         };
 
         self.agents.write().await.insert(resonator.id, host.clone());
+        self.persist_checkpoint(&host, None).await?;
 
         Ok(host)
     }
@@ -569,6 +657,7 @@ impl AgentKernel {
                             .write()
                             .await
                             .insert(host.resonator_id, host.clone());
+                        self.persist_checkpoint(&host, None).await?;
                         return Err(err);
                     }
                 }
@@ -584,6 +673,7 @@ impl AgentKernel {
             .write()
             .await
             .insert(host.resonator_id, host.clone());
+        self.persist_checkpoint(&host, None).await?;
 
         let audit_event_id = self
             .append_audit(AgentAuditEvent {
@@ -598,7 +688,7 @@ impl AgentKernel {
                     .and_then(|a| a.payload.get("commitment_id").and_then(Value::as_str))
                     .map(ToOwned::to_owned),
             })
-            .await;
+            .await?;
 
         Ok(AgentHandleResponse {
             resonator_id: host.resonator_id,
@@ -611,7 +701,28 @@ impl AgentKernel {
 
     /// Get immutable audit trail snapshot.
     pub async fn audit_events(&self) -> Vec<AgentAuditEvent> {
-        self.audit_log.read().await.clone()
+        match self
+            .storage
+            .list_audit(QueryWindow {
+                limit: 0,
+                offset: 0,
+            })
+            .await
+        {
+            Ok(records) => records
+                .into_iter()
+                .map(|record| AgentAuditEvent {
+                    event_id: record.event_id,
+                    timestamp: record.timestamp,
+                    resonator_id: record.actor,
+                    stage: record.stage,
+                    success: record.success,
+                    message: record.message,
+                    commitment_id: record.commitment_id.map(|c| c.0),
+                })
+                .collect(),
+            Err(_) => Vec::new(),
+        }
     }
 
     async fn execute_capability(
@@ -646,47 +757,51 @@ impl AgentKernel {
                     .unwrap_or_else(|| "capability denied".to_string()),
                 commitment_id: None,
             })
-            .await;
+            .await?;
+            self.persist_checkpoint(host, None).await?;
             return Err(AgentKernelError::CapabilityDenied);
         }
 
-        let commitment_id =
-            if capability.consequential && host.profile.require_commitment_for_consequence {
-                host.state = AgentState::AwaitingCommitment;
-                let commitment = if let Some(commitment) = commitment {
-                    commitment
-                } else {
-                    self.append_audit(AgentAuditEvent {
-                        event_id: format!("audit-{}", Uuid::new_v4()),
-                        timestamp: chrono::Utc::now(),
-                        resonator_id: host.resonator_id.to_string(),
-                        stage: "commitment_required".to_string(),
-                        success: false,
-                        message: format!(
-                            "consequential capability `{}` blocked without commitment",
-                            capability_name
-                        ),
-                        commitment_id: None,
-                    })
-                    .await;
-                    return Err(AgentKernelError::MissingCommitment {
-                        capability: capability_name.clone(),
-                    });
-                };
+        let commitment_id = if capability.consequential
+            && host.profile.require_commitment_for_consequence
+        {
+            host.state = AgentState::AwaitingCommitment;
+            let commitment = if let Some(commitment) = commitment {
+                commitment
+            } else {
+                self.append_audit(AgentAuditEvent {
+                    event_id: format!("audit-{}", Uuid::new_v4()),
+                    timestamp: chrono::Utc::now(),
+                    resonator_id: host.resonator_id.to_string(),
+                    stage: "commitment_required".to_string(),
+                    success: false,
+                    message: format!(
+                        "consequential capability `{}` blocked without commitment",
+                        capability_name
+                    ),
+                    commitment_id: None,
+                })
+                .await?;
+                self.persist_checkpoint(host, None).await?;
+                return Err(AgentKernelError::MissingCommitment {
+                    capability: capability_name.clone(),
+                });
+            };
 
-                self.assert_intent_precedes_commitment(
-                    cognition.confidence,
-                    host.profile.min_intent_confidence,
-                )?;
+            self.assert_intent_precedes_commitment(
+                cognition.confidence,
+                host.profile.min_intent_confidence,
+            )?;
 
-                if commitment.principal.id != host.identity_ref.id {
-                    return Err(AgentKernelError::CommitmentValidation(
-                        "commitment principal does not match agent identity".to_string(),
-                    ));
-                }
-
-                let decision = self.gateway.authorize(commitment.clone())?;
-                if !decision.decision.allows_execution() {
+            let expected_capability_id = format!("cap:{}:{}", host.resonator_id, capability_name);
+            let decision = match self.gateway.authorize_for_capability(
+                commitment.clone(),
+                &host.identity_ref,
+                &capability,
+                &expected_capability_id,
+            ) {
+                Ok(decision) => decision,
+                Err(err) => {
                     host.state = AgentState::Failed;
                     self.append_audit(AgentAuditEvent {
                         event_id: format!("audit-{}", Uuid::new_v4()),
@@ -694,25 +809,48 @@ impl AgentKernel {
                         resonator_id: host.resonator_id.to_string(),
                         stage: "commitment_authorization".to_string(),
                         success: false,
-                        message: format!("authorization blocked: {:?}", decision.decision),
-                        commitment_id: Some(decision.commitment_id.0.clone()),
+                        message: err.to_string(),
+                        commitment_id: Some(commitment.commitment_id.0.clone()),
                     })
-                    .await;
-                    return Err(AgentKernelError::ApprovalRequired(decision.decision));
+                    .await?;
+                    self.persist_checkpoint(host, None).await?;
+                    return Err(err);
                 }
-
-                host.contract_set.insert(commitment.commitment_id.clone());
-                Some(commitment.commitment_id)
-            } else {
-                None
             };
+            self.persist_commitment_decision(&commitment, &decision)
+                .await?;
+
+            if !decision.decision.allows_execution() {
+                host.state = AgentState::Failed;
+                self.append_audit(AgentAuditEvent {
+                    event_id: format!("audit-{}", Uuid::new_v4()),
+                    timestamp: chrono::Utc::now(),
+                    resonator_id: host.resonator_id.to_string(),
+                    stage: "commitment_authorization".to_string(),
+                    success: false,
+                    message: format!("authorization blocked: {:?}", decision.decision),
+                    commitment_id: Some(decision.commitment_id.0.clone()),
+                })
+                .await?;
+                self.persist_checkpoint(host, None).await?;
+                return Err(AgentKernelError::ApprovalRequired(decision.decision));
+            }
+
+            host.contract_set.insert(commitment.commitment_id.clone());
+            Some(commitment.commitment_id)
+        } else {
+            None
+        };
 
         if let Some(ref cid) = commitment_id {
             self.assert_commitment_precedes_consequence(cid)?;
             self.gateway.record_execution_started(cid)?;
+            self.persist_execution_started(cid).await?;
         }
 
         host.state = AgentState::Executing;
+        self.persist_checkpoint(host, commitment_id.as_ref().map(|c| c.0.clone()))
+            .await?;
 
         let executor = self
             .capability_executors
@@ -736,6 +874,8 @@ impl AgentKernel {
                 if let Some(ref cid) = commitment_id {
                     self.gateway
                         .record_success(cid, execution.summary.clone())?;
+                    self.persist_outcome(cid, true, execution.summary.clone())
+                        .await?;
                     execution.payload["commitment_id"] = Value::String(cid.0.clone());
                 }
 
@@ -748,14 +888,17 @@ impl AgentKernel {
                     message: execution.summary.clone(),
                     commitment_id: commitment_id.as_ref().map(|c| c.0.clone()),
                 })
-                .await;
+                .await?;
+                self.persist_checkpoint(host, commitment_id.as_ref().map(|c| c.0.clone()))
+                    .await?;
 
                 Ok(execution)
             }
             Err(err) => {
                 host.state = AgentState::Failed;
                 if let Some(ref cid) = commitment_id {
-                    let _ = self.gateway.record_failure(cid, err.to_string());
+                    self.gateway.record_failure(cid, err.to_string())?;
+                    self.persist_outcome(cid, false, err.to_string()).await?;
                 }
 
                 self.append_audit(AgentAuditEvent {
@@ -767,7 +910,9 @@ impl AgentKernel {
                     message: err.to_string(),
                     commitment_id: commitment_id.as_ref().map(|c| c.0.clone()),
                 })
-                .await;
+                .await?;
+                self.persist_checkpoint(host, commitment_id.as_ref().map(|c| c.0.clone()))
+                    .await?;
 
                 Err(AgentKernelError::CapabilityExecution(err.to_string()))
             }
@@ -842,10 +987,92 @@ impl AgentKernel {
             .map_err(Into::into)
     }
 
-    async fn append_audit(&self, event: AgentAuditEvent) -> String {
+    async fn append_audit(&self, event: AgentAuditEvent) -> Result<String, AgentKernelError> {
         let event_id = event.event_id.clone();
-        self.audit_log.write().await.push(event);
-        event_id
+        self.storage
+            .append_audit(AuditAppend {
+                timestamp: event.timestamp,
+                actor: event.resonator_id,
+                stage: event.stage,
+                success: event.success,
+                message: event.message,
+                commitment_id: event.commitment_id.map(RcfCommitmentId::new),
+                payload: serde_json::json!({ "event_id": event_id }),
+            })
+            .await
+            .map_err(|e| AgentKernelError::Storage(e.to_string()))?;
+        Ok(event_id)
+    }
+
+    async fn persist_checkpoint(
+        &self,
+        host: &AgentHost,
+        last_audit_event_id: Option<String>,
+    ) -> Result<(), AgentKernelError> {
+        let checkpoint = AgentCheckpoint {
+            resonator_id: host.resonator_id.to_string(),
+            profile_name: host.profile.name.clone(),
+            state: format!("{:?}", host.state),
+            active_commitments: host.contract_set.iter().map(|c| c.0.clone()).collect(),
+            last_audit_event_id,
+            metadata: serde_json::json!({
+                "aas_agent_id": host.aas_agent_id.0,
+                "capabilities": host.capability_set.keys().cloned().collect::<Vec<_>>(),
+            }),
+            updated_at: chrono::Utc::now(),
+        };
+        self.storage
+            .upsert_checkpoint(checkpoint)
+            .await
+            .map_err(|e| AgentKernelError::Storage(e.to_string()))
+    }
+
+    async fn persist_commitment_decision(
+        &self,
+        commitment: &RcfCommitment,
+        decision: &PolicyDecisionCard,
+    ) -> Result<(), AgentKernelError> {
+        self.storage
+            .create_commitment(commitment.clone(), decision.clone(), chrono::Utc::now())
+            .await
+            .map_err(|e| AgentKernelError::Storage(e.to_string()))
+    }
+
+    async fn persist_execution_started(
+        &self,
+        commitment_id: &RcfCommitmentId,
+    ) -> Result<(), AgentKernelError> {
+        self.storage
+            .transition_lifecycle(
+                commitment_id,
+                LifecycleStatus::Approved,
+                LifecycleStatus::Executing,
+                chrono::Utc::now(),
+            )
+            .await
+            .map_err(|e| AgentKernelError::Storage(e.to_string()))
+    }
+
+    async fn persist_outcome(
+        &self,
+        commitment_id: &RcfCommitmentId,
+        success: bool,
+        description: String,
+    ) -> Result<(), AgentKernelError> {
+        let outcome = CommitmentOutcome {
+            success,
+            description,
+            completed_at: chrono::Utc::now(),
+        };
+        let final_status = if success {
+            LifecycleStatus::Completed
+        } else {
+            LifecycleStatus::Failed
+        };
+        self.storage
+            .set_outcome(commitment_id, outcome, final_status)
+            .await
+            .map_err(|e| AgentKernelError::Storage(e.to_string()))
     }
 
     fn default_capability_executors() -> HashMap<String, Arc<dyn CapabilityExecutor>> {
@@ -879,6 +1106,19 @@ impl AgentKernel {
         adapters.insert(ModelBackend::Grok, Arc::new(VendorAdapter::grok("grok-2")));
         adapters
     }
+}
+
+fn scope_covers(granted_scope: &ScopeConstraint, required_scope: &ScopeConstraint) -> bool {
+    if required_scope.targets.is_empty() || required_scope.operations.is_empty() {
+        return true;
+    }
+
+    required_scope.targets.iter().all(|target| {
+        required_scope
+            .operations
+            .iter()
+            .all(|operation| granted_scope.matches(target, operation))
+    })
 }
 
 /// Capability execution errors.
@@ -921,11 +1161,21 @@ pub enum AgentKernelError {
     #[error("commitment validation failed: {0}")]
     CommitmentValidation(String),
 
+    #[error("commitment `{commitment_id}` is not authorized for `{capability}`: {reason}")]
+    CommitmentCapabilityMismatch {
+        capability: String,
+        commitment_id: String,
+        reason: String,
+    },
+
     #[error("approval required before consequence: {0:?}")]
     ApprovalRequired(Decision),
 
     #[error("capability execution failed: {0}")]
     CapabilityExecution(String),
+
+    #[error("storage error: {0}")]
+    Storage(String),
 
     #[error("invariant violation: {0}")]
     Invariant(#[from] InvariantViolation),
@@ -935,6 +1185,7 @@ pub enum AgentKernelError {
 mod tests {
     use super::*;
     use crate::config::RuntimeConfig;
+    use rcf_types::TemporalValidity;
 
     #[tokio::test]
     async fn dangerous_capability_denied_without_commitment() {
@@ -1044,5 +1295,102 @@ mod tests {
             let err = kernel.handle(req).await.err().expect("must fail");
             assert!(matches!(err, AgentKernelError::MissingCommitment { .. }));
         }
+    }
+
+    #[tokio::test]
+    async fn dangerous_capability_rejects_commitment_for_different_capability() {
+        let runtime = MapleRuntime::bootstrap(RuntimeConfig::default())
+            .await
+            .unwrap();
+        let kernel = AgentKernel::new(runtime);
+
+        let host = kernel
+            .register_agent(AgentRegistration::default())
+            .await
+            .unwrap();
+
+        // Commitment explicitly bound to the safe capability, not transfer.
+        let wrong_commitment = kernel
+            .draft_commitment(host.resonator_id, "echo_log", "Echo operation")
+            .await
+            .unwrap();
+
+        let mut req = AgentHandleRequest::new(
+            host.resonator_id,
+            ModelBackend::LocalLlama,
+            "transfer 500 usd to demo account",
+        );
+        req.override_tool = Some("simulate_transfer".to_string());
+        req.override_args = Some(serde_json::json!({"amount": 500, "to": "demo"}));
+        req.commitment = Some(wrong_commitment.clone());
+
+        let err = kernel.handle(req).await.err().expect("must fail");
+        assert!(matches!(
+            err,
+            AgentKernelError::CommitmentCapabilityMismatch { .. }
+        ));
+    }
+
+    #[tokio::test]
+    async fn dangerous_capability_rejects_expired_commitment() {
+        let runtime = MapleRuntime::bootstrap(RuntimeConfig::default())
+            .await
+            .unwrap();
+        let kernel = AgentKernel::new(runtime);
+
+        let host = kernel
+            .register_agent(AgentRegistration::default())
+            .await
+            .unwrap();
+
+        let mut commitment = kernel
+            .draft_commitment(
+                host.resonator_id,
+                "simulate_transfer",
+                "Transfer with explicit commitment",
+            )
+            .await
+            .unwrap();
+        let now = chrono::Utc::now();
+        commitment.temporal_validity = TemporalValidity::new(
+            now - chrono::Duration::minutes(10),
+            now - chrono::Duration::minutes(1),
+        );
+
+        let mut req = AgentHandleRequest::new(
+            host.resonator_id,
+            ModelBackend::LocalLlama,
+            "transfer 500 usd to demo account",
+        );
+        req.override_tool = Some("simulate_transfer".to_string());
+        req.override_args = Some(serde_json::json!({"amount": 500, "to": "demo"}));
+        req.commitment = Some(commitment);
+
+        let err = kernel.handle(req).await.err().expect("must fail");
+        assert!(matches!(
+            err,
+            AgentKernelError::CommitmentCapabilityMismatch { .. }
+        ));
+    }
+
+    #[tokio::test]
+    async fn register_agent_persists_checkpoint() {
+        let runtime = MapleRuntime::bootstrap(RuntimeConfig::default())
+            .await
+            .unwrap();
+        let kernel = AgentKernel::new(runtime);
+
+        let host = kernel
+            .register_agent(AgentRegistration::default())
+            .await
+            .unwrap();
+
+        let checkpoint = kernel
+            .storage()
+            .get_checkpoint(&host.resonator_id.to_string())
+            .await
+            .unwrap()
+            .expect("checkpoint should exist");
+        assert_eq!(checkpoint.resonator_id, host.resonator_id.to_string());
     }
 }

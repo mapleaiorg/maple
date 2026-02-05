@@ -25,11 +25,11 @@ members = [
     "crates/aas-adjudication",
     "crates/aas-ledger",
     "crates/aas-service",
-    "crates/mapleverse-types",
-    "crates/mapleverse-executor",
-    "crates/mapleverse-connectors",
-    "crates/mapleverse-evidence",
-    "crates/mapleverse-service",
+    "crates/mapleverse/types",
+    "crates/mapleverse/executor",
+    "crates/mapleverse/connectors",
+    "crates/mapleverse/evidence",
+    "crates/mapleverse/service",
 
     # Phase 2: Learning Without Power
     "crates/eve-types",
@@ -39,7 +39,7 @@ members = [
     "crates/eve-service",
 
     # Phase 3: Cognition Layer
-    "crates/resonator-types",
+    "crates/resonator/types",
 
     # Collective Layer (MAPLE v2)
     "crates/collective-types",
@@ -51,30 +51,31 @@ members = [
     "crates/workflow-dsl",
 
     # Mapleverse World (MAPLE v2 - AI-only civilization)
-    "crates/mapleverse-world",
-    "crates/resonator-identity",
-    "crates/resonator-meaning",
-    "crates/resonator-intent",
-    "crates/resonator-commitment",
-    "crates/resonator-profiles",
-    "crates/resonator-runtime",
-    "crates/resonator-client",
+    "crates/mapleverse/world",
+    "crates/resonator/identity",
+    "crates/resonator/meaning",
+    "crates/resonator/intent",
+    "crates/resonator/commitment",
+    "crates/resonator/profiles",
+    "crates/resonator/runtime",
+    "crates/resonator/client",
 
     # MAPLE Core Runtime
     "crates/maple-runtime",
+    "crates/maple/storage",
 
     # PALM - Fleet Orchestration Layer
-    "crates/palm-types",
-    "crates/palm-registry",
-    "crates/palm-deployment",
-    "crates/palm-health",
-    "crates/palm-state",
-    "crates/palm-control",
-    "crates/palm-policy",
-    "crates/palm-shared-state",
-    "crates/palm",
-    "crates/palm-daemon",
-    "crates/palm-observability",
+    "crates/palm/types",
+    "crates/palm/registry",
+    "crates/palm/deployment",
+    "crates/palm/health",
+    "crates/palm/state",
+    "crates/palm/control",
+    "crates/palm/policy",
+    "crates/palm/shared-state",
+    "crates/palm/cli",
+    "crates/palm/daemon",
+    "crates/palm/observability",
 
     # Platform Contracts
     "contracts/platform-pack",
@@ -162,25 +163,26 @@ aas-policy = { path = "crates/aas-policy" }
 aas-adjudication = { path = "crates/aas-adjudication" }
 aas-ledger = { path = "crates/aas-ledger" }
 aas-service = { path = "crates/aas-service" }
-mapleverse-types = { path = "crates/mapleverse-types" }
-mapleverse-executor = { path = "crates/mapleverse-executor" }
-mapleverse-connectors = { path = "crates/mapleverse-connectors" }
-mapleverse-evidence = { path = "crates/mapleverse-evidence" }
-mapleverse-service = { path = "crates/mapleverse-service" }
+mapleverse-types = { path = "crates/mapleverse/types" }
+mapleverse-executor = { path = "crates/mapleverse/executor" }
+mapleverse-connectors = { path = "crates/mapleverse/connectors" }
+mapleverse-evidence = { path = "crates/mapleverse/evidence" }
+mapleverse-service = { path = "crates/mapleverse/service" }
 eve-types = { path = "crates/eve-types" }
 eve-ingestion = { path = "crates/eve-ingestion" }
 eve-evaluation = { path = "crates/eve-evaluation" }
 eve-artifacts = { path = "crates/eve-artifacts" }
 eve-service = { path = "crates/eve-service" }
-resonator-types = { path = "crates/resonator-types" }
-resonator-identity = { path = "crates/resonator-identity" }
-resonator-meaning = { path = "crates/resonator-meaning" }
-resonator-intent = { path = "crates/resonator-intent" }
-resonator-commitment = { path = "crates/resonator-commitment" }
-resonator-profiles = { path = "crates/resonator-profiles" }
-resonator-runtime = { path = "crates/resonator-runtime" }
-resonator-client = { path = "crates/resonator-client" }
+resonator-types = { path = "crates/resonator/types" }
+resonator-identity = { path = "crates/resonator/identity" }
+resonator-meaning = { path = "crates/resonator/meaning" }
+resonator-intent = { path = "crates/resonator/intent" }
+resonator-commitment = { path = "crates/resonator/commitment" }
+resonator-profiles = { path = "crates/resonator/profiles" }
+resonator-runtime = { path = "crates/resonator/runtime" }
+resonator-client = { path = "crates/resonator/client" }
 maple-runtime = { path = "crates/maple-runtime" }
+maple-storage = { path = "crates/maple/storage" }
 maple-integration = { path = "crates/maple-integration" }
 collective-types = { path = "crates/collective-types" }
 collective-runtime = { path = "crates/collective-runtime" }
@@ -189,17 +191,17 @@ workflow-engine = { path = "crates/workflow-engine" }
 workflow-dsl = { path = "crates/workflow-dsl" }
 
 # PALM crates
-palm-types = { path = "crates/palm-types" }
-palm-registry = { path = "crates/palm-registry" }
-palm-deployment = { path = "crates/palm-deployment" }
-palm-health = { path = "crates/palm-health" }
-palm-state = { path = "crates/palm-state" }
-palm-control = { path = "crates/palm-control" }
-palm-policy = { path = "crates/palm-policy" }
-palm-shared-state = { path = "crates/palm-shared-state" }
-palm = { path = "crates/palm" }
-palm-daemon = { path = "crates/palm-daemon" }
-palm-observability = { path = "crates/palm-observability" }
+palm-types = { path = "crates/palm/types" }
+palm-registry = { path = "crates/palm/registry" }
+palm-deployment = { path = "crates/palm/deployment" }
+palm-health = { path = "crates/palm/health" }
+palm-state = { path = "crates/palm/state" }
+palm-control = { path = "crates/palm/control" }
+palm-policy = { path = "crates/palm/policy" }
+palm-shared-state = { path = "crates/palm/shared-state" }
+palm = { path = "crates/palm/cli" }
+palm-daemon = { path = "crates/palm/daemon" }
+palm-observability = { path = "crates/palm/observability" }
 
 [profile.release]
 lto = true

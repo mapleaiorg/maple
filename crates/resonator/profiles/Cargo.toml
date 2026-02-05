@@ -1,0 +1,15 @@
+[package]
+name = "resonator-profiles"
+version.workspace = true
+edition.workspace = true
+description = "resonator profiles"
+
+[dependencies]
+thiserror = { workspace = true }
+serde = { workspace = true }
+resonator-types = { workspace = true }
+rcf-types = { workspace = true }
+
+[features]
+default = []
+strict-docs = []

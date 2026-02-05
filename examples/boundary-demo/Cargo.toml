@@ -10,8 +10,8 @@ path = "src/main.rs"
 
 [dependencies]
 palm-platform-pack = { path = "../../contracts/platform-pack" }
-palm-types = { path = "../../crates/palm-types" }
-palm-policy = { path = "../../crates/palm-policy" }
+palm-types = { path = "../../crates/palm/types" }
+palm-policy = { path = "../../crates/palm/policy" }
 palm-conformance = { path = "../../contracts/conformance" }
 
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }

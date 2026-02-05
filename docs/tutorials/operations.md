@@ -22,7 +22,7 @@ cargo run -p maple-cli -- spec list
 Install once (no `cargo run` required):
 
 ```bash
-cargo install --path crates/maple-cli --bin maple && cargo install --path crates/palm --bin palm
+cargo install --path crates/maple-cli --bin maple && cargo install --path crates/palm/cli --bin palm
 ```
 
 ## 2. Start the Daemon
@@ -153,6 +153,9 @@ maple agent handle \
 # Read recent audit events
 maple agent audit --limit 20
 ```
+
+When `palmd` is configured with PostgreSQL storage, AgentKernel commitment/audit/checkpoint
+records are also persisted to PostgreSQL (in addition to AAS in-memory runtime state).
 
 ## 4. Real-Time Monitoring from the CLI
 
