@@ -23,7 +23,8 @@ use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::cognition::{
-    LlamaAdapter, ModelAdapter, ModelBackend, ModelRequest, StructuredCognition, VendorAdapter,
+    AnthropicAdapter, GeminiAdapter, GrokAdapter, LlamaAdapter, ModelAdapter, ModelBackend,
+    ModelRequest, OpenAiAdapter, StructuredCognition,
 };
 use crate::invariants::{IntentContext, MeaningContext, Operation, SystemState};
 use crate::runtime_core::{MapleRuntime, ResonatorSpec};
@@ -1048,17 +1049,17 @@ impl AgentKernel {
         );
         adapters.insert(
             ModelBackend::OpenAi,
-            Arc::new(VendorAdapter::open_ai("gpt-4o-mini")),
+            Arc::new(OpenAiAdapter::new("gpt-4o-mini")),
         );
         adapters.insert(
             ModelBackend::Anthropic,
-            Arc::new(VendorAdapter::anthropic("claude-3-5-sonnet")),
+            Arc::new(AnthropicAdapter::new("claude-3-5-sonnet")),
         );
         adapters.insert(
             ModelBackend::Gemini,
-            Arc::new(VendorAdapter::gemini("gemini-2.0-flash")),
+            Arc::new(GeminiAdapter::new("gemini-2.0-flash")),
         );
-        adapters.insert(ModelBackend::Grok, Arc::new(VendorAdapter::grok("grok-2")));
+        adapters.insert(ModelBackend::Grok, Arc::new(GrokAdapter::new("grok-2")));
         adapters
     }
 }

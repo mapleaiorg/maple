@@ -134,8 +134,9 @@ pub use agent_kernel::{
     CapabilityExecutor, CommitmentGateway, EchoCapability, SimulatedTransferCapability,
 };
 pub use cognition::{
-    LlamaAdapter, ModelAdapter, ModelBackend, ModelRequest, ModelResponse, StructuredCognition,
-    SuggestedTool, ValidationStatus, VendorAdapter,
+    AnthropicAdapter, GeminiAdapter, GrokAdapter, LlamaAdapter, ModelAdapter, ModelAdapterError,
+    ModelBackend, ModelErrorKind, ModelProviderConfig, ModelRequest, ModelResponse, ModelUsage,
+    OpenAiAdapter, StructuredCognition, SuggestedTool, ValidationStatus, VendorAdapter,
 };
 pub use runtime_core::{
     ContinuityProof, CouplingHandle, MapleRuntime, ResonatorHandle, ResonatorIdentitySpec,

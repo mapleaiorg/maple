@@ -52,8 +52,10 @@ impl ProfileManager {
 
     /// Can these two profiles couple?
     pub fn can_couple(&self, profile_a: &ResonatorProfile, profile_b: &ResonatorProfile) -> bool {
-        self.validator
-            .can_couple(&map_runtime_profile(*profile_a), &map_runtime_profile(*profile_b))
+        self.validator.can_couple(
+            &map_runtime_profile(*profile_a),
+            &map_runtime_profile(*profile_b),
+        )
     }
 }
 
@@ -99,10 +101,7 @@ mod tests {
         let manager = ProfileManager::new(&ProfileConfig::default());
 
         assert!(manager.can_couple(&ResonatorProfile::Human, &ResonatorProfile::World));
-        assert!(!manager.can_couple(
-            &ResonatorProfile::Human,
-            &ResonatorProfile::Coordination
-        ));
+        assert!(!manager.can_couple(&ResonatorProfile::Human, &ResonatorProfile::Coordination));
         assert!(!manager.can_couple(&ResonatorProfile::World, &ResonatorProfile::IBank));
         assert!(manager.can_couple(
             &ResonatorProfile::Coordination,

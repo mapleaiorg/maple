@@ -32,6 +32,15 @@ LLMs (Ollama, GPT, Claude, Grok, Gemini) are **cognition engines**, not identity
 - `grok` (xAI OpenAI-compatible chat API)
 - `gemini` (Google Generative Language API)
 
+In `maple-runtime`, all backends now share a normalized adapter contract:
+
+- `ModelProviderConfig` (backend/model/endpoint/auth env/timeout)
+- `ModelUsage` (prompt/completion/total token accounting envelope)
+- `ModelAdapterError` with normalized `ModelErrorKind`
+
+Provider modules live under `crates/maple-runtime/src/cognition/`:
+`llama`, `openai`, `anthropic`, `gemini`, `grok`.
+
 You can inspect and switch from CLI:
 
 ```bash
