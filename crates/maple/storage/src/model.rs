@@ -11,6 +11,8 @@ pub struct CommitmentRecord {
     pub commitment: RcfCommitment,
     pub decision: PolicyDecisionCard,
     pub lifecycle_status: LifecycleStatus,
+    pub execution_started_at: Option<DateTime<Utc>>,
+    pub execution_completed_at: Option<DateTime<Utc>>,
     pub outcome: Option<CommitmentOutcome>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,

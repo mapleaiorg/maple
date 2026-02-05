@@ -11,7 +11,7 @@ use std::sync::Arc;
 use aas_capability::GrantRequest;
 use aas_identity::{AgentMetadata, AgentType, RegistrationRequest};
 use aas_service::AasService;
-use aas_types::{AgentId, CommitmentOutcome, Decision, LifecycleStatus, PolicyDecisionCard};
+use aas_types::{AgentId, CommitmentOutcome, Decision, PolicyDecisionCard};
 use async_trait::async_trait;
 use maple_storage::{AgentCheckpoint, AuditAppend, MapleStorage, QueryWindow};
 use rcf_commitment::{CommitmentBuilder, CommitmentId as RcfCommitmentId, RcfCommitment};
@@ -296,7 +296,7 @@ impl CommitmentGateway {
         }
     }
 
-    pub fn authorize(
+    pub async fn authorize(
         &self,
         commitment: RcfCommitment,
     ) -> Result<PolicyDecisionCard, AgentKernelError> {
@@ -307,6 +307,7 @@ impl CommitmentGateway {
         let decision = self
             .aas
             .submit_commitment(commitment)
+            .await
             .map_err(|e| AgentKernelError::Aas(e.to_string()))?;
 
         Ok(decision)
@@ -314,7 +315,7 @@ impl CommitmentGateway {
 
     /// Validate that a commitment is explicitly bound to the capability being executed,
     /// then authorize it through the full RCF + AAS boundary.
-    pub fn authorize_for_capability(
+    pub async fn authorize_for_capability(
         &self,
         commitment: RcfCommitment,
         principal: &IdentityRef,
@@ -322,7 +323,7 @@ impl CommitmentGateway {
         expected_capability_id: &str,
     ) -> Result<PolicyDecisionCard, AgentKernelError> {
         self.assert_binding(&commitment, principal, capability, expected_capability_id)?;
-        self.authorize(commitment)
+        self.authorize(commitment).await
     }
 
     fn assert_binding(
@@ -386,16 +387,17 @@ impl CommitmentGateway {
         Ok(())
     }
 
-    pub fn record_execution_started(
+    pub async fn record_execution_started(
         &self,
         commitment_id: &RcfCommitmentId,
     ) -> Result<(), AgentKernelError> {
         self.aas
             .record_execution_started(commitment_id)
+            .await
             .map_err(|e| AgentKernelError::Aas(e.to_string()))
     }
 
-    pub fn record_success(
+    pub async fn record_success(
         &self,
         commitment_id: &RcfCommitmentId,
         description: impl Into<String>,
@@ -409,10 +411,11 @@ impl CommitmentGateway {
                     completed_at: chrono::Utc::now(),
                 },
             )
+            .await
             .map_err(|e| AgentKernelError::Aas(e.to_string()))
     }
 
-    pub fn record_failure(
+    pub async fn record_failure(
         &self,
         commitment_id: &RcfCommitmentId,
         description: impl Into<String>,
@@ -426,6 +429,7 @@ impl CommitmentGateway {
                     completed_at: chrono::Utc::now(),
                 },
             )
+            .await
             .map_err(|e| AgentKernelError::Aas(e.to_string()))
     }
 }
@@ -452,7 +456,7 @@ impl AgentKernel {
 
     /// Create a kernel with explicit storage backend.
     pub fn new_with_storage(runtime: MapleRuntime, storage: Arc<dyn MapleStorage>) -> Self {
-        let aas = Arc::new(AasService::new());
+        let aas = Arc::new(AasService::with_storage(Arc::clone(&storage)));
         let gateway = CommitmentGateway::new(Arc::clone(&aas));
 
         Self {
@@ -794,12 +798,16 @@ impl AgentKernel {
             )?;
 
             let expected_capability_id = format!("cap:{}:{}", host.resonator_id, capability_name);
-            let decision = match self.gateway.authorize_for_capability(
-                commitment.clone(),
-                &host.identity_ref,
-                &capability,
-                &expected_capability_id,
-            ) {
+            let decision = match self
+                .gateway
+                .authorize_for_capability(
+                    commitment.clone(),
+                    &host.identity_ref,
+                    &capability,
+                    &expected_capability_id,
+                )
+                .await
+            {
                 Ok(decision) => decision,
                 Err(err) => {
                     host.state = AgentState::Failed;
@@ -817,8 +825,6 @@ impl AgentKernel {
                     return Err(err);
                 }
             };
-            self.persist_commitment_decision(&commitment, &decision)
-                .await?;
 
             if !decision.decision.allows_execution() {
                 host.state = AgentState::Failed;
@@ -844,8 +850,7 @@ impl AgentKernel {
 
         if let Some(ref cid) = commitment_id {
             self.assert_commitment_precedes_consequence(cid)?;
-            self.gateway.record_execution_started(cid)?;
-            self.persist_execution_started(cid).await?;
+            self.gateway.record_execution_started(cid).await?;
         }
 
         host.state = AgentState::Executing;
@@ -873,8 +878,7 @@ impl AgentKernel {
             Ok(mut execution) => {
                 if let Some(ref cid) = commitment_id {
                     self.gateway
-                        .record_success(cid, execution.summary.clone())?;
-                    self.persist_outcome(cid, true, execution.summary.clone())
+                        .record_success(cid, execution.summary.clone())
                         .await?;
                     execution.payload["commitment_id"] = Value::String(cid.0.clone());
                 }
@@ -897,8 +901,7 @@ impl AgentKernel {
             Err(err) => {
                 host.state = AgentState::Failed;
                 if let Some(ref cid) = commitment_id {
-                    self.gateway.record_failure(cid, err.to_string())?;
-                    self.persist_outcome(cid, false, err.to_string()).await?;
+                    self.gateway.record_failure(cid, err.to_string()).await?;
                 }
 
                 self.append_audit(AgentAuditEvent {
@@ -1023,54 +1026,6 @@ impl AgentKernel {
         };
         self.storage
             .upsert_checkpoint(checkpoint)
-            .await
-            .map_err(|e| AgentKernelError::Storage(e.to_string()))
-    }
-
-    async fn persist_commitment_decision(
-        &self,
-        commitment: &RcfCommitment,
-        decision: &PolicyDecisionCard,
-    ) -> Result<(), AgentKernelError> {
-        self.storage
-            .create_commitment(commitment.clone(), decision.clone(), chrono::Utc::now())
-            .await
-            .map_err(|e| AgentKernelError::Storage(e.to_string()))
-    }
-
-    async fn persist_execution_started(
-        &self,
-        commitment_id: &RcfCommitmentId,
-    ) -> Result<(), AgentKernelError> {
-        self.storage
-            .transition_lifecycle(
-                commitment_id,
-                LifecycleStatus::Approved,
-                LifecycleStatus::Executing,
-                chrono::Utc::now(),
-            )
-            .await
-            .map_err(|e| AgentKernelError::Storage(e.to_string()))
-    }
-
-    async fn persist_outcome(
-        &self,
-        commitment_id: &RcfCommitmentId,
-        success: bool,
-        description: String,
-    ) -> Result<(), AgentKernelError> {
-        let outcome = CommitmentOutcome {
-            success,
-            description,
-            completed_at: chrono::Utc::now(),
-        };
-        let final_status = if success {
-            LifecycleStatus::Completed
-        } else {
-            LifecycleStatus::Failed
-        };
-        self.storage
-            .set_outcome(commitment_id, outcome, final_status)
             .await
             .map_err(|e| AgentKernelError::Storage(e.to_string()))
     }
@@ -1260,6 +1215,7 @@ mod tests {
         let entry = kernel
             .aas
             .get_commitment(&commitment.commitment_id)
+            .await
             .unwrap()
             .expect("ledger entry");
         assert!(entry.outcome.is_some());

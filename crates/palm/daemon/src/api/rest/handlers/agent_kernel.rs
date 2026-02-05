@@ -3,12 +3,14 @@
 use crate::api::rest::state::AppState;
 use crate::error::{ApiError, ApiResult};
 use axum::{
-    extract::{Query, State},
+    extract::{Path, Query, State},
     Json,
 };
 use maple_runtime::{
     AgentHandleRequest, AgentKernelError, CapabilityExecution, ModelBackend, StructuredCognition,
 };
+use maple_storage::QueryWindow;
+use rcf_commitment::CommitmentId;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -38,6 +40,12 @@ pub struct AgentKernelAuditQuery {
     pub limit: usize,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct AgentKernelCommitmentsQuery {
+    #[serde(default = "default_limit")]
+    pub limit: usize,
+}
+
 #[derive(Debug, Serialize)]
 pub struct AgentKernelHandleResponse {
     pub resonator_id: String,
@@ -45,6 +53,33 @@ pub struct AgentKernelHandleResponse {
     pub action: Option<CapabilityExecution>,
     pub audit_event_id: String,
     pub raw_model_output: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct AgentKernelCommitmentResponse {
+    pub commitment_id: String,
+    pub lifecycle_status: String,
+    pub principal: String,
+    pub effect_domain: String,
+    pub decision: String,
+    pub declared_at: chrono::DateTime<chrono::Utc>,
+    pub execution_started_at: Option<chrono::DateTime<chrono::Utc>>,
+    pub execution_completed_at: Option<chrono::DateTime<chrono::Utc>>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub outcome: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct AgentKernelCommitmentSummaryResponse {
+    pub commitment_id: String,
+    pub lifecycle_status: String,
+    pub decision: String,
+    pub principal: String,
+    pub effect_domain: String,
+    pub declared_at: chrono::DateTime<chrono::Utc>,
+    pub execution_started_at: Option<chrono::DateTime<chrono::Utc>>,
+    pub execution_completed_at: Option<chrono::DateTime<chrono::Utc>>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
 fn default_backend() -> String {
@@ -147,6 +182,74 @@ pub async fn agent_kernel_audit(
     }
 
     Ok(Json(audits))
+}
+
+/// List recent commitment lifecycle records from the shared durable ledger.
+pub async fn agent_kernel_commitments(
+    State(state): State<AppState>,
+    Query(query): Query<AgentKernelCommitmentsQuery>,
+) -> ApiResult<Json<Vec<AgentKernelCommitmentSummaryResponse>>> {
+    let records = state
+        .agent_kernel
+        .storage()
+        .list_commitments(QueryWindow {
+            limit: query.limit,
+            offset: 0,
+        })
+        .await
+        .map_err(|err| ApiError::Internal(err.to_string()))?;
+
+    let items = records
+        .into_iter()
+        .map(|record| AgentKernelCommitmentSummaryResponse {
+            commitment_id: record.commitment_id.0,
+            lifecycle_status: format!("{:?}", record.lifecycle_status),
+            decision: format!("{:?}", record.decision.decision),
+            principal: record.commitment.principal.id,
+            effect_domain: format!("{}", record.commitment.effect_domain),
+            declared_at: record.created_at,
+            execution_started_at: record.execution_started_at,
+            execution_completed_at: record.execution_completed_at,
+            updated_at: record.updated_at,
+        })
+        .collect();
+
+    Ok(Json(items))
+}
+
+/// Retrieve one commitment lifecycle record from the shared durable ledger.
+pub async fn agent_kernel_commitment(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+) -> ApiResult<Json<AgentKernelCommitmentResponse>> {
+    let commitment_id = CommitmentId::new(id.clone());
+    let record = state
+        .agent_kernel
+        .storage()
+        .get_commitment(&commitment_id)
+        .await
+        .map_err(|err| ApiError::Internal(err.to_string()))?
+        .ok_or_else(|| ApiError::NotFound(format!("commitment '{}' not found", id)))?;
+
+    let outcome = record
+        .outcome
+        .clone()
+        .map(serde_json::to_value)
+        .transpose()
+        .map_err(|err| ApiError::Internal(err.to_string()))?;
+
+    Ok(Json(AgentKernelCommitmentResponse {
+        commitment_id: record.commitment_id.0,
+        lifecycle_status: format!("{:?}", record.lifecycle_status),
+        principal: record.commitment.principal.id,
+        effect_domain: format!("{}", record.commitment.effect_domain),
+        decision: format!("{:?}", record.decision.decision),
+        declared_at: record.created_at,
+        execution_started_at: record.execution_started_at,
+        execution_completed_at: record.execution_completed_at,
+        updated_at: record.updated_at,
+        outcome,
+    }))
 }
 
 fn map_agent_error(err: AgentKernelError) -> ApiError {

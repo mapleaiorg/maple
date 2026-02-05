@@ -154,8 +154,20 @@ maple agent handle \
 maple agent audit --limit 20
 ```
 
-When `palmd` is configured with PostgreSQL storage, AgentKernel commitment/audit/checkpoint
-records are also persisted to PostgreSQL (in addition to AAS in-memory runtime state).
+When `palmd` is configured with PostgreSQL storage, AgentKernel + AAS commitment/audit/checkpoint
+records are persisted to PostgreSQL as a single durable source of truth.
+
+Inspect one commitment lifecycle record (including execution timestamps):
+
+```bash
+maple agent commitment --id <commitment_id>
+```
+
+List recent commitments in a table:
+
+```bash
+maple agent commitments --limit 20
+```
 
 ## 4. Real-Time Monitoring from the CLI
 

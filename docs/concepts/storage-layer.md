@@ -50,6 +50,17 @@ So the model is:
 
 These enforce that AI-facing memory is additive, while commitment/audit remains explicit.
 
+## AAS integration (single ledger truth)
+
+`aas-ledger` now delegates to `MapleStorage` instead of maintaining a separate
+in-memory commitment ledger. This means:
+
+- AAS commitment decisions/lifecycle/outcomes and runtime reads come from the same backend.
+- `AgentKernel` and AAS no longer double-write commitment state.
+- Execution lifecycle timestamps (`execution_started_at`, `execution_completed_at`) are persisted
+  in the same source-of-truth records.
+- Switching to PostgreSQL in daemon/runtime setup gives durable commitment history across restarts.
+
 ## Current adapter status
 
 `InMemoryMapleStorage` is included as a deterministic reference adapter for tests/dev.

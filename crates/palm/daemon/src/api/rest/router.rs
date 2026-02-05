@@ -20,6 +20,26 @@ pub fn create_router(state: AppState) -> Router {
         .route("/agent-kernel/status", get(handlers::agent_kernel_status))
         .route("/agent-kernel/handle", post(handlers::agent_kernel_handle))
         .route("/agent-kernel/audit", get(handlers::agent_kernel_audit))
+        .route(
+            "/agent-kernel/commitments",
+            get(handlers::agent_kernel_commitments),
+        )
+        .route(
+            "/agent-kernel/commitments/:id",
+            get(handlers::agent_kernel_commitment),
+        )
+        // Agent (simple aliases)
+        .route("/agent/status", get(handlers::agent_kernel_status))
+        .route("/agent/handle", post(handlers::agent_kernel_handle))
+        .route("/agent/audit", get(handlers::agent_kernel_audit))
+        .route(
+            "/agent/commitments",
+            get(handlers::agent_kernel_commitments),
+        )
+        .route(
+            "/agent/commitments/:id",
+            get(handlers::agent_kernel_commitment),
+        )
         // Playground
         .route("/playground/state", get(handlers::playground_state))
         .route("/playground/config", get(handlers::get_playground_config))

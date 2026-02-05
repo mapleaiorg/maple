@@ -47,10 +47,12 @@ version = "0.1.0"
 dependencies = [
  "aas-types",
  "chrono",
+ "maple-storage",
  "rcf-commitment",
  "rcf-types",
  "serde",
  "thiserror",
+ "tokio",
  "uuid",
 ]
 
@@ -78,10 +80,12 @@ dependencies = [
  "aas-policy",
  "aas-types",
  "chrono",
+ "maple-storage",
  "rcf-commitment",
  "rcf-types",
  "serde",
  "thiserror",
+ "tokio",
  "uuid",
 ]
 
@@ -2405,6 +2409,7 @@ dependencies = [
  "palm-state",
  "palm-types",
  "rand 0.8.5",
+ "rcf-commitment",
  "reqwest",
  "semver",
  "serde",

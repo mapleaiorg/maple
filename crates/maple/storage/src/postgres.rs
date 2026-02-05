@@ -70,6 +70,8 @@ impl PostgresMapleStorage {
                 commitment JSONB NOT NULL,
                 decision JSONB NOT NULL,
                 lifecycle_status TEXT NOT NULL,
+                execution_started_at TIMESTAMPTZ,
+                execution_completed_at TIMESTAMPTZ,
                 outcome JSONB,
                 created_at TIMESTAMPTZ NOT NULL,
                 updated_at TIMESTAMPTZ NOT NULL
@@ -131,6 +133,19 @@ impl PostgresMapleStorage {
                 .await
                 .map_err(|e| StorageError::Backend(format!("schema init failed: {e}")))?;
         }
+        // Backward-compatible columns for deployments created before lifecycle timestamps.
+        sqlx::query(
+            "ALTER TABLE maple_commitments ADD COLUMN IF NOT EXISTS execution_started_at TIMESTAMPTZ",
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| StorageError::Backend(format!("schema migration failed: {e}")))?;
+        sqlx::query(
+            "ALTER TABLE maple_commitments ADD COLUMN IF NOT EXISTS execution_completed_at TIMESTAMPTZ",
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| StorageError::Backend(format!("schema migration failed: {e}")))?;
         Ok(())
     }
 }
@@ -152,8 +167,8 @@ impl CommitmentStore for PostgresMapleStorage {
         sqlx::query(
             r#"
             INSERT INTO maple_commitments
-                (commitment_id, commitment, decision, lifecycle_status, outcome, created_at, updated_at)
-            VALUES ($1, $2, $3, $4, NULL, $5, $5)
+                (commitment_id, commitment, decision, lifecycle_status, execution_started_at, execution_completed_at, outcome, created_at, updated_at)
+            VALUES ($1, $2, $3, $4, NULL, NULL, NULL, $5, $5)
             "#,
         )
         .bind(commitment.commitment_id.0.clone())
@@ -178,7 +193,12 @@ impl CommitmentStore for PostgresMapleStorage {
         let result = sqlx::query(
             r#"
             UPDATE maple_commitments
-               SET lifecycle_status = $1, updated_at = $2
+               SET lifecycle_status = $1,
+                   execution_started_at = CASE
+                        WHEN $1 = 'Executing'::TEXT AND execution_started_at IS NULL THEN $2
+                        ELSE execution_started_at
+                   END,
+                   updated_at = $2
              WHERE commitment_id = $3
                AND lifecycle_status = $4
             "#,
@@ -222,6 +242,7 @@ impl CommitmentStore for PostgresMapleStorage {
             UPDATE maple_commitments
                SET outcome = $1,
                    lifecycle_status = $2,
+                   execution_completed_at = $3,
                    updated_at = $3
              WHERE commitment_id = $4
             "#,
@@ -251,6 +272,7 @@ impl CommitmentStore for PostgresMapleStorage {
         let row = sqlx::query(
             r#"
             SELECT commitment_id, commitment, decision, lifecycle_status, outcome, created_at, updated_at
+              , execution_started_at, execution_completed_at
               FROM maple_commitments
              WHERE commitment_id = $1
             "#,
@@ -268,6 +290,7 @@ impl CommitmentStore for PostgresMapleStorage {
             sqlx::query(
                 r#"
                 SELECT commitment_id, commitment, decision, lifecycle_status, outcome, created_at, updated_at
+                  , execution_started_at, execution_completed_at
                   FROM maple_commitments
                  ORDER BY updated_at DESC
                  OFFSET $1
@@ -281,6 +304,7 @@ impl CommitmentStore for PostgresMapleStorage {
             sqlx::query(
                 r#"
                 SELECT commitment_id, commitment, decision, lifecycle_status, outcome, created_at, updated_at
+                  , execution_started_at, execution_completed_at
                   FROM maple_commitments
                  ORDER BY updated_at DESC
                  LIMIT $1 OFFSET $2
@@ -700,6 +724,12 @@ fn commitment_row_to_record(row: sqlx::postgres::PgRow) -> StorageResult<Commitm
         commitment,
         decision,
         lifecycle_status: parse_lifecycle_status(&lifecycle)?,
+        execution_started_at: row
+            .try_get("execution_started_at")
+            .map_err(|e| StorageError::Backend(e.to_string()))?,
+        execution_completed_at: row
+            .try_get("execution_completed_at")
+            .map_err(|e| StorageError::Backend(e.to_string()))?,
         outcome,
         created_at: row
             .try_get("created_at")

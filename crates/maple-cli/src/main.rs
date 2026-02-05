@@ -180,6 +180,12 @@ enum AgentCommands {
         #[arg(long, env = "PALM_ENDPOINT", default_value = "http://localhost:8080")]
         endpoint: String,
     },
+
+    /// Inspect a commitment lifecycle record from the durable ledger
+    Commitment(AgentCommitmentArgs),
+
+    /// List recent commitment lifecycle records
+    Commitments(AgentCommitmentsArgs),
 }
 
 #[derive(Args)]
@@ -221,6 +227,28 @@ struct AgentAuditArgs {
 
     /// Max number of events
     #[arg(long, default_value_t = 50)]
+    limit: usize,
+}
+
+#[derive(Args)]
+struct AgentCommitmentArgs {
+    /// PALM daemon endpoint
+    #[arg(long, env = "PALM_ENDPOINT", default_value = "http://localhost:8080")]
+    endpoint: String,
+
+    /// Commitment id to inspect
+    #[arg(long)]
+    id: String,
+}
+
+#[derive(Args)]
+struct AgentCommitmentsArgs {
+    /// PALM daemon endpoint
+    #[arg(long, env = "PALM_ENDPOINT", default_value = "http://localhost:8080")]
+    endpoint: String,
+
+    /// Number of commitment records to return
+    #[arg(long, default_value_t = 20)]
     limit: usize,
 }
 
@@ -344,6 +372,33 @@ struct AgentAuditEvent {
     success: bool,
     message: String,
     commitment_id: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct AgentKernelCommitmentResponse {
+    commitment_id: String,
+    lifecycle_status: String,
+    principal: String,
+    effect_domain: String,
+    decision: String,
+    declared_at: String,
+    execution_started_at: Option<String>,
+    execution_completed_at: Option<String>,
+    updated_at: String,
+    outcome: Option<Value>,
+}
+
+#[derive(Debug, Deserialize)]
+struct AgentKernelCommitmentSummaryResponse {
+    commitment_id: String,
+    lifecycle_status: String,
+    decision: String,
+    principal: String,
+    effect_domain: String,
+    declared_at: String,
+    execution_started_at: Option<String>,
+    execution_completed_at: Option<String>,
+    updated_at: String,
 }
 
 #[tokio::main]
@@ -549,6 +604,8 @@ async fn handle_agent(command: AgentCommands) -> Result<(), Box<dyn std::error::
         AgentCommands::Status { endpoint } => daemon_agent_status(&endpoint).await,
         AgentCommands::Audit(args) => daemon_agent_audit(&args.endpoint, args.limit).await,
         AgentCommands::Handle(args) => daemon_agent_handle(args).await,
+        AgentCommands::Commitment(args) => daemon_agent_commitment(args).await,
+        AgentCommands::Commitments(args) => daemon_agent_commitments(args).await,
     }
 }
 
@@ -962,6 +1019,102 @@ async fn daemon_agent_handle(args: AgentHandleArgs) -> Result<(), Box<dyn std::e
     }
     println!("Raw model output: {}", handled.raw_model_output);
     Ok(())
+}
+
+async fn daemon_agent_commitment(
+    args: AgentCommitmentArgs,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let client = build_http_client()?;
+    let url = format!(
+        "{}/api/v1/agent-kernel/commitments/{}",
+        args.endpoint.trim_end_matches('/'),
+        args.id
+    );
+
+    let response = client.get(url).send().await?;
+    if !response.status().is_success() {
+        let body = response.text().await.unwrap_or_default();
+        return Err(format!("commitment lookup failed: {}", body).into());
+    }
+
+    let commitment = response.json::<AgentKernelCommitmentResponse>().await?;
+    print_ok(&format!("Commitment {} loaded", commitment.commitment_id));
+    println!("Lifecycle: {}", commitment.lifecycle_status);
+    println!("Principal: {}", commitment.principal);
+    println!("Domain: {}", commitment.effect_domain);
+    println!("Decision: {}", commitment.decision);
+    println!("Declared: {}", commitment.declared_at);
+    println!(
+        "Started: {}",
+        commitment
+            .execution_started_at
+            .unwrap_or_else(|| "-".to_string())
+    );
+    println!(
+        "Completed: {}",
+        commitment
+            .execution_completed_at
+            .unwrap_or_else(|| "-".to_string())
+    );
+    println!("Updated: {}", commitment.updated_at);
+    if let Some(outcome) = commitment.outcome {
+        println!("Outcome: {}", serde_json::to_string_pretty(&outcome)?);
+    } else {
+        println!("Outcome: -");
+    }
+    Ok(())
+}
+
+async fn daemon_agent_commitments(
+    args: AgentCommitmentsArgs,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let client = build_http_client()?;
+    let url = format!(
+        "{}/api/v1/agent/commitments?limit={}",
+        args.endpoint.trim_end_matches('/'),
+        args.limit
+    );
+    let response = client.get(url).send().await?;
+    if !response.status().is_success() {
+        let body = response.text().await.unwrap_or_default();
+        return Err(format!("commitments lookup failed: {}", body).into());
+    }
+
+    let commitments = response
+        .json::<Vec<AgentKernelCommitmentSummaryResponse>>()
+        .await?;
+
+    print_ok(&format!("Fetched {} commitment(s)", commitments.len()));
+    println!(
+        "{:<36} {:<10} {:<10} {:<18} {:<20} {:<20} {:<20}",
+        "COMMITMENT_ID", "STATUS", "DECISION", "PRINCIPAL", "DECLARED", "STARTED", "COMPLETED"
+    );
+    for item in commitments {
+        println!(
+            "{:<36} {:<10} {:<10} {:<18} {:<20} {:<20} {:<20}",
+            shorten(&item.commitment_id, 36),
+            shorten(&item.lifecycle_status, 10),
+            shorten(&item.decision, 10),
+            shorten(&item.principal, 18),
+            shorten(&item.declared_at, 20),
+            shorten(item.execution_started_at.as_deref().unwrap_or("-"), 20),
+            shorten(item.execution_completed_at.as_deref().unwrap_or("-"), 20),
+        );
+        // Keep additional context available while still table-friendly.
+        println!(
+            "  domain={} updated={}",
+            item.effect_domain, item.updated_at
+        );
+    }
+    Ok(())
+}
+
+fn shorten(value: &str, max: usize) -> String {
+    if value.chars().count() <= max {
+        return value.to_string();
+    }
+    let truncated: String = value.chars().take(max.saturating_sub(1)).collect();
+    format!("{truncated}…")
 }
 
 async fn request_api_shutdown(client: &Client, endpoint: &str) -> bool {

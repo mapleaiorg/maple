@@ -1,7 +1,8 @@
-//! AAS Ledger - Immutable record of all commitments and outcomes
+//! AAS Ledger - immutable accountability view backed by MAPLE storage.
 //!
-//! The ledger provides full accountability through an immutable record
-//! of all commitments, decisions, and consequences.
+//! This crate provides the AAS-facing ledger API while delegating persistence to
+//! `maple-storage`. That gives a single source of truth for commitment lifecycle,
+//! outcomes, and query surfaces across runtime components.
 
 #![deny(unsafe_code)]
 
@@ -9,190 +10,181 @@ use aas_types::{
     AgentId, CommitmentLifecycle, CommitmentOutcome, LedgerEntry, LedgerEntryId, LifecycleStatus,
     PolicyDecisionCard,
 };
+use chrono::Utc;
+use maple_storage::memory::InMemoryMapleStorage;
+use maple_storage::{CommitmentRecord, MapleStorage, QueryWindow, StorageError};
 use rcf_commitment::{CommitmentId, RcfCommitment};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::sync::RwLock;
+use std::sync::Arc;
 use thiserror::Error;
 
-/// The accountability ledger - immutable record of all commitments
+/// The accountability ledger facade.
+///
+/// Internally this wraps a `MapleStorage` backend so AAS and runtime surfaces
+/// read/write the same durable commitment records.
 pub struct AccountabilityLedger {
-    entries: RwLock<HashMap<LedgerEntryId, LedgerEntry>>,
-    commitment_index: RwLock<HashMap<CommitmentId, LedgerEntryId>>,
-    agent_index: RwLock<HashMap<AgentId, Vec<LedgerEntryId>>>,
+    storage: Arc<dyn MapleStorage>,
 }
 
 impl AccountabilityLedger {
-    /// Create a new ledger
+    /// Create a new ledger backed by in-memory MAPLE storage.
     pub fn new() -> Self {
         Self {
-            entries: RwLock::new(HashMap::new()),
-            commitment_index: RwLock::new(HashMap::new()),
-            agent_index: RwLock::new(HashMap::new()),
+            storage: Arc::new(InMemoryMapleStorage::new()),
         }
     }
 
-    /// Record a new commitment with its decision
-    pub fn record_commitment(
+    /// Create a ledger backed by an explicit MAPLE storage adapter.
+    pub fn with_storage(storage: Arc<dyn MapleStorage>) -> Self {
+        Self { storage }
+    }
+
+    /// Access the underlying storage backend.
+    pub fn storage(&self) -> Arc<dyn MapleStorage> {
+        Arc::clone(&self.storage)
+    }
+
+    /// Record a new commitment with its decision.
+    pub async fn record_commitment(
         &self,
         commitment: RcfCommitment,
         decision: PolicyDecisionCard,
     ) -> Result<LedgerEntryId, LedgerError> {
-        let entry_id = LedgerEntryId::generate();
-        let now = chrono::Utc::now();
-
-        let lifecycle = CommitmentLifecycle {
-            status: match decision.decision {
-                aas_types::Decision::Approved => LifecycleStatus::Approved,
-                aas_types::Decision::Denied => LifecycleStatus::Denied,
-                aas_types::Decision::PendingHumanReview => LifecycleStatus::Pending,
-                aas_types::Decision::PendingAdditionalInfo => LifecycleStatus::Pending,
-            },
-            declared_at: now,
-            adjudicated_at: Some(decision.decided_at),
-            execution_started_at: None,
-            execution_completed_at: None,
-        };
-
-        let agent_id = AgentId::new(&commitment.principal.id);
-
-        let entry = LedgerEntry {
-            entry_id: entry_id.clone(),
-            commitment: commitment.clone(),
-            decision,
-            lifecycle,
-            outcome: None,
-            created_at: now,
-            updated_at: now,
-        };
-
-        // Store entry
-        let mut entries = self.entries.write().map_err(|_| LedgerError::LockError)?;
-        entries.insert(entry_id.clone(), entry);
-
-        // Update commitment index
-        let mut commitment_index = self
-            .commitment_index
-            .write()
-            .map_err(|_| LedgerError::LockError)?;
-        commitment_index.insert(commitment.commitment_id, entry_id.clone());
-
-        // Update agent index
-        let mut agent_index = self
-            .agent_index
-            .write()
-            .map_err(|_| LedgerError::LockError)?;
-        agent_index
-            .entry(agent_id)
-            .or_default()
-            .push(entry_id.clone());
-
-        Ok(entry_id)
+        let commitment_id = commitment.commitment_id.clone();
+        self.storage
+            .create_commitment(commitment, decision, Utc::now())
+            .await
+            .map_err(LedgerError::from)?;
+        Ok(ledger_entry_id(&commitment_id))
     }
 
-    /// Record execution start
-    pub fn record_execution_started(
+    /// Record execution start.
+    pub async fn record_execution_started(
         &self,
         commitment_id: &CommitmentId,
     ) -> Result<(), LedgerError> {
-        let entry_id = self.get_entry_id(commitment_id)?;
+        let current = self
+            .storage
+            .get_commitment(commitment_id)
+            .await
+            .map_err(LedgerError::from)?
+            .ok_or_else(|| LedgerError::NotFound(commitment_id.0.clone()))?;
 
-        let mut entries = self.entries.write().map_err(|_| LedgerError::LockError)?;
-        let entry = entries
-            .get_mut(&entry_id)
-            .ok_or_else(|| LedgerError::NotFound(entry_id.0.clone()))?;
+        if current.lifecycle_status != LifecycleStatus::Approved {
+            return Err(LedgerError::InvalidStateTransition(format!(
+                "cannot start execution from status {:?}",
+                current.lifecycle_status
+            )));
+        }
 
-        entry.lifecycle.status = LifecycleStatus::Executing;
-        entry.lifecycle.execution_started_at = Some(chrono::Utc::now());
-        entry.updated_at = chrono::Utc::now();
-
-        Ok(())
+        self.storage
+            .transition_lifecycle(
+                commitment_id,
+                LifecycleStatus::Approved,
+                LifecycleStatus::Executing,
+                Utc::now(),
+            )
+            .await
+            .map_err(LedgerError::from)
     }
 
-    /// Record outcome (consequence)
-    pub fn record_outcome(
+    /// Record outcome (consequence).
+    pub async fn record_outcome(
         &self,
         commitment_id: &CommitmentId,
         outcome: CommitmentOutcome,
     ) -> Result<(), LedgerError> {
-        let entry_id = self.get_entry_id(commitment_id)?;
+        let current = self
+            .storage
+            .get_commitment(commitment_id)
+            .await
+            .map_err(LedgerError::from)?
+            .ok_or_else(|| LedgerError::NotFound(commitment_id.0.clone()))?;
 
-        let mut entries = self.entries.write().map_err(|_| LedgerError::LockError)?;
-        let entry = entries
-            .get_mut(&entry_id)
-            .ok_or_else(|| LedgerError::NotFound(entry_id.0.clone()))?;
+        if !matches!(
+            current.lifecycle_status,
+            LifecycleStatus::Executing | LifecycleStatus::Approved
+        ) {
+            return Err(LedgerError::InvalidStateTransition(format!(
+                "cannot record outcome from status {:?}",
+                current.lifecycle_status
+            )));
+        }
 
-        entry.lifecycle.status = if outcome.success {
+        let final_status = if outcome.success {
             LifecycleStatus::Completed
         } else {
             LifecycleStatus::Failed
         };
-        entry.lifecycle.execution_completed_at = Some(outcome.completed_at);
-        entry.outcome = Some(outcome);
-        entry.updated_at = chrono::Utc::now();
 
-        Ok(())
+        self.storage
+            .set_outcome(commitment_id, outcome, final_status)
+            .await
+            .map_err(LedgerError::from)
     }
 
-    /// Get an entry by commitment ID
-    pub fn get_by_commitment(
+    /// Get an entry by commitment ID.
+    pub async fn get_by_commitment(
         &self,
         commitment_id: &CommitmentId,
     ) -> Result<Option<LedgerEntry>, LedgerError> {
-        let commitment_index = self
-            .commitment_index
-            .read()
-            .map_err(|_| LedgerError::LockError)?;
-
-        if let Some(entry_id) = commitment_index.get(commitment_id) {
-            let entries = self.entries.read().map_err(|_| LedgerError::LockError)?;
-            Ok(entries.get(entry_id).cloned())
-        } else {
-            Ok(None)
-        }
+        let record = self
+            .storage
+            .get_commitment(commitment_id)
+            .await
+            .map_err(LedgerError::from)?;
+        Ok(record.map(commitment_record_to_entry))
     }
 
-    /// Get all entries for an agent
-    pub fn get_by_agent(&self, agent_id: &AgentId) -> Result<Vec<LedgerEntry>, LedgerError> {
-        let agent_index = self
-            .agent_index
-            .read()
-            .map_err(|_| LedgerError::LockError)?;
-        let entries = self.entries.read().map_err(|_| LedgerError::LockError)?;
+    /// Get all entries for an agent.
+    pub async fn get_by_agent(&self, agent_id: &AgentId) -> Result<Vec<LedgerEntry>, LedgerError> {
+        let records = self
+            .storage
+            .list_commitments(QueryWindow {
+                limit: 0,
+                offset: 0,
+            })
+            .await
+            .map_err(LedgerError::from)?;
 
-        let entry_ids = match agent_index.get(agent_id) {
-            Some(ids) => ids,
-            None => return Ok(vec![]),
-        };
-
-        let results: Vec<_> = entry_ids
-            .iter()
-            .filter_map(|id| entries.get(id).cloned())
+        let mut entries: Vec<_> = records
+            .into_iter()
+            .filter(|record| record.commitment.principal.id == agent_id.0)
+            .map(commitment_record_to_entry)
             .collect();
 
-        Ok(results)
+        entries.sort_by(|a, b| b.created_at.cmp(&a.created_at));
+        Ok(entries)
     }
 
-    /// Query entries with filters
-    pub fn query(&self, query: LedgerQuery) -> Result<Vec<LedgerEntry>, LedgerError> {
-        let entries = self.entries.read().map_err(|_| LedgerError::LockError)?;
+    /// Query entries with filters.
+    pub async fn query(&self, query: LedgerQuery) -> Result<Vec<LedgerEntry>, LedgerError> {
+        let records = self
+            .storage
+            .list_commitments(QueryWindow {
+                limit: 0,
+                offset: 0,
+            })
+            .await
+            .map_err(LedgerError::from)?;
 
-        let mut results: Vec<_> = entries
-            .values()
+        let mut results: Vec<_> = records
+            .into_iter()
+            .map(commitment_record_to_entry)
             .filter(|entry| {
-                // Filter by status
                 if let Some(ref status) = query.status {
                     if entry.lifecycle.status != *status {
                         return false;
                     }
                 }
 
-                // Filter by time range
                 if let Some(after) = query.after {
                     if entry.created_at < after {
                         return false;
                     }
                 }
+
                 if let Some(before) = query.before {
                     if entry.created_at > before {
                         return false;
@@ -201,13 +193,10 @@ impl AccountabilityLedger {
 
                 true
             })
-            .cloned()
             .collect();
 
-        // Sort by creation time (newest first)
         results.sort_by(|a, b| b.created_at.cmp(&a.created_at));
 
-        // Apply limit
         if let Some(limit) = query.limit {
             results.truncate(limit);
         }
@@ -215,20 +204,25 @@ impl AccountabilityLedger {
         Ok(results)
     }
 
-    /// Get statistics about the ledger
-    pub fn statistics(&self) -> Result<LedgerStatistics, LedgerError> {
-        let entries = self.entries.read().map_err(|_| LedgerError::LockError)?;
+    /// Get statistics about the ledger.
+    pub async fn statistics(&self) -> Result<LedgerStatistics, LedgerError> {
+        let entries = self
+            .query(LedgerQuery {
+                limit: None,
+                ..Default::default()
+            })
+            .await?;
 
         let total_commitments = entries.len();
         let mut by_status: HashMap<String, usize> = HashMap::new();
         let mut successful_executions = 0;
         let mut failed_executions = 0;
 
-        for entry in entries.values() {
+        for entry in entries {
             let status_str = format!("{:?}", entry.lifecycle.status);
             *by_status.entry(status_str).or_insert(0) += 1;
 
-            if let Some(ref outcome) = entry.outcome {
+            if let Some(outcome) = entry.outcome {
                 if outcome.success {
                     successful_executions += 1;
                 } else {
@@ -244,18 +238,6 @@ impl AccountabilityLedger {
             failed_executions,
         })
     }
-
-    /// Get entry ID for a commitment
-    fn get_entry_id(&self, commitment_id: &CommitmentId) -> Result<LedgerEntryId, LedgerError> {
-        let commitment_index = self
-            .commitment_index
-            .read()
-            .map_err(|_| LedgerError::LockError)?;
-        commitment_index
-            .get(commitment_id)
-            .cloned()
-            .ok_or_else(|| LedgerError::NotFound(commitment_id.0.clone()))
-    }
 }
 
 impl Default for AccountabilityLedger {
@@ -264,7 +246,31 @@ impl Default for AccountabilityLedger {
     }
 }
 
-/// Query parameters for ledger search
+fn ledger_entry_id(commitment_id: &CommitmentId) -> LedgerEntryId {
+    LedgerEntryId(format!("entry:{}", commitment_id.0))
+}
+
+fn commitment_record_to_entry(record: CommitmentRecord) -> LedgerEntry {
+    let lifecycle = CommitmentLifecycle {
+        status: record.lifecycle_status,
+        declared_at: record.created_at,
+        adjudicated_at: Some(record.decision.decided_at),
+        execution_started_at: record.execution_started_at,
+        execution_completed_at: record.execution_completed_at,
+    };
+
+    LedgerEntry {
+        entry_id: ledger_entry_id(&record.commitment_id),
+        commitment: record.commitment,
+        decision: record.decision,
+        lifecycle,
+        outcome: record.outcome,
+        created_at: record.created_at,
+        updated_at: record.updated_at,
+    }
+}
+
+/// Query parameters for ledger search.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct LedgerQuery {
     pub status: Option<LifecycleStatus>,
@@ -273,7 +279,7 @@ pub struct LedgerQuery {
     pub limit: Option<usize>,
 }
 
-/// Statistics about the ledger
+/// Statistics about the ledger.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct LedgerStatistics {
     pub total_commitments: usize,
@@ -282,7 +288,7 @@ pub struct LedgerStatistics {
     pub failed_executions: usize,
 }
 
-/// Ledger-related errors
+/// Ledger-related errors.
 #[derive(Debug, Error)]
 pub enum LedgerError {
     #[error("Entry not found: {0}")]
@@ -294,8 +300,21 @@ pub enum LedgerError {
     #[error("Invalid state transition: {0}")]
     InvalidStateTransition(String),
 
-    #[error("Lock error")]
-    LockError,
+    #[error("Backend error: {0}")]
+    Backend(String),
+}
+
+impl From<StorageError> for LedgerError {
+    fn from(value: StorageError) -> Self {
+        match value {
+            StorageError::NotFound(msg) => Self::NotFound(msg),
+            StorageError::Conflict(msg) => Self::ImmutabilityViolation(msg),
+            StorageError::InvariantViolation(msg) => Self::InvalidStateTransition(msg),
+            StorageError::InvalidInput(msg)
+            | StorageError::Serialization(msg)
+            | StorageError::Backend(msg) => Self::Backend(msg),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -308,8 +327,8 @@ mod tests {
     use rcf_commitment::CommitmentBuilder;
     use rcf_types::{EffectDomain, IdentityRef, ScopeConstraint};
 
-    #[test]
-    fn test_record_and_retrieve() {
+    #[tokio::test]
+    async fn test_record_and_retrieve() {
         let ledger = AccountabilityLedger::new();
 
         let commitment =
@@ -342,9 +361,12 @@ mod tests {
             },
         };
 
-        ledger.record_commitment(commitment, decision).unwrap();
+        ledger
+            .record_commitment(commitment, decision)
+            .await
+            .unwrap();
 
-        let entry = ledger.get_by_commitment(&commitment_id).unwrap();
+        let entry = ledger.get_by_commitment(&commitment_id).await.unwrap();
         assert!(entry.is_some());
         assert_eq!(entry.unwrap().lifecycle.status, LifecycleStatus::Approved);
     }

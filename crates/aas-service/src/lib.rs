@@ -13,6 +13,7 @@ use aas_identity::{IdentityError, IdentityRegistry, RegistrationRequest, Verific
 use aas_ledger::{AccountabilityLedger, LedgerError, LedgerQuery, LedgerStatistics};
 use aas_policy::{EvaluationContext, PolicyEngine, PolicyError};
 use aas_types::{AgentId, CommitmentOutcome, LedgerEntry, PolicyDecisionCard};
+use maple_storage::MapleStorage;
 use rcf_commitment::{CommitmentId, RcfCommitment};
 use rcf_types::{EffectDomain, ScopeConstraint};
 use std::sync::Arc;
@@ -36,6 +37,17 @@ impl AasService {
             policy: Arc::new(PolicyEngine::with_defaults()),
             adjudicator: Arc::new(Adjudicator::new()),
             ledger: Arc::new(AccountabilityLedger::new()),
+        }
+    }
+
+    /// Create with an explicit MAPLE storage backend for durable ledger state.
+    pub fn with_storage(storage: Arc<dyn MapleStorage>) -> Self {
+        Self {
+            identity: Arc::new(IdentityRegistry::new()),
+            capability: Arc::new(CapabilityRegistry::new()),
+            policy: Arc::new(PolicyEngine::with_defaults()),
+            adjudicator: Arc::new(Adjudicator::new()),
+            ledger: Arc::new(AccountabilityLedger::with_storage(storage)),
         }
     }
 
@@ -100,7 +112,7 @@ impl AasService {
 
     /// Submit a commitment for adjudication
     /// This is the main entry point for the commitment boundary
-    pub fn submit_commitment(
+    pub async fn submit_commitment(
         &self,
         commitment: RcfCommitment,
     ) -> Result<PolicyDecisionCard, AasError> {
@@ -166,26 +178,32 @@ impl AasService {
 
         // Step 6: Record in ledger
         self.ledger
-            .record_commitment(commitment, decision.clone())?;
+            .record_commitment(commitment, decision.clone())
+            .await?;
 
         Ok(decision)
     }
 
     /// Record that execution has started
-    pub fn record_execution_started(&self, commitment_id: &CommitmentId) -> Result<(), AasError> {
+    pub async fn record_execution_started(
+        &self,
+        commitment_id: &CommitmentId,
+    ) -> Result<(), AasError> {
         self.ledger
             .record_execution_started(commitment_id)
+            .await
             .map_err(AasError::Ledger)
     }
 
     /// Record outcome (consequence)
-    pub fn record_outcome(
+    pub async fn record_outcome(
         &self,
         commitment_id: &CommitmentId,
         outcome: CommitmentOutcome,
     ) -> Result<(), AasError> {
         self.ledger
             .record_outcome(commitment_id, outcome)
+            .await
             .map_err(AasError::Ledger)
     }
 
@@ -214,28 +232,35 @@ impl AasService {
     // ============ Query Operations ============
 
     /// Get ledger entry by commitment
-    pub fn get_commitment(
+    pub async fn get_commitment(
         &self,
         commitment_id: &CommitmentId,
     ) -> Result<Option<LedgerEntry>, AasError> {
         self.ledger
             .get_by_commitment(commitment_id)
+            .await
             .map_err(AasError::Ledger)
     }
 
     /// Get all entries for an agent
-    pub fn get_agent_history(&self, agent_id: &AgentId) -> Result<Vec<LedgerEntry>, AasError> {
-        self.ledger.get_by_agent(agent_id).map_err(AasError::Ledger)
+    pub async fn get_agent_history(
+        &self,
+        agent_id: &AgentId,
+    ) -> Result<Vec<LedgerEntry>, AasError> {
+        self.ledger
+            .get_by_agent(agent_id)
+            .await
+            .map_err(AasError::Ledger)
     }
 
     /// Query the ledger
-    pub fn query_ledger(&self, query: LedgerQuery) -> Result<Vec<LedgerEntry>, AasError> {
-        self.ledger.query(query).map_err(AasError::Ledger)
+    pub async fn query_ledger(&self, query: LedgerQuery) -> Result<Vec<LedgerEntry>, AasError> {
+        self.ledger.query(query).await.map_err(AasError::Ledger)
     }
 
     /// Get ledger statistics
-    pub fn statistics(&self) -> Result<LedgerStatistics, AasError> {
-        self.ledger.statistics().map_err(AasError::Ledger)
+    pub async fn statistics(&self) -> Result<LedgerStatistics, AasError> {
+        self.ledger.statistics().await.map_err(AasError::Ledger)
     }
 
     // ============ Component Access ============
@@ -304,8 +329,8 @@ mod tests {
     use rcf_commitment::CommitmentBuilder;
     use rcf_types::TemporalValidity;
 
-    #[test]
-    fn test_full_commitment_flow() {
+    #[tokio::test]
+    async fn test_full_commitment_flow() {
         let aas = AasService::new();
 
         // Step 1: Register an agent
@@ -334,13 +359,14 @@ mod tests {
                 .build()
                 .unwrap();
 
-        let decision = aas.submit_commitment(commitment.clone()).unwrap();
+        let decision = aas.submit_commitment(commitment.clone()).await.unwrap();
 
         // Step 4: Verify decision
         assert!(decision.decision.allows_execution());
 
         // Step 5: Record execution
         aas.record_execution_started(&commitment.commitment_id)
+            .await
             .unwrap();
 
         aas.record_outcome(
@@ -351,10 +377,11 @@ mod tests {
                 completed_at: chrono::Utc::now(),
             },
         )
+        .await
         .unwrap();
 
         // Step 6: Verify ledger entry
-        let entry = aas.get_commitment(&commitment.commitment_id).unwrap();
+        let entry = aas.get_commitment(&commitment.commitment_id).await.unwrap();
         assert!(entry.is_some());
         assert!(entry.unwrap().outcome.unwrap().success);
     }

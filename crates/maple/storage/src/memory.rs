@@ -62,6 +62,8 @@ impl CommitmentStore for InMemoryMapleStorage {
             commitment,
             decision,
             lifecycle_status,
+            execution_started_at: None,
+            execution_completed_at: None,
             outcome: None,
             created_at: declared_at,
             updated_at: declared_at,
@@ -93,6 +95,9 @@ impl CommitmentStore for InMemoryMapleStorage {
         }
 
         record.lifecycle_status = to;
+        if to == LifecycleStatus::Executing && record.execution_started_at.is_none() {
+            record.execution_started_at = Some(updated_at);
+        }
         record.updated_at = updated_at;
         Ok(())
     }
@@ -112,7 +117,8 @@ impl CommitmentStore for InMemoryMapleStorage {
         })?;
         record.outcome = Some(outcome);
         record.lifecycle_status = final_status;
-        record.updated_at = Utc::now();
+        record.execution_completed_at = record.outcome.as_ref().map(|o| o.completed_at);
+        record.updated_at = record.execution_completed_at.unwrap_or_else(Utc::now);
         Ok(())
     }
 
@@ -367,8 +373,8 @@ fn apply_window<T>(items: Vec<T>, window: QueryWindow) -> Vec<T> {
 mod tests {
     use super::*;
     use aas_types::{
-        AdjudicatorInfo, AdjudicatorType, Decision, DecisionId, PolicyDecisionCard, Rationale,
-        RiskAssessment, RiskLevel,
+        AdjudicatorInfo, AdjudicatorType, CommitmentOutcome, Decision, DecisionId,
+        PolicyDecisionCard, Rationale, RiskAssessment, RiskLevel,
     };
     use chrono::Duration;
     use rcf_commitment::CommitmentBuilder;
@@ -429,6 +435,54 @@ mod tests {
             )
             .await;
         assert!(matches!(result, Err(StorageError::InvariantViolation(_))));
+    }
+
+    #[tokio::test]
+    async fn lifecycle_timestamps_are_persisted() {
+        let storage = InMemoryMapleStorage::new();
+        let commitment =
+            CommitmentBuilder::new(IdentityRef::new("agent-a"), EffectDomain::Computation)
+                .with_scope(ScopeConstraint::global())
+                .build()
+                .unwrap();
+        let id = commitment.commitment_id.clone();
+        let declared_at = Utc::now();
+
+        storage
+            .create_commitment(commitment, sample_decision(id.clone()), declared_at)
+            .await
+            .unwrap();
+
+        let started_at = declared_at + Duration::seconds(2);
+        storage
+            .transition_lifecycle(
+                &id,
+                LifecycleStatus::Approved,
+                LifecycleStatus::Executing,
+                started_at,
+            )
+            .await
+            .unwrap();
+
+        storage
+            .set_outcome(
+                &id,
+                CommitmentOutcome {
+                    success: true,
+                    description: "done".to_string(),
+                    completed_at: started_at + Duration::seconds(5),
+                },
+                LifecycleStatus::Completed,
+            )
+            .await
+            .unwrap();
+
+        let record = storage.get_commitment(&id).await.unwrap().unwrap();
+        assert_eq!(record.execution_started_at, Some(started_at));
+        assert_eq!(
+            record.execution_completed_at,
+            Some(started_at + Duration::seconds(5))
+        );
     }
 
     #[tokio::test]
