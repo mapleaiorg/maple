@@ -15,7 +15,9 @@ use std::collections::HashMap;
 use uuid::Uuid;
 
 /// Unique identifier for an epoch
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize, PartialOrd, Ord)]
+#[derive(
+    Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize, PartialOrd, Ord,
+)]
 pub struct EpochId(pub u64);
 
 impl EpochId {
@@ -634,7 +636,10 @@ impl EventLog {
         }
 
         // Index by epoch
-        self.by_epoch.entry(epoch).or_default().push(event_id.clone());
+        self.by_epoch
+            .entry(epoch)
+            .or_default()
+            .push(event_id.clone());
 
         // Store event
         self.events.insert(event_id, event);
@@ -654,11 +659,7 @@ impl EventLog {
     pub fn get_by_epoch(&self, epoch: EpochId) -> Vec<&WorldEvent> {
         self.by_epoch
             .get(&epoch)
-            .map(|ids| {
-                ids.iter()
-                    .filter_map(|id| self.events.get(id))
-                    .collect()
-            })
+            .map(|ids| ids.iter().filter_map(|id| self.events.get(id)).collect())
             .unwrap_or_default()
     }
 
@@ -666,21 +667,14 @@ impl EventLog {
     pub fn get_by_entity(&self, entity_id: &EntityId) -> Vec<&WorldEvent> {
         self.by_entity
             .get(entity_id)
-            .map(|ids| {
-                ids.iter()
-                    .filter_map(|id| self.events.get(id))
-                    .collect()
-            })
+            .map(|ids| ids.iter().filter_map(|id| self.events.get(id)).collect())
             .unwrap_or_default()
     }
 
     /// Query events with a filter
     pub fn query(&self, filter: &EventFilter) -> Vec<&WorldEvent> {
-        let mut results: Vec<&WorldEvent> = self
-            .events
-            .values()
-            .filter(|e| filter.matches(e))
-            .collect();
+        let mut results: Vec<&WorldEvent> =
+            self.events.values().filter(|e| filter.matches(e)).collect();
 
         // Sort by timestamp
         results.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));

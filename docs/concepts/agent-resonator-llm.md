@@ -16,13 +16,27 @@ The runtime now exposes this explicitly via `AgentKernel` in `maple-runtime`:
 
 `Agent = Resonator + Profile + CapabilitySet + ContractSet + State`
 
-## 2) Where LLMs fit
+Related core docs:
+
+- `docs/core/agents.md`
+- `docs/core/interop.md`
+- `docs/core/llama-first.md`
+
+## 2) Where LLMs fit (Trait-Level)
 
 LLMs (Ollama, GPT, Claude, Grok, Gemini) are **cognition engines**, not identity.
 
 - Resonator: identity, accountability, coupling, continuity.
 - LLM backend: text generation/reasoning service used by the Resonator/agent.
 - Commitments and governance still flow through MAPLE controls (UAL → RCF validation, policy/adjudication, evidence/audit).
+
+In code:
+
+- Cognition contract: `ModelAdapter`
+- Tool surface: `CapabilityExecutor`
+- Consequence boundary: `CommitmentGateway`
+- Normalized call candidate: `CapabilityCallCandidate`
+- Contract draft object: `ContractDraft`
 
 ## 3) Supported Playground Backends
 
@@ -48,6 +62,14 @@ All adapters share the same hardening path:
 3. deterministic fallback with **no tool suggestion**
 
 This guarantees malformed model output never bypasses runtime gates.
+
+`ModelAdapter` methods used by runtime:
+
+- `propose_meaning(...)`
+- `propose_intent(...)`
+- `draft_contract(...)`
+- `suggest_capability_calls(...)`
+- `summarize(...)`
 
 You can inspect and switch from CLI:
 
@@ -84,3 +106,7 @@ Recommended flow:
 5. EVE and audit trails record outcomes.
 
 This keeps LLMs in proposal/execution-assist mode while MAPLE preserves authority, accountability, and traceability.
+
+Execution authority always remains at the boundary:
+
+`ModelAdapter -> Contract Draft -> CommitmentGateway -> CapabilityExecutor -> Ledger Receipt`.

@@ -27,7 +27,10 @@ use aas_identity::{AgentMetadata, AgentType, RegistrationRequest};
 use aas_ledger::AccountabilityLedger;
 use aas_policy::{EvaluationContext, PolicyEngine};
 use aas_service::AasService;
-use aas_types::{AgentId, CommitmentOutcome, Decision, PolicyDecisionCard};
+use aas_types::{
+    AgentId, CommitmentOutcome, Decision, PolicyDecisionCard, ToolExecutionReceipt,
+    ToolReceiptStatus,
+};
 use async_trait::async_trait;
 use maple_storage::{AgentCheckpoint, AuditAppend, MapleStorage, QueryWindow};
 use rcf_commitment::{CommitmentBuilder, CommitmentId as RcfCommitmentId, RcfCommitment};
@@ -52,6 +55,10 @@ use crate::cognition::{
 use crate::invariants::{IntentContext, MeaningContext, Operation, SystemState};
 use crate::runtime_core::{MapleRuntime, ResonatorSpec};
 use crate::types::{InvariantViolation, ResonatorId};
+
+tokio::task_local! {
+    static COMMITMENT_GATEWAY_ACTIVE: bool;
+}
 
 /// Stable profile used by the runtime kernel to apply autonomous limits.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -218,15 +225,35 @@ pub struct CapabilityDescriptor {
     pub scope: ScopeConstraint,
     /// Marks capability as consequential (side effects beyond pure cognition).
     pub consequential: bool,
+    /// Distinguishes simulation tools from production/external tools.
+    pub execution_mode: CapabilityExecutionMode,
+}
+
+/// Capability execution mode.
+///
+/// Security posture:
+/// - `Simulation` capabilities are allowed by default for local/offline demos.
+/// - `Real` capabilities are denied unless explicitly enabled via environment policy.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum CapabilityExecutionMode {
+    Simulation,
+    Real,
 }
 
 impl CapabilityDescriptor {
     pub fn safe(name: impl Into<String>) -> Self {
+        let name = name.into();
         Self {
-            name: name.into(),
+            name: name.clone(),
             domain: EffectDomain::Computation,
-            scope: ScopeConstraint::global(),
+            // Safe capabilities are still explicit, but constrained to local invoke scope
+            // so default global-scope review policy is not triggered.
+            scope: ScopeConstraint::new(
+                vec![format!("local:{}", name)],
+                vec!["invoke".to_string()],
+            ),
             consequential: false,
+            execution_mode: CapabilityExecutionMode::Simulation,
         }
     }
 
@@ -239,6 +266,20 @@ impl CapabilityDescriptor {
                 vec!["transfer".to_string()],
             ),
             consequential: true,
+            execution_mode: CapabilityExecutionMode::Simulation,
+        }
+    }
+
+    pub fn dangerous_real(name: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            domain: EffectDomain::Finance,
+            scope: ScopeConstraint::new(
+                vec!["rail:external".to_string()],
+                vec!["transfer".to_string()],
+            ),
+            consequential: true,
+            execution_mode: CapabilityExecutionMode::Real,
         }
     }
 }
@@ -571,6 +612,42 @@ impl CommitmentGateway {
         }
 
         // c) policy engine approves requested capability usage for this contract
+        let mut metadata = HashMap::new();
+        metadata.insert(
+            "profile_tier".to_string(),
+            context.agent_state.profile.name.to_ascii_lowercase(),
+        );
+        metadata.insert(
+            "attention_available".to_string(),
+            context.agent_state.attention_budget.available().to_string(),
+        );
+        metadata.insert(
+            "attention_required".to_string(),
+            if context.capability.consequential {
+                "10".to_string()
+            } else {
+                "1".to_string()
+            },
+        );
+        metadata.insert(
+            "capability_risk".to_string(),
+            if context.capability.consequential {
+                "dangerous".to_string()
+            } else {
+                "safe".to_string()
+            },
+        );
+        metadata.insert(
+            "capability_mode".to_string(),
+            match context.capability.execution_mode {
+                CapabilityExecutionMode::Simulation => "simulation".to_string(),
+                CapabilityExecutionMode::Real => "real".to_string(),
+            },
+        );
+        if let Some(amount) = params.get("amount").and_then(Value::as_i64) {
+            metadata.insert("requested_value".to_string(), amount.to_string());
+        }
+
         let policy_eval = context
             .agent_state
             .policy_engine
@@ -579,7 +656,7 @@ impl CommitmentGateway {
                 &EvaluationContext {
                     agent_id: context.aas_agent_id.clone(),
                     capabilities: vec![capability_id.to_string()],
-                    metadata: HashMap::new(),
+                    metadata,
                 },
             )
             .map_err(|e| CommitmentExecutionError::PolicyDenied(e.to_string()))?;
@@ -608,6 +685,17 @@ impl CommitmentGateway {
             ));
         }
 
+        if matches!(
+            context.capability.execution_mode,
+            CapabilityExecutionMode::Real
+        ) && !allow_real_tool_execution()
+        {
+            return Err(CommitmentExecutionError::PolicyDenied(
+                "real tool execution is disabled (set MAPLE_ALLOW_REAL_TOOLS=true to enable)"
+                    .to_string(),
+            ));
+        }
+
         context.agent_state.journal.append(JournalEntry {
             timestamp: chrono::Utc::now(),
             resonator_id: context.resonator_id.to_string(),
@@ -629,8 +717,12 @@ impl CommitmentGateway {
             args: params,
             commitment_id: Some(contract_id.clone()),
         };
+        let tool_call_id = format!("tool-call-{}", Uuid::new_v4());
 
-        let tool_result = match context.executor.execute(&invocation).await {
+        let tool_result = match COMMITMENT_GATEWAY_ACTIVE
+            .scope(true, async { context.executor.execute(&invocation).await })
+            .await
+        {
             Ok(result) => result,
             Err(err) => {
                 context.agent_state.journal.append(JournalEntry {
@@ -652,6 +744,28 @@ impl CommitmentGateway {
                             completed_at: chrono::Utc::now(),
                         },
                     )
+                    .await
+                    .map_err(|e| CommitmentExecutionError::ReceiptWriteFailure(e.to_string()))?;
+
+                let failure_payload = serde_json::json!({
+                    "contract_id": contract_id.0,
+                    "capability_id": capability_id,
+                    "status": "failed",
+                    "result": {
+                        "error": err.to_string(),
+                    },
+                });
+                let failure_hash = deterministic_receipt_hash(&failure_payload)?;
+                self.aas
+                    .record_tool_receipt(ToolExecutionReceipt {
+                        receipt_id: format!("receipt-{}", Uuid::new_v4()),
+                        tool_call_id: tool_call_id.clone(),
+                        contract_id: contract_id.clone(),
+                        capability_id: capability_id.to_string(),
+                        hash: failure_hash,
+                        timestamp: chrono::Utc::now(),
+                        status: ToolReceiptStatus::Failed,
+                    })
                     .await
                     .map_err(|e| CommitmentExecutionError::ReceiptWriteFailure(e.to_string()))?;
                 return Err(CommitmentExecutionError::ToolFailure(err.to_string()));
@@ -685,12 +799,11 @@ impl CommitmentGateway {
         let serializable = serde_json::json!({
             "contract_id": contract_id.0,
             "capability_id": capability_id,
+            "status": "succeeded",
+            "result": compact_payload_for_audit(&tool_result.payload),
             "summary": tool_result.summary,
-            "timestamp": chrono::Utc::now(),
         });
-        let payload = serde_json::to_vec(&serializable)
-            .map_err(|e| CommitmentExecutionError::ReceiptWriteFailure(e.to_string()))?;
-        let receipt_hash = format!("{:x}", Sha256::digest(&payload));
+        let receipt_hash = deterministic_receipt_hash(&serializable)?;
 
         // g) write AccountabilityRecorded with receipt hash to journal
         context.agent_state.journal.append(JournalEntry {
@@ -701,6 +814,19 @@ impl CommitmentGateway {
                 receipt_hash: receipt_hash.clone(),
             },
         });
+
+        self.aas
+            .record_tool_receipt(ToolExecutionReceipt {
+                receipt_id: format!("receipt-{}", Uuid::new_v4()),
+                tool_call_id,
+                contract_id: contract_id.clone(),
+                capability_id: capability_id.to_string(),
+                hash: receipt_hash.clone(),
+                timestamp: chrono::Utc::now(),
+                status: ToolReceiptStatus::Succeeded,
+            })
+            .await
+            .map_err(|e| CommitmentExecutionError::ReceiptWriteFailure(e.to_string()))?;
 
         Ok(CommitmentExecutionReceipt {
             receipt_id: format!("receipt-{}", Uuid::new_v4()),
@@ -973,16 +1099,26 @@ impl AgentKernel {
             .cloned()
             .ok_or_else(|| AgentKernelError::UnknownCapability(capability_name.to_string()))?;
 
+        self.build_capability_commitment(&host, capability_name, &capability, outcome_description)
+    }
+
+    fn build_capability_commitment(
+        &self,
+        host: &AgentHost,
+        capability_name: &str,
+        capability: &CapabilityDescriptor,
+        outcome_description: impl Into<String>,
+    ) -> Result<RcfCommitment, AgentKernelError> {
         let capability_ref = CapabilityRef::new(
-            format!("cap:{}:{}", resonator_id, capability_name),
+            format!("cap:{}:{}", host.resonator_id, capability_name),
             capability.domain.clone(),
             capability.scope.clone(),
             TemporalValidity::unbounded(),
             IdentityRef::new("maple-runtime"),
         );
 
-        CommitmentBuilder::new(host.identity_ref.clone(), capability.domain)
-            .with_scope(capability.scope)
+        CommitmentBuilder::new(host.identity_ref.clone(), capability.domain.clone())
+            .with_scope(capability.scope.clone())
             .with_capability(capability_ref)
             .with_outcome(rcf_commitment::IntendedOutcome::new(outcome_description))
             .build()
@@ -1148,6 +1284,36 @@ impl AgentKernel {
         }
     }
 
+    /// Return recent journal entries for one registered agent.
+    ///
+    /// This is useful for demos and diagnostics that need to display
+    /// explicit stage transitions (meaning -> intent -> commitment -> consequence).
+    pub async fn journal_entries(
+        &self,
+        resonator_id: ResonatorId,
+        limit: usize,
+    ) -> Result<Vec<JournalEntry>, AgentKernelError> {
+        let host = self
+            .agents
+            .read()
+            .await
+            .get(&resonator_id)
+            .cloned()
+            .ok_or_else(|| AgentKernelError::AgentNotFound(resonator_id.to_string()))?;
+        Ok(host.agent_state.journal.recent(limit))
+    }
+
+    /// Return persisted tool execution receipts for a commitment.
+    pub async fn receipts_for_commitment(
+        &self,
+        commitment_id: &RcfCommitmentId,
+    ) -> Result<Vec<ToolExecutionReceipt>, AgentKernelError> {
+        self.aas
+            .get_tool_receipts(commitment_id)
+            .await
+            .map_err(|e| AgentKernelError::Aas(e.to_string()))
+    }
+
     async fn execute_capability(
         &self,
         host: &mut AgentHost,
@@ -1185,9 +1351,10 @@ impl AgentKernel {
             return Err(AgentKernelError::CapabilityDenied);
         }
 
-        let commitment_id = if capability.consequential
-            && host.profile.require_commitment_for_consequence
-        {
+        let requires_explicit_commitment =
+            capability.consequential && host.profile.require_commitment_for_consequence;
+
+        let commitment = if requires_explicit_commitment {
             host.lifecycle = AgentLifecycleState::AwaitingCommitment;
             let commitment = if let Some(commitment) = commitment {
                 commitment
@@ -1219,36 +1386,46 @@ impl AgentKernel {
                 host.profile.min_intent_confidence,
             )?;
 
-            let expected_capability_id = format!("cap:{}:{}", host.resonator_id, capability_name);
-            let decision = match self
-                .gateway
-                .authorize_for_capability(
-                    commitment.clone(),
-                    &host.identity_ref,
-                    &capability,
-                    &expected_capability_id,
-                )
-                .await
-            {
-                Ok(decision) => decision,
-                Err(err) => {
-                    host.lifecycle = AgentLifecycleState::Failed;
-                    self.append_audit(AgentAuditEvent {
-                        event_id: format!("audit-{}", Uuid::new_v4()),
-                        timestamp: chrono::Utc::now(),
-                        resonator_id: host.resonator_id.to_string(),
-                        stage: "commitment_authorization".to_string(),
-                        success: false,
-                        message: err.to_string(),
-                        commitment_id: Some(commitment.commitment_id.0.clone()),
-                    })
-                    .await?;
-                    self.persist_checkpoint(host, None).await?;
-                    return Err(err);
-                }
-            };
+            commitment
+        } else {
+            let auto_commitment = self.build_capability_commitment(
+                host,
+                &capability_name,
+                &capability,
+                format!(
+                    "Auto commitment for non-consequential capability `{}` (intent: {})",
+                    capability_name, cognition.intent
+                ),
+            )?;
+            self.append_audit(AgentAuditEvent {
+                event_id: format!("audit-{}", Uuid::new_v4()),
+                timestamp: chrono::Utc::now(),
+                resonator_id: host.resonator_id.to_string(),
+                stage: "commitment_auto_created".to_string(),
+                success: true,
+                message: format!(
+                    "auto-generated commitment {} for capability `{}`",
+                    auto_commitment.commitment_id, capability_name
+                ),
+                commitment_id: Some(auto_commitment.commitment_id.0.clone()),
+            })
+            .await?;
+            auto_commitment
+        };
 
-            if !decision.decision.allows_execution() {
+        let expected_capability_id = format!("cap:{}:{}", host.resonator_id, capability_name);
+        let decision = match self
+            .gateway
+            .authorize_for_capability(
+                commitment.clone(),
+                &host.identity_ref,
+                &capability,
+                &expected_capability_id,
+            )
+            .await
+        {
+            Ok(decision) => decision,
+            Err(err) => {
                 host.lifecycle = AgentLifecycleState::Failed;
                 self.append_audit(AgentAuditEvent {
                     event_id: format!("audit-{}", Uuid::new_v4()),
@@ -1256,38 +1433,52 @@ impl AgentKernel {
                     resonator_id: host.resonator_id.to_string(),
                     stage: "commitment_authorization".to_string(),
                     success: false,
-                    message: format!("authorization blocked: {:?}", decision.decision),
-                    commitment_id: Some(decision.commitment_id.0.clone()),
+                    message: err.to_string(),
+                    commitment_id: Some(commitment.commitment_id.0.clone()),
                 })
                 .await?;
                 self.persist_checkpoint(host, None).await?;
-                return Err(AgentKernelError::ApprovalRequired(decision.decision));
+                return Err(err);
             }
-
-            match host
-                .agent_state
-                .contract_engine
-                .register_contract(commitment.clone())
-            {
-                Ok(_) => {}
-                Err(resonator_commitment::ContractEngineError::AlreadyExists(_)) => {}
-                Err(err) => return Err(AgentKernelError::Storage(err.to_string())),
-            }
-
-            self.record_stage_transition(
-                &host.agent_state,
-                host.resonator_id,
-                StageName::Intent,
-                StageName::Commitment,
-            );
-            host.contract_set.insert(commitment.commitment_id.clone());
-            Some(commitment.commitment_id)
-        } else {
-            None
         };
 
+        if !decision.decision.allows_execution() {
+            host.lifecycle = AgentLifecycleState::Failed;
+            self.append_audit(AgentAuditEvent {
+                event_id: format!("audit-{}", Uuid::new_v4()),
+                timestamp: chrono::Utc::now(),
+                resonator_id: host.resonator_id.to_string(),
+                stage: "commitment_authorization".to_string(),
+                success: false,
+                message: format!("authorization blocked: {:?}", decision.decision),
+                commitment_id: Some(decision.commitment_id.0.clone()),
+            })
+            .await?;
+            self.persist_checkpoint(host, None).await?;
+            return Err(AgentKernelError::ApprovalRequired(decision.decision));
+        }
+
+        match host
+            .agent_state
+            .contract_engine
+            .register_contract(commitment.clone())
+        {
+            Ok(_) => {}
+            Err(resonator_commitment::ContractEngineError::AlreadyExists(_)) => {}
+            Err(err) => return Err(AgentKernelError::Storage(err.to_string())),
+        }
+
+        self.record_stage_transition(
+            &host.agent_state,
+            host.resonator_id,
+            StageName::Intent,
+            StageName::Commitment,
+        );
+        host.contract_set.insert(commitment.commitment_id.clone());
+        let commitment_id = commitment.commitment_id;
+
         host.lifecycle = AgentLifecycleState::Executing;
-        self.persist_checkpoint(host, commitment_id.as_ref().map(|c| c.0.clone()))
+        self.persist_checkpoint(host, Some(commitment_id.0.clone()))
             .await?;
 
         let executor = self
@@ -1298,104 +1489,65 @@ impl AgentKernel {
             .cloned()
             .ok_or_else(|| AgentKernelError::ExecutorMissing(capability_name.clone()))?;
 
-        if let Some(ref cid) = commitment_id {
-            self.assert_commitment_precedes_consequence(cid)?;
-            let gateway_result = self
-                .gateway
-                .execute(
-                    &capability_name,
-                    args.clone(),
-                    cid,
-                    CommitmentExecutionContext {
-                        agent_state: &host.agent_state,
-                        aas_agent_id: &host.aas_agent_id,
-                        resonator_id: host.resonator_id,
-                        capability: &capability,
-                        executor,
-                    },
-                )
-                .await;
+        self.assert_commitment_precedes_consequence(&commitment_id)?;
+        let gateway_result = self
+            .gateway
+            .execute(
+                &capability_name,
+                args.clone(),
+                &commitment_id,
+                CommitmentExecutionContext {
+                    agent_state: &host.agent_state,
+                    aas_agent_id: &host.aas_agent_id,
+                    resonator_id: host.resonator_id,
+                    capability: &capability,
+                    executor,
+                },
+            )
+            .await;
 
-            match gateway_result {
-                Ok(receipt) => {
-                    self.record_stage_transition(
-                        &host.agent_state,
-                        host.resonator_id,
-                        StageName::Commitment,
-                        StageName::Consequence,
-                    );
-                    let mut execution = receipt.tool_result.clone();
-                    execution.payload["commitment_id"] = Value::String(cid.0.clone());
-                    execution.payload["receipt_hash"] = Value::String(receipt.receipt_hash.clone());
+        match gateway_result {
+            Ok(receipt) => {
+                self.record_stage_transition(
+                    &host.agent_state,
+                    host.resonator_id,
+                    StageName::Commitment,
+                    StageName::Consequence,
+                );
+                let mut execution = receipt.tool_result.clone();
+                execution.payload["commitment_id"] = Value::String(commitment_id.0.clone());
+                execution.payload["receipt_hash"] = Value::String(receipt.receipt_hash.clone());
 
-                    self.append_audit(AgentAuditEvent {
-                        event_id: format!("audit-{}", Uuid::new_v4()),
-                        timestamp: chrono::Utc::now(),
-                        resonator_id: host.resonator_id.to_string(),
-                        stage: "capability_execute".to_string(),
-                        success: true,
-                        message: execution.summary.clone(),
-                        commitment_id: Some(cid.0.clone()),
-                    })
+                self.append_audit(AgentAuditEvent {
+                    event_id: format!("audit-{}", Uuid::new_v4()),
+                    timestamp: chrono::Utc::now(),
+                    resonator_id: host.resonator_id.to_string(),
+                    stage: "capability_execute".to_string(),
+                    success: true,
+                    message: execution.summary.clone(),
+                    commitment_id: Some(commitment_id.0.clone()),
+                })
+                .await?;
+                self.persist_checkpoint(host, Some(commitment_id.0.clone()))
                     .await?;
-                    self.persist_checkpoint(host, Some(cid.0.clone())).await?;
-                    Ok(execution)
-                }
-                Err(err) => {
-                    host.lifecycle = AgentLifecycleState::Failed;
-                    let mapped = map_gateway_error(err);
-                    self.append_audit(AgentAuditEvent {
-                        event_id: format!("audit-{}", Uuid::new_v4()),
-                        timestamp: chrono::Utc::now(),
-                        resonator_id: host.resonator_id.to_string(),
-                        stage: "capability_execute".to_string(),
-                        success: false,
-                        message: mapped.to_string(),
-                        commitment_id: Some(cid.0.clone()),
-                    })
-                    .await?;
-                    self.persist_checkpoint(host, Some(cid.0.clone())).await?;
-                    Err(mapped)
-                }
+                Ok(execution)
             }
-        } else {
-            let invocation = CapabilityInvocation {
-                resonator_id: host.resonator_id,
-                capability_name: capability_name.clone(),
-                args,
-                commitment_id: None,
-            };
-
-            match executor.execute(&invocation).await {
-                Ok(execution) => {
-                    self.append_audit(AgentAuditEvent {
-                        event_id: format!("audit-{}", Uuid::new_v4()),
-                        timestamp: chrono::Utc::now(),
-                        resonator_id: host.resonator_id.to_string(),
-                        stage: "capability_execute".to_string(),
-                        success: true,
-                        message: execution.summary.clone(),
-                        commitment_id: None,
-                    })
+            Err(err) => {
+                host.lifecycle = AgentLifecycleState::Failed;
+                let mapped = map_gateway_error(err);
+                self.append_audit(AgentAuditEvent {
+                    event_id: format!("audit-{}", Uuid::new_v4()),
+                    timestamp: chrono::Utc::now(),
+                    resonator_id: host.resonator_id.to_string(),
+                    stage: "capability_execute".to_string(),
+                    success: false,
+                    message: mapped.to_string(),
+                    commitment_id: Some(commitment_id.0.clone()),
+                })
+                .await?;
+                self.persist_checkpoint(host, Some(commitment_id.0.clone()))
                     .await?;
-                    self.persist_checkpoint(host, None).await?;
-                    Ok(execution)
-                }
-                Err(err) => {
-                    host.lifecycle = AgentLifecycleState::Failed;
-                    self.append_audit(AgentAuditEvent {
-                        event_id: format!("audit-{}", Uuid::new_v4()),
-                        timestamp: chrono::Utc::now(),
-                        resonator_id: host.resonator_id.to_string(),
-                        stage: "capability_execute".to_string(),
-                        success: false,
-                        message: err.to_string(),
-                        commitment_id: None,
-                    })
-                    .await?;
-                    self.persist_checkpoint(host, None).await?;
-                    Err(AgentKernelError::ToolFailure(err.to_string()))
-                }
+                Err(mapped)
             }
         }
     }
@@ -1568,6 +1720,46 @@ fn scope_covers(granted_scope: &ScopeConstraint, required_scope: &ScopeConstrain
     })
 }
 
+fn deterministic_receipt_hash(
+    payload: &serde_json::Value,
+) -> Result<String, CommitmentExecutionError> {
+    let bytes = serde_json::to_vec(payload)
+        .map_err(|e| CommitmentExecutionError::ReceiptWriteFailure(e.to_string()))?;
+    Ok(format!("{:x}", Sha256::digest(&bytes)))
+}
+
+/// Keep audit payloads compact in the hot loop and reference oversized blobs by hash.
+fn compact_payload_for_audit(value: &serde_json::Value) -> serde_json::Value {
+    const MAX_INLINE_BYTES: usize = 2048;
+    let Ok(bytes) = serde_json::to_vec(value) else {
+        return serde_json::json!({
+            "$ref": "serialization_error",
+        });
+    };
+    if bytes.len() <= MAX_INLINE_BYTES {
+        return value.clone();
+    }
+
+    serde_json::json!({
+        "$ref": format!("sha256:{}", format!("{:x}", Sha256::digest(&bytes))),
+        "bytes": bytes.len(),
+        "inline": false,
+    })
+}
+
+fn allow_real_tool_execution() -> bool {
+    std::env::var("MAPLE_ALLOW_REAL_TOOLS")
+        .map(|value| matches!(value.as_str(), "1" | "true" | "TRUE" | "yes" | "YES"))
+        .unwrap_or(false)
+}
+
+#[cfg(test)]
+fn commitment_gateway_active() -> bool {
+    COMMITMENT_GATEWAY_ACTIVE
+        .try_with(|active| *active)
+        .unwrap_or(false)
+}
+
 fn map_gateway_error(err: CommitmentExecutionError) -> AgentKernelError {
     match err {
         CommitmentExecutionError::InvariantViolation(msg) => {
@@ -1668,6 +1860,66 @@ mod tests {
     use crate::config::RuntimeConfig;
     use rcf_types::TemporalValidity;
 
+    #[derive(Debug, Default)]
+    struct GatewayOnlyDangerousExecutor;
+
+    #[async_trait]
+    impl CapabilityExecutor for GatewayOnlyDangerousExecutor {
+        fn descriptor(&self) -> CapabilityDescriptor {
+            CapabilityDescriptor::dangerous("simulate_transfer")
+        }
+
+        async fn execute(
+            &self,
+            invocation: &CapabilityInvocation,
+        ) -> Result<CapabilityExecution, CapabilityExecutionError> {
+            if !commitment_gateway_active() {
+                panic!("dangerous capability invoked outside CommitmentGateway");
+            }
+            if invocation.commitment_id.is_none() {
+                panic!("dangerous capability executed without commitment reference");
+            }
+            Ok(CapabilityExecution {
+                capability_name: invocation.capability_name.clone(),
+                summary: "gateway-only dangerous execution".to_string(),
+                payload: serde_json::json!({
+                    "ok": true,
+                    "commitment_id": invocation.commitment_id.as_ref().map(|id| id.0.clone()),
+                }),
+            })
+        }
+    }
+
+    #[derive(Debug, Default)]
+    struct GatewayOnlySafeExecutor;
+
+    #[async_trait]
+    impl CapabilityExecutor for GatewayOnlySafeExecutor {
+        fn descriptor(&self) -> CapabilityDescriptor {
+            CapabilityDescriptor::safe("echo_log")
+        }
+
+        async fn execute(
+            &self,
+            invocation: &CapabilityInvocation,
+        ) -> Result<CapabilityExecution, CapabilityExecutionError> {
+            if !commitment_gateway_active() {
+                panic!("safe capability invoked outside CommitmentGateway");
+            }
+            if invocation.commitment_id.is_none() {
+                panic!("safe capability executed without commitment reference");
+            }
+            Ok(CapabilityExecution {
+                capability_name: invocation.capability_name.clone(),
+                summary: "gateway-only safe execution".to_string(),
+                payload: serde_json::json!({
+                    "ok": true,
+                    "commitment_id": invocation.commitment_id.as_ref().map(|id| id.0.clone()),
+                }),
+            })
+        }
+    }
+
     #[tokio::test]
     async fn dangerous_capability_denied_without_contract() {
         let runtime = MapleRuntime::bootstrap(RuntimeConfig::default())
@@ -1743,6 +1995,15 @@ mod tests {
             .expect("ledger entry");
         assert!(entry.outcome.is_some());
         assert!(entry.outcome.unwrap().success);
+
+        let receipts = kernel
+            .aas
+            .get_tool_receipts(&commitment.commitment_id)
+            .await
+            .expect("receipt query should succeed");
+        assert_eq!(receipts.len(), 1);
+        assert_eq!(receipts[0].capability_id, "simulate_transfer");
+        assert_eq!(receipts[0].status, ToolReceiptStatus::Succeeded);
 
         let hosts = kernel.agents.read().await;
         let current_host = hosts
@@ -1880,5 +2141,88 @@ mod tests {
             .unwrap()
             .expect("checkpoint should exist");
         assert_eq!(checkpoint.resonator_id, host.resonator_id.to_string());
+    }
+
+    #[tokio::test]
+    async fn bypass_detector_panics_if_dangerous_tool_is_not_gateway_routed() {
+        let runtime = MapleRuntime::bootstrap(RuntimeConfig::default())
+            .await
+            .unwrap();
+        let kernel = AgentKernel::new(runtime);
+        kernel
+            .register_capability_executor(Arc::new(GatewayOnlyDangerousExecutor))
+            .await;
+
+        let host = kernel
+            .register_agent(AgentRegistration::default())
+            .await
+            .unwrap();
+
+        let commitment = kernel
+            .draft_commitment(
+                host.resonator_id,
+                "simulate_transfer",
+                "Gateway-only dangerous execution",
+            )
+            .await
+            .unwrap();
+
+        let mut req = AgentHandleRequest::new(
+            host.resonator_id,
+            ModelBackend::LocalLlama,
+            "transfer 500 usd to demo account",
+        );
+        req.override_tool = Some("simulate_transfer".to_string());
+        req.override_args = Some(serde_json::json!({"amount": 500, "to": "demo"}));
+        req.commitment = Some(commitment);
+
+        let response = kernel.handle(req).await.expect("must execute via gateway");
+        assert!(response.action.is_some());
+    }
+
+    #[tokio::test]
+    async fn safe_capability_auto_commitment_routes_through_gateway() {
+        let runtime = MapleRuntime::bootstrap(RuntimeConfig::default())
+            .await
+            .unwrap();
+        let kernel = AgentKernel::new(runtime);
+        kernel
+            .register_capability_executor(Arc::new(GatewayOnlySafeExecutor))
+            .await;
+
+        let host = kernel
+            .register_agent(AgentRegistration::default())
+            .await
+            .unwrap();
+
+        let mut req = AgentHandleRequest::new(
+            host.resonator_id,
+            ModelBackend::LocalLlama,
+            "log hello world",
+        );
+        req.override_tool = Some("echo_log".to_string());
+        req.override_args = Some(serde_json::json!({"message": "hello world"}));
+
+        let response = kernel
+            .handle(req)
+            .await
+            .expect("safe action should execute");
+        let action = response.action.expect("execution expected");
+        let commitment_id = action
+            .payload
+            .get("commitment_id")
+            .and_then(Value::as_str)
+            .expect("auto commitment id must be attached")
+            .to_string();
+
+        let commitment_id = RcfCommitmentId(commitment_id);
+        let receipts = kernel
+            .aas
+            .get_tool_receipts(&commitment_id)
+            .await
+            .expect("receipt query should succeed");
+        assert_eq!(receipts.len(), 1);
+        assert_eq!(receipts[0].capability_id, "echo_log");
+        assert_eq!(receipts[0].status, ToolReceiptStatus::Succeeded);
     }
 }

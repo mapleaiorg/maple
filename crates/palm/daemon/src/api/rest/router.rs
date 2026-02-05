@@ -28,6 +28,10 @@ pub fn create_router(state: AppState) -> Router {
             "/agent-kernel/commitments/:id",
             get(handlers::agent_kernel_commitment),
         )
+        .route(
+            "/agent-kernel/commitments/:id/receipts",
+            get(handlers::agent_kernel_commitment_receipts),
+        )
         // Agent (simple aliases)
         .route("/agent/status", get(handlers::agent_kernel_status))
         .route("/agent/handle", post(handlers::agent_kernel_handle))
@@ -39,6 +43,10 @@ pub fn create_router(state: AppState) -> Router {
         .route(
             "/agent/commitments/:id",
             get(handlers::agent_kernel_commitment),
+        )
+        .route(
+            "/agent/commitments/:id/receipts",
+            get(handlers::agent_kernel_commitment_receipts),
         )
         // Playground
         .route("/playground/state", get(handlers::playground_state))

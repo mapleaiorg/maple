@@ -146,6 +146,11 @@ impl Scheduler {
         *running = false;
     }
 
+    /// Return the active platform profile for event attribution.
+    pub fn platform_profile(&self) -> PlatformProfile {
+        self.platform
+    }
+
     /// Perform reconciliation for all deployments
     async fn reconcile(&self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let deployments = self.storage.list_deployments().await?;

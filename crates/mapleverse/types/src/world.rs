@@ -291,7 +291,7 @@ impl EconomicModifiers {
             maple_earning_multiplier: 1.5,
             attention_regen_multiplier: 1.2,
             reputation_multiplier: 0.8, // Less visible
-            transfer_fee_modifier: -5, // Lower fees
+            transfer_fee_modifier: -5,  // Lower fees
         }
     }
 
@@ -300,8 +300,8 @@ impl EconomicModifiers {
         Self {
             maple_earning_multiplier: 1.3,
             attention_regen_multiplier: 0.8, // Busy trading
-            reputation_multiplier: 1.2, // High visibility
-            transfer_fee_modifier: -10, // Lower fees to encourage trade
+            reputation_multiplier: 1.2,      // High visibility
+            transfer_fee_modifier: -10,      // Lower fees to encourage trade
         }
     }
 }
@@ -500,9 +500,13 @@ impl WorldTopology {
         from_region.can_migrate_to(to_region)?;
 
         // Perform migration
-        self.regions.get_mut(&from_region_id).unwrap().remove_entity();
+        self.regions
+            .get_mut(&from_region_id)
+            .unwrap()
+            .remove_entity();
         self.regions.get_mut(to_region_id).unwrap().add_entity()?;
-        self.entity_locations.insert(entity_id.clone(), to_region_id.clone());
+        self.entity_locations
+            .insert(entity_id.clone(), to_region_id.clone());
 
         Ok(())
     }
@@ -717,7 +721,9 @@ mod tests {
     #[test]
     fn test_entity_placement() {
         let mut topology = WorldTopology::new();
-        topology.add_region(Region::with_id("region-a", "A", 10)).unwrap();
+        topology
+            .add_region(Region::with_id("region-a", "A", 10))
+            .unwrap();
 
         let entity_id = EntityId::new("entity-1");
         topology
@@ -736,8 +742,12 @@ mod tests {
     #[test]
     fn test_entity_migration() {
         let mut topology = WorldTopology::new();
-        topology.add_region(Region::with_id("region-a", "A", 10)).unwrap();
-        topology.add_region(Region::with_id("region-b", "B", 10)).unwrap();
+        topology
+            .add_region(Region::with_id("region-a", "A", 10))
+            .unwrap();
+        topology
+            .add_region(Region::with_id("region-b", "B", 10))
+            .unwrap();
         topology
             .connect_regions(&RegionId::new("region-a"), &RegionId::new("region-b"))
             .unwrap();
@@ -759,11 +769,17 @@ mod tests {
 
         // Check entity counts
         assert_eq!(
-            topology.get_region(&RegionId::new("region-a")).unwrap().entity_count,
+            topology
+                .get_region(&RegionId::new("region-a"))
+                .unwrap()
+                .entity_count,
             0
         );
         assert_eq!(
-            topology.get_region(&RegionId::new("region-b")).unwrap().entity_count,
+            topology
+                .get_region(&RegionId::new("region-b"))
+                .unwrap()
+                .entity_count,
             1
         );
     }
@@ -771,8 +787,12 @@ mod tests {
     #[test]
     fn test_migration_non_neighbor_fails() {
         let mut topology = WorldTopology::new();
-        topology.add_region(Region::with_id("region-a", "A", 10)).unwrap();
-        topology.add_region(Region::with_id("region-b", "B", 10)).unwrap();
+        topology
+            .add_region(Region::with_id("region-a", "A", 10))
+            .unwrap();
+        topology
+            .add_region(Region::with_id("region-b", "B", 10))
+            .unwrap();
         // NOT connected
 
         let entity_id = EntityId::new("entity-1");
@@ -796,13 +816,23 @@ mod tests {
         // Create a chain: A - B - C - D
         for name in ["a", "b", "c", "d"] {
             topology
-                .add_region(Region::with_id(format!("region-{}", name), name.to_uppercase(), 10))
+                .add_region(Region::with_id(
+                    format!("region-{}", name),
+                    name.to_uppercase(),
+                    10,
+                ))
                 .unwrap();
         }
 
-        topology.connect_regions(&RegionId::new("region-a"), &RegionId::new("region-b")).unwrap();
-        topology.connect_regions(&RegionId::new("region-b"), &RegionId::new("region-c")).unwrap();
-        topology.connect_regions(&RegionId::new("region-c"), &RegionId::new("region-d")).unwrap();
+        topology
+            .connect_regions(&RegionId::new("region-a"), &RegionId::new("region-b"))
+            .unwrap();
+        topology
+            .connect_regions(&RegionId::new("region-b"), &RegionId::new("region-c"))
+            .unwrap();
+        topology
+            .connect_regions(&RegionId::new("region-c"), &RegionId::new("region-d"))
+            .unwrap();
 
         let path = topology
             .find_path(&RegionId::new("region-a"), &RegionId::new("region-d"))
@@ -816,8 +846,12 @@ mod tests {
     #[test]
     fn test_find_path_no_route() {
         let mut topology = WorldTopology::new();
-        topology.add_region(Region::with_id("region-a", "A", 10)).unwrap();
-        topology.add_region(Region::with_id("region-b", "B", 10)).unwrap();
+        topology
+            .add_region(Region::with_id("region-a", "A", 10))
+            .unwrap();
+        topology
+            .add_region(Region::with_id("region-b", "B", 10))
+            .unwrap();
         // NOT connected
 
         let path = topology.find_path(&RegionId::new("region-a"), &RegionId::new("region-b"));
@@ -865,9 +899,15 @@ mod tests {
     #[test]
     fn test_remove_region() {
         let mut topology = WorldTopology::new();
-        topology.add_region(Region::with_id("region-a", "A", 100)).unwrap();
-        topology.add_region(Region::with_id("region-b", "B", 100)).unwrap();
-        topology.connect_regions(&RegionId::new("region-a"), &RegionId::new("region-b")).unwrap();
+        topology
+            .add_region(Region::with_id("region-a", "A", 100))
+            .unwrap();
+        topology
+            .add_region(Region::with_id("region-b", "B", 100))
+            .unwrap();
+        topology
+            .connect_regions(&RegionId::new("region-a"), &RegionId::new("region-b"))
+            .unwrap();
 
         let removed = topology.remove_region(&RegionId::new("region-a")).unwrap();
         assert_eq!(removed.name, "A");

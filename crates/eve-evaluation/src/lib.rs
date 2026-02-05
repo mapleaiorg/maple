@@ -145,10 +145,7 @@ impl EvaluationEngine {
         records: &[ConsequenceRecord],
     ) -> Result<Option<LearningArtifact>, EvaluationError> {
         // Simple anomaly detection: look for unusual reversibility patterns
-        let reversible_count = records
-            .iter()
-            .filter(|r| r.consequence.reversible)
-            .count();
+        let reversible_count = records.iter().filter(|r| r.consequence.reversible).count();
 
         if reversible_count as f64 / records.len() as f64 > 0.3 {
             return Ok(Some(LearningArtifact {

@@ -131,7 +131,8 @@ pub mod types;
 pub use agent_kernel::{
     AgentAuditEvent, AgentExecutionProfile, AgentHandleRequest, AgentHandleResponse, AgentHost,
     AgentKernel, AgentKernelError, AgentRegistration, CapabilityDescriptor, CapabilityExecution,
-    CapabilityExecutor, CommitmentGateway, EchoCapability, SimulatedTransferCapability,
+    CapabilityExecutionMode, CapabilityExecutor, CommitmentGateway, EchoCapability,
+    SimulatedTransferCapability,
 };
 pub use cognition::{
     AnthropicAdapter, CapabilityCallCandidate, CognitionState, ContractDraft, EpisodicSummary,

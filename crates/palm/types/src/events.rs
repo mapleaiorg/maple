@@ -55,6 +55,8 @@ pub enum EventSource {
     State,
     /// Registry
     Registry,
+    /// MAPLE AgentKernel runtime boundary
+    AgentKernel,
 }
 
 /// Event severity levels
@@ -228,6 +230,23 @@ pub enum PalmEvent {
     TrafficSplitUpdated {
         deployment_id: DeploymentId,
         new_percentage: u32,
+    },
+
+    // ═══════════════════════════════════════════════════════════════════
+    // AGENT KERNEL EVENTS
+    // ═══════════════════════════════════════════════════════════════════
+    /// Agent resonance stage transition emitted by AgentKernel boundary.
+    AgentStageTransition {
+        resonator_id: String,
+        from_stage: String,
+        to_stage: String,
+    },
+
+    /// Agent accountability receipt record emitted after consequence.
+    AgentReceiptRecorded {
+        resonator_id: String,
+        contract_id: String,
+        receipt_hash: String,
     },
 }
 

@@ -10,9 +10,12 @@ The `AgentKernel` in `crates/maple-runtime/src/agent_kernel/mod.rs` enforces:
 
 1. `presence -> meaning -> intent -> commitment -> consequence`
 2. No consequential capability executes without an explicit commitment.
-3. Every capability path passes through AAS capability + policy + ledger checks.
-4. Explicit failures are persisted in append-only `AgentAuditEvent` records.
-5. Model backends remain cognition-only (they cannot trigger execution directly).
+3. Every capability path (safe and dangerous) passes through `CommitmentGateway`.
+4. Every execution emits durable receipts to AAS ledger (replayable by commitment id).
+5. Every execution path passes AAS capability + policy + ledger checks.
+6. No silent drops: explicit failures are written to outcome + audit + failed receipt.
+7. Explicit failures are persisted in append-only `AgentAuditEvent` records.
+8. Model backends remain cognition-only (they cannot trigger execution directly).
 
 ## Main runtime pieces
 
@@ -40,6 +43,39 @@ For consequential capability calls (example: `simulate_transfer`):
 - If commitment exists but AAS decision is not executable, runtime returns `ApprovalRequired`.
 - If approved, execution starts and outcome is written to AAS ledger and MAPLE storage.
 - Connector/executor boundaries also require explicit commitment references (`no commitment, no consequence`).
+
+## Uniform Gateway Rule (all capabilities)
+
+All capability execution now uses `CommitmentGateway`:
+
+- Consequential capability:
+  - requires explicit commitment from caller
+  - missing commitment returns `ContractMissing`
+- Non-consequential capability:
+  - runtime auto-creates a capability-scoped commitment
+  - still passes policy + capability checks
+  - still records lifecycle, receipt hash, and audit entries
+
+This removes the last direct executor bypass path and gives one durable source of truth for receipts.
+
+## Receipt Persistence (AAS Ledger)
+
+Receipt records are append-only and replayable:
+
+- `receipt_id`
+- `tool_call_id`
+- `contract_id`
+- `capability_id`
+- `hash`
+- `timestamp`
+- `status` (`Succeeded` or `Failed`)
+
+Primary APIs:
+
+- `AasService::record_tool_receipt(...)`
+- `AasService::get_tool_receipts(...)`
+- `AccountabilityLedger::record_tool_receipt(...)`
+- `AccountabilityLedger::get_tool_receipts_by_commitment(...)`
 
 ## API and CLI Observation Surfaces
 
@@ -79,7 +115,7 @@ cargo run -p maple-runtime --example 06_agent_kernel_boundary
 
 The demo shows:
 
-- Safe capability succeeds without commitment.
+- Safe capability succeeds with runtime-generated commitment (still gateway-routed).
 - Dangerous capability denied without commitment.
 - Dangerous capability succeeds with commitment and emits receipt + audit logs.
 
@@ -100,4 +136,5 @@ This includes a dedicated execution-boundary scenario showing:
 
 - Dangerous action denied without commitment.
 - Dangerous action allowed with commitment and ledger outcome.
+- Safe action routed through gateway with auto commitment + durable receipt.
 - Consistent no-bypass behavior across all model adapters.

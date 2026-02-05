@@ -520,7 +520,7 @@ let spec = ResonatorSpec {
         "strategy": "momentum",
         "risk_tolerance": 0.7,
         "capabilities": ["trading", "analysis", "reporting"],
-        "created_at": "2024-01-15T10:30:00Z"
+        "created_at": "2026-01-15T10:30:00Z"
     }),
 };
 ```

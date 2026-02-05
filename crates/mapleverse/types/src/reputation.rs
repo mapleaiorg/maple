@@ -410,7 +410,11 @@ impl ReputationReceiptBuilder {
     }
 
     /// Set source from commitment receipt
-    pub fn from_commitment(mut self, receipt_id: impl Into<String>, commitment_id: impl Into<String>) -> Self {
+    pub fn from_commitment(
+        mut self,
+        receipt_id: impl Into<String>,
+        commitment_id: impl Into<String>,
+    ) -> Self {
         self.source = Some(ReputationSource::CommitmentReceipt {
             receipt_id: receipt_id.into(),
             commitment_id: commitment_id.into(),
@@ -419,7 +423,11 @@ impl ReputationReceiptBuilder {
     }
 
     /// Set source from workflow receipt
-    pub fn from_workflow(mut self, receipt_id: impl Into<String>, workflow_id: impl Into<String>) -> Self {
+    pub fn from_workflow(
+        mut self,
+        receipt_id: impl Into<String>,
+        workflow_id: impl Into<String>,
+    ) -> Self {
         self.source = Some(ReputationSource::WorkflowReceipt {
             receipt_id: receipt_id.into(),
             workflow_id: workflow_id.into(),
@@ -459,15 +467,21 @@ impl ReputationReceiptBuilder {
 
     /// Build the receipt
     pub fn build(self) -> MapleVerseResult<ReputationReceipt> {
-        let entity_id = self.entity_id.ok_or_else(|| MapleVerseError::InvalidConfiguration {
-            reason: "Entity ID is required for reputation receipt".to_string(),
-        })?;
+        let entity_id = self
+            .entity_id
+            .ok_or_else(|| MapleVerseError::InvalidConfiguration {
+                reason: "Entity ID is required for reputation receipt".to_string(),
+            })?;
 
-        let source = self.source.ok_or_else(|| MapleVerseError::InvalidReputationSource {
-            attempted_source: "none".to_string(),
-        })?;
+        let source = self
+            .source
+            .ok_or_else(|| MapleVerseError::InvalidReputationSource {
+                attempted_source: "none".to_string(),
+            })?;
 
-        let description = self.description.unwrap_or_else(|| "Reputation change".to_string());
+        let description = self
+            .description
+            .unwrap_or_else(|| "Reputation change".to_string());
 
         let mut receipt = ReputationReceipt::new(
             entity_id,
@@ -650,13 +664,13 @@ mod tests {
         // Bad >= 0.1 => score >= -8000
         // Untrusted < 0.1 => score < -8000
         let cases = vec![
-            (9000, ReputationTier::Legendary),   // normalized = 0.95
-            (7000, ReputationTier::Excellent),   // normalized = 0.85
-            (3000, ReputationTier::Good),        // normalized = 0.65
-            (0, ReputationTier::Neutral),        // normalized = 0.5
-            (-4000, ReputationTier::Poor),       // normalized = 0.3
-            (-7000, ReputationTier::Bad),        // normalized = 0.15
-            (-9000, ReputationTier::Untrusted),  // normalized = 0.05
+            (9000, ReputationTier::Legendary),  // normalized = 0.95
+            (7000, ReputationTier::Excellent),  // normalized = 0.85
+            (3000, ReputationTier::Good),       // normalized = 0.65
+            (0, ReputationTier::Neutral),       // normalized = 0.5
+            (-4000, ReputationTier::Poor),      // normalized = 0.3
+            (-7000, ReputationTier::Bad),       // normalized = 0.15
+            (-9000, ReputationTier::Untrusted), // normalized = 0.05
         ];
 
         for (value, expected_tier) in cases {
@@ -736,7 +750,10 @@ mod tests {
 
         assert!(result.is_err());
         let err = result.unwrap_err();
-        assert!(matches!(err, MapleVerseError::InvalidReputationSource { .. }));
+        assert!(matches!(
+            err,
+            MapleVerseError::InvalidReputationSource { .. }
+        ));
     }
 
     #[test]

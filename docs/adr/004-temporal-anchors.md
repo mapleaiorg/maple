@@ -2,7 +2,7 @@
 
 **Status**: Accepted
 
-**Date**: 2024-01-15
+**Date**: 2026-01-15
 
 **Decision Makers**: MAPLE Architecture Team
 
@@ -387,7 +387,7 @@ let chain = coordinator.causal_history(
 
 **Approved by**: MAPLE Architecture Team
 
-**Date**: 2024-01-15
+**Date**: 2026-01-15
 
 ---
 

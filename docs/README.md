@@ -11,8 +11,12 @@ Welcome to the MAPLE AI Framework documentation.
 | [Getting Started](getting-started.md) | Build your first MAPLE app |
 | [Platform Packs Tutorial](tutorials/platform-packs.md) | Creating custom platform packs |
 | [Operations Tutorial](tutorials/operations.md) | Daemon, CLI, and Playground workflows |
+| [iBank Commitment Boundary Tutorial](tutorials/ibank-commitment-boundary.md) | End-to-end contract-gated transfer demo with receipts |
 | [Conformance Guide](conformance.md) | Testing platform pack compliance |
 | [API Reference](api/README.md) | Complete API documentation |
+| [Core: Agents](core/agents.md) | Agent composition + commitment gateway model |
+| [Core: Interop](core/interop.md) | MCP/A2A/vendor SDK mapping to MAPLE boundaries |
+| [Core: Llama-First](core/llama-first.md) | Llama cognition contract, repair, gating, replay |
 | [UAL (Universal Agent Language)](concepts/ual.md) | Agent/human interaction language |
 | [Agents, Resonators, and LLMs](concepts/agent-resonator-llm.md) | Mental model + backend integration |
 | [Agent Kernel Composition](concepts/agent-kernel-composition.md) | Non-bypassable `Agent = Resonator + Profile + Capability + Contracts` runtime model |

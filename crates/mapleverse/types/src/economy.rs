@@ -8,7 +8,9 @@ use crate::errors::{MapleVerseError, MapleVerseResult};
 use serde::{Deserialize, Serialize};
 
 /// A monetary amount (used for MAPLE tokens)
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
+)]
 pub struct Amount(u64);
 
 impl Amount {
@@ -82,7 +84,9 @@ impl From<u64> for Amount {
 }
 
 /// Attention units - the scarce resource that bounds action capacity
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
+)]
 pub struct AttentionUnits(u64);
 
 impl AttentionUnits {
@@ -433,7 +437,12 @@ mod tests {
         let b = Amount::new(150);
 
         assert_eq!(a.saturating_sub(b).value(), 0);
-        assert_eq!(Amount::new(u64::MAX).saturating_add(Amount::new(100)).value(), u64::MAX);
+        assert_eq!(
+            Amount::new(u64::MAX)
+                .saturating_add(Amount::new(100))
+                .value(),
+            u64::MAX
+        );
     }
 
     #[test]
@@ -486,10 +495,10 @@ mod tests {
     fn test_maple_balance_net_position() {
         let mut balance = MapleBalance::new(1000);
 
-        balance.earn(500);  // +500
-        balance.spend(200).unwrap();  // -200
-        balance.receive(100);  // +100
-        balance.transfer_out(300).unwrap();  // -300
+        balance.earn(500); // +500
+        balance.spend(200).unwrap(); // -200
+        balance.receive(100); // +100
+        balance.transfer_out(300).unwrap(); // -300
 
         // Initial 1000, earned 500, spent 200, received 100, transferred 300
         // Net should be: (1000 + 500 + 100) - (200 + 300) = 1100

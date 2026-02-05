@@ -188,3 +188,21 @@ pub struct CommitmentOutcome {
     pub description: String,
     pub completed_at: chrono::DateTime<chrono::Utc>,
 }
+
+/// Execution receipt persisted for replay and accountability.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct ToolExecutionReceipt {
+    pub receipt_id: String,
+    pub tool_call_id: String,
+    pub contract_id: CommitmentId,
+    pub capability_id: String,
+    pub hash: String,
+    pub timestamp: chrono::DateTime<chrono::Utc>,
+    pub status: ToolReceiptStatus,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ToolReceiptStatus {
+    Succeeded,
+    Failed,
+}

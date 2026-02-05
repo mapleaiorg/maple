@@ -10,9 +10,11 @@ rcf-types = { workspace = true }
 rcf-commitment = { workspace = true }
 maple-storage = { workspace = true }
 serde = { workspace = true }
+serde_json = { workspace = true }
 chrono = { workspace = true }
 uuid = { workspace = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+proptest = { workspace = true }

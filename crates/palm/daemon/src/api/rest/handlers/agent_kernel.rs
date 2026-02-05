@@ -6,10 +6,12 @@ use axum::{
     extract::{Path, Query, State},
     Json,
 };
+use maple_runtime::agent_kernel::JournalEventKind;
 use maple_runtime::{
     AgentHandleRequest, AgentKernelError, CapabilityExecution, ModelBackend, StructuredCognition,
 };
 use maple_storage::QueryWindow;
+use palm_types::{EventSource, PalmEvent, PalmEventEnvelope};
 use rcf_commitment::CommitmentId;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -82,6 +84,17 @@ pub struct AgentKernelCommitmentSummaryResponse {
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
+#[derive(Debug, Serialize)]
+pub struct AgentKernelReceiptResponse {
+    pub receipt_id: String,
+    pub tool_call_id: String,
+    pub contract_id: String,
+    pub capability_id: String,
+    pub hash: String,
+    pub timestamp: chrono::DateTime<chrono::Utc>,
+    pub status: String,
+}
+
 fn default_backend() -> String {
     "local_llama".to_string()
 }
@@ -130,6 +143,7 @@ pub async fn agent_kernel_handle(
     Json(payload): Json<AgentKernelHandlePayload>,
 ) -> ApiResult<Json<AgentKernelHandleResponse>> {
     let backend = parse_backend(&payload.backend)?;
+    let started_at = chrono::Utc::now();
 
     let mut request = AgentHandleRequest::new(
         state.agent_kernel_resonator_id,
@@ -159,6 +173,7 @@ pub async fn agent_kernel_handle(
         .handle(request)
         .await
         .map_err(map_agent_error)?;
+    emit_agent_kernel_events(&state, started_at).await;
 
     Ok(Json(AgentKernelHandleResponse {
         resonator_id: result.resonator_id.to_string(),
@@ -252,6 +267,81 @@ pub async fn agent_kernel_commitment(
     }))
 }
 
+/// Retrieve tool receipts for one commitment from the shared durable ledger.
+pub async fn agent_kernel_commitment_receipts(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+) -> ApiResult<Json<Vec<AgentKernelReceiptResponse>>> {
+    let commitment_id = CommitmentId::new(id);
+    let receipts = state
+        .agent_kernel
+        .receipts_for_commitment(&commitment_id)
+        .await
+        .map_err(|err| ApiError::Internal(err.to_string()))?;
+
+    let payload = receipts
+        .into_iter()
+        .map(|receipt| AgentKernelReceiptResponse {
+            receipt_id: receipt.receipt_id,
+            tool_call_id: receipt.tool_call_id,
+            contract_id: receipt.contract_id.0,
+            capability_id: receipt.capability_id,
+            hash: receipt.hash,
+            timestamp: receipt.timestamp,
+            status: format!("{:?}", receipt.status),
+        })
+        .collect();
+
+    Ok(Json(payload))
+}
+
+async fn emit_agent_kernel_events(state: &AppState, started_at: chrono::DateTime<chrono::Utc>) {
+    let Ok(entries) = state
+        .agent_kernel
+        .journal_entries(state.agent_kernel_resonator_id, 128)
+        .await
+    else {
+        return;
+    };
+
+    let platform = state.scheduler.platform_profile();
+    for entry in entries
+        .into_iter()
+        .filter(|entry| entry.timestamp >= started_at)
+    {
+        match entry.kind {
+            JournalEventKind::StageTransition { from, to } => {
+                let envelope = PalmEventEnvelope::new(
+                    PalmEvent::AgentStageTransition {
+                        resonator_id: entry.resonator_id,
+                        from_stage: from.to_string(),
+                        to_stage: to.to_string(),
+                    },
+                    EventSource::AgentKernel,
+                    platform,
+                );
+                let _ = state.event_tx.send(envelope);
+            }
+            JournalEventKind::AccountabilityRecorded {
+                contract_id,
+                receipt_hash,
+            } => {
+                let envelope = PalmEventEnvelope::new(
+                    PalmEvent::AgentReceiptRecorded {
+                        resonator_id: entry.resonator_id,
+                        contract_id,
+                        receipt_hash,
+                    },
+                    EventSource::AgentKernel,
+                    platform,
+                );
+                let _ = state.event_tx.send(envelope);
+            }
+            _ => {}
+        }
+    }
+}
+
 fn map_agent_error(err: AgentKernelError) -> ApiError {
     match err {
         AgentKernelError::ContractMissing { reason }
@@ -337,6 +427,46 @@ mod tests {
         create_router(state)
     }
 
+    async fn test_app_with_events() -> (axum::Router, broadcast::Receiver<PalmEventEnvelope>) {
+        let storage: Arc<dyn Storage> = Arc::new(InMemoryStorage::new());
+        let (event_tx, event_rx) = broadcast::channel::<PalmEventEnvelope>(64);
+        let (activity_tx, _) = broadcast::channel::<Activity>(64);
+        let (scheduler, _reconcile_rx) = Scheduler::with_platform(
+            SchedulerConfig::default(),
+            Arc::clone(&storage),
+            event_tx.clone(),
+            activity_tx.clone(),
+            PlatformProfile::Development,
+        );
+
+        let playground = PlaygroundService::new(Arc::clone(&storage), activity_tx.clone())
+            .await
+            .expect("playground should initialize");
+
+        let runtime = MapleRuntime::bootstrap(RuntimeConfig::default())
+            .await
+            .expect("runtime should bootstrap");
+        let agent_kernel = Arc::new(AgentKernel::new(runtime));
+        let host = agent_kernel
+            .register_agent(AgentRegistration::default())
+            .await
+            .expect("agent should register");
+
+        let (shutdown_tx, _shutdown_rx) = watch::channel(false);
+        let state = AppState::new(
+            storage,
+            scheduler,
+            event_tx,
+            activity_tx,
+            playground,
+            agent_kernel,
+            host.resonator_id,
+            shutdown_tx,
+        );
+
+        (create_router(state), event_rx)
+    }
+
     #[tokio::test]
     async fn dangerous_handle_without_commitment_returns_policy_denied() {
         let app = test_app().await;
@@ -409,6 +539,115 @@ mod tests {
             "expected contract-missing error, got: {}",
             error["error"]
         );
+    }
+
+    #[tokio::test]
+    async fn commitment_receipts_endpoint_returns_persisted_receipts() {
+        let app = test_app().await;
+        let payload = serde_json::json!({
+            "prompt": "transfer 500 usd to demo account",
+            "backend": "local_llama",
+            "tool": "simulate_transfer",
+            "args": { "amount": 500, "to": "demo" },
+            "with_commitment": true
+        });
+
+        let request = Request::builder()
+            .method("POST")
+            .uri("/api/v1/agent/handle")
+            .header("content-type", "application/json")
+            .body(Body::from(payload.to_string()))
+            .expect("request should build");
+
+        let response = app
+            .clone()
+            .oneshot(request)
+            .await
+            .expect("request should complete");
+        assert_eq!(response.status(), StatusCode::OK);
+        let body = to_bytes(response.into_body(), usize::MAX)
+            .await
+            .expect("body should read");
+        let handled = serde_json::from_slice::<serde_json::Value>(&body)
+            .expect("response should deserialize");
+        let commitment_id = handled
+            .get("action")
+            .and_then(|action| action.get("payload"))
+            .and_then(|payload| payload.get("commitment_id"))
+            .and_then(serde_json::Value::as_str)
+            .expect("commitment id should be attached")
+            .to_string();
+
+        let request = Request::builder()
+            .method("GET")
+            .uri(format!(
+                "/api/v1/agent/commitments/{}/receipts",
+                commitment_id
+            ))
+            .body(Body::empty())
+            .expect("request should build");
+
+        let response = app.oneshot(request).await.expect("request should complete");
+        assert_eq!(response.status(), StatusCode::OK);
+        let body = to_bytes(response.into_body(), usize::MAX)
+            .await
+            .expect("body should read");
+        let receipts = serde_json::from_slice::<Vec<serde_json::Value>>(&body)
+            .expect("receipts should deserialize");
+        assert_eq!(receipts.len(), 1);
+        assert_eq!(
+            receipts[0]["capability_id"],
+            serde_json::Value::String("simulate_transfer".to_string())
+        );
+    }
+
+    #[tokio::test]
+    async fn handle_emits_agent_stage_events_for_watch_streams() {
+        let (app, mut event_rx) = test_app_with_events().await;
+        let payload = serde_json::json!({
+            "prompt": "transfer 500 usd to demo account",
+            "backend": "local_llama",
+            "tool": "simulate_transfer",
+            "args": { "amount": 500, "to": "demo" },
+            "with_commitment": true
+        });
+
+        let request = Request::builder()
+            .method("POST")
+            .uri("/api/v1/agent/handle")
+            .header("content-type", "application/json")
+            .body(Body::from(payload.to_string()))
+            .expect("request should build");
+        let response = app.oneshot(request).await.expect("request should complete");
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let mut saw_stage = false;
+        let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(2);
+        while tokio::time::Instant::now() < deadline {
+            let recv =
+                tokio::time::timeout(std::time::Duration::from_millis(150), event_rx.recv()).await;
+            match recv {
+                Ok(Ok(PalmEventEnvelope {
+                    event:
+                        palm_types::PalmEvent::AgentStageTransition {
+                            from_stage,
+                            to_stage,
+                            ..
+                        },
+                    ..
+                })) => {
+                    if from_stage == "meaning" && to_stage == "intent" {
+                        saw_stage = true;
+                        break;
+                    }
+                }
+                Ok(Ok(_)) => {}
+                Ok(Err(_)) => {}
+                Err(_) => {}
+            }
+        }
+
+        assert!(saw_stage, "expected AgentStageTransition event in stream");
     }
 
     #[test]

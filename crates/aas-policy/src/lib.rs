@@ -140,6 +140,8 @@ impl PolicyEngine {
             }
         }
 
+        self.apply_runtime_guardrails(commitment, context, &mut decision, &mut risk_factors);
+
         let overall_risk = if risk_factors
             .iter()
             .any(|r| r.severity == RiskLevel::Critical)
@@ -177,6 +179,124 @@ impl PolicyEngine {
             },
             rule_results,
         })
+    }
+
+    fn apply_runtime_guardrails(
+        &self,
+        commitment: &RcfCommitment,
+        context: &EvaluationContext,
+        decision: &mut Decision,
+        risk_factors: &mut Vec<RiskFactor>,
+    ) {
+        let tier = context
+            .metadata
+            .get("profile_tier")
+            .map(|value| value.to_ascii_lowercase())
+            .unwrap_or_else(|| "mapleverse".to_string());
+
+        let attention_available =
+            parse_u64_meta(&context.metadata, "attention_available").unwrap_or(u64::MAX);
+        let attention_required =
+            parse_u64_meta(&context.metadata, "attention_required").unwrap_or(0);
+        if attention_required > attention_available {
+            risk_factors.push(RiskFactor {
+                name: "attention_bound_exceeded".to_string(),
+                description: format!(
+                    "attention required {} exceeds available {}",
+                    attention_required, attention_available
+                ),
+                severity: RiskLevel::High,
+            });
+            *decision = Decision::Denied;
+        }
+
+        let capability_risk = context
+            .metadata
+            .get("capability_risk")
+            .map(|value| value.to_ascii_lowercase())
+            .unwrap_or_else(|| "safe".to_string());
+        let capability_mode = context
+            .metadata
+            .get("capability_mode")
+            .map(|value| value.to_ascii_lowercase())
+            .unwrap_or_else(|| "simulation".to_string());
+
+        let requested_value = parse_f64_meta(&context.metadata, "requested_value").unwrap_or(0.0);
+        let autonomous_limit = autonomous_limit_for_tier(&tier);
+
+        if capability_risk == "dangerous" {
+            risk_factors.push(RiskFactor {
+                name: "dangerous_capability".to_string(),
+                description: "capability marked as dangerous requires stronger controls"
+                    .to_string(),
+                severity: RiskLevel::High,
+            });
+
+            if requested_value <= 0.0 {
+                if *decision != Decision::Denied {
+                    *decision = Decision::PendingAdditionalInfo;
+                }
+            } else if requested_value > autonomous_limit && *decision != Decision::Denied {
+                *decision = Decision::PendingHumanReview;
+            } else if tier == "finalverse" && *decision == Decision::Approved {
+                *decision = Decision::PendingHumanReview;
+            }
+        }
+
+        if capability_mode == "real" {
+            risk_factors.push(RiskFactor {
+                name: "real_tool_mode".to_string(),
+                description: "capability is configured for real external side effects".to_string(),
+                severity: RiskLevel::High,
+            });
+            if *decision == Decision::Approved {
+                *decision = Decision::PendingHumanReview;
+            }
+        }
+
+        if requested_value > autonomous_limit {
+            risk_factors.push(RiskFactor {
+                name: "autonomous_limit_exceeded".to_string(),
+                description: format!(
+                    "requested value {} exceeds autonomous limit {} for tier {}",
+                    requested_value, autonomous_limit, tier
+                ),
+                severity: RiskLevel::High,
+            });
+            if *decision != Decision::Denied {
+                *decision = Decision::PendingHumanReview;
+            }
+        }
+
+        // iBank pure-AI lane: allow low-risk financial commitments under autonomous limit.
+        // This keeps high-risk/ambiguous cases in hybrid review while enabling bounded autonomy.
+        if tier == "ibank"
+            && commitment.effect_domain == rcf_types::EffectDomain::Finance
+            && requested_value > 0.0
+            && requested_value <= autonomous_limit
+            && capability_risk == "dangerous"
+            && attention_required <= attention_available
+            && *decision == Decision::PendingHumanReview
+        {
+            risk_factors.push(RiskFactor {
+                name: "ibank_autonomous_lane".to_string(),
+                description: format!(
+                    "requested value {} is within ibank autonomous limit {}",
+                    requested_value, autonomous_limit
+                ),
+                severity: RiskLevel::Low,
+            });
+            *decision = Decision::Approved;
+        }
+
+        // iBank baseline: finance commitments above autonomous limit require approval.
+        if tier == "ibank"
+            && commitment.effect_domain == rcf_types::EffectDomain::Finance
+            && requested_value > autonomous_limit
+            && *decision != Decision::Denied
+        {
+            *decision = Decision::PendingHumanReview;
+        }
     }
 
     /// Evaluate a single rule
@@ -297,6 +417,27 @@ pub enum PolicyError {
     LockError,
 }
 
+fn parse_u64_meta(metadata: &HashMap<String, String>, key: &str) -> Option<u64> {
+    metadata
+        .get(key)
+        .and_then(|value| value.parse::<u64>().ok())
+}
+
+fn parse_f64_meta(metadata: &HashMap<String, String>, key: &str) -> Option<f64> {
+    metadata
+        .get(key)
+        .and_then(|value| value.parse::<f64>().ok())
+}
+
+fn autonomous_limit_for_tier(tier: &str) -> f64 {
+    match tier {
+        "ibank" => 10_000.0,
+        "finalverse" => 1_000.0,
+        "mapleverse" => 25_000.0,
+        _ => 5_000.0,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -323,6 +464,105 @@ mod tests {
         let result = engine.evaluate(&commitment, &context).unwrap();
 
         // Financial domain should require human approval
+        assert_eq!(result.decision, Decision::PendingHumanReview);
+    }
+
+    #[test]
+    fn denies_when_attention_budget_is_exceeded() {
+        let engine = PolicyEngine::with_defaults();
+        let commitment =
+            CommitmentBuilder::new(IdentityRef::new("test-agent"), EffectDomain::Computation)
+                .with_scope(ScopeConstraint::default())
+                .build()
+                .unwrap();
+
+        let mut metadata = HashMap::new();
+        metadata.insert("profile_tier".to_string(), "mapleverse".to_string());
+        metadata.insert("attention_available".to_string(), "2".to_string());
+        metadata.insert("attention_required".to_string(), "10".to_string());
+        metadata.insert("capability_risk".to_string(), "safe".to_string());
+        let context = EvaluationContext {
+            agent_id: AgentId::new("test-agent"),
+            capabilities: vec![],
+            metadata,
+        };
+
+        let result = engine.evaluate(&commitment, &context).unwrap();
+        assert_eq!(result.decision, Decision::Denied);
+    }
+
+    #[test]
+    fn ibank_limit_enforces_human_review_for_large_amounts() {
+        let engine = PolicyEngine::with_defaults();
+        let commitment =
+            CommitmentBuilder::new(IdentityRef::new("test-agent"), EffectDomain::Finance)
+                .with_scope(ScopeConstraint::default())
+                .build()
+                .unwrap();
+
+        let mut metadata = HashMap::new();
+        metadata.insert("profile_tier".to_string(), "ibank".to_string());
+        metadata.insert("attention_available".to_string(), "100".to_string());
+        metadata.insert("attention_required".to_string(), "10".to_string());
+        metadata.insert("capability_risk".to_string(), "dangerous".to_string());
+        metadata.insert("requested_value".to_string(), "25000".to_string());
+        let context = EvaluationContext {
+            agent_id: AgentId::new("test-agent"),
+            capabilities: vec![],
+            metadata,
+        };
+
+        let result = engine.evaluate(&commitment, &context).unwrap();
+        assert_eq!(result.decision, Decision::PendingHumanReview);
+    }
+
+    #[test]
+    fn ibank_low_risk_within_limit_can_autonomously_execute() {
+        let engine = PolicyEngine::with_defaults();
+        let commitment =
+            CommitmentBuilder::new(IdentityRef::new("test-agent"), EffectDomain::Finance)
+                .with_scope(ScopeConstraint::default())
+                .build()
+                .unwrap();
+
+        let mut metadata = HashMap::new();
+        metadata.insert("profile_tier".to_string(), "ibank".to_string());
+        metadata.insert("attention_available".to_string(), "100".to_string());
+        metadata.insert("attention_required".to_string(), "10".to_string());
+        metadata.insert("capability_risk".to_string(), "dangerous".to_string());
+        metadata.insert("requested_value".to_string(), "100".to_string());
+        let context = EvaluationContext {
+            agent_id: AgentId::new("test-agent"),
+            capabilities: vec![],
+            metadata,
+        };
+
+        let result = engine.evaluate(&commitment, &context).unwrap();
+        assert_eq!(result.decision, Decision::Approved);
+    }
+
+    #[test]
+    fn real_capability_mode_requires_human_review() {
+        let engine = PolicyEngine::with_defaults();
+        let commitment =
+            CommitmentBuilder::new(IdentityRef::new("test-agent"), EffectDomain::Computation)
+                .with_scope(ScopeConstraint::default())
+                .build()
+                .unwrap();
+
+        let mut metadata = HashMap::new();
+        metadata.insert("profile_tier".to_string(), "mapleverse".to_string());
+        metadata.insert("attention_available".to_string(), "100".to_string());
+        metadata.insert("attention_required".to_string(), "1".to_string());
+        metadata.insert("capability_risk".to_string(), "safe".to_string());
+        metadata.insert("capability_mode".to_string(), "real".to_string());
+        let context = EvaluationContext {
+            agent_id: AgentId::new("test-agent"),
+            capabilities: vec![],
+            metadata,
+        };
+
+        let result = engine.evaluate(&commitment, &context).unwrap();
         assert_eq!(result.decision, Decision::PendingHumanReview);
     }
 }

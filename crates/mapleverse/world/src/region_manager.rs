@@ -47,11 +47,7 @@ impl RegionManager {
     }
 
     /// Connect two regions (bidirectional)
-    pub fn connect_regions(
-        &mut self,
-        region_a: &RegionId,
-        region_b: &RegionId,
-    ) -> WorldResult<()> {
+    pub fn connect_regions(&mut self, region_a: &RegionId, region_b: &RegionId) -> WorldResult<()> {
         self.topology
             .connect_regions(region_a, region_b)
             .map_err(WorldError::Types)
@@ -118,9 +114,7 @@ impl RegionManager {
             .topology
             .get_entity_location(entity_id)
             .cloned()
-            .ok_or_else(|| {
-                WorldError::Types(MapleVerseError::EntityNotFound(entity_id.clone()))
-            })?;
+            .ok_or_else(|| WorldError::Types(MapleVerseError::EntityNotFound(entity_id.clone())))?;
 
         // Check if regions are neighbors
         if !self.topology.are_neighbors(&from_region_id, to_region_id) {

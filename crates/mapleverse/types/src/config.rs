@@ -108,7 +108,9 @@ impl MapleVerseConfig {
         #[cfg(not(feature = "unsafe-human-profiles"))]
         if self.human_profiles_allowed {
             return Err(MapleVerseError::InvalidConfiguration {
-                reason: "human_profiles_allowed cannot be true without unsafe-human-profiles feature".to_string(),
+                reason:
+                    "human_profiles_allowed cannot be true without unsafe-human-profiles feature"
+                        .to_string(),
             });
         }
 
@@ -178,7 +180,7 @@ impl MapleVerseConfig {
             },
             economy_config: EconomyConfig {
                 initial_maple_balance: 1000,
-                maple_transfer_fee_bps: 10, // 0.1% transfer fee
+                maple_transfer_fee_bps: 10,           // 0.1% transfer fee
                 max_maple_supply: 10_000_000_000_000, // 10T max supply
             },
             attention_config: AttentionConfig {

@@ -181,8 +181,9 @@ enum AgentCommands {
         endpoint: String,
     },
 
-    /// Inspect a commitment lifecycle record from the durable ledger
-    Commitment(AgentCommitmentArgs),
+    /// Inspect a contract/commitment and its receipts from the durable ledger
+    #[command(alias = "commitment")]
+    Contract(AgentCommitmentArgs),
 
     /// List recent commitment lifecycle records
     Commitments(AgentCommitmentsArgs),
@@ -401,6 +402,17 @@ struct AgentKernelCommitmentSummaryResponse {
     updated_at: String,
 }
 
+#[derive(Debug, Deserialize)]
+struct AgentKernelReceiptResponse {
+    receipt_id: String,
+    tool_call_id: String,
+    contract_id: String,
+    capability_id: String,
+    hash: String,
+    timestamp: String,
+    status: String,
+}
+
 #[tokio::main]
 async fn main() {
     let cli = Cli::parse();
@@ -604,7 +616,7 @@ async fn handle_agent(command: AgentCommands) -> Result<(), Box<dyn std::error::
         AgentCommands::Status { endpoint } => daemon_agent_status(&endpoint).await,
         AgentCommands::Audit(args) => daemon_agent_audit(&args.endpoint, args.limit).await,
         AgentCommands::Handle(args) => daemon_agent_handle(args).await,
-        AgentCommands::Commitment(args) => daemon_agent_commitment(args).await,
+        AgentCommands::Contract(args) => daemon_agent_contract(args).await,
         AgentCommands::Commitments(args) => daemon_agent_commitments(args).await,
     }
 }
@@ -925,10 +937,7 @@ async fn daemon_status(endpoint: &str) -> Result<(), Box<dyn std::error::Error>>
 
 async fn daemon_agent_status(endpoint: &str) -> Result<(), Box<dyn std::error::Error>> {
     let client = build_http_client()?;
-    let url = format!(
-        "{}/api/v1/agent-kernel/status",
-        endpoint.trim_end_matches('/')
-    );
+    let url = format!("{}/api/v1/agent/status", endpoint.trim_end_matches('/'));
     let response = client.get(url).send().await?;
     if !response.status().is_success() {
         return Err(format!("agent-kernel status request failed: {}", response.status()).into());
@@ -948,7 +957,7 @@ async fn daemon_agent_audit(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let client = build_http_client()?;
     let url = format!(
-        "{}/api/v1/agent-kernel/audit?limit={}",
+        "{}/api/v1/agent/audit?limit={}",
         endpoint.trim_end_matches('/'),
         limit
     );
@@ -975,7 +984,7 @@ async fn daemon_agent_audit(
 async fn daemon_agent_handle(args: AgentHandleArgs) -> Result<(), Box<dyn std::error::Error>> {
     let client = build_http_client()?;
     let url = format!(
-        "{}/api/v1/agent-kernel/handle",
+        "{}/api/v1/agent/handle",
         args.endpoint.trim_end_matches('/')
     );
 
@@ -1021,12 +1030,12 @@ async fn daemon_agent_handle(args: AgentHandleArgs) -> Result<(), Box<dyn std::e
     Ok(())
 }
 
-async fn daemon_agent_commitment(
+async fn daemon_agent_contract(
     args: AgentCommitmentArgs,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let client = build_http_client()?;
     let url = format!(
-        "{}/api/v1/agent-kernel/commitments/{}",
+        "{}/api/v1/agent/commitments/{}",
         args.endpoint.trim_end_matches('/'),
         args.id
     );
@@ -1062,6 +1071,41 @@ async fn daemon_agent_commitment(
     } else {
         println!("Outcome: -");
     }
+
+    let receipt_url = format!(
+        "{}/api/v1/agent/commitments/{}/receipts",
+        args.endpoint.trim_end_matches('/'),
+        commitment.commitment_id
+    );
+    let receipt_response = client.get(receipt_url).send().await?;
+    if !receipt_response.status().is_success() {
+        let body = receipt_response.text().await.unwrap_or_default();
+        return Err(format!("commitment receipts lookup failed: {}", body).into());
+    }
+    let receipts = receipt_response
+        .json::<Vec<AgentKernelReceiptResponse>>()
+        .await?;
+
+    println!();
+    println!("Receipts: {}", receipts.len());
+    println!(
+        "{:<20} {:<16} {:<14} {:<12} {:<20}",
+        "RECEIPT_ID", "CAPABILITY", "STATUS", "HASH", "TIMESTAMP"
+    );
+    for receipt in receipts {
+        println!(
+            "{:<20} {:<16} {:<14} {:<12} {:<20}",
+            shorten(&receipt.receipt_id, 20),
+            shorten(&receipt.capability_id, 16),
+            shorten(&receipt.status, 14),
+            shorten(&receipt.hash, 12),
+            shorten(&receipt.timestamp, 20),
+        );
+        println!(
+            "  contract={} tool_call={}",
+            receipt.contract_id, receipt.tool_call_id
+        );
+    }
     Ok(())
 }
 
@@ -1086,24 +1130,29 @@ async fn daemon_agent_commitments(
 
     print_ok(&format!("Fetched {} commitment(s)", commitments.len()));
     println!(
-        "{:<36} {:<10} {:<10} {:<18} {:<20} {:<20} {:<20}",
-        "COMMITMENT_ID", "STATUS", "DECISION", "PRINCIPAL", "DECLARED", "STARTED", "COMPLETED"
+        "{:<24} {:<10} {:<10} {:<10} {:<12} {:<17} {:<17} {:<17} {:<17}",
+        "COMMITMENT_ID",
+        "STATUS",
+        "DECISION",
+        "DOMAIN",
+        "PRINCIPAL",
+        "DECLARED",
+        "STARTED",
+        "COMPLETED",
+        "UPDATED",
     );
     for item in commitments {
         println!(
-            "{:<36} {:<10} {:<10} {:<18} {:<20} {:<20} {:<20}",
-            shorten(&item.commitment_id, 36),
+            "{:<24} {:<10} {:<10} {:<10} {:<12} {:<17} {:<17} {:<17} {:<17}",
+            shorten(&item.commitment_id, 24),
             shorten(&item.lifecycle_status, 10),
             shorten(&item.decision, 10),
-            shorten(&item.principal, 18),
-            shorten(&item.declared_at, 20),
-            shorten(item.execution_started_at.as_deref().unwrap_or("-"), 20),
-            shorten(item.execution_completed_at.as_deref().unwrap_or("-"), 20),
-        );
-        // Keep additional context available while still table-friendly.
-        println!(
-            "  domain={} updated={}",
-            item.effect_domain, item.updated_at
+            shorten(&item.effect_domain, 10),
+            shorten(&item.principal, 12),
+            shorten(&item.declared_at, 17),
+            shorten(item.execution_started_at.as_deref().unwrap_or("-"), 17),
+            shorten(item.execution_completed_at.as_deref().unwrap_or("-"), 17),
+            shorten(&item.updated_at, 17),
         );
     }
     Ok(())

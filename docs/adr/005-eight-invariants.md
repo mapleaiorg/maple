@@ -2,7 +2,7 @@
 
 **Status**: Accepted
 
-**Date**: 2024-01-15
+**Date**: 2026-01-15
 
 **Decision Makers**: MAPLE Architecture Team
 
@@ -521,7 +521,7 @@ Every invariant has:
 
 **Approved by**: MAPLE Architecture Team
 
-**Date**: 2024-01-15
+**Date**: 2026-01-15
 
 **Review Cycle**: Annually or when adding platforms
 

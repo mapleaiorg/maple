@@ -1,17 +1,9 @@
-//! iBank commitment-boundary demo:
-//! - registers `echo` (safe) + `transfer_funds` (dangerous, simulated only)
-//! - demonstrates explicit denial without commitment
-//! - demonstrates commitment-authorized execution with durable receipt
-//! - prints stage transitions + commitment/receipt identifiers
-
 use async_trait::async_trait;
-use maple_runtime::agent_kernel::{
-    CapabilityExecutionError, CapabilityInvocation, JournalEntry, JournalEventKind,
-};
+use maple_runtime::agent_kernel::{CapabilityExecutionError, CapabilityInvocation};
 use maple_runtime::{
     config::RuntimeConfig, AgentExecutionProfile, AgentHandleRequest, AgentKernel,
-    AgentRegistration, CapabilityDescriptor, CapabilityExecution, CapabilityExecutionMode,
-    CapabilityExecutor, MapleRuntime, ModelBackend, ResonatorSpec,
+    AgentKernelError, AgentRegistration, CapabilityDescriptor, CapabilityExecution,
+    CapabilityExecutionMode, CapabilityExecutor, MapleRuntime, ModelBackend, ResonatorSpec,
 };
 use rcf_types::EffectDomain;
 use serde_json::Value;
@@ -34,7 +26,6 @@ impl CapabilityExecutor for EchoCapabilityExecutor {
             .get("message")
             .and_then(Value::as_str)
             .unwrap_or("(no message)");
-
         Ok(CapabilityExecution {
             capability_name: "echo".to_string(),
             summary: format!("echo: {}", message),
@@ -69,15 +60,12 @@ impl CapabilityExecutor for TransferFundsExecutor {
             .get("recipient")
             .and_then(Value::as_str)
             .unwrap_or("unknown");
-        let tx_id = format!("sim-tx-{}", uuid::Uuid::new_v4());
-
         Ok(CapabilityExecution {
             capability_name: "transfer_funds".to_string(),
             summary: format!("simulated transfer of ${} to {}", amount, recipient),
             payload: serde_json::json!({
                 "amount": amount,
                 "recipient": recipient,
-                "tx_id": tx_id,
                 "simulated": true,
                 "commitment_id": invocation.commitment_id.as_ref().map(|id| id.0.clone()),
             }),
@@ -98,9 +86,10 @@ fn transfer_funds_capability() -> CapabilityDescriptor {
     }
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let runtime = MapleRuntime::bootstrap(RuntimeConfig::default()).await?;
+async fn setup_kernel() -> (AgentKernel, maple_runtime::AgentHost) {
+    let runtime = MapleRuntime::bootstrap(RuntimeConfig::default())
+        .await
+        .expect("runtime must bootstrap");
     let kernel = AgentKernel::new(runtime);
     kernel
         .register_capability_executor(std::sync::Arc::new(EchoCapabilityExecutor))
@@ -122,101 +111,65 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 transfer_funds_capability(),
             ],
         })
-        .await?;
+        .await
+        .expect("agent registration should succeed");
 
-    println!(
-        "Registered iBank agent: {} (capabilities: echo, transfer_funds)",
-        host.resonator_id
-    );
-    println!("User message: transfer $100 to Alice");
+    (kernel, host)
+}
 
-    // Negative case: transfer without explicit commitment must fail.
-    let mut denied_req = AgentHandleRequest::new(
+#[tokio::test]
+async fn transfer_without_contract_is_denied() {
+    let (kernel, host) = setup_kernel().await;
+
+    let mut req = AgentHandleRequest::new(
         host.resonator_id,
         ModelBackend::LocalLlama,
         "transfer $100 to Alice",
     );
-    denied_req.override_tool = Some("transfer_funds".to_string());
-    denied_req.override_args = Some(serde_json::json!({
-        "amount": 100,
-        "recipient": "Alice",
-    }));
+    req.override_tool = Some("transfer_funds".to_string());
+    req.override_args = Some(serde_json::json!({"amount": 100, "recipient": "Alice"}));
 
-    match kernel.handle(denied_req).await {
-        Ok(_) => println!("Unexpected: transfer executed without commitment"),
-        Err(err) => println!("Negative case (expected denial): {}", err),
-    }
+    let err = kernel
+        .handle(req)
+        .await
+        .expect_err("transfer should require explicit contract");
+    assert!(
+        matches!(err, AgentKernelError::ContractMissing { .. }),
+        "expected ContractMissing, got {}",
+        err
+    );
+}
 
-    // Positive case: draft/declare contract and execute via CommitmentGateway.
+#[tokio::test]
+async fn transfer_with_contract_records_receipt() {
+    let (kernel, host) = setup_kernel().await;
+
     let commitment = kernel
         .draft_commitment(
             host.resonator_id,
             "transfer_funds",
             "Transfer $100 to Alice under iBank policy",
         )
-        .await?;
-    println!("Declared contract id: {}", commitment.commitment_id);
+        .await
+        .expect("commitment draft should succeed");
 
-    let mut approved_req = AgentHandleRequest::new(
+    let mut req = AgentHandleRequest::new(
         host.resonator_id,
         ModelBackend::LocalLlama,
         "transfer $100 to Alice",
     );
-    approved_req.override_tool = Some("transfer_funds".to_string());
-    approved_req.override_args = Some(serde_json::json!({
-        "amount": 100,
-        "recipient": "Alice",
-    }));
-    approved_req.commitment = Some(commitment.clone());
+    req.override_tool = Some("transfer_funds".to_string());
+    req.override_args = Some(serde_json::json!({"amount": 100, "recipient": "Alice"}));
+    req.commitment = Some(commitment.clone());
 
-    let approved_res = kernel.handle(approved_req).await?;
-    if let Some(action) = approved_res.action {
-        println!("Execution summary: {}", action.summary);
-        println!(
-            "Execution payload: {}",
-            serde_json::to_string_pretty(&action.payload)?
-        );
-    }
+    let response = kernel.handle(req).await.expect("execution should succeed");
+    assert!(response.action.is_some(), "expected capability execution");
 
     let receipts = kernel
         .receipts_for_commitment(&commitment.commitment_id)
-        .await?;
-    if let Some(receipt) = receipts.first() {
-        println!("Receipt id: {}", receipt.receipt_id);
-        println!("Receipt status: {:?}", receipt.status);
-    } else {
-        println!(
-            "No receipt found for commitment {}",
-            commitment.commitment_id
-        );
-    }
-
-    let stored = kernel
-        .storage()
-        .get_commitment(&commitment.commitment_id)
-        .await?
-        .ok_or("missing persisted commitment record")?;
-    println!(
-        "Lifecycle status: {:?} (declared={}, completed={})",
-        stored.lifecycle_status,
-        stored.created_at,
-        stored
-            .execution_completed_at
-            .map(|v| v.to_string())
-            .unwrap_or_else(|| "-".to_string())
-    );
-
-    println!("Stage transitions:");
-    let journal = kernel.journal_entries(host.resonator_id, 128).await?;
-    print_stage_transitions(&journal);
-
-    Ok(())
-}
-
-fn print_stage_transitions(entries: &[JournalEntry]) {
-    for entry in entries {
-        if let JournalEventKind::StageTransition { from, to } = &entry.kind {
-            println!("  {} -> {} @ {}", from, to, entry.timestamp);
-        }
-    }
+        .await
+        .expect("receipts should be queryable");
+    assert_eq!(receipts.len(), 1, "one receipt should be persisted");
+    assert_eq!(receipts[0].capability_id, "transfer_funds");
+    assert_eq!(receipts[0].contract_id, commitment.commitment_id);
 }

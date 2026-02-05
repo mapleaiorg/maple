@@ -146,7 +146,11 @@ impl EntityRegistry {
     }
 
     /// Terminate an entity
-    pub fn terminate(&mut self, entity_id: &EntityId, reason: impl Into<String>) -> WorldResult<()> {
+    pub fn terminate(
+        &mut self,
+        entity_id: &EntityId,
+        reason: impl Into<String>,
+    ) -> WorldResult<()> {
         let entity = self.get_mut(entity_id)?;
         entity.status = mapleverse_types::entity::EntityStatus::Terminated;
         self.total_terminated += 1;
@@ -256,7 +260,11 @@ mod tests {
             .unwrap();
 
         let collective_id = registry
-            .register_collective("TestCollective", RegionId::new("region-1"), founder_id.clone())
+            .register_collective(
+                "TestCollective",
+                RegionId::new("region-1"),
+                founder_id.clone(),
+            )
             .unwrap();
 
         let collective = registry.get(&collective_id).unwrap();

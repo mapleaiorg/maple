@@ -336,7 +336,7 @@ mod tests {
         // Create context at 3 AM (outside window)
         let mut ctx = PolicyEvaluationContext::new("user-1", PlatformProfile::IBank)
             .with_environment("production");
-        ctx.timestamp = Utc.with_ymd_and_hms(2024, 1, 15, 3, 0, 0).unwrap();
+        ctx.timestamp = Utc.with_ymd_and_hms(2026, 1, 15, 3, 0, 0).unwrap();
 
         let op = PalmOperation::CreateDeployment {
             spec_id: "test-spec".into(),
@@ -354,7 +354,7 @@ mod tests {
         // Create context at 3 AM (outside window) but in staging
         let mut ctx = PolicyEvaluationContext::new("user-1", PlatformProfile::IBank)
             .with_environment("staging");
-        ctx.timestamp = Utc.with_ymd_and_hms(2024, 1, 15, 3, 0, 0).unwrap();
+        ctx.timestamp = Utc.with_ymd_and_hms(2026, 1, 15, 3, 0, 0).unwrap();
 
         let op = PalmOperation::CreateDeployment {
             spec_id: "test-spec".into(),
@@ -371,7 +371,7 @@ mod tests {
         let mut ctx = PolicyEvaluationContext::new("health-monitor", PlatformProfile::IBank)
             .with_actor_type(ActorType::System)
             .with_environment("production");
-        ctx.timestamp = Utc.with_ymd_and_hms(2024, 1, 15, 3, 0, 0).unwrap();
+        ctx.timestamp = Utc.with_ymd_and_hms(2026, 1, 15, 3, 0, 0).unwrap();
 
         let op = PalmOperation::CreateDeployment {
             spec_id: "test-spec".into(),
@@ -387,7 +387,7 @@ mod tests {
         // Set timestamp within change window (6 AM - 10 PM)
         let mut ctx = PolicyEvaluationContext::new("user-1", PlatformProfile::IBank)
             .with_environment("production");
-        ctx.timestamp = Utc.with_ymd_and_hms(2024, 1, 15, 12, 0, 0).unwrap(); // 12:00 noon
+        ctx.timestamp = Utc.with_ymd_and_hms(2026, 1, 15, 12, 0, 0).unwrap(); // 12:00 noon
         let op = PalmOperation::DeleteDeployment {
             deployment_id: "deploy-1".into(),
         };
@@ -404,7 +404,7 @@ mod tests {
         let mut ctx = PolicyEvaluationContext::new("user-1", PlatformProfile::IBank)
             .with_environment("production")
             .with_human_approval(approval);
-        ctx.timestamp = Utc.with_ymd_and_hms(2024, 1, 15, 12, 0, 0).unwrap(); // 12:00 noon
+        ctx.timestamp = Utc.with_ymd_and_hms(2026, 1, 15, 12, 0, 0).unwrap(); // 12:00 noon
         let op = PalmOperation::DeleteDeployment {
             deployment_id: "deploy-1".into(),
         };
@@ -419,7 +419,7 @@ mod tests {
 
         let mut ctx = PolicyEvaluationContext::new("user-1", PlatformProfile::IBank)
             .with_environment("production");
-        ctx.timestamp = Utc.with_ymd_and_hms(2024, 1, 15, 3, 0, 0).unwrap();
+        ctx.timestamp = Utc.with_ymd_and_hms(2026, 1, 15, 3, 0, 0).unwrap();
 
         // ViewAuditLog is a read operation, should be allowed
         let op = PalmOperation::ViewAuditLog {

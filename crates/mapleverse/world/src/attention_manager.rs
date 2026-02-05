@@ -88,12 +88,7 @@ impl AttentionManager {
     }
 
     /// Transfer attention from one entity to another
-    pub fn transfer(
-        &mut self,
-        from: &EntityId,
-        to: &EntityId,
-        amount: u64,
-    ) -> WorldResult<()> {
+    pub fn transfer(&mut self, from: &EntityId, to: &EntityId, amount: u64) -> WorldResult<()> {
         // Validate sender has enough
         {
             let from_state = self
@@ -282,7 +277,10 @@ mod tests {
         let mut manager = AttentionManager::new(config);
         manager.initialize_entity(EntityId::new("agent-1"));
 
-        assert_eq!(manager.get_available(&EntityId::new("agent-1")), base_attention);
+        assert_eq!(
+            manager.get_available(&EntityId::new("agent-1")),
+            base_attention
+        );
     }
 
     #[test]

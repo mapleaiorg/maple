@@ -97,7 +97,10 @@ pub struct CouplingGraph {
 impl CouplingGraph {
     pub fn upsert_edge(&mut self, source: ResonatorId, edge: CouplingEdge) {
         let entry = self.edges.entry(source).or_default();
-        if let Some(existing) = entry.iter_mut().find(|current| current.target == edge.target) {
+        if let Some(existing) = entry
+            .iter_mut()
+            .find(|current| current.target == edge.target)
+        {
             *existing = edge;
             return;
         }

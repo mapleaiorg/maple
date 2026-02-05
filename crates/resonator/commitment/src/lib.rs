@@ -43,7 +43,10 @@ pub trait ContractEngine: Send + Sync {
 
     fn is_active(&self, contract_id: &CommitmentId) -> Result<bool, ContractEngineError> {
         let record = self.get_contract(contract_id)?;
-        Ok(matches!(record.map(|r| r.status), Some(ContractStatus::Active)))
+        Ok(matches!(
+            record.map(|r| r.status),
+            Some(ContractStatus::Active)
+        ))
     }
 }
 
@@ -132,10 +135,11 @@ mod tests {
     #[test]
     fn register_and_activate_contract() {
         let engine = InMemoryContractEngine::new();
-        let contract = CommitmentBuilder::new(IdentityRef::new("agent-a"), EffectDomain::Computation)
-            .with_scope(ScopeConstraint::default())
-            .build()
-            .unwrap();
+        let contract =
+            CommitmentBuilder::new(IdentityRef::new("agent-a"), EffectDomain::Computation)
+                .with_scope(ScopeConstraint::default())
+                .build()
+                .unwrap();
 
         engine.register_contract(contract.clone()).unwrap();
         assert!(engine.is_active(&contract.commitment_id).unwrap());

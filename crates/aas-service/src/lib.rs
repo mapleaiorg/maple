@@ -12,7 +12,9 @@ use aas_capability::{CapabilityCheckResult, CapabilityError, CapabilityRegistry,
 use aas_identity::{IdentityError, IdentityRegistry, RegistrationRequest, VerificationResult};
 use aas_ledger::{AccountabilityLedger, LedgerError, LedgerQuery, LedgerStatistics};
 use aas_policy::{EvaluationContext, PolicyEngine, PolicyError};
-use aas_types::{AgentId, CommitmentOutcome, LedgerEntry, PolicyDecisionCard};
+use aas_types::{
+    AgentId, CommitmentOutcome, LedgerEntry, PolicyDecisionCard, ToolExecutionReceipt,
+};
 use maple_storage::MapleStorage;
 use rcf_commitment::{CommitmentId, RcfCommitment};
 use rcf_types::{EffectDomain, ScopeConstraint};
@@ -203,6 +205,25 @@ impl AasService {
     ) -> Result<(), AasError> {
         self.ledger
             .record_outcome(commitment_id, outcome)
+            .await
+            .map_err(AasError::Ledger)
+    }
+
+    /// Persist one tool execution receipt.
+    pub async fn record_tool_receipt(&self, receipt: ToolExecutionReceipt) -> Result<(), AasError> {
+        self.ledger
+            .record_tool_receipt(receipt)
+            .await
+            .map_err(AasError::Ledger)
+    }
+
+    /// Replay tool receipts for one commitment.
+    pub async fn get_tool_receipts(
+        &self,
+        commitment_id: &CommitmentId,
+    ) -> Result<Vec<ToolExecutionReceipt>, AasError> {
+        self.ledger
+            .get_tool_receipts_by_commitment(commitment_id)
             .await
             .map_err(AasError::Ledger)
     }

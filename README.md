@@ -446,8 +446,11 @@ Designed from day one for 100M+ concurrent Resonators.
 
 ### Core Concepts
 
+- **[Core Agents](docs/core/agents.md)** - `Agent = Resonator + Profile + Capability + Contracts`
+- **[Core Interop](docs/core/interop.md)** - MCP/A2A/vendor SDK mapping without bypass
+- **[Core Llama-First](docs/core/llama-first.md)** - Llama cognition, repair, gating, replay
 - **[UAL (Universal Agent Language)](docs/concepts/ual.md)** - Human/agent interaction language
-- **[Agents, Resonators, and LLMs](docs/concepts/agent-resonator-llm.md)** - How cognition backends map to MAPLE entities
+- **[Agents, Resonators, and LLMs](docs/concepts/agent-resonator-llm.md)** - Conceptual mapping aligned with `ModelAdapter`, `CapabilityExecutor`, and `CommitmentGateway`
 - **[Resonators](docs/concepts/resonators.md)** - Persistent intelligent entities
 - **[Coupling](docs/concepts/coupling.md)** - Stateful relationships
 - **[Attention](docs/concepts/attention.md)** - Resource economics

@@ -289,7 +289,7 @@ AuditEntry {
     details: {
         "old_status": "Active",
         "new_status": "Fulfilled",
-        "completion_time": "2024-01-15T10:30:00Z",
+        "completion_time": "2026-01-15T10:30:00Z",
         "verification": "confirmed"
     },
     signature: signature,

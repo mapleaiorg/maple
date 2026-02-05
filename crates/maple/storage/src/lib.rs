@@ -18,9 +18,9 @@
 
 mod error;
 pub mod memory;
+mod model;
 #[cfg(feature = "postgres")]
 pub mod postgres;
-mod model;
 mod traits;
 
 pub use error::{StorageError, StorageResult};

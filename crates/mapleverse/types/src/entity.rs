@@ -506,8 +506,7 @@ mod tests {
 
     #[test]
     fn test_individual_entity_creation() {
-        let entity =
-            MapleVerseEntity::new_individual("TestAgent", RegionId::new("region-1"), None);
+        let entity = MapleVerseEntity::new_individual("TestAgent", RegionId::new("region-1"), None);
 
         assert!(entity.is_individual());
         assert!(!entity.is_collective());
@@ -593,7 +592,11 @@ mod tests {
         individual.add_skill("rust-programming");
         individual.add_skill("coordination");
 
-        assert!(entity.as_individual().unwrap().skills.contains("rust-programming"));
+        assert!(entity
+            .as_individual()
+            .unwrap()
+            .skills
+            .contains("rust-programming"));
         assert_eq!(entity.as_individual().unwrap().skills.len(), 2);
     }
 

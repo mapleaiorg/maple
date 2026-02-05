@@ -311,7 +311,13 @@ mod tests {
             None,
         );
 
-        engine.record_transfer(other.clone(), receiver.clone(), 50, TransferType::Direct, None);
+        engine.record_transfer(
+            other.clone(),
+            receiver.clone(),
+            50,
+            TransferType::Direct,
+            None,
+        );
 
         let sender_transfers = engine.get_entity_transfers(&sender);
         assert_eq!(sender_transfers.len(), 1);
@@ -351,10 +357,14 @@ mod tests {
         tracker.set_balance(EntityId::new("agent-1"), 1000);
         assert_eq!(tracker.get_balance(&EntityId::new("agent-1")), 1000);
 
-        tracker.update_balance(&EntityId::new("agent-1"), 500).unwrap();
+        tracker
+            .update_balance(&EntityId::new("agent-1"), 500)
+            .unwrap();
         assert_eq!(tracker.get_balance(&EntityId::new("agent-1")), 1500);
 
-        tracker.update_balance(&EntityId::new("agent-1"), -300).unwrap();
+        tracker
+            .update_balance(&EntityId::new("agent-1"), -300)
+            .unwrap();
         assert_eq!(tracker.get_balance(&EntityId::new("agent-1")), 1200);
     }
 

@@ -8,7 +8,9 @@
 use eve_artifacts::{ArtifactStore, ArtifactStoreError};
 use eve_evaluation::{EvaluationEngine, EvaluationError};
 use eve_ingestion::{IngestionError, IngestionService};
-use eve_types::{ArtifactQuery, CommitmentCharacteristics, Consequence, EveInsight, LearningArtifact};
+use eve_types::{
+    ArtifactQuery, CommitmentCharacteristics, Consequence, EveInsight, LearningArtifact,
+};
 use std::sync::Arc;
 use thiserror::Error;
 

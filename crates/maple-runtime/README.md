@@ -221,7 +221,7 @@ Explore comprehensive examples in the `examples/` directory:
 - **`03_mapleverse_config.rs`** - Pure AI coordination
 - **`04_finalverse_config.rs`** - Human-AI coexistence
 - **`05_ibank_config.rs`** - Autonomous finance (coming soon)
-- **`06_agent_kernel_boundary.rs`** - Non-bypassable capability gating with explicit commitments
+- **`06_agent_kernel_boundary.rs`** - iBank transfer boundary demo (`ContractMissing` negative path + contract-authorized execution + durable receipt)
 
 Run any example:
 ```bash

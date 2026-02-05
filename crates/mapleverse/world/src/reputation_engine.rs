@@ -81,8 +81,9 @@ impl ReputationEngine {
 
         // Apply reputation change
         let score = self.scores.get_mut(&entity_id).unwrap();
-        let weighted_change =
-            (receipt.reputation_change as f64 * self.config.reputation_config.receipt_reputation_weight) as i64;
+        let weighted_change = (receipt.reputation_change as f64
+            * self.config.reputation_config.receipt_reputation_weight)
+            as i64;
 
         let adjusted_receipt = ReputationReceipt {
             reputation_change: weighted_change,
@@ -113,9 +114,11 @@ impl ReputationEngine {
         _amount: i64,
         source: &str,
     ) -> WorldResult<()> {
-        Err(WorldError::Types(MapleVerseError::InvalidReputationSource {
-            attempted_source: source.to_string(),
-        }))
+        Err(WorldError::Types(
+            MapleVerseError::InvalidReputationSource {
+                attempted_source: source.to_string(),
+            },
+        ))
     }
 
     /// Get reputation score for an entity
@@ -125,21 +128,14 @@ impl ReputationEngine {
 
     /// Get reputation value for an entity
     pub fn get_reputation(&self, entity_id: &EntityId) -> i64 {
-        self.scores
-            .get(entity_id)
-            .map(|s| s.score())
-            .unwrap_or(0)
+        self.scores.get(entity_id).map(|s| s.score()).unwrap_or(0)
     }
 
     /// Get all receipts for an entity
     pub fn get_entity_receipts(&self, entity_id: &EntityId) -> Vec<&ReputationReceipt> {
         self.receipts_by_entity
             .get(entity_id)
-            .map(|ids| {
-                ids.iter()
-                    .filter_map(|id| self.receipts.get(id))
-                    .collect()
-            })
+            .map(|ids| ids.iter().filter_map(|id| self.receipts.get(id)).collect())
             .unwrap_or_default()
     }
 
@@ -323,11 +319,8 @@ mod tests {
     fn test_modify_without_receipt_rejected() {
         let engine = ReputationEngine::new(test_config());
 
-        let result = engine.modify_without_receipt(
-            &EntityId::new("agent-1"),
-            100,
-            "self-assessment",
-        );
+        let result =
+            engine.modify_without_receipt(&EntityId::new("agent-1"), 100, "self-assessment");
 
         assert!(result.is_err());
     }

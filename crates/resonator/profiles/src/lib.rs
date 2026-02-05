@@ -167,7 +167,9 @@ impl ProfileValidator for DefaultProfileValidator {
                     return Err(ProfileValidationError::IBankRiskViolation);
                 }
             }
-            ProfileArchetype::World | ProfileArchetype::Coordination | ProfileArchetype::Custom(_) => {}
+            ProfileArchetype::World
+            | ProfileArchetype::Coordination
+            | ProfileArchetype::Custom(_) => {}
         }
 
         Ok(())
@@ -252,6 +254,8 @@ pub fn builtin_profile(archetype: ProfileArchetype) -> ResonatorProfile {
                 EffectDomain::Finance,
                 EffectDomain::Governance,
                 EffectDomain::Data,
+                // iBank agents also need computation for local cognition and simulated rails.
+                EffectDomain::Computation,
             ],
             risk_tolerance: RiskTolerance::Conservative,
             autonomy_level: AutonomyLevel::GuidedAutonomy,
@@ -342,10 +346,7 @@ mod tests {
         let validator = DefaultProfileValidator;
 
         assert!(validator.can_couple(&ProfileArchetype::Human, &ProfileArchetype::World));
-        assert!(!validator.can_couple(
-            &ProfileArchetype::Human,
-            &ProfileArchetype::Coordination
-        ));
+        assert!(!validator.can_couple(&ProfileArchetype::Human, &ProfileArchetype::Coordination));
         assert!(validator.can_couple(
             &ProfileArchetype::Coordination,
             &ProfileArchetype::Coordination

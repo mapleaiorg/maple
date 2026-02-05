@@ -87,10 +87,7 @@ impl EventBus {
     }
 
     /// Query events with filter
-    pub fn query(
-        &self,
-        filter: &mapleverse_types::event::EventFilter,
-    ) -> Vec<&WorldEvent> {
+    pub fn query(&self, filter: &mapleverse_types::event::EventFilter) -> Vec<&WorldEvent> {
         self.event_log.query(filter)
     }
 

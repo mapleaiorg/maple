@@ -5,6 +5,26 @@ This checklist is the release-readiness control sheet for the staged implementat
 Updated: 2026-02-05
 Status: Stages 1-5 completed
 
+## Post-Stage Hardening Update (Gateway + Durable Receipts)
+
+Additional hardening completed after Stage 5:
+
+- Removed the last direct capability execution branch in `AgentKernel`; all capability execution now routes through `CommitmentGateway`.
+- Added durable, replayable tool receipts in AAS ledger.
+- Added runtime policy guardrails for:
+  - profile tier (`mapleverse`/`finalverse`/`ibank`)
+  - attention budget limits
+  - capability risk (`safe`/`dangerous`)
+  - autonomous spending thresholds
+- Added bypass detector coverage that panics in tests if executors are invoked outside gateway context.
+
+Validation:
+
+```bash
+cargo test -p aas-policy -p aas-ledger -p maple-runtime --offline
+cargo test --workspace --offline
+```
+
 ## Stage Summary
 
 | Stage | Name | Status |

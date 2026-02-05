@@ -80,7 +80,8 @@ impl WorldState {
         self.events.set_epoch(EpochId::new(0));
 
         // Emit world initialized event
-        self.events.emit(WorldEventType::WorldInitialized, WorldEventData::None);
+        self.events
+            .emit(WorldEventType::WorldInitialized, WorldEventData::None);
 
         self.initialized = true;
         Ok(())
@@ -122,7 +123,8 @@ impl WorldState {
         let entity_id = self.entities.register_individual(name, region_id.clone())?;
 
         // Place in region
-        self.regions.place_entity(entity_id.clone(), region_id.clone())?;
+        self.regions
+            .place_entity(entity_id.clone(), region_id.clone())?;
 
         // Initialize economy
         self.economy.allocate_initial(entity_id.clone());
@@ -166,7 +168,8 @@ impl WorldState {
         )?;
 
         // Place in region
-        self.regions.place_entity(collective_id.clone(), region_id)?;
+        self.regions
+            .place_entity(collective_id.clone(), region_id)?;
 
         // Initialize subsystems
         self.economy.allocate_initial(collective_id.clone());
@@ -205,7 +208,8 @@ impl WorldState {
         self.ensure_initialized()?;
         let region_id = self.regions.create_region(name)?;
 
-        self.events.emit(WorldEventType::RegionCreated, WorldEventData::None);
+        self.events
+            .emit(WorldEventType::RegionCreated, WorldEventData::None);
 
         Ok(region_id)
     }
@@ -217,11 +221,7 @@ impl WorldState {
     }
 
     /// Connect two regions
-    pub fn connect_regions(
-        &mut self,
-        region_a: &RegionId,
-        region_b: &RegionId,
-    ) -> WorldResult<()> {
+    pub fn connect_regions(&mut self, region_a: &RegionId, region_b: &RegionId) -> WorldResult<()> {
         self.regions.connect_regions(region_a, region_b)
     }
 
@@ -294,7 +294,10 @@ impl WorldState {
         // Update balances
         {
             let sender = self.entities.get_mut(from)?;
-            sender.maple_balance.transfer_out(amount + fee).map_err(WorldError::Types)?;
+            sender
+                .maple_balance
+                .transfer_out(amount + fee)
+                .map_err(WorldError::Types)?;
         }
 
         {
@@ -303,13 +306,8 @@ impl WorldState {
         }
 
         // Record transfer
-        self.economy.record_transfer(
-            from.clone(),
-            to.clone(),
-            amount,
-            TransferType::Direct,
-            None,
-        );
+        self.economy
+            .record_transfer(from.clone(), to.clone(), amount, TransferType::Direct, None);
 
         // Emit event
         self.events.emit(
@@ -338,7 +336,10 @@ impl WorldState {
 
         // Update entity
         let entity = self.entities.get_mut(entity_id)?;
-        entity.attention_budget.consume(amount).map_err(WorldError::Types)?;
+        entity
+            .attention_budget
+            .consume(amount)
+            .map_err(WorldError::Types)?;
 
         Ok(())
     }
@@ -368,7 +369,10 @@ impl WorldState {
         // Update entities
         {
             let sender = self.entities.get_mut(from)?;
-            sender.attention_budget.give(amount).map_err(WorldError::Types)?;
+            sender
+                .attention_budget
+                .give(amount)
+                .map_err(WorldError::Types)?;
         }
 
         {
@@ -484,9 +488,12 @@ impl WorldState {
             },
         );
 
-        self.events.emit(WorldEventType::EpochStarted, WorldEventData::None);
-        self.events.emit(WorldEventType::AttentionRegenerated, WorldEventData::None);
-        self.events.emit(WorldEventType::ReputationDecay, WorldEventData::None);
+        self.events
+            .emit(WorldEventType::EpochStarted, WorldEventData::None);
+        self.events
+            .emit(WorldEventType::AttentionRegenerated, WorldEventData::None);
+        self.events
+            .emit(WorldEventType::ReputationDecay, WorldEventData::None);
 
         self.current_epoch = Some(new_epoch);
 
@@ -546,7 +553,9 @@ impl WorldState {
     }
 
     /// Subscribe to events
-    pub fn subscribe(&self) -> tokio::sync::broadcast::Receiver<mapleverse_types::event::WorldEvent> {
+    pub fn subscribe(
+        &self,
+    ) -> tokio::sync::broadcast::Receiver<mapleverse_types::event::WorldEvent> {
         self.events.subscribe()
     }
 
@@ -641,7 +650,9 @@ mod tests {
         let mut world = initialized_world();
 
         let region_id = world.regions().region_ids().next().cloned().unwrap();
-        let founder = world.register_individual("Founder", region_id.clone()).unwrap();
+        let founder = world
+            .register_individual("Founder", region_id.clone())
+            .unwrap();
 
         let collective_id = world
             .register_collective("TestCollective", region_id, founder)
@@ -657,7 +668,9 @@ mod tests {
         let initial_balance = world.config().economy_config.initial_maple_balance;
 
         let region_id = world.regions().region_ids().next().cloned().unwrap();
-        let sender = world.register_individual("Sender", region_id.clone()).unwrap();
+        let sender = world
+            .register_individual("Sender", region_id.clone())
+            .unwrap();
         let receiver = world.register_individual("Receiver", region_id).unwrap();
 
         world.transfer_maple(&sender, &receiver, 100).unwrap();
@@ -683,7 +696,11 @@ mod tests {
         let consume_amount = base_attention / 2;
         world.consume_attention(&entity_id, consume_amount).unwrap();
 
-        let remaining = world.get_entity(&entity_id).unwrap().attention_budget.available;
+        let remaining = world
+            .get_entity(&entity_id)
+            .unwrap()
+            .attention_budget
+            .available;
         assert_eq!(remaining, base_attention - consume_amount);
     }
 
@@ -695,7 +712,9 @@ mod tests {
         let region_b = world.create_region("Region B").unwrap();
         world.connect_regions(&region_a, &region_b).unwrap();
 
-        let entity_id = world.register_individual("Migrant", region_a.clone()).unwrap();
+        let entity_id = world
+            .register_individual("Migrant", region_a.clone())
+            .unwrap();
 
         world.migrate_entity(&entity_id, &region_b).unwrap();
 
@@ -711,7 +730,9 @@ mod tests {
         let region_b = world.create_region("Region B").unwrap();
         // NOT connected!
 
-        let entity_id = world.register_individual("Migrant", region_a.clone()).unwrap();
+        let entity_id = world
+            .register_individual("Migrant", region_a.clone())
+            .unwrap();
 
         let result = world.migrate_entity(&entity_id, &region_b);
         assert!(result.is_err());
@@ -760,7 +781,9 @@ mod tests {
         let mut world = initialized_world();
 
         let region_id = world.regions().region_ids().next().cloned().unwrap();
-        world.register_individual("Agent1", region_id.clone()).unwrap();
+        world
+            .register_individual("Agent1", region_id.clone())
+            .unwrap();
         world.register_individual("Agent2", region_id).unwrap();
 
         let stats = world.stats();
