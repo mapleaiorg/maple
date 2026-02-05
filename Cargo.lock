@@ -1765,6 +1765,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "maple-integration",
+ "maple-runtime",
  "palm",
  "rcf-validator",
  "reqwest",
@@ -1796,6 +1797,10 @@ dependencies = [
 name = "maple-runtime"
 version = "0.1.1"
 dependencies = [
+ "aas-capability",
+ "aas-identity",
+ "aas-service",
+ "aas-types",
  "anyhow",
  "async-trait",
  "chrono",
@@ -1803,6 +1808,11 @@ dependencies = [
  "dashmap",
  "metrics",
  "petgraph",
+ "rcf-commitment",
+ "rcf-intent",
+ "rcf-meaning",
+ "rcf-types",
+ "rcf-validator",
  "serde",
  "serde_json",
  "sha2",
@@ -2364,6 +2374,7 @@ dependencies = [
  "clap",
  "config",
  "futures-util",
+ "maple-runtime",
  "palm-control",
  "palm-deployment",
  "palm-health",

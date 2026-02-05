@@ -109,6 +109,14 @@ All endpoints are under `/api/v1`.
 |--------|------|-------------|
 | `POST` | `/system/shutdown` | Request graceful PALM daemon shutdown |
 
+### AgentKernel Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/agent-kernel/status` | Daemon-managed AgentKernel host status |
+| `POST` | `/agent-kernel/handle` | Execute one AgentKernel step with runtime gating |
+| `GET` | `/agent-kernel/audit` | List recent AgentKernel audit events (`limit` query) |
+
 Supported backend kinds: `local_llama`, `open_ai`, `anthropic`, `grok`, `gemini`.
 
 `simulation` config now also supports:

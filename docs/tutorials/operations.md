@@ -119,7 +119,42 @@ maple doctor
 maple doctor --model llama3.2
 ```
 
-## 3. Real-Time Monitoring from the CLI
+## 3. AgentKernel From CLI and Daemon
+
+You can run MAPLE’s non-bypassable `AgentKernel` locally from CLI, or through daemon APIs.
+
+Local demo (no daemon required):
+
+```bash
+# Safe path (echo/log)
+maple agent demo --prompt "log current runtime status"
+
+# Dangerous path (denied without commitment)
+maple agent demo --dangerous --prompt "transfer 500 usd to demo"
+
+# Dangerous path with explicit commitment
+maple agent demo --dangerous --with-commitment --amount 500 --prompt "transfer 500 usd to demo"
+```
+
+Daemon-backed hooks:
+
+```bash
+# Show kernel status
+maple agent status
+
+# Execute one handle request through daemon
+maple agent handle \
+  --prompt "transfer 500 usd to demo" \
+  --backend local_llama \
+  --tool simulate_transfer \
+  --args '{"amount":500,"to":"demo"}' \
+  --with-commitment
+
+# Read recent audit events
+maple agent audit --limit 20
+```
+
+## 4. Real-Time Monitoring from the CLI
 
 Real-time agent status and monitoring can be done entirely from the terminal:
 
@@ -146,7 +181,7 @@ Direct operations CLI (optional):
 cargo run -p palm -- events watch
 ```
 
-## 4. Playground UI (Optional)
+## 5. Playground UI (Optional)
 
 The Playground is a live, game-like view for human/web observation and replay. It is optional and does not affect runtime behavior.
 
@@ -154,7 +189,9 @@ The Playground is a live, game-like view for human/web observation and replay. I
 open http://localhost:8080/playground
 ```
 
-## 5. AI Backend Selection
+Use the **Agent Kernel** tab to run gated handle requests, draft commitment-backed executions, inspect audit trail events live, and copy an equivalent `maple agent handle ...` command for terminal replay.
+
+## 6. AI Backend Selection
 
 Local Llama is the default AI backend for the Playground. You can switch backends via the umbrella CLI:
 
@@ -190,7 +227,7 @@ CLI alternative:
 cargo run -p maple-cli -- playground set-simulation --auto-inference-enabled true --inference-interval-ticks 4 --inferences-per-tick 2
 ```
 
-## 6. Headless Runtime
+## 7. Headless Runtime
 
 You can run MAPLE without PALM or the Playground when you want embedded, headless agents. For example:
 

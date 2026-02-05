@@ -131,6 +131,14 @@ impl InvariantGuard {
                         return Err(InvariantViolation::NoCommitment);
                     }
                 }
+                if let Operation::ProduceExternalConsequence { commitment_ref, .. } = operation {
+                    if !state.external_commitment_exists(commitment_ref) {
+                        tracing::error!(
+                            "Invariant violation: No external commitment for consequence"
+                        );
+                        return Err(InvariantViolation::NoCommitment);
+                    }
+                }
             }
 
             ArchitecturalInvariant::CouplingBoundedByAttention => {
@@ -192,6 +200,9 @@ pub enum Operation {
     ProduceConsequence {
         commitment_id: CommitmentId,
     },
+    ProduceExternalConsequence {
+        commitment_ref: String,
+    },
     EstablishCoupling {
         source: ResonatorId,
         target: ResonatorId,
@@ -215,6 +226,7 @@ pub struct SystemState {
     present_resonators: std::collections::HashSet<ResonatorId>,
     human_resonators: std::collections::HashSet<ResonatorId>,
     commitments: std::collections::HashSet<CommitmentId>,
+    external_commitments: std::collections::HashSet<String>,
     attention_budgets: std::collections::HashMap<ResonatorId, u64>,
     safety_concerns: bool,
 }
@@ -225,6 +237,7 @@ impl SystemState {
             present_resonators: std::collections::HashSet::new(),
             human_resonators: std::collections::HashSet::new(),
             commitments: std::collections::HashSet::new(),
+            external_commitments: std::collections::HashSet::new(),
             attention_budgets: std::collections::HashMap::new(),
             safety_concerns: false,
         }
@@ -242,12 +255,40 @@ impl SystemState {
         self.commitments.contains(commitment_id)
     }
 
+    pub fn external_commitment_exists(&self, commitment_ref: &str) -> bool {
+        self.external_commitments.contains(commitment_ref)
+    }
+
     pub fn available_attention(&self, resonator: &ResonatorId) -> u64 {
         self.attention_budgets.get(resonator).copied().unwrap_or(0)
     }
 
     pub fn safety_concern_active(&self) -> bool {
         self.safety_concerns
+    }
+
+    pub fn register_present(&mut self, resonator: ResonatorId) {
+        self.present_resonators.insert(resonator);
+    }
+
+    pub fn register_human(&mut self, resonator: ResonatorId) {
+        self.human_resonators.insert(resonator);
+    }
+
+    pub fn register_commitment(&mut self, commitment: CommitmentId) {
+        self.commitments.insert(commitment);
+    }
+
+    pub fn register_external_commitment(&mut self, commitment_ref: String) {
+        self.external_commitments.insert(commitment_ref);
+    }
+
+    pub fn set_attention(&mut self, resonator: ResonatorId, attention: u64) {
+        self.attention_budgets.insert(resonator, attention);
+    }
+
+    pub fn set_safety_concern(&mut self, active: bool) {
+        self.safety_concerns = active;
     }
 }
 
@@ -270,6 +311,22 @@ pub struct IntentContext {
 }
 
 impl IntentContext {
+    pub fn stabilized() -> Self {
+        Self { stabilized: true }
+    }
+
+    pub fn unstabilized() -> Self {
+        Self { stabilized: false }
+    }
+
+    pub fn from_confidence(confidence: f64, threshold: f64) -> Self {
+        if confidence >= threshold {
+            Self::stabilized()
+        } else {
+            Self::unstabilized()
+        }
+    }
+
     pub fn is_stabilized(&self) -> bool {
         self.stabilized
     }

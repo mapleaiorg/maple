@@ -356,6 +356,10 @@ impl MapleRuntime {
     pub fn telemetry(&self) -> &Arc<RuntimeTelemetry> {
         &self.inner.telemetry
     }
+
+    pub fn invariant_guard(&self) -> &Arc<InvariantGuard> {
+        &self.inner.invariant_guard
+    }
 }
 
 /// Specification for creating a new Resonator

@@ -42,6 +42,17 @@ chrono = { version = "0.4", features = ["serde"] }
 # Configuration
 config = "0.14"
 
+# Commitment/accountability stack
+rcf-types = { workspace = true }
+rcf-meaning = { workspace = true }
+rcf-intent = { workspace = true }
+rcf-commitment = { workspace = true }
+rcf-validator = { workspace = true }
+aas-types = { workspace = true }
+aas-identity = { workspace = true }
+aas-capability = { workspace = true }
+aas-service = { workspace = true }
+
 [dev-dependencies]
 tokio-test = "0.4"
 

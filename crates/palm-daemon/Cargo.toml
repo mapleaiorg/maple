@@ -19,6 +19,7 @@ palm-state = { path = "../palm-state" }
 palm-policy = { path = "../palm-policy" }
 palm-control = { path = "../palm-control" }
 palm-shared-state = { path = "../palm-shared-state" }
+maple-runtime = { workspace = true }
 
 # Async runtime
 tokio = { version = "1", features = ["full", "signal"] }

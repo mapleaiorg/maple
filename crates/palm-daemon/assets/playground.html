@@ -303,6 +303,7 @@
     <button data-tab="activities">Activities</button>
     <button data-tab="backends">Backends</button>
     <button data-tab="simulation">Simulation</button>
+    <button data-tab="agent-kernel">Agent Kernel</button>
   </nav>
 
   <main>
@@ -452,10 +453,79 @@
         </div>
       </div>
     </section>
+
+    <section id="tab-agent-kernel" class="panel hidden">
+      <div class="flex" style="justify-content: space-between;">
+        <h2>Agent Kernel</h2>
+        <span class="tag" id="agent-kernel-status-pill">idle</span>
+      </div>
+      <div class="grid-3" style="margin-top:16px;">
+        <div class="metric">
+          <h3>Resonator</h3>
+          <span id="agent-kernel-resonator" style="font-size:1rem;word-break:break-all;">n/a</span>
+        </div>
+        <div class="metric">
+          <h3>Audit Events</h3>
+          <span id="agent-kernel-audit-count">0</span>
+        </div>
+        <div class="metric">
+          <h3>Backends</h3>
+          <span id="agent-kernel-backends" style="font-size:1rem;">n/a</span>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-top:16px;">
+        <div class="panel" style="margin:0;">
+          <h3>Handle Request</h3>
+          <form id="agent-kernel-form">
+            <div class="form-row">
+              <textarea id="agent-kernel-prompt" placeholder="Prompt"></textarea>
+            </div>
+            <div class="form-row" style="margin-top:10px;">
+              <select id="agent-kernel-backend">
+                <option value="local_llama">Local Llama</option>
+                <option value="open_ai">OpenAI</option>
+                <option value="anthropic">Anthropic</option>
+                <option value="grok">Grok (xAI)</option>
+                <option value="gemini">Gemini (Google)</option>
+              </select>
+              <select id="agent-kernel-tool">
+                <option value="">Auto (model suggested)</option>
+                <option value="echo_log">echo_log (safe)</option>
+                <option value="simulate_transfer">simulate_transfer (dangerous)</option>
+              </select>
+              <input id="agent-kernel-args" placeholder='Args JSON (e.g. {"amount":500,"to":"demo"})' />
+            </div>
+            <div class="form-row" style="margin-top:10px;">
+              <select id="agent-kernel-with-commitment">
+                <option value="false">No commitment</option>
+                <option value="true">Draft commitment</option>
+              </select>
+              <input id="agent-kernel-outcome" placeholder="Commitment outcome (optional)" />
+            </div>
+            <div class="flex" style="margin-top:12px;">
+              <button type="submit" class="primary">Handle</button>
+              <button type="button" class="ghost" id="agent-kernel-copy-command">Copy maple command</button>
+              <span class="tag" id="agent-kernel-handle-status">Idle</span>
+              <span class="tag" id="agent-kernel-copy-status">Ready</span>
+            </div>
+            <div id="agent-kernel-cli-preview" class="infer-output">maple agent handle --prompt '...'</div>
+            <div id="agent-kernel-output" class="infer-output">No request yet.</div>
+          </form>
+        </div>
+        <div class="panel" style="margin:0;">
+          <div class="flex" style="justify-content: space-between;">
+            <h3>Audit Trail</h3>
+            <button class="ghost" id="agent-kernel-audit-refresh">Refresh</button>
+          </div>
+          <div class="activity-timeline" id="agent-kernel-audit-list"></div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script>
     const API = '/api/v1/playground';
+    const AGENT_API = '/api/v1/agent-kernel';
     let stateCache = null;
     let activitiesCache = [];
     let lastSequence = 0;
@@ -480,6 +550,7 @@
         updateResonators(data.resonators || []);
         updateBackends(data.backends || [], data.playground || {});
         updateSimulation(data.playground?.simulation || {});
+        await fetchAgentKernelStatus();
         document.getElementById('status-pill').textContent = `Online · ${new Date(data.generated_at).toLocaleTimeString()}`;
       } catch (err) {
         document.getElementById('status-pill').textContent = 'Offline';
@@ -569,6 +640,91 @@
       document.getElementById('simulation-inference-interval').value = sim.inference_interval_ticks ?? '';
       document.getElementById('simulation-inferences-per-tick').value = sim.inferences_per_tick ?? '';
       document.getElementById('simulation-status').textContent = sim.enabled ? 'running' : 'paused';
+    }
+
+    async function fetchAgentKernelStatus() {
+      try {
+        const response = await fetch(`${AGENT_API}/status`);
+        if (!response.ok) {
+          throw new Error(`status ${response.status}`);
+        }
+        const status = await response.json();
+        document.getElementById('agent-kernel-resonator').textContent = status.resonator_id || 'n/a';
+        document.getElementById('agent-kernel-audit-count').textContent = String(status.audit_events ?? 0);
+        document.getElementById('agent-kernel-backends').textContent = (status.backends || []).join(', ') || 'n/a';
+        document.getElementById('agent-kernel-status-pill').textContent = 'online';
+      } catch (error) {
+        document.getElementById('agent-kernel-status-pill').textContent = 'offline';
+      }
+    }
+
+    async function refreshAgentKernelAudit() {
+      const list = document.getElementById('agent-kernel-audit-list');
+      try {
+        const response = await fetch(`${AGENT_API}/audit?limit=120`);
+        if (!response.ok) {
+          throw new Error(`audit ${response.status}`);
+        }
+        const events = await response.json();
+        list.innerHTML = events.reverse().map(evt => `
+          <div class="list-item">
+            <strong>${evt.stage} · ${evt.success ? 'success' : 'failed'}</strong>
+            <small>${evt.message}</small>
+            <small>${evt.commitment_id || 'no commitment'} · ${new Date(evt.timestamp).toLocaleTimeString()}</small>
+          </div>
+        `).join('') || '<div class="list-item"><strong>No audit events yet</strong></div>';
+      } catch (error) {
+        list.innerHTML = `<div class="list-item"><strong>Failed to load audit events</strong><small>${String(error.message || error)}</small></div>`;
+      }
+    }
+
+    function shellQuote(value) {
+      return `'${String(value).replace(/'/g, `'\"'\"'`)}'`;
+    }
+
+    function buildAgentKernelCommand() {
+      const prompt = document.getElementById('agent-kernel-prompt').value || '';
+      const backend = document.getElementById('agent-kernel-backend').value;
+      const tool = document.getElementById('agent-kernel-tool').value;
+      const rawArgs = document.getElementById('agent-kernel-args').value.trim();
+      const withCommitment = document.getElementById('agent-kernel-with-commitment').value === 'true';
+      const outcome = document.getElementById('agent-kernel-outcome').value;
+
+      const parts = ['maple', 'agent', 'handle'];
+      const origin = window.location.origin;
+      if (origin !== 'http://localhost:8080' && origin !== 'http://127.0.0.1:8080') {
+        parts.push('--endpoint', shellQuote(origin));
+      }
+
+      parts.push('--prompt', shellQuote(prompt));
+      parts.push('--backend', backend);
+
+      if (tool) {
+        parts.push('--tool', tool);
+      }
+
+      if (rawArgs) {
+        try {
+          const normalized = JSON.stringify(JSON.parse(rawArgs));
+          parts.push('--args', shellQuote(normalized));
+        } catch (_error) {
+          parts.push('--args', shellQuote(rawArgs));
+        }
+      }
+
+      if (withCommitment) {
+        parts.push('--with-commitment');
+      }
+
+      if (outcome) {
+        parts.push('--commitment-outcome', shellQuote(outcome));
+      }
+
+      return parts.join(' ');
+    }
+
+    function updateAgentKernelCommandPreview() {
+      document.getElementById('agent-kernel-cli-preview').textContent = buildAgentKernelCommand();
     }
 
     function renderActivities(list, append = false) {
@@ -682,6 +838,77 @@
       }
     });
 
+    document.getElementById('agent-kernel-audit-refresh').addEventListener('click', refreshAgentKernelAudit);
+    document.getElementById('agent-kernel-copy-command').addEventListener('click', async () => {
+      const status = document.getElementById('agent-kernel-copy-status');
+      const command = buildAgentKernelCommand();
+      try {
+        await navigator.clipboard.writeText(command);
+        status.textContent = 'Copied';
+      } catch (error) {
+        status.textContent = 'Copy failed';
+      }
+    });
+
+    ['agent-kernel-prompt', 'agent-kernel-backend', 'agent-kernel-tool', 'agent-kernel-args', 'agent-kernel-with-commitment', 'agent-kernel-outcome']
+      .forEach(id => {
+        document.getElementById(id).addEventListener('input', updateAgentKernelCommandPreview);
+        document.getElementById(id).addEventListener('change', updateAgentKernelCommandPreview);
+      });
+
+    document.getElementById('agent-kernel-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const status = document.getElementById('agent-kernel-handle-status');
+      const output = document.getElementById('agent-kernel-output');
+      const rawArgs = document.getElementById('agent-kernel-args').value.trim();
+      let parsedArgs = null;
+
+      if (rawArgs) {
+        try {
+          parsedArgs = JSON.parse(rawArgs);
+        } catch (error) {
+          status.textContent = 'Invalid args';
+          output.textContent = `Args must be valid JSON: ${String(error.message || error)}`;
+          return;
+        }
+      }
+
+      const toolValue = document.getElementById('agent-kernel-tool').value;
+      const payload = {
+        prompt: document.getElementById('agent-kernel-prompt').value,
+        backend: document.getElementById('agent-kernel-backend').value,
+        tool: toolValue || null,
+        args: parsedArgs,
+        with_commitment: document.getElementById('agent-kernel-with-commitment').value === 'true',
+        commitment_outcome: document.getElementById('agent-kernel-outcome').value || null,
+      };
+
+      status.textContent = 'Handling...';
+      output.textContent = 'Waiting for AgentKernel response...';
+
+      try {
+        const response = await fetch(`${AGENT_API}/handle`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const body = await response.json();
+        if (!response.ok) {
+          throw new Error(body.error || `handle failed with ${response.status}`);
+        }
+
+        const action = body.action ? `\n\naction:\n${JSON.stringify(body.action, null, 2)}` : '\n\naction:\n(none)';
+        output.textContent = `resonator: ${body.resonator_id}\naudit: ${body.audit_event_id}\n\ncognition:\n${JSON.stringify(body.cognition, null, 2)}${action}`;
+        status.textContent = 'Done';
+        document.getElementById('agent-kernel-copy-status').textContent = 'Ready';
+        await fetchAgentKernelStatus();
+        await refreshAgentKernelAudit();
+      } catch (error) {
+        status.textContent = 'Failed';
+        output.textContent = String(error.message || error);
+      }
+    });
+
     document.getElementById('simulation-form').addEventListener('submit', async (event) => {
       event.preventDefault();
       const payload = {
@@ -709,8 +936,12 @@
 
     fetchState();
     refreshActivities();
+    fetchAgentKernelStatus();
+    refreshAgentKernelAudit();
+    updateAgentKernelCommandPreview();
     startActivityStream();
     setInterval(fetchState, 4000);
+    setInterval(refreshAgentKernelAudit, 8000);
   </script>
 </body>
 </html>

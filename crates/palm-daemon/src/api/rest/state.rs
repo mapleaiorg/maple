@@ -3,6 +3,7 @@
 use crate::playground::PlaygroundService;
 use crate::scheduler::Scheduler;
 use crate::storage::Storage;
+use maple_runtime::{AgentKernel, ResonatorId};
 use palm_shared_state::Activity;
 use palm_types::PalmEventEnvelope;
 use std::sync::Arc;
@@ -26,6 +27,12 @@ pub struct AppState {
     /// Playground service
     pub playground: Arc<PlaygroundService>,
 
+    /// MAPLE runtime AgentKernel for non-bypassable agent operations.
+    pub agent_kernel: Arc<AgentKernel>,
+
+    /// Default host resonator id managed by daemon AgentKernel hooks.
+    pub agent_kernel_resonator_id: ResonatorId,
+
     /// Daemon version
     pub version: String,
 
@@ -44,6 +51,8 @@ impl AppState {
         event_tx: broadcast::Sender<PalmEventEnvelope>,
         activity_tx: broadcast::Sender<Activity>,
         playground: Arc<PlaygroundService>,
+        agent_kernel: Arc<AgentKernel>,
+        agent_kernel_resonator_id: ResonatorId,
         shutdown_tx: watch::Sender<bool>,
     ) -> Self {
         Self {
@@ -52,6 +61,8 @@ impl AppState {
             event_tx,
             activity_tx,
             playground,
+            agent_kernel,
+            agent_kernel_resonator_id,
             version: env!("CARGO_PKG_VERSION").to_string(),
             started_at: chrono::Utc::now(),
             shutdown_tx,

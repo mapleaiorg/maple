@@ -1,5 +1,6 @@
 //! API request handlers
 
+mod agent_kernel;
 mod deployments;
 mod events;
 mod health;
@@ -8,6 +9,7 @@ mod playground;
 mod specs;
 mod system;
 
+pub use agent_kernel::*;
 pub use deployments::*;
 pub use events::*;
 pub use health::*;

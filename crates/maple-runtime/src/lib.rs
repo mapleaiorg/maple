@@ -115,7 +115,9 @@
 #![warn(clippy::all)]
 
 // Core modules
+pub mod agent_kernel;
 pub mod allocator;
+pub mod cognition;
 pub mod config;
 pub mod fabrics;
 pub mod invariants;
@@ -126,6 +128,15 @@ pub mod temporal;
 pub mod types;
 
 // Re-exports for convenience
+pub use agent_kernel::{
+    AgentAuditEvent, AgentExecutionProfile, AgentHandleRequest, AgentHandleResponse, AgentHost,
+    AgentKernel, AgentKernelError, AgentRegistration, CapabilityDescriptor, CapabilityExecution,
+    CapabilityExecutor, CommitmentGateway, EchoCapability, SimulatedTransferCapability,
+};
+pub use cognition::{
+    LlamaAdapter, ModelAdapter, ModelBackend, ModelRequest, ModelResponse, StructuredCognition,
+    SuggestedTool, ValidationStatus, VendorAdapter,
+};
 pub use runtime_core::{
     ContinuityProof, CouplingHandle, MapleRuntime, ResonatorHandle, ResonatorIdentitySpec,
     ResonatorSpec, ScheduleHandle,

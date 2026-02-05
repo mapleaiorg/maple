@@ -14,6 +14,7 @@ Welcome to the MAPLE AI Framework documentation.
 | [API Reference](api/README.md) | Complete API documentation |
 | [UAL (Universal Agent Language)](concepts/ual.md) | Agent/human interaction language |
 | [Agents, Resonators, and LLMs](concepts/agent-resonator-llm.md) | Mental model + backend integration |
+| [Agent Kernel Composition](concepts/agent-kernel-composition.md) | Non-bypassable `Agent = Resonator + Profile + Capability + Contracts` runtime model |
 
 ## Quick Links
 

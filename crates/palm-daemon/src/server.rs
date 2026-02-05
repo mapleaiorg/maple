@@ -7,6 +7,9 @@ use crate::error::{DaemonError, DaemonResult};
 use crate::playground::PlaygroundService;
 use crate::scheduler::Scheduler;
 use crate::storage::{InMemoryStorage, PostgresStorage, Storage};
+use maple_runtime::{
+    config::RuntimeConfig, AgentKernel, AgentRegistration, MapleRuntime, ResonatorId,
+};
 use palm_shared_state::Activity;
 use palm_types::{PalmEventEnvelope, PlatformProfile};
 use std::sync::Arc;
@@ -22,6 +25,8 @@ pub struct Server {
     activity_tx: broadcast::Sender<Activity>,
     reconcile_rx: Option<mpsc::Receiver<()>>,
     playground: Arc<PlaygroundService>,
+    agent_kernel: Arc<AgentKernel>,
+    agent_kernel_resonator_id: ResonatorId,
 }
 
 impl Server {
@@ -67,6 +72,23 @@ impl Server {
         // Create playground service
         let playground = PlaygroundService::new(storage.clone(), activity_tx.clone()).await?;
 
+        // Bootstrap MAPLE runtime kernel hooks (non-bypassable commitment path).
+        let runtime = MapleRuntime::bootstrap(RuntimeConfig::default())
+            .await
+            .map_err(|err| {
+                DaemonError::Config(format!("MAPLE runtime bootstrap failed: {}", err))
+            })?;
+        let agent_kernel = Arc::new(AgentKernel::new(runtime));
+        let host = agent_kernel
+            .register_agent(AgentRegistration::default())
+            .await
+            .map_err(|err| {
+                DaemonError::Config(format!(
+                    "AgentKernel default host registration failed: {}",
+                    err
+                ))
+            })?;
+
         Ok(Self {
             config,
             storage,
@@ -75,6 +97,8 @@ impl Server {
             activity_tx,
             reconcile_rx: Some(reconcile_rx),
             playground,
+            agent_kernel,
+            agent_kernel_resonator_id: host.resonator_id,
         })
     }
 
@@ -90,6 +114,8 @@ impl Server {
             self.event_tx.clone(),
             self.activity_tx.clone(),
             self.playground.clone(),
+            self.agent_kernel.clone(),
+            self.agent_kernel_resonator_id,
             shutdown_tx,
         );
 

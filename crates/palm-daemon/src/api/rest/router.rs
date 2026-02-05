@@ -16,6 +16,10 @@ pub fn create_router(state: AppState) -> Router {
         .route("/health", get(handlers::health_check))
         .route("/status", get(handlers::daemon_status))
         .route("/system/shutdown", post(handlers::shutdown_daemon))
+        // Agent kernel
+        .route("/agent-kernel/status", get(handlers::agent_kernel_status))
+        .route("/agent-kernel/handle", post(handlers::agent_kernel_handle))
+        .route("/agent-kernel/audit", get(handlers::agent_kernel_audit))
         // Playground
         .route("/playground/state", get(handlers::playground_state))
         .route("/playground/config", get(handlers::get_playground_config))

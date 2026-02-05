@@ -12,6 +12,10 @@ So in practice:
 
 `Agent behavior` + `Resonator identity/state` + `PALM orchestration` = deployable MAPLE agent system.
 
+The runtime now exposes this explicitly via `AgentKernel` in `maple-runtime`:
+
+`Agent = Resonator + Profile + CapabilitySet + ContractSet + State`
+
 ## 2) Where LLMs fit
 
 LLMs (Ollama, GPT, Claude, Grok, Gemini) are **cognition engines**, not identity.

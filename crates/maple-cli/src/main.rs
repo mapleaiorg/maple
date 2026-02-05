@@ -1,6 +1,11 @@
 use clap::{Args, Parser, Subcommand, ValueEnum};
+use maple_runtime::{
+    config::RuntimeConfig, AgentHandleRequest, AgentKernel, AgentRegistration, MapleRuntime,
+    ModelBackend,
+};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::ffi::OsString;
 use std::fs;
 use std::fs::OpenOptions;
@@ -41,6 +46,12 @@ enum Commands {
     Daemon {
         #[command(subcommand)]
         command: DaemonCommands,
+    },
+
+    /// Run and observe MAPLE AgentKernel operations
+    Agent {
+        #[command(subcommand)]
+        command: AgentCommands,
     },
 
     /// PALM operations (forwarded to palm)
@@ -132,6 +143,87 @@ enum DaemonCommands {
     },
 }
 
+#[derive(Subcommand)]
+enum AgentCommands {
+    /// Run a local AgentKernel demo (no daemon required)
+    Demo {
+        /// Backend kind
+        #[arg(long, value_enum, default_value = "local_llama")]
+        backend: BackendKindArg,
+
+        /// Prompt sent to the model adapter
+        #[arg(long, default_value = "log current runtime status")]
+        prompt: String,
+
+        /// Use dangerous capability path (simulate transfer)
+        #[arg(long)]
+        dangerous: bool,
+
+        /// Provide explicit commitment for dangerous path
+        #[arg(long)]
+        with_commitment: bool,
+
+        /// Simulated amount for dangerous path
+        #[arg(long, default_value_t = 500)]
+        amount: i64,
+    },
+
+    /// Call daemon AgentKernel handle endpoint
+    Handle(AgentHandleArgs),
+
+    /// Read daemon AgentKernel audit events
+    Audit(AgentAuditArgs),
+
+    /// Show daemon AgentKernel status
+    Status {
+        /// PALM daemon endpoint
+        #[arg(long, env = "PALM_ENDPOINT", default_value = "http://localhost:8080")]
+        endpoint: String,
+    },
+}
+
+#[derive(Args)]
+struct AgentHandleArgs {
+    /// PALM daemon endpoint
+    #[arg(long, env = "PALM_ENDPOINT", default_value = "http://localhost:8080")]
+    endpoint: String,
+
+    /// Prompt sent to AgentKernel
+    #[arg(long)]
+    prompt: String,
+
+    /// Backend kind
+    #[arg(long, value_enum, default_value = "local_llama")]
+    backend: BackendKindArg,
+
+    /// Optional forced tool name (e.g. echo_log or simulate_transfer)
+    #[arg(long)]
+    tool: Option<String>,
+
+    /// Optional JSON args for tool override
+    #[arg(long)]
+    args: Option<String>,
+
+    /// Auto-draft commitment before execution (requires --tool)
+    #[arg(long)]
+    with_commitment: bool,
+
+    /// Optional commitment outcome description
+    #[arg(long)]
+    commitment_outcome: Option<String>,
+}
+
+#[derive(Args)]
+struct AgentAuditArgs {
+    /// PALM daemon endpoint
+    #[arg(long, env = "PALM_ENDPOINT", default_value = "http://localhost:8080")]
+    endpoint: String,
+
+    /// Max number of events
+    #[arg(long, default_value_t = 50)]
+    limit: usize,
+}
+
 #[derive(Copy, Clone, Debug, ValueEnum)]
 enum StorageKindArg {
     Memory,
@@ -143,6 +235,42 @@ impl StorageKindArg {
         match self {
             StorageKindArg::Memory => "memory",
             StorageKindArg::Postgres => "postgres",
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, ValueEnum)]
+enum BackendKindArg {
+    #[value(name = "local_llama")]
+    LocalLlama,
+    #[value(name = "open_ai")]
+    OpenAi,
+    #[value(name = "anthropic")]
+    Anthropic,
+    #[value(name = "gemini")]
+    Gemini,
+    #[value(name = "grok")]
+    Grok,
+}
+
+impl BackendKindArg {
+    fn as_model_backend(self) -> ModelBackend {
+        match self {
+            BackendKindArg::LocalLlama => ModelBackend::LocalLlama,
+            BackendKindArg::OpenAi => ModelBackend::OpenAi,
+            BackendKindArg::Anthropic => ModelBackend::Anthropic,
+            BackendKindArg::Gemini => ModelBackend::Gemini,
+            BackendKindArg::Grok => ModelBackend::Grok,
+        }
+    }
+
+    fn as_api_value(self) -> &'static str {
+        match self {
+            BackendKindArg::LocalLlama => "local_llama",
+            BackendKindArg::OpenAi => "open_ai",
+            BackendKindArg::Anthropic => "anthropic",
+            BackendKindArg::Gemini => "gemini",
+            BackendKindArg::Grok => "grok",
         }
     }
 }
@@ -183,6 +311,41 @@ struct DaemonPidFile {
     log_file: String,
 }
 
+#[derive(Debug, Deserialize)]
+struct AgentKernelStatusResponse {
+    resonator_id: String,
+    audit_events: usize,
+    backends: Vec<String>,
+}
+
+#[derive(Debug, Serialize)]
+struct AgentKernelHandlePayload {
+    prompt: String,
+    backend: String,
+    tool: Option<String>,
+    args: Option<Value>,
+    with_commitment: bool,
+    commitment_outcome: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct AgentKernelHandleResponse {
+    resonator_id: String,
+    cognition: Value,
+    action: Option<Value>,
+    audit_event_id: String,
+    raw_model_output: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct AgentAuditEvent {
+    event_id: String,
+    stage: String,
+    success: bool,
+    message: String,
+    commitment_id: Option<String>,
+}
+
 #[tokio::main]
 async fn main() {
     let cli = Cli::parse();
@@ -206,6 +369,12 @@ async fn main() {
         }
         Commands::Daemon { command } => {
             if let Err(err) = handle_daemon(command).await {
+                eprintln!("{err}");
+                std::process::exit(1);
+            }
+        }
+        Commands::Agent { command } => {
+            if let Err(err) = handle_agent(command).await {
                 eprintln!("{err}");
                 std::process::exit(1);
             }
@@ -366,6 +535,87 @@ async fn handle_daemon(command: DaemonCommands) -> Result<(), Box<dyn std::error
         }
         DaemonCommands::Status { endpoint } => daemon_status(&endpoint).await,
     }
+}
+
+async fn handle_agent(command: AgentCommands) -> Result<(), Box<dyn std::error::Error>> {
+    match command {
+        AgentCommands::Demo {
+            backend,
+            prompt,
+            dangerous,
+            with_commitment,
+            amount,
+        } => run_local_agent_demo(backend, prompt, dangerous, with_commitment, amount).await,
+        AgentCommands::Status { endpoint } => daemon_agent_status(&endpoint).await,
+        AgentCommands::Audit(args) => daemon_agent_audit(&args.endpoint, args.limit).await,
+        AgentCommands::Handle(args) => daemon_agent_handle(args).await,
+    }
+}
+
+async fn run_local_agent_demo(
+    backend: BackendKindArg,
+    prompt: String,
+    dangerous: bool,
+    with_commitment: bool,
+    amount: i64,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let runtime = MapleRuntime::bootstrap(RuntimeConfig::default()).await?;
+    let kernel = AgentKernel::new(runtime);
+    let host = kernel.register_agent(AgentRegistration::default()).await?;
+
+    print_ok(&format!(
+        "Local AgentKernel ready (resonator={})",
+        host.resonator_id
+    ));
+
+    let mut request =
+        AgentHandleRequest::new(host.resonator_id, backend.as_model_backend(), prompt);
+
+    if dangerous {
+        request.override_tool = Some("simulate_transfer".to_string());
+        request.override_args =
+            Some(serde_json::json!({"amount": amount, "to": "demo-beneficiary"}));
+        if with_commitment {
+            request.commitment = Some(
+                kernel
+                    .draft_commitment(
+                        host.resonator_id,
+                        "simulate_transfer",
+                        "CLI-authorized simulated transfer",
+                    )
+                    .await?,
+            );
+        }
+    } else {
+        request.override_tool = Some("echo_log".to_string());
+        request.override_args = Some(serde_json::json!({"message": "local demo"}));
+    }
+
+    match kernel.handle(request).await {
+        Ok(response) => {
+            print_ok(&format!(
+                "Agent handled request (audit={})",
+                response.audit_event_id
+            ));
+            println!("Resonator: {}", response.resonator_id);
+            println!(
+                "Cognition: {}",
+                serde_json::to_string_pretty(&response.cognition)?
+            );
+            if let Some(action) = response.action {
+                println!("Action: {}", serde_json::to_string_pretty(&action)?);
+            } else {
+                print_warn("No action executed (likely fallback cognition or no tool selected)");
+            }
+        }
+        Err(err) => {
+            print_fail(&format!("AgentKernel denied/failed request: {}", err));
+        }
+    }
+
+    let audits = kernel.audit_events().await;
+    print_ok(&format!("Audit events recorded: {}", audits.len()));
+    Ok(())
 }
 
 fn build_http_client() -> Result<Client, Box<dyn std::error::Error>> {
@@ -613,6 +863,104 @@ async fn daemon_status(endpoint: &str) -> Result<(), Box<dyn std::error::Error>>
         None => print_warn("HOME is not set; cannot resolve managed PID file path"),
     }
 
+    Ok(())
+}
+
+async fn daemon_agent_status(endpoint: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let client = build_http_client()?;
+    let url = format!(
+        "{}/api/v1/agent-kernel/status",
+        endpoint.trim_end_matches('/')
+    );
+    let response = client.get(url).send().await?;
+    if !response.status().is_success() {
+        return Err(format!("agent-kernel status request failed: {}", response.status()).into());
+    }
+
+    let status = response.json::<AgentKernelStatusResponse>().await?;
+    print_ok("AgentKernel status retrieved");
+    println!("Resonator: {}", status.resonator_id);
+    println!("Audit events: {}", status.audit_events);
+    println!("Backends: {}", status.backends.join(", "));
+    Ok(())
+}
+
+async fn daemon_agent_audit(
+    endpoint: &str,
+    limit: usize,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let client = build_http_client()?;
+    let url = format!(
+        "{}/api/v1/agent-kernel/audit?limit={}",
+        endpoint.trim_end_matches('/'),
+        limit
+    );
+    let response = client.get(url).send().await?;
+    if !response.status().is_success() {
+        return Err(format!("agent-kernel audit request failed: {}", response.status()).into());
+    }
+
+    let events = response.json::<Vec<AgentAuditEvent>>().await?;
+    print_ok(&format!("Fetched {} audit event(s)", events.len()));
+    for event in events {
+        println!(
+            "- {} [{}] success={} commitment={} :: {}",
+            event.event_id,
+            event.stage,
+            event.success,
+            event.commitment_id.unwrap_or_else(|| "-".to_string()),
+            event.message
+        );
+    }
+    Ok(())
+}
+
+async fn daemon_agent_handle(args: AgentHandleArgs) -> Result<(), Box<dyn std::error::Error>> {
+    let client = build_http_client()?;
+    let url = format!(
+        "{}/api/v1/agent-kernel/handle",
+        args.endpoint.trim_end_matches('/')
+    );
+
+    let parsed_args = if let Some(raw) = args.args {
+        Some(
+            serde_json::from_str::<Value>(&raw)
+                .map_err(|err| format!("invalid --args JSON: {}", err))?,
+        )
+    } else {
+        None
+    };
+
+    let payload = AgentKernelHandlePayload {
+        prompt: args.prompt,
+        backend: args.backend.as_api_value().to_string(),
+        tool: args.tool,
+        args: parsed_args,
+        with_commitment: args.with_commitment,
+        commitment_outcome: args.commitment_outcome,
+    };
+
+    let response = client.post(url).json(&payload).send().await?;
+    if !response.status().is_success() {
+        let body = response.text().await.unwrap_or_default();
+        return Err(format!("agent-kernel handle failed: {}", body).into());
+    }
+
+    let handled = response.json::<AgentKernelHandleResponse>().await?;
+    print_ok(&format!(
+        "AgentKernel handle succeeded (resonator={}, audit={})",
+        handled.resonator_id, handled.audit_event_id
+    ));
+    println!(
+        "Cognition: {}",
+        serde_json::to_string_pretty(&handled.cognition)?
+    );
+    if let Some(action) = handled.action {
+        println!("Action: {}", serde_json::to_string_pretty(&action)?);
+    } else {
+        print_warn("No action executed");
+    }
+    println!("Raw model output: {}", handled.raw_model_output);
     Ok(())
 }
 
