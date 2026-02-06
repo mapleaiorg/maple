@@ -2,7 +2,7 @@
 name = "resonator-intent"
 version.workspace = true
 edition.workspace = true
-description = "resonator intent"
+description = "Intent stabilization engine for MAPLE Resonators - implements temporal stability, consistency validation, and history tracking"
 
 [dependencies]
 thiserror = { workspace = true }
@@ -14,3 +14,4 @@ mrp-types = { workspace = true }
 aas-types = { workspace = true }
 serde = { workspace = true }
 chrono = { workspace = true }
+uuid = { workspace = true }

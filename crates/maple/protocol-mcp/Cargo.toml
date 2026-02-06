@@ -1,0 +1,20 @@
+[package]
+name = "maple-protocol-mcp"
+version.workspace = true
+edition.workspace = true
+description = "Model Context Protocol (MCP) adapter for MAPLE - bridges MCP tools/resources to Resonance Architecture"
+
+[dependencies]
+thiserror = { workspace = true }
+rcf-types = { workspace = true }
+rcf-commitment = { workspace = true }
+aas-types = { workspace = true }
+resonator-commitment = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+async-trait = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt", "macros"] }

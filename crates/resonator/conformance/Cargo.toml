@@ -1,0 +1,25 @@
+[package]
+name = "resonator-conformance"
+version.workspace = true
+edition.workspace = true
+description = "Conformance Test Suite for MAPLE Resonance Architecture - validates 8 runtime invariants"
+
+[dependencies]
+thiserror = { workspace = true }
+rcf-types = { workspace = true }
+rcf-commitment = { workspace = true }
+resonator-types = { workspace = true }
+resonator-commitment = { workspace = true }
+resonator-consequence = { workspace = true }
+resonator-memory = { path = "../memory" }
+resonator-conversation = { path = "../conversation" }
+resonator-observability = { path = "../observability" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+async-trait = { workspace = true }
+tokio = { workspace = true, features = ["rt", "macros"] }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt", "macros", "time"] }

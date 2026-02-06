@@ -1,0 +1,21 @@
+[package]
+name = "maple-protocol-a2a"
+version.workspace = true
+edition.workspace = true
+description = "Agent-to-Agent (A2A) Protocol adapter for MAPLE - bridges Google A2A to Resonance Architecture"
+
+[dependencies]
+thiserror = { workspace = true }
+rcf-types = { workspace = true }
+rcf-commitment = { workspace = true }
+aas-types = { workspace = true }
+resonator-commitment = { workspace = true }
+resonator-types = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+async-trait = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt", "macros"] }

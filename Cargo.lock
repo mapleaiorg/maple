@@ -1844,6 +1844,41 @@ dependencies = [
 ]
 
 [[package]]
+name = "maple-protocol-a2a"
+version = "0.1.0"
+dependencies = [
+ "aas-types",
+ "async-trait",
+ "chrono",
+ "rcf-commitment",
+ "rcf-types",
+ "resonator-commitment",
+ "resonator-types",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "maple-protocol-mcp"
+version = "0.1.0"
+dependencies = [
+ "aas-types",
+ "async-trait",
+ "chrono",
+ "rcf-commitment",
+ "rcf-types",
+ "resonator-commitment",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
 name = "maple-runtime"
 version = "0.1.1"
 dependencies = [
@@ -3240,6 +3275,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "resonator-cli"
+version = "0.1.0"
+dependencies = [
+ "assert_cmd",
+ "chrono",
+ "clap",
+ "colored",
+ "indicatif",
+ "predicates",
+ "rcf-commitment",
+ "rcf-types",
+ "resonator-commitment",
+ "resonator-consequence",
+ "resonator-conversation",
+ "resonator-memory",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "tabled",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
+]
+
+[[package]]
 name = "resonator-client"
 version = "0.1.0"
 dependencies = [
@@ -3267,6 +3329,58 @@ dependencies = [
  "rcf-types",
  "serde",
  "thiserror",
+ "uuid",
+]
+
+[[package]]
+name = "resonator-conformance"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "rcf-commitment",
+ "rcf-types",
+ "resonator-commitment",
+ "resonator-consequence",
+ "resonator-conversation",
+ "resonator-memory",
+ "resonator-observability",
+ "resonator-types",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "resonator-consequence"
+version = "0.1.0"
+dependencies = [
+ "aas-types",
+ "chrono",
+ "rcf-commitment",
+ "rcf-types",
+ "resonator-commitment",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror",
+ "uuid",
+]
+
+[[package]]
+name = "resonator-conversation"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "rcf-types",
+ "resonator-memory",
+ "resonator-types",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "uuid",
 ]
 
 [[package]]
@@ -3297,6 +3411,7 @@ dependencies = [
  "rcf-types",
  "serde",
  "thiserror",
+ "uuid",
 ]
 
 [[package]]
@@ -3312,6 +3427,35 @@ dependencies = [
  "rcf-types",
  "serde",
  "thiserror",
+ "uuid",
+]
+
+[[package]]
+name = "resonator-memory"
+version = "0.1.0"
+dependencies = [
+ "aas-types",
+ "chrono",
+ "rcf-types",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "uuid",
+]
+
+[[package]]
+name = "resonator-observability"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "rcf-commitment",
+ "resonator-commitment",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "uuid",
 ]
 
 [[package]]

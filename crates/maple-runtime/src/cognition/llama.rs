@@ -345,7 +345,7 @@ mod tests {
             "not-json".to_string(),
             r#"{"summary":"move funds","ambiguity_notes":[],"confidence":0.9}"#.to_string(),
         ]));
-        let adapter = LlamaAdapter::with_transport("llama3.2", transport.clone());
+        let adapter = LlamaAdapter::with_transport("llama3.2:3b", transport.clone());
 
         let meaning = adapter
             .propose_meaning(
@@ -368,7 +368,7 @@ mod tests {
             "not-json".to_string(),
             "still-not-json".to_string(),
         ]));
-        let adapter = LlamaAdapter::with_transport("llama3.2", transport.clone());
+        let adapter = LlamaAdapter::with_transport("llama3.2:3b", transport.clone());
 
         let err = adapter
             .propose_meaning(
@@ -391,7 +391,7 @@ mod tests {
             r#"[{"capability_id":"","params_json":{"amount":1},"risk_score":0.4,"rationale":"x","required_contract_fields":["scope"]}]"#
                 .to_string(),
         ]));
-        let adapter = LlamaAdapter::with_transport("llama3.2", transport);
+        let adapter = LlamaAdapter::with_transport("llama3.2:3b", transport);
 
         let err = adapter
             .suggest_capability_calls(

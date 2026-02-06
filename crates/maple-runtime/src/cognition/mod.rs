@@ -926,7 +926,7 @@ mod tests {
 
     #[tokio::test]
     async fn llama_repairs_non_strict_json() {
-        let adapter = LlamaAdapter::new("llama3.2");
+        let adapter = LlamaAdapter::new("llama3.2:3b");
         let mut req = ModelRequest::new("transfer 500 usd");
         req.raw_response_override = Some(
             "model output: {'meaning_summary':'move funds','intent':'execute_transfer','confidence':0.8,'suggested_tool':{'name':'simulate_transfer','args':{'amount':500},'consequential':true}}".to_string(),
@@ -945,7 +945,7 @@ mod tests {
 
     #[tokio::test]
     async fn fallback_never_suggests_tool() {
-        let adapter = LlamaAdapter::new("llama3.2");
+        let adapter = LlamaAdapter::new("llama3.2:3b");
         let mut req = ModelRequest::new("hello");
         req.raw_response_override = Some("<<<broken>>>".to_string());
 
@@ -957,7 +957,7 @@ mod tests {
     #[tokio::test]
     async fn malformed_output_falls_back_for_all_backends() {
         let adapters: Vec<Box<dyn ModelAdapter>> = vec![
-            Box::new(LlamaAdapter::new("llama3.2")),
+            Box::new(LlamaAdapter::new("llama3.2:3b")),
             Box::new(OpenAiAdapter::new("gpt-4o-mini")),
             Box::new(AnthropicAdapter::new("claude-3-5-sonnet")),
             Box::new(GeminiAdapter::new("gemini-2.0-flash")),

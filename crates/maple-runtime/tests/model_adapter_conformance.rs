@@ -69,7 +69,7 @@ async fn conformance_no_consequence_without_commitment_across_backends() {
 #[tokio::test]
 async fn conformance_contract_drafts_validate_for_llama_and_openai() {
     let adapters: Vec<Box<dyn ModelAdapter>> = vec![
-        Box::new(LlamaAdapter::new("llama3.2")),
+        Box::new(LlamaAdapter::new("llama3.2:3b")),
         Box::new(OpenAiAdapter::new("gpt-4o-mini")),
     ];
 

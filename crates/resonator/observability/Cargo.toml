@@ -1,0 +1,18 @@
+[package]
+name = "resonator-observability"
+version.workspace = true
+edition.workspace = true
+description = "Observability and Metrics for MAPLE Resonators - monitoring, tracing, and telemetry"
+
+[dependencies]
+thiserror = { workspace = true }
+rcf-commitment = { workspace = true }
+resonator-commitment = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+tracing = "0.1"
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt", "macros"] }

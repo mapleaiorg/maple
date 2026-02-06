@@ -1688,7 +1688,7 @@ impl AgentKernel {
         let mut adapters: HashMap<ModelBackend, Arc<dyn ModelAdapter>> = HashMap::new();
         adapters.insert(
             ModelBackend::LocalLlama,
-            Arc::new(LlamaAdapter::new("llama3.2")),
+            Arc::new(LlamaAdapter::new("llama3.2:3b")),
         );
         adapters.insert(
             ModelBackend::OpenAi,

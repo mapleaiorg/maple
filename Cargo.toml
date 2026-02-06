@@ -56,9 +56,15 @@ members = [
     "crates/resonator/meaning",
     "crates/resonator/intent",
     "crates/resonator/commitment",
+    "crates/resonator/consequence",
+    "crates/resonator/memory",
+    "crates/resonator/conversation",
     "crates/resonator/profiles",
     "crates/resonator/runtime",
     "crates/resonator/client",
+    "crates/resonator/cli",
+    "crates/resonator/observability",
+    "crates/resonator/conformance",
 
     # MAPLE Core Runtime
     "crates/maple-runtime",
@@ -67,6 +73,8 @@ members = [
     "crates/maple/model-anthropic",
     "crates/maple/model-gemini",
     "crates/maple/model-grok",
+    "crates/maple/protocol-mcp",
+    "crates/maple/protocol-a2a",
 
     # PALM - Fleet Orchestration Layer
     "crates/palm/types",
@@ -182,6 +190,9 @@ resonator-identity = { path = "crates/resonator/identity" }
 resonator-meaning = { path = "crates/resonator/meaning" }
 resonator-intent = { path = "crates/resonator/intent" }
 resonator-commitment = { path = "crates/resonator/commitment" }
+resonator-consequence = { path = "crates/resonator/consequence" }
+resonator-memory = { path = "crates/resonator/memory" }
+resonator-conversation = { path = "crates/resonator/conversation" }
 resonator-profiles = { path = "crates/resonator/profiles" }
 resonator-runtime = { path = "crates/resonator/runtime" }
 resonator-client = { path = "crates/resonator/client" }

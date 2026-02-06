@@ -148,7 +148,7 @@ impl Default for PlaygroundConfig {
         Self {
             ai_backend: AiBackendConfig {
                 kind: AiBackendKind::LocalLlama,
-                model: "llama3".to_string(),
+                model: "llama3.2:3b".to_string(),
                 endpoint: Some("http://127.0.0.1:11434".to_string()),
                 api_key: None,
                 temperature: Some(0.7),

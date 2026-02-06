@@ -218,7 +218,7 @@ impl PlaygroundService {
             AiBackendKind::LocalLlama => config.ai_backend.to_public(),
             _ => AiBackendPublic {
                 kind: AiBackendKind::LocalLlama,
-                model: "llama3".to_string(),
+                model: "llama3.2:3b".to_string(),
                 endpoint: Some("http://127.0.0.1:11434".to_string()),
                 active: false,
                 configured: false,

@@ -2,7 +2,7 @@
 name = "resonator-commitment"
 version.workspace = true
 edition.workspace = true
-description = "resonator commitment"
+description = "Contract lifecycle manager for MAPLE Resonators - implements state machine, disputes, and expiry tracking"
 
 [dependencies]
 thiserror = { workspace = true }
@@ -14,3 +14,4 @@ mrp-types = { workspace = true }
 aas-types = { workspace = true }
 serde = { workspace = true }
 chrono = { workspace = true }
+uuid = { workspace = true }

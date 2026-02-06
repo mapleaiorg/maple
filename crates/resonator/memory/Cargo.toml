@@ -1,0 +1,14 @@
+[package]
+name = "resonator-memory"
+version.workspace = true
+edition.workspace = true
+description = "Enhanced Memory System for MAPLE Resonators - multi-tier memory with consolidation"
+
+[dependencies]
+thiserror = { workspace = true }
+rcf-types = { workspace = true }
+aas-types = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }

@@ -562,7 +562,7 @@ async fn handle_doctor(args: DoctorArgs) -> Result<(), Box<dyn std::error::Error
             }
         };
 
-        let expected_model = expected_model.unwrap_or_else(|| "llama3".to_string());
+        let expected_model = expected_model.unwrap_or_else(|| "llama3.2:3b".to_string());
         if ollama_models
             .iter()
             .any(|name| model_matches(name, &expected_model))

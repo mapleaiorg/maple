@@ -1,17 +1,17 @@
 [package]
-name = "resonator-meaning"
+name = "resonator-consequence"
 version.workspace = true
 edition.workspace = true
-description = "Meaning formation engine for MAPLE Resonators - implements context accumulation, convergence tracking, and misalignment detection"
+description = "Consequence Tracker for MAPLE Resonators - tracks effects from commitments with audit trails"
 
 [dependencies]
 thiserror = { workspace = true }
 rcf-types = { workspace = true }
-rcf-meaning = { workspace = true }
-rcf-intent = { workspace = true }
 rcf-commitment = { workspace = true }
-mrp-types = { workspace = true }
 aas-types = { workspace = true }
+resonator-commitment = { workspace = true }
 serde = { workspace = true }
+serde_json = { workspace = true }
 chrono = { workspace = true }
 uuid = { workspace = true }
+sha2 = "0.10"

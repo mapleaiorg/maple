@@ -1,0 +1,15 @@
+[package]
+name = "resonator-conversation"
+version.workspace = true
+edition.workspace = true
+description = "Multi-Turn Conversation support for MAPLE Resonators - session management and context preservation"
+
+[dependencies]
+thiserror = { workspace = true }
+rcf-types = { workspace = true }
+resonator-types = { workspace = true }
+resonator-memory = { path = "../memory" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
