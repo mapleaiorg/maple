@@ -57,6 +57,11 @@ aas-service = { workspace = true }
 resonator-types = { workspace = true }
 resonator-profiles = { workspace = true }
 resonator-commitment = { workspace = true }
+resonator-consequence = { workspace = true }
+resonator-memory = { workspace = true }
+resonator-conversation = { workspace = true }
+resonator-observability = { workspace = true }
+resonator-conformance = { workspace = true }
 maple-storage = { workspace = true }
 
 [dev-dependencies]

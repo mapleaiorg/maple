@@ -8,7 +8,7 @@
 //! Run with: `cargo run --example 10_conformance_testing`
 
 use resonator_conformance::{
-    ConformanceSuite, ConformanceReport, Invariant, TestResult,
+    ConformanceSuite, ConformanceConfig, Invariant, TestStatus,
 };
 
 #[tokio::main]
@@ -40,47 +40,36 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("🧪 Running Conformance Tests");
     println!("═══════════════════════════════════════════════════════\n");
 
-    let suite = ConformanceSuite::new();
+    let config = ConformanceConfig::default();
+    let suite = ConformanceSuite::new(config);
 
-    // Test each invariant individually
+    // Run full test suite
+    println!("   Running all invariant tests...\n");
+    let report = suite.run_all();
+
+    // Show per-invariant status
     for (invariant, desc) in &invariants {
-        print!("   Testing: {} ... ", desc);
-
-        let result = suite.test_invariant(*invariant).await?;
-
-        if result.passed {
-            println!("✅ PASS");
-        } else {
-            println!("❌ FAIL - {}", result.message);
-        }
+        let tests = report.by_invariant.get(invariant);
+        let status = match tests {
+            Some(tests) if tests.iter().all(|t| t.status == TestStatus::Passed) => "✅ PASS",
+            Some(_) => "❌ FAIL",
+            None => "⚠️  SKIP",
+        };
+        println!("   {} {}", status, desc);
     }
 
     println!();
 
-    // Run full test suite
+    // Full test suite results
     println!("═══════════════════════════════════════════════════════");
     println!("📊 Full Test Suite Results");
     println!("═══════════════════════════════════════════════════════\n");
 
-    let report = suite.run_all().await?;
-
-    println!("   Total tests: {}", report.total());
-    println!("   Passed: {} ✅", report.passed_count());
-    println!("   Failed: {} ❌", report.failed_count());
-    println!("   Duration: {:?}", report.duration());
-    println!();
-
-    // Detailed results
-    println!("   Detailed Results:");
-    println!("   ─────────────────────────────────────────────────────");
-
-    for result in report.results() {
-        let status = if result.passed { "✅" } else { "❌" };
-        println!("   {} {:?}", status, result.invariant);
-        if !result.passed {
-            println!("      └─ {}", result.message);
-        }
-    }
+    println!("   Total tests: {}", report.summary.total);
+    println!("   Passed: {} ✅", report.summary.passed);
+    println!("   Failed: {} ❌", report.summary.failed);
+    println!("   Skipped: {}", report.summary.skipped);
+    println!("   Duration: {}ms", report.duration_ms);
     println!();
 
     // Overall status
@@ -93,59 +82,52 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("   This implementation requires fixes.");
 
         println!("\n   Failures:");
-        for failure in report.failures() {
-            println!("   • {:?}: {}", failure.invariant, failure.message);
+        for test in &report.tests {
+            if test.status == TestStatus::Failed {
+                println!("   • {:?}: {}", test.invariant, test.name);
+                if let Some(err) = &test.error {
+                    println!("     Error: {}", err);
+                }
+            }
         }
     }
     println!("═══════════════════════════════════════════════════════\n");
 
-    // Export report
-    println!("📄 Exporting Report");
+    // Print the report using Display
+    println!("📄 Detailed Report");
     println!("─────────────────────────────────────────────────────────\n");
+    println!("{}", report);
 
-    let json = report.to_json()?;
-    println!("   JSON report size: {} bytes", json.len());
-
-    // Show a snippet
-    println!("   Report preview:");
-    let preview: serde_json::Value = serde_json::from_str(&json)?;
-    println!("   {}", serde_json::to_string_pretty(&serde_json::json!({
-        "total": preview["total"],
-        "passed": preview["passed"],
-        "failed": preview["failed"],
-        "all_passed": preview["all_passed"],
-    }))?);
-    println!();
-
-    // Demonstrate violation detection
+    // Demonstrate invariant concept
     println!("═══════════════════════════════════════════════════════");
-    println!("🔍 Invariant Violation Detection Demo");
+    println!("🔍 Invariant Demonstration");
     println!("═══════════════════════════════════════════════════════\n");
 
-    println!("   Attempting to create consequence without commitment...");
-
-    // This would demonstrate the invariant enforcement
-    use resonator_consequence::{ConsequenceTracker, InMemoryConsequenceTracker, ConsequenceRequest};
-
-    let tracker = InMemoryConsequenceTracker::new();
-
-    let result = tracker.request_consequence(
-        "non_existent_commitment".to_string(),
-        ConsequenceRequest {
-            action: "test_action".to_string(),
-            parameters: serde_json::json!({}),
-        },
-    );
-
-    match result {
-        Err(e) => {
-            println!("   ✅ Correctly rejected: {}", e);
-            println!("   Invariant 4 (Commitment precedes Consequence) enforced!");
-        }
-        Ok(_) => {
-            println!("   ❌ ERROR: Should have rejected consequence without commitment");
-        }
-    }
+    println!("   The conformance suite verifies that:");
+    println!();
+    println!("   ✓ Presence is required before Coupling");
+    println!("     - ResonatorId type enforces presence at compile time");
+    println!();
+    println!("   ✓ Coupling is required before Meaning");
+    println!("     - MeaningFormationEngine requires CouplingContext");
+    println!();
+    println!("   ✓ Meaning is required before Intent");
+    println!("     - IntentStabilizationEngine requires MeaningContext");
+    println!();
+    println!("   ✓ Commitment is required before Consequence");
+    println!("     - ConsequenceTracker validates active commitment exists");
+    println!();
+    println!("   ✓ Receipts are immutable");
+    println!("     - ConsequenceReceipt has no mutation methods");
+    println!();
+    println!("   ✓ Audit trails are append-only");
+    println!("     - AuditTrail only exposes append() method");
+    println!();
+    println!("   ✓ Capabilities gate actions");
+    println!("     - CapabilityChecker validates before execution");
+    println!();
+    println!("   ✓ Time anchors are monotonic");
+    println!("     - TemporalAnchor::new() ensures ordering");
     println!();
 
     println!("🎉 Conformance testing example completed!");

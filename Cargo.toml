@@ -196,6 +196,9 @@ resonator-conversation = { path = "crates/resonator/conversation" }
 resonator-profiles = { path = "crates/resonator/profiles" }
 resonator-runtime = { path = "crates/resonator/runtime" }
 resonator-client = { path = "crates/resonator/client" }
+resonator-cli = { path = "crates/resonator/cli" }
+resonator-observability = { path = "crates/resonator/observability" }
+resonator-conformance = { path = "crates/resonator/conformance" }
 maple-runtime = { path = "crates/maple-runtime" }
 maple-storage = { path = "crates/maple/storage" }
 maple-model-openai = { path = "crates/maple/model-openai" }

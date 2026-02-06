@@ -874,25 +874,91 @@ async fn daemon_start(
 
 async fn daemon_stop(endpoint: &str) -> Result<(), Box<dyn std::error::Error>> {
     let client = build_http_client()?;
-    if request_api_shutdown(&client, endpoint).await {
-        print_ok("Shutdown request sent to PALM daemon");
-        return Ok(());
+
+    // First check if daemon is running
+    let was_running = check_daemon_health(&client, endpoint).await.is_ok();
+
+    if was_running {
+        // Try API shutdown first
+        let shutdown_sent = request_api_shutdown(&client, endpoint).await;
+
+        if shutdown_sent {
+            print_ok("Shutdown request accepted by PALM daemon");
+        } else {
+            // The request might fail because the daemon shut down mid-request
+            // This is actually a success case - wait and verify
+            print_ok("Shutdown request sent (connection closed during shutdown)");
+        }
+
+        // Wait briefly for daemon to stop
+        tokio::time::sleep(Duration::from_millis(500)).await;
+
+        // Verify daemon has stopped
+        for i in 0..10 {
+            if check_daemon_health(&client, endpoint).await.is_err() {
+                print_ok("PALM daemon has stopped");
+                // Clean up PID file
+                if let Some(pid_path) = state_dir_path().map(|p| p.join("palmd.pid")) {
+                    let _ = fs::remove_file(pid_path);
+                }
+                return Ok(());
+            }
+            if i < 9 {
+                tokio::time::sleep(Duration::from_millis(500)).await;
+            }
+        }
+
+        // Daemon still running, try PID fallback
+        print_warn("Daemon still responding after shutdown request, trying PID fallback");
     }
 
+    // PID fallback: either daemon wasn't running via API or shutdown didn't work
     if let Some(pid_path) = state_dir_path().map(|p| p.join("palmd.pid")) {
         if let Some(pid_file) = read_pid_file(&pid_path)? {
-            if try_terminate_process(pid_file.pid)? {
-                print_ok(&format!(
-                    "Sent termination signal to daemon process {} (PID file fallback)",
+            if is_process_alive(pid_file.pid)? {
+                if try_terminate_process(pid_file.pid)? {
+                    print_ok(&format!(
+                        "Sent SIGTERM to daemon process (pid={})",
+                        pid_file.pid
+                    ));
+
+                    // Wait for process to exit
+                    for i in 0..20 {
+                        if !is_process_alive(pid_file.pid)? {
+                            print_ok("Daemon process has exited");
+                            let _ = fs::remove_file(&pid_path);
+                            return Ok(());
+                        }
+                        if i < 19 {
+                            tokio::time::sleep(Duration::from_millis(250)).await;
+                        }
+                    }
+
+                    // Force kill if still running
+                    print_warn("Process still running after SIGTERM, sending SIGKILL");
+                    if try_kill_process(pid_file.pid)? {
+                        let _ = fs::remove_file(&pid_path);
+                        print_ok("Daemon process forcefully terminated");
+                        return Ok(());
+                    }
+                }
+            } else {
+                print_warn(&format!(
+                    "PID file exists but process {} is not running, cleaning up",
                     pid_file.pid
                 ));
-                let _ = fs::remove_file(pid_path);
+                let _ = fs::remove_file(&pid_path);
                 return Ok(());
             }
         }
     }
 
-    Err("Unable to stop daemon: API shutdown failed and no managed process found".into())
+    if !was_running {
+        print_warn("PALM daemon does not appear to be running");
+        return Ok(());
+    }
+
+    Err("Unable to stop daemon: all shutdown methods failed".into())
 }
 
 async fn daemon_status(endpoint: &str) -> Result<(), Box<dyn std::error::Error>> {
@@ -1235,6 +1301,23 @@ fn try_terminate_process(pid: u32) -> Result<bool, Box<dyn std::error::Error>> {
     {
         let status = Command::new("kill")
             .arg("-TERM")
+            .arg(pid.to_string())
+            .status()?;
+        return Ok(status.success());
+    }
+
+    #[cfg(not(unix))]
+    {
+        let _ = pid;
+        Ok(false)
+    }
+}
+
+fn try_kill_process(pid: u32) -> Result<bool, Box<dyn std::error::Error>> {
+    #[cfg(unix)]
+    {
+        let status = Command::new("kill")
+            .arg("-KILL")
             .arg(pid.to_string())
             .status()?;
         return Ok(status.success());

@@ -1,111 +1,268 @@
 # 🍁 MAPLE AI Framework
 
-**The World's Most Advanced Multi-Agent AI Platform**
+**Multi-Agent Platform for Learning and Evolution**
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/mapleaiorg/maple)
 [![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue)](LICENSE)
 [![Rust Version](https://img.shields.io/badge/rust-1.75%2B-orange)](https://www.rust-lang.org)
 
-MAPLE (Multi-Agent Platform for Learning and Evolution) is a revolutionary AI framework built entirely on **Resonance Architecture** principles. It powers three transformative platforms:
-
-- 🤖 **Mapleverse**: Pure AI agent coordination (100M+ concurrent agents)
-- 🌍 **Finalverse**: Meaningful human-AI coexistence
-- 🏦 **iBank**: Autonomous AI-only financial system
-
----
+MAPLE is a production-ready AI framework built on **Resonance Architecture** - a fundamentally different approach to multi-agent systems that prioritizes meaningful relationships, architectural safety, and accountability.
 
 ## 🚀 Quick Start
 
-### Installation
-
 ```bash
-# Clone the repository
+# Clone and build
 git clone https://github.com/mapleaiorg/maple.git
 cd maple
-
-# Build the entire workspace
 cargo build --release
 
-# Run tests
-cargo test
-
-# Try an example
+# Run your first example
 cargo run -p maple-runtime --example 01_basic_resonator
+
+# Start the control plane (optional)
+cargo run -p maple-cli -- daemon start
 ```
 
-### Your First MAPLE Application
+### Your First Resonator
 
 ```rust
 use maple_runtime::{MapleRuntime, ResonatorSpec, config::RuntimeConfig};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Bootstrap the MAPLE Resonance Runtime
-    let config = RuntimeConfig::default();
-    let runtime = MapleRuntime::bootstrap(config).await?;
+    // Bootstrap runtime
+    let runtime = MapleRuntime::bootstrap(RuntimeConfig::default()).await?;
 
-    // Register a Resonator
-    let spec = ResonatorSpec::default();
-    let resonator = runtime.register_resonator(spec).await?;
-
+    // Register a Resonator (intelligent entity)
+    let resonator = runtime.register_resonator(ResonatorSpec::default()).await?;
     println!("Resonator created: {}", resonator.id);
 
-    // Graceful shutdown
     runtime.shutdown().await?;
     Ok(())
 }
 ```
 
-### Operations: CLI and Playground
+---
 
-MAPLE can run fully headless (runtime-only) or with the PALM control plane + Playground UI.
+## 🏗️ Architecture Overview
 
-- **`maple`** is the umbrella CLI. Use `maple palm ...` for operations and `maple` for developer utilities.
-- **`maple`** is the umbrella CLI. PALM ops can be run directly (`maple spec list`) or explicitly (`maple palm spec list`).
-- **`palm`** still exists as a direct operations CLI (same commands as `maple palm ...`).
-- The **Playground** is optional and provides a live, game-like view plus history replay for humans and web observers.
+MAPLE implements the **Resonance Pipeline** - a strict ordering of cognitive stages:
 
-Examples:
-
-```bash
-# Start the PALM daemon (API + control plane)
-cargo run -p palm-daemon
-
-# Or manage it with maple lifecycle commands
-maple daemon start --platform mapleverse
-maple daemon status
-
-# Install the CLI binaries (no cargo run required)
-cargo install --path crates/maple-cli --bin maple && cargo install --path crates/palm/cli --bin palm
-
-# Real-time monitoring in the terminal (umbrella CLI)
-cargo run -p maple-cli -- events watch
-cargo run -p maple-cli -- playground activities --limit 50
-
-# Direct operations CLI (optional)
-cargo run -p palm -- events watch
-
-# 1) doctor
-cargo run -p maple-cli -- doctor
-
-# 2) start daemon via CLI
-cargo run -p maple-cli -- daemon start --platform ibank --storage memory
-
-# 3) stop daemon without Ctrl+C
-cargo run -p maple-cli -- daemon stop
-
-# Open the web dashboard (optional)
-open http://localhost:8080/playground
-
-# Run local readiness checks (daemon + storage + Ollama/model)
-maple doctor
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                         RESONANCE PIPELINE                                   │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│   Presence ──→ Coupling ──→ Meaning ──→ Intent ──→ Commitment ──→ Consequence│
+│      │            │            │           │            │              │     │
+│      ▼            ▼            ▼           ▼            ▼              ▼     │
+│   Identity    Relation-    Semantic    Stabilized   Auditable      Tracked  │
+│   verified    ships        under-      goals        promises       outcomes │
+│               formed       standing                                          │
+│                                                                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│   Memory System │ Observability │ Conformance Testing │ Protocol Adapters   │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-The PALM daemon defaults to PostgreSQL (`postgres://postgres:postgres@localhost:5432/maple`). In `development` profile, it falls back to in-memory storage if PostgreSQL is unreachable so local startup does not block.
+### The 8 Runtime Invariants
 
-You can force in-memory mode with `PALM_STORAGE_TYPE=memory`.
+These are **enforced at runtime** - violations cause errors, not silent failures:
 
-First-time local PostgreSQL setup (Docker):
+| # | Invariant | Meaning |
+|---|-----------|---------|
+| 1 | Presence precedes Coupling | Must establish presence before forming relationships |
+| 2 | Coupling precedes Meaning | Meaning only forms within established couplings |
+| 3 | Meaning precedes Intent | Intent requires sufficient meaning convergence |
+| 4 | Commitment precedes Consequence | No action without explicit, auditable commitment |
+| 5 | Receipts are Immutable | Commitment receipts cannot be modified |
+| 6 | Audit trail is Append-Only | Audit entries can only be added, never removed |
+| 7 | Capabilities gate Actions | Actions require explicit capability grants |
+| 8 | Time anchors are Monotonic | Temporal anchors always increase |
+
+---
+
+## 📦 Project Structure
+
+```
+maple/
+├── crates/
+│   ├── maple-runtime/          # Core Resonance Runtime
+│   ├── maple-cli/              # Umbrella CLI (maple command)
+│   │
+│   ├── resonator/              # Resonator Layer (cognition/lifecycle)
+│   │   ├── types/              # Core identity, presence, coupling types
+│   │   ├── identity/           # Persistent identity & continuity
+│   │   ├── meaning/            # Meaning formation engine
+│   │   ├── intent/             # Intent stabilization engine
+│   │   ├── commitment/         # Contract lifecycle & commitments
+│   │   ├── consequence/        # Consequence tracking & attribution
+│   │   ├── memory/             # Multi-tier memory system
+│   │   ├── conversation/       # Multi-turn conversation management
+│   │   ├── observability/      # Metrics, tracing, alerting
+│   │   ├── conformance/        # Invariant verification tests
+│   │   ├── profiles/           # Profile constraints (Human, World, etc.)
+│   │   └── cli/                # Resonator CLI tools
+│   │
+│   ├── palm/                   # PALM Control Plane
+│   │   ├── daemon/             # API server & control plane
+│   │   ├── cli/                # Operations CLI
+│   │   └── types/              # PALM types
+│   │
+│   ├── rcf-*/                  # Resonance Commitment Format
+│   ├── aas-*/                  # Authority & Accountability Service
+│   ├── mrp-*/                  # MAPLE Routing Protocol
+│   ├── eve-*/                  # Evidence & Verification Engine
+│   └── mapleverse/             # Mapleverse platform components
+│
+└── docs/                       # Documentation
+```
+
+---
+
+## 🧠 Core Features
+
+### Cognitive Pipeline
+
+The full meaning-to-commitment pipeline with semantic understanding:
+
+```rust
+use resonator_meaning::MeaningFormationEngine;
+use resonator_intent::IntentStabilizationEngine;
+use resonator_commitment::ContractEngine;
+
+// Form meaning from input
+let meaning_engine = MeaningFormationEngine::new();
+let meaning = meaning_engine.form_meaning(&input, &coupling_context).await?;
+
+// Stabilize intent from meaning
+let intent_engine = IntentStabilizationEngine::new();
+let intent = intent_engine.stabilize(&meaning).await?;
+
+// Create auditable commitment
+let contract_engine = ContractEngine::new();
+let commitment = contract_engine.create_commitment(intent).await?;
+```
+
+### Memory System
+
+Multi-tier memory for intelligent context management:
+
+```rust
+use resonator_memory::{MemorySystem, MemoryEntry, MemoryTier};
+
+let memory = MemorySystem::new();
+
+// Store with appropriate tier
+memory.store(MemoryEntry::new("key", content, MemoryTier::Working)).await?;
+
+// Retrieve relevant memories
+let memories = memory.retrieve_relevant(&context, 10).await?;
+
+// Consolidate working → long-term
+memory.consolidate().await?;
+```
+
+**Memory Tiers:**
+- **Short-term**: Quick access, auto-expiring (recent interactions)
+- **Working**: Active processing context (current task)
+- **Long-term**: Persistent storage (learned patterns)
+- **Episodic**: Experience sequences with emotional context
+
+### Observability
+
+Built-in metrics, tracing, and alerting:
+
+```rust
+use resonator_observability::{MetricsCollector, SpanTracker, AlertEngine};
+
+let metrics = MetricsCollector::new();
+let spans = SpanTracker::default();
+let alerts = AlertEngine::default();
+
+// Track pipeline metrics
+metrics.record_pipeline_latency(PipelineStage::Meaning, 45.0);
+metrics.record_commitment_created();
+
+// Distributed tracing
+let span = spans.start_span("commitment.validate");
+// ... do work ...
+spans.complete_span(&span.id)?;
+
+// Configure alerts
+alerts.add_rule(AlertRule {
+    name: "high_failure_rate".into(),
+    metric: "commitment.failed".into(),
+    threshold: 5.0,
+    severity: AlertSeverity::Warning,
+    ..Default::default()
+})?;
+```
+
+### Conformance Testing
+
+Verify invariant compliance:
+
+```rust
+use resonator_conformance::{ConformanceSuite, Invariant};
+
+let suite = ConformanceSuite::new(ConformanceConfig::default());
+
+// Run all invariant tests
+let report = suite.run_all();
+
+if report.all_passed() {
+    println!("✅ All 8 invariants verified - MAPLE compliant!");
+} else {
+    for test in report.failures() {
+        println!("❌ {:?}: {}", test.invariant, test.error);
+    }
+}
+```
+
+---
+
+## 🎮 Operations
+
+### CLI Commands
+
+```bash
+# Daemon management
+maple daemon start              # Start PALM daemon
+maple daemon status             # Check daemon health
+maple daemon stop               # Graceful shutdown
+
+# System health
+maple doctor                    # Run diagnostic checks
+
+# Resonator management
+maple resonator list            # List active resonators
+maple resonator inspect <id>    # View resonator details
+
+# Monitoring
+maple events watch              # Real-time event stream
+maple playground activities     # View recent activities
+
+# Commitment management (via resonator CLI)
+resonator commitment list       # List active commitments
+resonator commitment lifecycle  # Show state machine
+resonator consequence list      # View tracked consequences
+```
+
+### Starting the Daemon
+
+```bash
+# With PostgreSQL (default)
+maple daemon start --platform mapleverse
+
+# With in-memory storage (development)
+maple daemon start --storage memory
+
+# Environment override
+PALM_STORAGE_TYPE=memory maple daemon start
+```
+
+### PostgreSQL Setup (Docker)
 
 ```bash
 docker run --name maple-postgres \
@@ -117,361 +274,102 @@ docker run --name maple-postgres \
   -d postgres:16
 ```
 
-### Release Playbook (Stage-Gated)
-
-For first-time contributors and release prep, use:
-
-- [`docs/staged-rollout-checklist.md`](docs/staged-rollout-checklist.md)
-
-It maps Stage 1-5 to:
-
-- exact files touched
-- acceptance commands per stage
-- final workspace release gate command
-
----
-
-## 📦 Project Structure
-
-This monorepo contains the complete MAPLE ecosystem:
-
-Layered component folders:
-
-- `crates/palm/*` for PALM operational/control-plane components
-- `crates/resonator/*` for Resonator cognition/lifecycle components
-- `crates/mapleverse/*` for Mapleverse execution/service components
-
-See also: [Repository Structure Guide](docs/repo-structure.md)
-
-### 🧠 Core Runtime
-
-#### **[maple-runtime](crates/maple-runtime/)** - The Heart of MAPLE
-The foundational Resonance Runtime powering all MAPLE platforms.
-
-**Features:**
-- Resonance-native architecture (presence → coupling → meaning → intent → commitment → consequence)
-- 8 runtime-enforced architectural invariants
-- Attention economics with finite budgets
-- Gradient presence (multidimensional, not binary)
-- Temporal coordination without global clocks
-- Platform-specific configurations (Mapleverse, Finalverse, iBank)
-
-**[📖 Read the maple-runtime documentation](crates/maple-runtime/README.md)**
-
-### 🎭 Resonator Layer
-
-**[resonator-types](crates/resonator/types/)** - Core types for Resonators
-- Identity, presence, coupling definitions
-- Profile types (Human, World, Coordination, IBank)
-
-**[resonator-runtime](crates/resonator/runtime/)** - Resonator execution engine
-- Resonator lifecycle management
-- State management
-- Event processing
-
-**[resonator-identity](crates/resonator/identity/)** - Identity and continuity
-- Persistent identity across restarts
-- Continuity proofs
-- Identity verification
-
-**[resonator-meaning](crates/resonator/meaning/)** - Meaning formation
-- Semantic understanding
-- Context building
-- Meaning convergence tracking
-
-**[resonator-intent](crates/resonator/intent/)** - Intent stabilization
-- Intent formation from meaning
-- Intent validation
-- Intent tracking
-
-**[resonator-commitment](crates/resonator/commitment/)** - Commitment management
-- Commitment creation and tracking
-- Audit trails
-- Consequence management
-
-**[resonator-profiles](crates/resonator/profiles/)** - Profile system
-- Profile validation
-- Cross-profile rules
-- Safety constraints
-
-**[resonator-client](crates/resonator/client/)** - Client libraries
-- High-level API for applications
-- Simplified Resonator interaction
-
-### 📜 Resonance Commitment Format (RCF)
-
-- **[rcf-types](crates/rcf-types/)** - RCF type system
-- **[rcf-meaning](crates/rcf-meaning/)** - Meaning expression
-- **[rcf-intent](crates/rcf-intent/)** - Intent declaration
-- **[rcf-commitment](crates/rcf-commitment/)** - Commitment specification
-- **[rcf-validator](crates/rcf-validator/)** - Contract validation
-- **[rcf-compiler](crates/rcf-compiler/)** - RCF compiler
-- **[rcf-audit](crates/rcf-audit/)** - Audit trail generation
-
-### 🌐 MAPLE Routing Protocol (MRP)
-
-- **[mrp-types](crates/mrp-types/)** - MRP type definitions
-- **[mrp-router](crates/mrp-router/)** - Resonance routing
-- **[mrp-transport](crates/mrp-transport/)** - Transport layer
-- **[mrp-service](crates/mrp-service/)** - MRP service
-
-### 🛡️ Authority & Accountability Service (AAS)
-
-- **[aas-types](crates/aas-types/)** - AAS type system
-- **[aas-identity](crates/aas-identity/)** - Identity management
-- **[aas-capability](crates/aas-capability/)** - Capability system
-- **[aas-policy](crates/aas-policy/)** - Policy enforcement
-- **[aas-adjudication](crates/aas-adjudication/)** - Dispute resolution
-- **[aas-ledger](crates/aas-ledger/)** - Accountability ledger
-- **[aas-service](crates/aas-service/)** - AAS service
-
-### 🌍 Mapleverse Platform
-
-- **[mapleverse-types](crates/mapleverse/types/)** - Platform types
-- **[mapleverse-executor](crates/mapleverse/executor/)** - Agent execution
-- **[mapleverse-connectors](crates/mapleverse/connectors/)** - External integrations
-- **[mapleverse-evidence](crates/mapleverse/evidence/)** - Evidence collection
-- **[mapleverse-service](crates/mapleverse/service/)** - Mapleverse service
-
-### 📚 Evidence & Verification Engine (EVE)
-
-- **[eve-types](crates/eve-types/)** - EVE type system
-- **[eve-ingestion](crates/eve-ingestion/)** - Data ingestion
-- **[eve-evaluation](crates/eve-evaluation/)** - Evidence evaluation
-- **[eve-artifacts](crates/eve-artifacts/)** - Artifact management
-- **[eve-service](crates/eve-service/)** - EVE service
-
-### 🔧 Integration & Tools
-
-- **[maple-integration](crates/maple-integration/)** - Integration tests
-- **[maple-cli](crates/maple-cli/)** - Umbrella CLI (`maple` + `maple palm ...`)
-- **[palm](crates/palm/cli/)** - Direct operations CLI (backwards compatible)
-- **[palm-daemon](crates/palm/daemon/)** - Control plane + API service
-
----
-
-## 🏗️ Architecture
-
-### The Resonance Architecture
-
-MAPLE is built on a fundamentally different paradigm than traditional agent frameworks:
-
-```
-Traditional Agent Frameworks:
-
-  ┌─────────┐   message    ┌─────────┐   message    ┌─────────┐
-  │ Agent A │ ───────────> │ Agent B │ ───────────> │ Agent C │
-  └─────────┘              └─────────┘              └─────────┘
-      ↓                         ↓                       ↓
-   Stateless                 Stateless               Stateless
-   Isolated                  Isolated                Isolated
-
------------------------------------------------------------------
-
-MAPLE Resonance Architecture:
-
-┌─────────────┐ coupling ┌─────────────┐ coupling ┌──────────────┐
-│ Resonator A │<========>│ Resonator B │<========>│ Resonator C  │
-│             │          │             │          │              │
-│ [presence]  │          │ [presence]  │          │ [presence]   │
-│      ↓      │          │      ↓      │          │      ↓       │
-│ [meaning] ──┼─────────>│ [meaning] ──┼─────────>│ [meaning]    │
-│      ↓      │          │      ↓      │          │      ↓       │
-│ [intent] ───┼─────────>│ [commitment]│─────────>│ [consequence]│
-└─────────────┘          └─────────────┘          └──────────────┘
-      ↓                         ↓                        ↓
-   Stateful                  Stateful                 Stateful
-   Relationship              Relationship             Relationship
-```
-
-### Core Flow
-
-Every interaction in MAPLE follows this architectural flow:
-
-1. **Presence** - Gradient, multidimensional (NOT binary online/offline)
-2. **Coupling** - Stateful relationships that strengthen gradually
-3. **Meaning** - Semantic understanding that converges over time
-4. **Intent** - Stabilized goals formed from sufficient meaning
-5. **Commitment** - Explicit promises with audit trails
-6. **Consequence** - Attributable outcomes from commitments
-
-### The 8 Architectural Invariants
-
-These invariants are **enforced at runtime** and violations constitute system errors:
-
-1. **Presence precedes meaning** - Must be present before forming/receiving meaning
-2. **Meaning precedes intent** - Intent requires sufficient meaning
-3. **Intent precedes commitment** - Commitments require stabilized intent
-4. **Commitment precedes consequence** - No consequence without explicit commitment
-5. **Coupling bounded by attention** - Coupling strength ≤ available attention
-6. **Safety overrides optimization** - Safety constraints always take precedence
-7. **Human agency cannot be bypassed** - Architectural (not policy) protection
-8. **Failure must be explicit** - All failures surfaced, never hidden
-
 ---
 
 ## 🎯 Platform Configurations
 
-### 🤖 Mapleverse - Pure AI Agent Coordination
+MAPLE supports three platform profiles with different safety constraints:
+
+### Mapleverse (Pure AI Coordination)
 
 ```rust
-use maple_runtime::{MapleRuntime, config::mapleverse_runtime_config};
+use maple_runtime::config::mapleverse_runtime_config;
 
-let config = mapleverse_runtime_config();
-let runtime = MapleRuntime::bootstrap(config).await?;
+let runtime = MapleRuntime::bootstrap(mapleverse_runtime_config()).await?;
 ```
 
-**Characteristics:**
-- No human profiles allowed (pure AI)
+- No human profiles (pure AI agents)
 - Strong commitment accountability
-- Explicit coupling and intent
 - Optimized for 100M+ concurrent agents
-- Federated collective intelligence
 
-**Use Cases:**
-- Autonomous agent swarms
-- Distributed AI coordination
-- Multi-agent reinforcement learning
-- Agent marketplaces
-
-### 🌍 Finalverse - Human-AI Coexistence
+### Finalverse (Human-AI Coexistence)
 
 ```rust
-use maple_runtime::{MapleRuntime, config::finalverse_runtime_config};
+use maple_runtime::config::finalverse_runtime_config;
 
-let config = finalverse_runtime_config();
-let runtime = MapleRuntime::bootstrap(config).await?;
+let runtime = MapleRuntime::bootstrap(finalverse_runtime_config()).await?;
 ```
 
-**Characteristics:**
 - Architectural human agency protection
-- Coercion detection enabled
-- Emotional exploitation prevention
+- Coercion and exploitation detection
 - Reversible consequences preferred
-- Experiential focus
 
-**Use Cases:**
-- Virtual worlds
-- AI companions
-- Interactive storytelling
-- Educational environments
-- Therapeutic applications
-
-### 🏦 iBank - Autonomous AI Finance
+### iBank (Autonomous AI Finance)
 
 ```rust
-use maple_runtime::{MapleRuntime, config::ibank_runtime_config};
+use maple_runtime::config::ibank_runtime_config;
 
-let config = ibank_runtime_config();
-let runtime = MapleRuntime::bootstrap(config).await?;
+let runtime = MapleRuntime::bootstrap(ibank_runtime_config()).await?;
 ```
 
-**Characteristics:**
-- AI-only (no humans)
+- AI-only (no human participants)
 - Mandatory audit trails
-- Risk assessments required
 - Risk-bounded decisions ($1M autonomous limit)
-- Strict accountability
 
-**Use Cases:**
-- Autonomous trading systems
-- AI-managed portfolios
-- Decentralized finance
-- Algorithmic market making
-- Risk management
+---
+
+## 📚 Examples
+
+```bash
+# Basic resonator lifecycle
+cargo run -p maple-runtime --example 01_basic_resonator
+
+# Coupling dynamics
+cargo run -p maple-runtime --example 02_resonator_coupling
+
+# Platform configurations
+cargo run -p maple-runtime --example 03_mapleverse_config
+cargo run -p maple-runtime --example 04_finalverse_config
+cargo run -p maple-runtime --example 05_ibank_config
+
+# Multi-resonator coordination
+cargo run -p maple-runtime --example 06_multi_resonator
+
+# Cognitive pipeline (meaning → commitment)
+cargo run -p maple-runtime --example 07_meaning_to_commitment
+
+# Memory and conversation
+cargo run -p maple-runtime --example 08_memory_and_conversation
+
+# Observability demo
+cargo run -p maple-runtime --example 09_observability_demo
+
+# Conformance testing
+cargo run -p maple-runtime --example 10_conformance_testing
+```
 
 ---
 
 ## 🌟 Why MAPLE?
 
-### vs. Google A2A and Anthropic MCP
+### vs. Traditional Agent Frameworks
 
-| Aspect | Google A2A | Anthropic MCP | **MAPLE** |
-|--------|------------|---------------|-----------|
-| **Core Model** | Tool invocation | Context injection | **Resonance relationships** |
-| **Identity** | Ephemeral | None | **Persistent continuity** |
-| **Relationships** | Point-to-point | None | **Dynamic coupling** |
-| **Semantics** | Function signatures | JSON schema | **Emergent meaning** |
-| **Accountability** | None | None | **Commitment ledger** |
-| **Learning** | None | None | **Federated intelligence** |
-| **Safety** | Policy-based | Policy-based | **Architectural invariants** |
-| **Human Protection** | Implicit trust | Implicit trust | **Explicit preservation** |
-| **Scale Target** | Thousands | Hundreds | **100M+ Resonators** |
+| Aspect | Traditional | MAPLE |
+|--------|-------------|-------|
+| **Interactions** | Stateless messages | Stateful relationships (coupling) |
+| **Identity** | Ephemeral | Persistent continuity |
+| **Safety** | Policy-based | Architectural invariants |
+| **Accountability** | Implicit trust | Commitment ledger with audit |
+| **Semantics** | Function signatures | Emergent meaning |
+| **Scale** | Thousands | 100M+ Resonators |
 
 ### Key Differentiators
 
-#### 1. **Resonance Over Messages**
-Not ephemeral messages - stateful relationships that evolve and strengthen over time.
-
-#### 2. **Architecture Over Policy**
-Safety through architectural invariants, not policies that can be bypassed.
-
-#### 3. **Attention Economics**
-Finite attention budgets prevent abuse and enable graceful degradation.
-
-#### 4. **Gradient Representations**
-Presence, coupling, meaning - all are gradients, not binaries.
-
-#### 5. **Commitment Accountability**
-Every consequential action has an audit trail and is attributable.
-
-#### 6. **Human Agency Guarantees**
-Architectural protection - humans can always disengage.
-
-#### 7. **Causal Time**
-No global clocks - causal ordering through temporal anchors.
-
-#### 8. **Extreme Scale**
-Designed from day one for 100M+ concurrent Resonators.
-
----
-
-## 📚 Documentation
-
-### For Users
-
-- **[Getting Started Guide](docs/getting-started.md)** - Your first MAPLE application
-- **[Operations Tutorial](docs/tutorials/operations.md)** - Daemon, CLI, and Playground workflows
-- **[Architecture Overview](docs/architecture.md)** - Understanding Resonance Architecture
-- **[Platform Guides](docs/platforms/)** - Mapleverse, Finalverse, iBank
-- **[API Reference](https://docs.mapleai.org/api)** - Complete API documentation
-- **[Examples](crates/maple-runtime/examples/)** - Working code examples
-
-### For Contributors
-
-- **[Contributing Guide](CONTRIBUTING.md)** - How to contribute
-- **[Development Setup](docs/development.md)** - Setting up your environment
-- **[Architecture Decision Records](docs/adr/)** - Design decisions
-- **[Roadmap](ROADMAP.md)** - Future plans
-
-### Core Concepts
-
-- **[Core Agents](docs/core/agents.md)** - `Agent = Resonator + Profile + Capability + Contracts`
-- **[Core Interop](docs/core/interop.md)** - MCP/A2A/vendor SDK mapping without bypass
-- **[Core Llama-First](docs/core/llama-first.md)** - Llama cognition, repair, gating, replay
-- **[UAL (Universal Agent Language)](docs/concepts/ual.md)** - Human/agent interaction language
-- **[Agents, Resonators, and LLMs](docs/concepts/agent-resonator-llm.md)** - Conceptual mapping aligned with `ModelAdapter`, `CapabilityExecutor`, and `CommitmentGateway`
-- **[Resonators](docs/concepts/resonators.md)** - Persistent intelligent entities
-- **[Coupling](docs/concepts/coupling.md)** - Stateful relationships
-- **[Attention](docs/concepts/attention.md)** - Resource economics
-- **[Commitments](docs/concepts/commitments.md)** - Accountability system
-- **[Temporal Anchors](docs/concepts/temporal.md)** - Causal ordering
-- **[Profiles](docs/concepts/profiles.md)** - Different modes of operation
-
----
-
-## 🚀 Performance
-
-MAPLE is designed for **extreme scale**:
-
-| Metric | Target | Status |
-|--------|--------|--------|
-| Resonator Registration | <1ms | ✅ |
-| Coupling Establishment | <5ms | ✅ |
-| Attention Allocation | <100μs | ✅ |
-| Invariant Check | <10μs | ✅ |
-| Concurrent Resonators (per node) | 100,000+ | ✅ |
-| Total Scale | 100M+ | 🎯 |
+1. **Resonance Over Messages** - Relationships that evolve and strengthen
+2. **Architecture Over Policy** - Safety through invariants, not bypassable rules
+3. **Attention Economics** - Finite budgets prevent abuse
+4. **Commitment Accountability** - Every action has an audit trail
+5. **Gradient Representations** - Presence, coupling, meaning are gradients, not binaries
 
 ---
 
@@ -479,106 +377,54 @@ MAPLE is designed for **extreme scale**:
 
 ### Prerequisites
 
-- Rust 1.75 or higher
-- Tokio async runtime
-- PostgreSQL (for persistence)
+- Rust 1.75+
+- PostgreSQL (optional, for persistence)
+- Docker (optional, for PostgreSQL)
 
-### Building from Source
+### Building
 
 ```bash
-# Clone repository
-git clone https://github.com/mapleaiorg/maple.git
-cd maple
-
-# Build entire workspace
-cargo build --release
-
-# Build specific crate
-cargo build -p maple-runtime --release
-
-# Run tests
-cargo test --workspace
-
-# Run tests for specific crate
-cargo test -p maple-runtime
-
-# Generate documentation
-cargo doc --workspace --no-deps --open
+cargo build --release          # Full workspace
+cargo build -p maple-runtime   # Specific crate
+cargo test --workspace         # Run all tests
+cargo doc --workspace --open   # Generate docs
 ```
 
-### Running Examples
+### Project Health
 
 ```bash
-# Basic Resonator example
-cargo run -p maple-runtime --example 01_basic_resonator
+# Run all checks
+cargo fmt --all -- --check
+cargo clippy --workspace
+cargo test --workspace
 
-# Coupling dynamics
-cargo run -p maple-runtime --example 02_resonator_coupling
-
-# Mapleverse configuration
-cargo run -p maple-runtime --example 03_mapleverse_config
-
-# Finalverse configuration
-cargo run -p maple-runtime --example 04_finalverse_config
-
-# iBank configuration
-cargo run -p maple-runtime --example 05_ibank_config
+# Conformance verification
+cargo test -p resonator-conformance
 ```
 
 ---
 
-## 🗺️ Roadmap
+## 📖 Documentation
 
-### Phase 1: Foundation (Current)
-- ✅ MAPLE Resonance Runtime
-- ✅ 8 Architectural Invariants
-- ✅ Attention Economics
-- ✅ Gradient Presence
-- ✅ Coupling Dynamics
-- ✅ Temporal Coordination
-- ✅ Platform Configurations
-
-### Phase 2: Cognitive Pipeline (Q2 2026)
-- 🚧 Meaning Formation Engine
-- 🚧 Intent Stabilization Engine
-- 🚧 Commitment Manager
-- 🚧 Consequence Tracker
-- 🚧 Human Agency Protector
-- 🚧 Safety Boundary Enforcer
-
-### Phase 3: Distribution (Q3 2026)
-- ⏳ Distributed runtime (multi-node)
-- ⏳ Persistence layer
-- ⏳ Cross-runtime resonance
-- ⏳ Federated learning
-- ⏳ Web UI dashboard
-
-### Phase 4: Platforms (Q4 2026)
-- ⏳ Mapleverse alpha
-- ⏳ Finalverse alpha
-- ⏳ iBank alpha
-- ⏳ Platform integrations
-
-### Phase 5: Ecosystem (2027)
-- ⏳ WASM target
-- ⏳ Mobile SDKs
-- ⏳ Cloud deployment
-- ⏳ Enterprise features
+- **[Getting Started Guide](docs/getting-started.md)** - First steps with MAPLE
+- **[Architecture Overview](docs/architecture.md)** - Deep dive into Resonance Architecture
+- **[Resonator Layer](crates/resonator/README.md)** - Cognitive pipeline documentation
+- **[CLI Reference](crates/resonator/cli/README.md)** - Command-line tools
+- **[Observability Guide](crates/resonator/observability/README.md)** - Metrics and tracing
+- **[Conformance Testing](crates/resonator/conformance/README.md)** - Invariant verification
+- **[API Reference](https://docs.mapleai.org/api)** - Complete API docs
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
-### Ways to Contribute
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 - 🐛 **Report bugs** - Open an issue
 - 💡 **Suggest features** - Share your ideas
 - 📝 **Improve docs** - Help others understand
 - 🔧 **Submit PRs** - Fix bugs or add features
 - 🧪 **Write tests** - Increase coverage
-- 🎨 **Create examples** - Show what's possible
 
 ---
 
@@ -593,35 +439,12 @@ at your option.
 
 ---
 
-## 🙏 Acknowledgments
-
-MAPLE is built on the principles of **Resonance Architecture**, a novel approach to multi-agent AI systems that prioritizes:
-
-- Meaningful relationships over message passing
-- Architectural safety over policy enforcement
-- Attention economics over unlimited resources
-- Causal time over synchronized clocks
-- Commitment accountability over implicit trust
-
----
-
-## 📞 Contact
-
-- **Website**: https://mapleai.org
-- **Documentation**: https://docs.mapleai.org
-- **GitHub**: https://github.com/mapleaiorg/maple
-- **Discord**: https://discord.gg/maple-ai
-- **Twitter**: [@MapleAI](https://twitter.com/MapleAI)
-- **Email**: hello@mapleai.org
-
----
-
 <div align="center">
 
 **Built with 🍁 by the MAPLE Team**
 
 *Making AI agents that resonate, not just respond*
 
-[⭐ Star us on GitHub](https://github.com/mapleaiorg/maple) • [📖 Read the Docs](https://docs.mapleai.org) • [💬 Join Discord](https://discord.gg/maple-ai)
+[⭐ Star us](https://github.com/mapleaiorg/maple) • [📖 Docs](https://docs.mapleai.org) • [💬 Discord](https://discord.gg/maple-ai)
 
 </div>
