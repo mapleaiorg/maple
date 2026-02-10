@@ -6,7 +6,7 @@ description = "Provider adapter for Gemini cognition backend"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-maple-runtime = { workspace = true }
+maple-runtime = { version = "0.1.2", workspace = true }
 async-trait = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }

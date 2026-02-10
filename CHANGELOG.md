@@ -44,6 +44,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Conformance testing guide
 - API reference
 
+## [0.1.2] - 2026-02-10
+
+### Added
+- First Llama model adapter for resonance-field integrations, enabling pluggable LLMs in the cognitive pipeline (Presence → Meaning).
+- Core banking updates in the iBank profile, supporting autonomous DeFi executions on platforms like Libra2.org with commitment-gated transactions.
+- AgentKernel enhancements for better worldline persistence and memory tiering (Short-term, Working, Long-term, Episodic).
+- New examples in `examples/boundary-demo/` demonstrating commitment boundaries and conformance testing.
+- Docs updates in `docs/` for runtime invariants, CLI usage, and platform profiles (Mapleverse, Finalverse, iBank).
+
+### Changed
+- Refined maple storage system for improved observability and audit trails, aligning with EVOS axioms (worldline primacy, intrinsic memory).
+- Minor optimizations in resonator and palm crates for scalability toward 100M+ agents.
+
+### Fixed
+- Resolved minor issues in Cargo dependencies and build scripts.
+
+This release advances Maple's Resonance Architecture toward accountable AI civilizations, with direct applications in iBank.io for crypto banking on Libra2.org. See ROADMAP.md for upcoming bio-digital hybrids and multi-level selection.
+
+[Full Changelog](https://github.com/mapleaiorg/maple/compare/v0.1.1...v0.1.2)
+
 ## [0.1.1] - 2026-02-03
 
 ### Fixed

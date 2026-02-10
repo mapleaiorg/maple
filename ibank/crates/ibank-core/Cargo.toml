@@ -18,7 +18,7 @@ thiserror = { workspace = true }
 tokio = { workspace = true }
 uuid = { workspace = true }
 
-maple-runtime = { path = "../../../crates/maple-runtime" }
+maple-runtime = { version = "0.1.2", path = "../../../crates/maple-runtime" }
 rcf-commitment = { path = "../../../crates/rcf-commitment" }
 rcf-types = { path = "../../../crates/rcf-types" }
 

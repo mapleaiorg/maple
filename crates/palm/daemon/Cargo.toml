@@ -19,7 +19,7 @@ palm-state = { path = "../state" }
 palm-policy = { path = "../policy" }
 palm-control = { path = "../control" }
 palm-shared-state = { path = "../shared-state" }
-maple-runtime = { workspace = true }
+maple-runtime = { version = "0.1.2", workspace = true }
 maple-storage = { workspace = true, features = ["postgres"] }
 rcf-commitment = { workspace = true }
 

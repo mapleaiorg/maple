@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "aas-adjudication"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "aas-types",
  "chrono",
@@ -17,7 +17,7 @@ dependencies = [
 
 [[package]]
 name = "aas-capability"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "aas-types",
  "chrono",
@@ -30,7 +30,7 @@ dependencies = [
 
 [[package]]
 name = "aas-identity"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "aas-types",
  "chrono",
@@ -43,7 +43,7 @@ dependencies = [
 
 [[package]]
 name = "aas-ledger"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "aas-types",
  "chrono",
@@ -60,7 +60,7 @@ dependencies = [
 
 [[package]]
 name = "aas-policy"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "aas-types",
  "chrono",
@@ -73,7 +73,7 @@ dependencies = [
 
 [[package]]
 name = "aas-service"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "aas-adjudication",
  "aas-capability",
@@ -93,7 +93,7 @@ dependencies = [
 
 [[package]]
 name = "aas-types"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "rcf-commitment",
@@ -548,7 +548,7 @@ checksum = "c3e64b0cc0439b12df2fa678eae89a1c56a529fd067a9115f7827f1fffd22b32"
 
 [[package]]
 name = "collective-runtime"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "async-trait",
  "chrono",
@@ -565,7 +565,7 @@ dependencies = [
 
 [[package]]
 name = "collective-types"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "rcf-commitment",
@@ -952,7 +952,7 @@ dependencies = [
 
 [[package]]
 name = "eve-artifacts"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "eve-types",
@@ -965,7 +965,7 @@ dependencies = [
 
 [[package]]
 name = "eve-evaluation"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "eve-types",
@@ -978,7 +978,7 @@ dependencies = [
 
 [[package]]
 name = "eve-ingestion"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "eve-types",
@@ -991,7 +991,7 @@ dependencies = [
 
 [[package]]
 name = "eve-service"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "eve-artifacts",
@@ -1007,7 +1007,7 @@ dependencies = [
 
 [[package]]
 name = "eve-types"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "rcf-commitment",
@@ -1767,7 +1767,7 @@ checksum = "5e5032e24019045c762d3c0f28f5b6b8bbf38563a65908389bf7978758920897"
 
 [[package]]
 name = "maple-cli"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "clap",
  "maple-integration",
@@ -1785,7 +1785,7 @@ dependencies = [
 
 [[package]]
 name = "maple-integration"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "aas-types",
  "mrp-types",
@@ -1845,7 +1845,7 @@ dependencies = [
 
 [[package]]
 name = "maple-protocol-a2a"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "aas-types",
  "async-trait",
@@ -1863,7 +1863,7 @@ dependencies = [
 
 [[package]]
 name = "maple-protocol-mcp"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "aas-types",
  "async-trait",
@@ -1922,7 +1922,7 @@ dependencies = [
 
 [[package]]
 name = "maple-storage"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "aas-types",
  "async-trait",
@@ -1940,7 +1940,7 @@ dependencies = [
 
 [[package]]
 name = "mapleverse-connectors"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "mapleverse-executor",
@@ -1953,7 +1953,7 @@ dependencies = [
 
 [[package]]
 name = "mapleverse-evidence"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "mapleverse-executor",
@@ -1966,7 +1966,7 @@ dependencies = [
 
 [[package]]
 name = "mapleverse-executor"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "rcf-commitment",
@@ -1978,7 +1978,7 @@ dependencies = [
 
 [[package]]
 name = "mapleverse-service"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "aas-types",
  "chrono",
@@ -1994,7 +1994,7 @@ dependencies = [
 
 [[package]]
 name = "mapleverse-types"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "collective-types",
@@ -2010,7 +2010,7 @@ dependencies = [
 
 [[package]]
 name = "mapleverse-world"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "collective-types",
@@ -2103,7 +2103,7 @@ dependencies = [
 
 [[package]]
 name = "mrp-router"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "mrp-types",
  "rcf-types",
@@ -2112,7 +2112,7 @@ dependencies = [
 
 [[package]]
 name = "mrp-service"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "mrp-transport",
@@ -2125,7 +2125,7 @@ dependencies = [
 
 [[package]]
 name = "mrp-transport"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "mrp-types",
@@ -2137,7 +2137,7 @@ dependencies = [
 
 [[package]]
 name = "mrp-types"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "blake3",
  "chrono",
@@ -3094,7 +3094,7 @@ dependencies = [
 
 [[package]]
 name = "rcf-audit"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "rcf-commitment",
@@ -3106,7 +3106,7 @@ dependencies = [
 
 [[package]]
 name = "rcf-commitment"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "blake3",
  "chrono",
@@ -3120,7 +3120,7 @@ dependencies = [
 
 [[package]]
 name = "rcf-compiler"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "rcf-commitment",
  "rcf-types",
@@ -3131,7 +3131,7 @@ dependencies = [
 
 [[package]]
 name = "rcf-intent"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "rcf-meaning",
@@ -3143,7 +3143,7 @@ dependencies = [
 
 [[package]]
 name = "rcf-meaning"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "rcf-types",
@@ -3154,7 +3154,7 @@ dependencies = [
 
 [[package]]
 name = "rcf-types"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "blake3",
  "chrono",
@@ -3170,7 +3170,7 @@ dependencies = [
 
 [[package]]
 name = "rcf-validator"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "rcf-commitment",
  "rcf-intent",
@@ -3281,7 +3281,7 @@ dependencies = [
 
 [[package]]
 name = "resonator-cli"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "assert_cmd",
  "chrono",
@@ -3308,7 +3308,7 @@ dependencies = [
 
 [[package]]
 name = "resonator-client"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "aas-types",
  "chrono",
@@ -3323,7 +3323,7 @@ dependencies = [
 
 [[package]]
 name = "resonator-commitment"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "aas-types",
  "chrono",
@@ -3339,7 +3339,7 @@ dependencies = [
 
 [[package]]
 name = "resonator-conformance"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "async-trait",
  "chrono",
@@ -3360,7 +3360,7 @@ dependencies = [
 
 [[package]]
 name = "resonator-consequence"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "aas-types",
  "chrono",
@@ -3376,7 +3376,7 @@ dependencies = [
 
 [[package]]
 name = "resonator-conversation"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "rcf-types",
@@ -3390,7 +3390,7 @@ dependencies = [
 
 [[package]]
 name = "resonator-identity"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "aas-types",
  "chrono",
@@ -3405,7 +3405,7 @@ dependencies = [
 
 [[package]]
 name = "resonator-intent"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "aas-types",
  "chrono",
@@ -3421,7 +3421,7 @@ dependencies = [
 
 [[package]]
 name = "resonator-meaning"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "aas-types",
  "chrono",
@@ -3437,7 +3437,7 @@ dependencies = [
 
 [[package]]
 name = "resonator-memory"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "aas-types",
  "chrono",
@@ -3450,7 +3450,7 @@ dependencies = [
 
 [[package]]
 name = "resonator-observability"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "rcf-commitment",
@@ -3465,7 +3465,7 @@ dependencies = [
 
 [[package]]
 name = "resonator-profiles"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "rcf-types",
  "resonator-types",
@@ -3475,7 +3475,7 @@ dependencies = [
 
 [[package]]
 name = "resonator-runtime"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "aas-types",
  "chrono",
@@ -3490,7 +3490,7 @@ dependencies = [
 
 [[package]]
 name = "resonator-types"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "rcf-commitment",
@@ -4584,7 +4584,7 @@ checksum = "562d481066bde0658276a35467c4af00bdc6ee726305698a55b86e61d7ad82bb"
 
 [[package]]
 name = "ual-compiler"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "palm-types",
@@ -4597,7 +4597,7 @@ dependencies = [
 
 [[package]]
 name = "ual-parser"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "thiserror",
  "ual-types",
@@ -4605,7 +4605,7 @@ dependencies = [
 
 [[package]]
 name = "ual-types"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "serde",
 ]
@@ -5207,7 +5207,7 @@ checksum = "d7249219f66ced02969388cf2bb044a09756a083d0fab1e566056b04d9fbcaa5"
 
 [[package]]
 name = "workflow-dsl"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "collective-types",
@@ -5220,7 +5220,7 @@ dependencies = [
 
 [[package]]
 name = "workflow-engine"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "collective-types",
@@ -5237,7 +5237,7 @@ dependencies = [
 
 [[package]]
 name = "workflow-types"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "collective-types",
