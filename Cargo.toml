@@ -154,76 +154,76 @@ proptest = "1.4"
 criterion = "0.5"
 
 # Internal crates
-rcf-types = { path = "crates/rcf-types" }
-rcf-meaning = { path = "crates/rcf-meaning" }
-rcf-intent = { path = "crates/rcf-intent" }
-rcf-commitment = { path = "crates/rcf-commitment" }
-rcf-validator = { path = "crates/rcf-validator" }
-rcf-compiler = { path = "crates/rcf-compiler" }
-rcf-audit = { path = "crates/rcf-audit" }
-ual-types = { path = "crates/ual-types" }
-ual-parser = { path = "crates/ual-parser" }
-ual-compiler = { path = "crates/ual-compiler" }
-mrp-types = { path = "crates/mrp-types" }
-mrp-router = { path = "crates/mrp-router" }
-mrp-transport = { path = "crates/mrp-transport" }
-mrp-service = { path = "crates/mrp-service" }
-aas-types = { path = "crates/aas-types" }
-aas-identity = { path = "crates/aas-identity" }
-aas-capability = { path = "crates/aas-capability" }
-aas-policy = { path = "crates/aas-policy" }
-aas-adjudication = { path = "crates/aas-adjudication" }
-aas-ledger = { path = "crates/aas-ledger" }
-aas-service = { path = "crates/aas-service" }
-mapleverse-types = { path = "crates/mapleverse/types" }
-mapleverse-executor = { path = "crates/mapleverse/executor" }
-mapleverse-connectors = { path = "crates/mapleverse/connectors" }
-mapleverse-evidence = { path = "crates/mapleverse/evidence" }
-mapleverse-service = { path = "crates/mapleverse/service" }
-eve-types = { path = "crates/eve-types" }
-eve-ingestion = { path = "crates/eve-ingestion" }
-eve-evaluation = { path = "crates/eve-evaluation" }
-eve-artifacts = { path = "crates/eve-artifacts" }
-eve-service = { path = "crates/eve-service" }
-resonator-types = { path = "crates/resonator/types" }
-resonator-identity = { path = "crates/resonator/identity" }
-resonator-meaning = { path = "crates/resonator/meaning" }
-resonator-intent = { path = "crates/resonator/intent" }
-resonator-commitment = { path = "crates/resonator/commitment" }
-resonator-consequence = { path = "crates/resonator/consequence" }
-resonator-memory = { path = "crates/resonator/memory" }
-resonator-conversation = { path = "crates/resonator/conversation" }
-resonator-profiles = { path = "crates/resonator/profiles" }
-resonator-runtime = { path = "crates/resonator/runtime" }
-resonator-client = { path = "crates/resonator/client" }
-resonator-cli = { path = "crates/resonator/cli" }
-resonator-observability = { path = "crates/resonator/observability" }
-resonator-conformance = { path = "crates/resonator/conformance" }
+rcf-types = { version = "0.1.2", path = "crates/rcf-types" }
+rcf-meaning = { version = "0.1.2", path = "crates/rcf-meaning" }
+rcf-intent = { version = "0.1.2", path = "crates/rcf-intent" }
+rcf-commitment = { version = "0.1.2", path = "crates/rcf-commitment" }
+rcf-validator = { version = "0.1.2", path = "crates/rcf-validator" }
+rcf-compiler = { version = "0.1.2", path = "crates/rcf-compiler" }
+rcf-audit = { version = "0.1.2", path = "crates/rcf-audit" }
+ual-types = { version = "0.1.2", path = "crates/ual-types" }
+ual-parser = { version = "0.1.2", path = "crates/ual-parser" }
+ual-compiler = { version = "0.1.2", path = "crates/ual-compiler" }
+mrp-types = { version = "0.1.2", path = "crates/mrp-types" }
+mrp-router = { version = "0.1.2", path = "crates/mrp-router" }
+mrp-transport = { version = "0.1.2", path = "crates/mrp-transport" }
+mrp-service = { version = "0.1.2", path = "crates/mrp-service" }
+aas-types = { version = "0.1.2", path = "crates/aas-types" }
+aas-identity = { version = "0.1.2", path = "crates/aas-identity" }
+aas-capability = { version = "0.1.2", path = "crates/aas-capability" }
+aas-policy = { version = "0.1.2", path = "crates/aas-policy" }
+aas-adjudication = { version = "0.1.2", path = "crates/aas-adjudication" }
+aas-ledger = { version = "0.1.2", path = "crates/aas-ledger" }
+aas-service = { version = "0.1.2", path = "crates/aas-service" }
+mapleverse-types = { version = "0.1.2", path = "crates/mapleverse/types" }
+mapleverse-executor = { version = "0.1.2", path = "crates/mapleverse/executor" }
+mapleverse-connectors = { version = "0.1.2", path = "crates/mapleverse/connectors" }
+mapleverse-evidence = { version = "0.1.2", path = "crates/mapleverse/evidence" }
+mapleverse-service = { version = "0.1.2", path = "crates/mapleverse/service" }
+eve-types = { version = "0.1.2", path = "crates/eve-types" }
+eve-ingestion = { version = "0.1.2", path = "crates/eve-ingestion" }
+eve-evaluation = { version = "0.1.2", path = "crates/eve-evaluation" }
+eve-artifacts = { version = "0.1.2", path = "crates/eve-artifacts" }
+eve-service = { version = "0.1.2", path = "crates/eve-service" }
+resonator-types = { version = "0.1.2", path = "crates/resonator/types" }
+resonator-identity = { version = "0.1.2", path = "crates/resonator/identity" }
+resonator-meaning = { version = "0.1.2", path = "crates/resonator/meaning" }
+resonator-intent = { version = "0.1.2", path = "crates/resonator/intent" }
+resonator-commitment = { version = "0.1.2", path = "crates/resonator/commitment" }
+resonator-consequence = { version = "0.1.2", path = "crates/resonator/consequence" }
+resonator-memory = { version = "0.1.2", path = "crates/resonator/memory" }
+resonator-conversation = { version = "0.1.2", path = "crates/resonator/conversation" }
+resonator-profiles = { version = "0.1.2", path = "crates/resonator/profiles" }
+resonator-runtime = { version = "0.1.2", path = "crates/resonator/runtime" }
+resonator-client = { version = "0.1.2", path = "crates/resonator/client" }
+resonator-cli = { version = "0.1.2", path = "crates/resonator/cli" }
+resonator-observability = { version = "0.1.2", path = "crates/resonator/observability" }
+resonator-conformance = { version = "0.1.2", path = "crates/resonator/conformance" }
 maple-runtime = { version = "0.1.2", path = "crates/maple-runtime" }
-maple-storage = { path = "crates/maple/storage" }
-maple-model-openai = { path = "crates/maple/model-openai" }
-maple-model-anthropic = { path = "crates/maple/model-anthropic" }
-maple-model-gemini = { path = "crates/maple/model-gemini" }
-maple-model-grok = { path = "crates/maple/model-grok" }
-maple-integration = { path = "crates/maple-integration" }
-collective-types = { path = "crates/collective-types" }
-collective-runtime = { path = "crates/collective-runtime" }
-workflow-types = { path = "crates/workflow-types" }
-workflow-engine = { path = "crates/workflow-engine" }
-workflow-dsl = { path = "crates/workflow-dsl" }
+maple-storage = { version = "0.1.2", path = "crates/maple/storage" }
+maple-model-openai = { version = "0.1.0", path = "crates/maple/model-openai" }
+maple-model-anthropic = { version = "0.1.0", path = "crates/maple/model-anthropic" }
+maple-model-gemini = { version = "0.1.0", path = "crates/maple/model-gemini" }
+maple-model-grok = { version = "0.1.0", path = "crates/maple/model-grok" }
+maple-integration = { version = "0.1.2", path = "crates/maple-integration" }
+collective-types = { version = "0.1.2", path = "crates/collective-types" }
+collective-runtime = { version = "0.1.2", path = "crates/collective-runtime" }
+workflow-types = { version = "0.1.2", path = "crates/workflow-types" }
+workflow-engine = { version = "0.1.2", path = "crates/workflow-engine" }
+workflow-dsl = { version = "0.1.2", path = "crates/workflow-dsl" }
 
 # PALM crates
-palm-types = { path = "crates/palm/types" }
-palm-registry = { path = "crates/palm/registry" }
-palm-deployment = { path = "crates/palm/deployment" }
-palm-health = { path = "crates/palm/health" }
-palm-state = { path = "crates/palm/state" }
-palm-control = { path = "crates/palm/control" }
-palm-policy = { path = "crates/palm/policy" }
-palm-shared-state = { path = "crates/palm/shared-state" }
-palm = { path = "crates/palm/cli" }
-palm-daemon = { path = "crates/palm/daemon" }
-palm-observability = { path = "crates/palm/observability" }
+palm-types = { version = "0.1.0", path = "crates/palm/types" }
+palm-registry = { version = "0.1.0", path = "crates/palm/registry" }
+palm-deployment = { version = "0.1.0", path = "crates/palm/deployment" }
+palm-health = { version = "0.1.0", path = "crates/palm/health" }
+palm-state = { version = "0.1.0", path = "crates/palm/state" }
+palm-control = { version = "0.1.0", path = "crates/palm/control" }
+palm-policy = { version = "0.1.0", path = "crates/palm/policy" }
+palm-shared-state = { version = "0.1.0", path = "crates/palm/shared-state" }
+palm = { version = "0.1.0", path = "crates/palm/cli" }
+palm-daemon = { version = "0.1.0", path = "crates/palm/daemon" }
+palm-observability = { version = "0.1.0", path = "crates/palm/observability" }
 
 [profile.release]
 lto = true
