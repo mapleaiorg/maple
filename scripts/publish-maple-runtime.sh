@@ -2,9 +2,9 @@
 set -euo pipefail
 
 # Publish chain for maple-runtime and its crates.io dependencies.
-# Default mode is dry-run for safety.
+# Default mode is local dry-run for safety.
 
-MODE="dry-run"
+MODE="local-dry-run"
 ALLOW_DIRTY=0
 NO_VERIFY=0
 WAIT_SECONDS=30
@@ -40,16 +40,18 @@ Usage:
   scripts/publish-maple-runtime.sh [options]
 
 Options:
-  --dry-run              Run cargo publish --dry-run (default)
+  --dry-run              Run local packaging preflight (cargo package --no-verify) (default)
+  --publish-dry-run      Run cargo publish --dry-run (requires upstream deps already on crates.io)
   --execute              Run real cargo publish
-  --allow-dirty          Pass --allow-dirty to cargo publish
-  --no-verify            Pass --no-verify to cargo publish
+  --allow-dirty          Pass --allow-dirty to package/publish commands
+  --no-verify            Pass --no-verify to publish/execute mode (dry-run mode already no-verify)
   --wait-seconds N       Seconds to wait between publishes in execute mode (default: 30)
   --from CRATE           Start from CRATE in publish chain (for resuming)
   --help                 Show help
 
 Examples:
   scripts/publish-maple-runtime.sh --dry-run
+  scripts/publish-maple-runtime.sh --publish-dry-run --from maple-runtime
   scripts/publish-maple-runtime.sh --execute
   scripts/publish-maple-runtime.sh --execute --from aas-policy --wait-seconds 45
 EOF
@@ -80,7 +82,11 @@ parse_args() {
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --dry-run)
-        MODE="dry-run"
+        MODE="local-dry-run"
+        shift
+        ;;
+      --publish-dry-run)
+        MODE="publish-dry-run"
         shift
         ;;
       --execute)
@@ -136,15 +142,26 @@ check_prereqs() {
 publish_one() {
   local crate="$1"
   local -a args
-  args=(publish -p "$crate")
 
-  if [[ "$MODE" == "dry-run" ]]; then
-    args+=(--dry-run)
-  fi
+  case "$MODE" in
+    local-dry-run)
+      args=(package -p "$crate" --no-verify)
+      ;;
+    publish-dry-run)
+      args=(publish -p "$crate" --dry-run)
+      ;;
+    execute)
+      args=(publish -p "$crate")
+      ;;
+    *)
+      die "unsupported mode: $MODE"
+      ;;
+  esac
+
   if [[ "$ALLOW_DIRTY" -eq 1 ]]; then
     args+=(--allow-dirty)
   fi
-  if [[ "$NO_VERIFY" -eq 1 ]]; then
+  if [[ "$NO_VERIFY" -eq 1 && "$MODE" != "local-dry-run" ]]; then
     args+=(--no-verify)
   fi
 
@@ -171,6 +188,10 @@ main() {
   log "crates: ${CRATES[*]}"
   if [[ "$MODE" == "execute" ]]; then
     log "waiting ${WAIT_SECONDS}s between publishes for index propagation"
+  elif [[ "$MODE" == "publish-dry-run" ]]; then
+    log "publish dry-run mode requires already-published upstream crates"
+  else
+    log "local dry-run mode packages crates without network dependency verification"
   fi
 
   local idx
