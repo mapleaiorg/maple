@@ -1,6 +1,6 @@
 [package]
 name = "maple-runtime"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["MAPLE Team"]
 description = "MAPLE Resonance Runtime - Foundational AI framework for Mapleverse, Finalverse, and iBank"
@@ -43,26 +43,26 @@ chrono = { version = "0.4", features = ["serde"] }
 config = "0.14"
 
 # Commitment/accountability stack
-rcf-types = { workspace = true }
-rcf-meaning = { workspace = true }
-rcf-intent = { workspace = true }
-rcf-commitment = { workspace = true }
-rcf-validator = { workspace = true }
-aas-types = { workspace = true }
-aas-identity = { workspace = true }
-aas-capability = { workspace = true }
-aas-policy = { workspace = true }
-aas-ledger = { workspace = true }
-aas-service = { workspace = true }
-resonator-types = { workspace = true }
-resonator-profiles = { workspace = true }
-resonator-commitment = { workspace = true }
-resonator-consequence = { workspace = true }
-resonator-memory = { workspace = true }
-resonator-conversation = { workspace = true }
-resonator-observability = { workspace = true }
-resonator-conformance = { workspace = true }
-maple-storage = { workspace = true }
+rcf-types = { version = "0.1.2", path = "../rcf-types" }
+rcf-meaning = { version = "0.1.2", path = "../rcf-meaning" }
+rcf-intent = { version = "0.1.2", path = "../rcf-intent" }
+rcf-commitment = { version = "0.1.2", path = "../rcf-commitment" }
+rcf-validator = { version = "0.1.2", path = "../rcf-validator" }
+aas-types = { version = "0.1.2", path = "../aas-types" }
+aas-identity = { version = "0.1.2", path = "../aas-identity" }
+aas-capability = { version = "0.1.2", path = "../aas-capability" }
+aas-policy = { version = "0.1.2", path = "../aas-policy" }
+aas-ledger = { version = "0.1.2", path = "../aas-ledger" }
+aas-service = { version = "0.1.2", path = "../aas-service" }
+resonator-types = { version = "0.1.2", path = "../resonator/types" }
+resonator-profiles = { version = "0.1.2", path = "../resonator/profiles" }
+resonator-commitment = { version = "0.1.2", path = "../resonator/commitment" }
+resonator-consequence = { version = "0.1.2", path = "../resonator/consequence" }
+resonator-memory = { version = "0.1.2", path = "../resonator/memory" }
+resonator-conversation = { version = "0.1.2", path = "../resonator/conversation" }
+resonator-observability = { version = "0.1.2", path = "../resonator/observability" }
+resonator-conformance = { version = "0.1.2", path = "../resonator/conformance" }
+maple-storage = { version = "0.1.2", path = "../maple/storage" }
 
 [dev-dependencies]
 tokio-test = "0.4"

@@ -180,7 +180,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-maple-runtime = "0.1.1"
+maple-runtime = "0.1.2"
 tokio = { version = "1.0", features = ["full"] }
 ```
 
