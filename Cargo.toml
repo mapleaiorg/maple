@@ -100,6 +100,7 @@ members = [
     # MWL - Maple WorldLine Framework
     "crates/maple-mwl-types",
     "crates/maple-mwl-identity",
+    "crates/maple-kernel-fabric",
 
     # Examples
     "examples/boundary-demo",
@@ -232,6 +233,7 @@ palm-observability = { version = "0.1.0", path = "crates/palm/observability" }
 # MWL crates
 maple-mwl-types = { path = "crates/maple-mwl-types" }
 maple-mwl-identity = { path = "crates/maple-mwl-identity" }
+maple-kernel-fabric = { path = "crates/maple-kernel-fabric" }
 
 [profile.release]
 lto = true
