@@ -101,6 +101,7 @@ members = [
     "crates/maple-mwl-types",
     "crates/maple-mwl-identity",
     "crates/maple-kernel-fabric",
+    "crates/maple-kernel-memory",
 
     # Examples
     "examples/boundary-demo",
@@ -234,6 +235,7 @@ palm-observability = { version = "0.1.0", path = "crates/palm/observability" }
 maple-mwl-types = { path = "crates/maple-mwl-types" }
 maple-mwl-identity = { path = "crates/maple-mwl-identity" }
 maple-kernel-fabric = { path = "crates/maple-kernel-fabric" }
+maple-kernel-memory = { path = "crates/maple-kernel-memory" }
 
 [profile.release]
 lto = true
