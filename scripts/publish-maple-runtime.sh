@@ -9,6 +9,7 @@ ALLOW_DIRTY=0
 NO_VERIFY=0
 WAIT_SECONDS=30
 START_FROM=""
+ROOT_DIR="$(pwd)"
 
 CRATES=(
   "rcf-types"
@@ -16,22 +17,50 @@ CRATES=(
   "rcf-intent"
   "rcf-commitment"
   "rcf-validator"
+  "mrp-types"
   "aas-types"
   "aas-identity"
   "aas-capability"
   "aas-policy"
+  "aas-adjudication"
   "aas-ledger"
   "aas-service"
   "resonator-types"
   "resonator-profiles"
-  "resonator-commitment"
-  "resonator-consequence"
   "resonator-memory"
   "resonator-conversation"
+  "resonator-commitment"
+  "resonator-consequence"
   "resonator-observability"
   "resonator-conformance"
   "maple-storage"
   "maple-runtime"
+)
+
+# Internal crates patched for local preflight so unpublished dependencies resolve locally.
+PATCHES=(
+  "rcf-types:crates/rcf-types"
+  "rcf-meaning:crates/rcf-meaning"
+  "rcf-intent:crates/rcf-intent"
+  "rcf-commitment:crates/rcf-commitment"
+  "rcf-validator:crates/rcf-validator"
+  "mrp-types:crates/mrp-types"
+  "aas-types:crates/aas-types"
+  "aas-identity:crates/aas-identity"
+  "aas-capability:crates/aas-capability"
+  "aas-policy:crates/aas-policy"
+  "aas-adjudication:crates/aas-adjudication"
+  "aas-ledger:crates/aas-ledger"
+  "aas-service:crates/aas-service"
+  "resonator-types:crates/resonator/types"
+  "resonator-profiles:crates/resonator/profiles"
+  "resonator-memory:crates/resonator/memory"
+  "resonator-conversation:crates/resonator/conversation"
+  "resonator-commitment:crates/resonator/commitment"
+  "resonator-consequence:crates/resonator/consequence"
+  "resonator-observability:crates/resonator/observability"
+  "resonator-conformance:crates/resonator/conformance"
+  "maple-storage:crates/maple/storage"
 )
 
 usage() {
@@ -137,6 +166,14 @@ check_prereqs() {
   if [[ -n "$START_FROM" ]]; then
     is_member "$START_FROM" "${CRATES[@]}" || die "--from crate '$START_FROM' not in publish chain"
   fi
+
+  if [[ "$MODE" != "local-dry-run" ]]; then
+    if command -v curl >/dev/null 2>&1; then
+      if ! curl -sS --fail --connect-timeout 8 https://index.crates.io/config.json >/dev/null; then
+        die "cannot reach https://index.crates.io/config.json (check DNS/proxy/firewall)"
+      fi
+    fi
+  fi
 }
 
 publish_one() {
@@ -146,6 +183,12 @@ publish_one() {
   case "$MODE" in
     local-dry-run)
       args=(package -p "$crate" --no-verify)
+      local patch
+      for patch in "${PATCHES[@]}"; do
+        local patch_name="${patch%%:*}"
+        local patch_path="${patch#*:}"
+        args+=(--config "patch.crates-io.${patch_name}.path=\"${ROOT_DIR}/${patch_path}\"")
+      done
       ;;
     publish-dry-run)
       args=(publish -p "$crate" --dry-run)
@@ -191,7 +234,7 @@ main() {
   elif [[ "$MODE" == "publish-dry-run" ]]; then
     log "publish dry-run mode requires already-published upstream crates"
   else
-    log "local dry-run mode packages crates without network dependency verification"
+    log "local dry-run mode packages crates with local patch overrides for internal deps"
   fi
 
   local idx

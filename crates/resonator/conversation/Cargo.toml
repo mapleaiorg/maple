@@ -8,7 +8,7 @@ description = "Multi-Turn Conversation support for MAPLE Resonators - session ma
 thiserror = { workspace = true }
 rcf-types = { workspace = true }
 resonator-types = { workspace = true }
-resonator-memory = { path = "../memory" }
+resonator-memory = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 chrono = { workspace = true }
