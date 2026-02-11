@@ -1844,6 +1844,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "maple-mwl-identity"
+version = "0.1.2"
+dependencies = [
+ "blake3",
+ "ed25519-dalek",
+ "maple-mwl-types",
+ "rand 0.8.5",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tracing",
+]
+
+[[package]]
+name = "maple-mwl-types"
+version = "0.1.2"
+dependencies = [
+ "blake3",
+ "chrono",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "uuid",
+]
+
+[[package]]
 name = "maple-protocol-a2a"
 version = "0.1.2"
 dependencies = [

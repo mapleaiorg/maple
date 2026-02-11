@@ -97,6 +97,10 @@ members = [
     "crates/maple-integration",
     "crates/maple-cli",
 
+    # MWL - Maple WorldLine Framework
+    "crates/maple-mwl-types",
+    "crates/maple-mwl-identity",
+
     # Examples
     "examples/boundary-demo",
 ]
@@ -224,6 +228,10 @@ palm-shared-state = { version = "0.1.0", path = "crates/palm/shared-state" }
 palm = { version = "0.1.0", path = "crates/palm/cli" }
 palm-daemon = { version = "0.1.0", path = "crates/palm/daemon" }
 palm-observability = { version = "0.1.0", path = "crates/palm/observability" }
+
+# MWL crates
+maple-mwl-types = { path = "crates/maple-mwl-types" }
+maple-mwl-identity = { path = "crates/maple-mwl-identity" }
 
 [profile.release]
 lto = true
