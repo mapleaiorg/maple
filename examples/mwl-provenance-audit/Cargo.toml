@@ -1,0 +1,21 @@
+[package]
+name = "mwl-provenance-audit"
+version = "0.1.0"
+edition = "2021"
+description = "MWL Example 15: Provenance Audit Trail — Event Tracking and Integrity Verification"
+
+[[bin]]
+name = "mwl-provenance-audit"
+path = "src/main.rs"
+
+[dependencies]
+maple-mwl-types = { path = "../../crates/maple-mwl-types" }
+maple-mwl-identity = { path = "../../crates/maple-mwl-identity" }
+maple-kernel-fabric = { path = "../../crates/maple-kernel-fabric" }
+maple-kernel-provenance = { path = "../../crates/maple-kernel-provenance" }
+
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+colored = "2.0"
+serde_json = "1.0"

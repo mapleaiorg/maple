@@ -1,0 +1,24 @@
+//! MWL End-to-End Integration Tests
+//!
+//! Comprehensive cross-crate integration tests exercising the full
+//! Resonance Architecture lifecycle and all kernel components together.
+//!
+//! Run with: `cargo test -p maple-mwl-integration`
+
+/// Shared test helpers — kernel setup, worldline creation, etc.
+pub mod helpers;
+
+#[cfg(test)]
+mod resonance_lifecycle;
+#[cfg(test)]
+mod commitment_denial;
+#[cfg(test)]
+mod human_agency;
+#[cfg(test)]
+mod financial_settlement;
+#[cfg(test)]
+mod cross_profile;
+#[cfg(test)]
+mod failure_recovery;
+#[cfg(test)]
+mod mrp_enforcement;

@@ -2032,6 +2032,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "maple-mwl-conformance"
+version = "0.1.2"
+dependencies = [
+ "maple-kernel-fabric",
+ "maple-kernel-financial",
+ "maple-kernel-gate",
+ "maple-kernel-governance",
+ "maple-kernel-memory",
+ "maple-kernel-mrp",
+ "maple-kernel-profiles",
+ "maple-kernel-provenance",
+ "maple-kernel-safety",
+ "maple-mwl-identity",
+ "maple-mwl-types",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "maple-mwl-identity"
 version = "0.1.2"
 dependencies = [
@@ -2043,6 +2065,30 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tracing",
+]
+
+[[package]]
+name = "maple-mwl-integration"
+version = "0.1.2"
+dependencies = [
+ "async-trait",
+ "maple-kernel-fabric",
+ "maple-kernel-financial",
+ "maple-kernel-gate",
+ "maple-kernel-governance",
+ "maple-kernel-memory",
+ "maple-kernel-mrp",
+ "maple-kernel-profiles",
+ "maple-kernel-provenance",
+ "maple-kernel-safety",
+ "maple-mwl-identity",
+ "maple-mwl-types",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "tokio",
+ "tracing",
+ "uuid",
 ]
 
 [[package]]
@@ -2369,6 +2415,79 @@ dependencies = [
  "serde",
  "thiserror",
  "uuid",
+]
+
+[[package]]
+name = "mwl-commitment-gate"
+version = "0.1.0"
+dependencies = [
+ "colored",
+ "maple-kernel-fabric",
+ "maple-kernel-gate",
+ "maple-kernel-governance",
+ "maple-mwl-identity",
+ "maple-mwl-types",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "mwl-financial-settlement"
+version = "0.1.0"
+dependencies = [
+ "colored",
+ "maple-kernel-financial",
+ "maple-mwl-identity",
+ "maple-mwl-types",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "mwl-human-agency"
+version = "0.1.0"
+dependencies = [
+ "colored",
+ "maple-kernel-profiles",
+ "maple-kernel-safety",
+ "maple-mwl-identity",
+ "maple-mwl-types",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "mwl-provenance-audit"
+version = "0.1.0"
+dependencies = [
+ "colored",
+ "maple-kernel-fabric",
+ "maple-kernel-provenance",
+ "maple-mwl-identity",
+ "maple-mwl-types",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "mwl-worldline-lifecycle"
+version = "0.1.0"
+dependencies = [
+ "colored",
+ "maple-kernel-fabric",
+ "maple-kernel-memory",
+ "maple-kernel-provenance",
+ "maple-mwl-identity",
+ "maple-mwl-types",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]

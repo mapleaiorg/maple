@@ -1,0 +1,22 @@
+[package]
+name = "mwl-worldline-lifecycle"
+version = "0.1.0"
+edition = "2021"
+description = "MWL Example 11: WorldLine Lifecycle — Identity, Fabric, and Resonance"
+
+[[bin]]
+name = "mwl-worldline-lifecycle"
+path = "src/main.rs"
+
+[dependencies]
+maple-mwl-types = { path = "../../crates/maple-mwl-types" }
+maple-mwl-identity = { path = "../../crates/maple-mwl-identity" }
+maple-kernel-fabric = { path = "../../crates/maple-kernel-fabric" }
+maple-kernel-memory = { path = "../../crates/maple-kernel-memory" }
+maple-kernel-provenance = { path = "../../crates/maple-kernel-provenance" }
+
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+colored = "2.0"
+serde_json = "1.0"

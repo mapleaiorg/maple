@@ -1,0 +1,20 @@
+[package]
+name = "mwl-human-agency"
+version = "0.1.0"
+edition = "2021"
+description = "MWL Example 14: Human Agency — Consent, Coercion Detection, and Attention Budget"
+
+[[bin]]
+name = "mwl-human-agency"
+path = "src/main.rs"
+
+[dependencies]
+maple-mwl-types = { path = "../../crates/maple-mwl-types" }
+maple-mwl-identity = { path = "../../crates/maple-mwl-identity" }
+maple-kernel-safety = { path = "../../crates/maple-kernel-safety" }
+maple-kernel-profiles = { path = "../../crates/maple-kernel-profiles" }
+
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+colored = "2.0"

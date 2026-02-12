@@ -1,0 +1,19 @@
+[package]
+name = "mwl-financial-settlement"
+version = "0.1.0"
+edition = "2021"
+description = "MWL Example 13: Financial Settlement — EVOS, DvP Atomicity, and Regulatory Checks"
+
+[[bin]]
+name = "mwl-financial-settlement"
+path = "src/main.rs"
+
+[dependencies]
+maple-mwl-types = { path = "../../crates/maple-mwl-types" }
+maple-mwl-identity = { path = "../../crates/maple-mwl-identity" }
+maple-kernel-financial = { path = "../../crates/maple-kernel-financial" }
+
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+colored = "2.0"

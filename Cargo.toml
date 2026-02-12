@@ -111,8 +111,17 @@ members = [
     "crates/maple-kernel-financial",
     "crates/maple-kernel-sdk",
 
+    # MWL Integration Tests & Conformance
+    "crates/maple-mwl-integration",
+    "crates/maple-mwl-conformance",
+
     # Examples
     "examples/boundary-demo",
+    "examples/mwl-worldline-lifecycle",
+    "examples/mwl-commitment-gate",
+    "examples/mwl-financial-settlement",
+    "examples/mwl-human-agency",
+    "examples/mwl-provenance-audit",
 ]
 
 [workspace.package]
@@ -252,6 +261,8 @@ maple-kernel-safety = { path = "crates/maple-kernel-safety" }
 maple-kernel-profiles = { path = "crates/maple-kernel-profiles" }
 maple-kernel-financial = { path = "crates/maple-kernel-financial" }
 maple-kernel-sdk = { path = "crates/maple-kernel-sdk" }
+maple-mwl-integration = { path = "crates/maple-mwl-integration" }
+maple-mwl-conformance = { path = "crates/maple-mwl-conformance" }
 
 [profile.release]
 lto = true
