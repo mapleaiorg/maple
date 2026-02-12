@@ -109,6 +109,7 @@ members = [
     "crates/maple-kernel-safety",
     "crates/maple-kernel-profiles",
     "crates/maple-kernel-financial",
+    "crates/maple-kernel-sdk",
 
     # Examples
     "examples/boundary-demo",
@@ -250,6 +251,7 @@ maple-kernel-governance = { path = "crates/maple-kernel-governance" }
 maple-kernel-safety = { path = "crates/maple-kernel-safety" }
 maple-kernel-profiles = { path = "crates/maple-kernel-profiles" }
 maple-kernel-financial = { path = "crates/maple-kernel-financial" }
+maple-kernel-sdk = { path = "crates/maple-kernel-sdk" }
 
 [profile.release]
 lto = true

@@ -1,0 +1,62 @@
+[package]
+name = "maple-kernel-sdk"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "MWL SDK: CLI commands, REST API routes, and Python bindings"
+
+[features]
+default = ["cli", "api"]
+cli = ["clap"]
+api = ["axum", "tower-http"]
+python = ["pyo3"]
+
+[dependencies]
+# MWL kernel crates
+maple-mwl-types = { path = "../maple-mwl-types" }
+maple-mwl-identity = { path = "../maple-mwl-identity" }
+maple-kernel-fabric = { path = "../maple-kernel-fabric" }
+maple-kernel-gate = { path = "../maple-kernel-gate" }
+maple-kernel-governance = { path = "../maple-kernel-governance" }
+maple-kernel-provenance = { path = "../maple-kernel-provenance" }
+maple-kernel-safety = { path = "../maple-kernel-safety" }
+maple-kernel-profiles = { path = "../maple-kernel-profiles" }
+maple-kernel-financial = { path = "../maple-kernel-financial" }
+
+# Serialization
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+
+# Async
+tokio = { workspace = true }
+
+# Tracing
+tracing = { workspace = true }
+
+# Error handling
+thiserror = { workspace = true }
+
+# HTTP client (for CLI)
+reqwest = { workspace = true }
+
+# Unique IDs
+uuid = { workspace = true, features = ["v4"] }
+
+# Optional: CLI framework
+clap = { version = "4.4", features = ["derive"], optional = true }
+
+# Optional: Web framework (for API routes)
+axum = { version = "0.7", features = ["macros"], optional = true }
+tower-http = { version = "0.5", features = ["cors", "trace"], optional = true }
+
+# Optional: Python bindings
+pyo3 = { version = "0.20", features = ["extension-module"], optional = true }
+
+# Time (used by API handlers)
+chrono = { workspace = true }
+
+[dev-dependencies]
+tower = { workspace = true, features = ["util"] }
