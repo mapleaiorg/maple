@@ -1894,6 +1894,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "maple-kernel-profiles"
+version = "0.1.2"
+dependencies = [
+ "maple-kernel-fabric",
+ "maple-kernel-gate",
+ "maple-kernel-safety",
+ "maple-mwl-types",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tracing",
+]
+
+[[package]]
 name = "maple-kernel-provenance"
 version = "0.1.2"
 dependencies = [
