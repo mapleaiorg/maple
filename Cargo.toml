@@ -108,6 +108,7 @@ members = [
     "crates/maple-kernel-governance",
     "crates/maple-kernel-safety",
     "crates/maple-kernel-profiles",
+    "crates/maple-kernel-financial",
 
     # Examples
     "examples/boundary-demo",
@@ -248,6 +249,7 @@ maple-kernel-provenance = { path = "crates/maple-kernel-provenance" }
 maple-kernel-governance = { path = "crates/maple-kernel-governance" }
 maple-kernel-safety = { path = "crates/maple-kernel-safety" }
 maple-kernel-profiles = { path = "crates/maple-kernel-profiles" }
+maple-kernel-financial = { path = "crates/maple-kernel-financial" }
 
 [profile.release]
 lto = true

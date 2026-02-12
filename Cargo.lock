@@ -1828,6 +1828,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "maple-kernel-financial"
+version = "0.1.2"
+dependencies = [
+ "chrono",
+ "maple-kernel-fabric",
+ "maple-kernel-gate",
+ "maple-kernel-profiles",
+ "maple-mwl-types",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "maple-kernel-gate"
 version = "0.1.2"
 dependencies = [
