@@ -1845,6 +1845,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "maple-kernel-governance"
+version = "0.1.2"
+dependencies = [
+ "async-trait",
+ "maple-kernel-fabric",
+ "maple-kernel-gate",
+ "maple-mwl-identity",
+ "maple-mwl-types",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "maple-kernel-memory"
 version = "0.1.2"
 dependencies = [
