@@ -1908,6 +1908,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "maple-kernel-safety"
+version = "0.1.2"
+dependencies = [
+ "maple-kernel-fabric",
+ "maple-mwl-types",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "maple-model-anthropic"
 version = "0.1.0"
 dependencies = [
