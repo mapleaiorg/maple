@@ -104,6 +104,7 @@ members = [
     "crates/maple-kernel-memory",
     "crates/maple-kernel-gate",
     "crates/maple-kernel-mrp",
+    "crates/maple-kernel-provenance",
 
     # Examples
     "examples/boundary-demo",
@@ -240,6 +241,7 @@ maple-kernel-fabric = { path = "crates/maple-kernel-fabric" }
 maple-kernel-memory = { path = "crates/maple-kernel-memory" }
 maple-kernel-gate = { path = "crates/maple-kernel-gate" }
 maple-kernel-mrp = { path = "crates/maple-kernel-mrp" }
+maple-kernel-provenance = { path = "crates/maple-kernel-provenance" }
 
 [profile.release]
 lto = true
