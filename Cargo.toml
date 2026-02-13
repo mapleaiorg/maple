@@ -113,6 +113,7 @@ members = [
 
     # WorldLine Self-Producing Substrate
     "crates/maple-worldline-observation",
+    "crates/maple-worldline-meaning",
 
     # MWL Integration Tests & Conformance
     "crates/maple-mwl-integration",
@@ -265,6 +266,7 @@ maple-kernel-profiles = { path = "crates/maple-kernel-profiles" }
 maple-kernel-financial = { path = "crates/maple-kernel-financial" }
 maple-kernel-sdk = { path = "crates/maple-kernel-sdk" }
 maple-worldline-observation = { path = "crates/maple-worldline-observation" }
+maple-worldline-meaning = { path = "crates/maple-worldline-meaning" }
 maple-mwl-integration = { path = "crates/maple-mwl-integration" }
 maple-mwl-conformance = { path = "crates/maple-mwl-conformance" }
 
