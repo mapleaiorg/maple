@@ -1,0 +1,25 @@
+[package]
+name = "maple-worldline-observation"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Self-Observation Foundation: event monitoring, profiling, and analytics for MWL"
+
+[dependencies]
+maple-mwl-types = { path = "../maple-mwl-types" }
+maple-kernel-fabric = { path = "../maple-kernel-fabric" }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
+chrono = { workspace = true, features = ["serde"] }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true, features = ["v4", "serde"] }
+blake3 = { workspace = true }
+rand = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["full", "test-util"] }

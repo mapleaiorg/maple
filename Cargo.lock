@@ -2199,6 +2199,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "maple-worldline-observation"
+version = "0.1.2"
+dependencies = [
+ "blake3",
+ "chrono",
+ "maple-kernel-fabric",
+ "maple-mwl-types",
+ "rand 0.8.5",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "mapleverse-connectors"
 version = "0.1.2"
 dependencies = [
