@@ -1,0 +1,22 @@
+[package]
+name = "maple-worldline-intent"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Self-Intent Stabilization: transforming converged meanings into validated self-modification proposals for MWL"
+
+[dependencies]
+maple-mwl-types = { path = "../maple-mwl-types" }
+maple-worldline-meaning = { path = "../maple-worldline-meaning" }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+chrono = { workspace = true, features = ["serde"] }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true, features = ["v4", "serde"] }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["full", "test-util"] }

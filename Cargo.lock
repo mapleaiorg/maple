@@ -2199,6 +2199,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "maple-worldline-intent"
+version = "0.1.2"
+dependencies = [
+ "chrono",
+ "maple-mwl-types",
+ "maple-worldline-meaning",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "maple-worldline-meaning"
 version = "0.1.2"
 dependencies = [
