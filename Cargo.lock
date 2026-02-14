@@ -2199,6 +2199,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "maple-worldline-codegen"
+version = "0.1.2"
+dependencies = [
+ "chrono",
+ "maple-mwl-types",
+ "maple-worldline-intent",
+ "maple-worldline-self-mod-gate",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "maple-worldline-commitment"
 version = "0.1.2"
 dependencies = [
@@ -2274,6 +2289,21 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "maple-worldline-self-mod-gate"
+version = "0.1.2"
+dependencies = [
+ "chrono",
+ "maple-kernel-gate",
+ "maple-mwl-types",
+ "maple-worldline-intent",
+ "serde",
+ "serde_json",
+ "thiserror",
  "tracing",
  "uuid",
 ]

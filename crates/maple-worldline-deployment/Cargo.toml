@@ -1,0 +1,22 @@
+[package]
+name = "maple-worldline-deployment"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Deployment pipeline — strategy execution, health monitoring, rollback, and observation feedback for the MWL self-producing substrate"
+
+[dependencies]
+maple-mwl-types = { workspace = true }
+maple-worldline-observation = { workspace = true }
+maple-worldline-intent = { workspace = true }
+maple-worldline-self-mod-gate = { workspace = true }
+maple-worldline-codegen = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+chrono = { workspace = true, features = ["serde"] }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true, features = ["v4", "serde"] }
