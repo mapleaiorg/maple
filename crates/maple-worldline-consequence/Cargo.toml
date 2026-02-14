@@ -1,0 +1,22 @@
+[package]
+name = "maple-worldline-consequence"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Self-consequence engine for the MWL self-producing substrate — executes approved self-modifications, records outcomes with receipts, and feeds back to observation"
+
+[dependencies]
+maple-mwl-types = { workspace = true }
+maple-worldline-observation = { workspace = true }
+maple-worldline-intent = { workspace = true }
+maple-worldline-commitment = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+chrono = { workspace = true, features = ["serde"] }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true, features = ["v4", "serde"] }
+sha2 = "0.10"

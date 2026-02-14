@@ -2215,6 +2215,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "maple-worldline-consequence"
+version = "0.1.2"
+dependencies = [
+ "chrono",
+ "maple-mwl-types",
+ "maple-worldline-commitment",
+ "maple-worldline-intent",
+ "maple-worldline-observation",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "maple-worldline-intent"
 version = "0.1.2"
 dependencies = [
