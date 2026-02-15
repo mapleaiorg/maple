@@ -2358,6 +2358,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "maple-worldline-sal"
+version = "0.1.2"
+dependencies = [
+ "chrono",
+ "maple-mwl-types",
+ "maple-worldline-compiler",
+ "maple-worldline-ir",
+ "maple-worldline-self-mod-gate",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "maple-worldline-self-mod-gate"
 version = "0.1.2"
 dependencies = [

@@ -1,0 +1,19 @@
+[package]
+name = "maple-worldline-sal"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "Substrate Abstraction Layer — platform independence for WorldLine execution"
+license.workspace = true
+
+[dependencies]
+maple-mwl-types = { workspace = true }
+maple-worldline-ir = { workspace = true }
+maple-worldline-compiler = { workspace = true }
+maple-worldline-self-mod-gate = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
