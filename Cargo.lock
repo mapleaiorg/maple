@@ -2199,6 +2199,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "maple-worldline-bootstrap"
+version = "0.1.2"
+dependencies = [
+ "chrono",
+ "maple-mwl-types",
+ "maple-worldline-sal",
+ "maple-worldline-self-mod-gate",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "maple-worldline-codegen"
 version = "0.1.2"
 dependencies = [
