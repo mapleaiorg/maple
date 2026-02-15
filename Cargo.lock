@@ -2294,6 +2294,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "maple-worldline-evos"
+version = "0.1.2"
+dependencies = [
+ "chrono",
+ "maple-mwl-types",
+ "maple-worldline-bootstrap",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "maple-worldline-hardware"
 version = "0.1.2"
 dependencies = [
