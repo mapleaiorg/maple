@@ -122,6 +122,7 @@ members = [
     "crates/maple-worldline-deployment",
     "crates/maple-worldline-ir",
     "crates/maple-worldline-langgen",
+    "crates/maple-worldline-compiler",
 
     # MWL Integration Tests & Conformance
     "crates/maple-mwl-integration",
@@ -283,6 +284,7 @@ maple-worldline-codegen = { path = "crates/maple-worldline-codegen" }
 maple-worldline-deployment = { path = "crates/maple-worldline-deployment" }
 maple-worldline-ir = { path = "crates/maple-worldline-ir" }
 maple-worldline-langgen = { path = "crates/maple-worldline-langgen" }
+maple-worldline-compiler = { path = "crates/maple-worldline-compiler" }
 maple-mwl-integration = { path = "crates/maple-mwl-integration" }
 maple-mwl-conformance = { path = "crates/maple-mwl-conformance" }
 

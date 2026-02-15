@@ -1,0 +1,20 @@
+[package]
+name = "maple-worldline-compiler"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Adaptive compiler — compiles WLIR to native/WASM/operator-calls with evolving optimization strategies"
+
+[dependencies]
+maple-mwl-types = { workspace = true }
+maple-worldline-ir = { workspace = true }
+maple-worldline-self-mod-gate = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+chrono = { workspace = true, features = ["serde"] }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true, features = ["v4", "serde"] }

@@ -2230,6 +2230,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "maple-worldline-compiler"
+version = "0.1.2"
+dependencies = [
+ "chrono",
+ "maple-mwl-types",
+ "maple-worldline-ir",
+ "maple-worldline-self-mod-gate",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "maple-worldline-consequence"
 version = "0.1.2"
 dependencies = [
