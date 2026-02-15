@@ -2279,6 +2279,38 @@ dependencies = [
 ]
 
 [[package]]
+name = "maple-worldline-ir"
+version = "0.1.2"
+dependencies = [
+ "chrono",
+ "maple-mwl-types",
+ "maple-worldline-self-mod-gate",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "maple-worldline-langgen"
+version = "0.1.2"
+dependencies = [
+ "chrono",
+ "maple-mwl-types",
+ "maple-worldline-codegen",
+ "maple-worldline-intent",
+ "maple-worldline-meaning",
+ "maple-worldline-observation",
+ "maple-worldline-self-mod-gate",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "maple-worldline-meaning"
 version = "0.1.2"
 dependencies = [
