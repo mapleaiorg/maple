@@ -7,8 +7,8 @@
 
 use std::time::Duration;
 
-use maple_mwl_types::CommitmentId;
 use maple_worldline_observation::events::{ObservationMetadata, SelfObservationEvent, SubsystemId};
+use worldline_core::types::CommitmentId;
 
 use crate::types::DeploymentRecord;
 
@@ -48,9 +48,7 @@ impl DeploymentFeedback {
             approved,
         };
 
-        let metadata = ObservationMetadata::now(SubsystemId::Custom(
-            "deployment-pipeline".into(),
-        ));
+        let metadata = ObservationMetadata::now(SubsystemId::Custom("deployment-pipeline".into()));
 
         Some((event, metadata))
     }

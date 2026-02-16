@@ -198,7 +198,9 @@ pub struct Histogram {
 
 impl Default for Histogram {
     fn default() -> Self {
-        Self::new(vec![1.0, 5.0, 10.0, 25.0, 50.0, 100.0, 250.0, 500.0, 1000.0])
+        Self::new(vec![
+            1.0, 5.0, 10.0, 25.0, 50.0, 100.0, 250.0, 500.0, 1000.0,
+        ])
     }
 }
 
@@ -396,7 +398,10 @@ impl SpanTracker {
     /// Complete a span.
     pub fn complete_span(&self, span_id: &SpanId) -> ObservabilityResult<Span> {
         let span = {
-            let mut spans = self.spans.write().map_err(|_| ObservabilityError::LockError)?;
+            let mut spans = self
+                .spans
+                .write()
+                .map_err(|_| ObservabilityError::LockError)?;
             let mut span = spans
                 .remove(span_id)
                 .ok_or_else(|| ObservabilityError::MetricNotFound(span_id.0.clone()))?;
@@ -503,10 +508,7 @@ impl MetricsCollector {
     // Pipeline metrics
     pub fn record_pipeline_request(&self, stage: PipelineStage) {
         if let Ok(mut requests) = self.pipeline_requests.write() {
-            requests
-                .entry(stage)
-                .or_insert_with(Counter::new)
-                .inc();
+            requests.entry(stage).or_insert_with(Counter::new).inc();
         }
     }
 
@@ -521,10 +523,7 @@ impl MetricsCollector {
 
     pub fn record_pipeline_error(&self, stage: PipelineStage) {
         if let Ok(mut errors) = self.pipeline_errors.write() {
-            errors
-                .entry(stage)
-                .or_insert_with(Counter::new)
-                .inc();
+            errors.entry(stage).or_insert_with(Counter::new).inc();
         }
     }
 
@@ -806,7 +805,10 @@ impl AlertEngine {
 
     /// Add an alert rule.
     pub fn add_rule(&self, rule: AlertRule) -> ObservabilityResult<()> {
-        let mut rules = self.rules.write().map_err(|_| ObservabilityError::LockError)?;
+        let mut rules = self
+            .rules
+            .write()
+            .map_err(|_| ObservabilityError::LockError)?;
         rules.push(rule);
         Ok(())
     }
@@ -872,7 +874,10 @@ impl AlertEngine {
 
     /// Acknowledge an alert.
     pub fn acknowledge(&self, alert_id: &str) -> ObservabilityResult<()> {
-        let mut alerts = self.alerts.write().map_err(|_| ObservabilityError::LockError)?;
+        let mut alerts = self
+            .alerts
+            .write()
+            .map_err(|_| ObservabilityError::LockError)?;
         for alert in alerts.iter_mut() {
             if alert.id == alert_id {
                 alert.acknowledged = true;

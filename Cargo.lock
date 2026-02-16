@@ -2036,22 +2036,14 @@ dependencies = [
 name = "maple-mwl-conformance"
 version = "0.1.2"
 dependencies = [
- "maple-kernel-fabric",
- "maple-kernel-financial",
- "maple-kernel-gate",
- "maple-kernel-governance",
- "maple-kernel-memory",
- "maple-kernel-mrp",
- "maple-kernel-profiles",
- "maple-kernel-provenance",
- "maple-kernel-safety",
- "maple-mwl-identity",
- "maple-mwl-types",
  "serde",
  "serde_json",
  "tokio",
  "tracing",
  "uuid",
+ "worldline-core",
+ "worldline-ledger",
+ "worldline-runtime",
 ]
 
 [[package]]
@@ -2073,23 +2065,15 @@ name = "maple-mwl-integration"
 version = "0.1.2"
 dependencies = [
  "async-trait",
- "maple-kernel-fabric",
- "maple-kernel-financial",
- "maple-kernel-gate",
- "maple-kernel-governance",
- "maple-kernel-memory",
- "maple-kernel-mrp",
- "maple-kernel-profiles",
- "maple-kernel-provenance",
- "maple-kernel-safety",
- "maple-mwl-identity",
- "maple-mwl-types",
  "serde",
  "serde_json",
  "tempfile",
  "tokio",
  "tracing",
  "uuid",
+ "worldline-core",
+ "worldline-ledger",
+ "worldline-runtime",
 ]
 
 [[package]]
@@ -2204,7 +2188,6 @@ name = "maple-worldline-bootstrap"
 version = "0.1.2"
 dependencies = [
  "chrono",
- "maple-mwl-types",
  "maple-worldline-sal",
  "maple-worldline-self-mod-gate",
  "serde",
@@ -2212,6 +2195,7 @@ dependencies = [
  "thiserror",
  "tracing",
  "uuid",
+ "worldline-core",
 ]
 
 [[package]]
@@ -2219,7 +2203,6 @@ name = "maple-worldline-codegen"
 version = "0.1.2"
 dependencies = [
  "chrono",
- "maple-mwl-types",
  "maple-worldline-intent",
  "maple-worldline-self-mod-gate",
  "serde",
@@ -2227,6 +2210,7 @@ dependencies = [
  "thiserror",
  "tracing",
  "uuid",
+ "worldline-core",
 ]
 
 [[package]]
@@ -2234,8 +2218,6 @@ name = "maple-worldline-commitment"
 version = "0.1.2"
 dependencies = [
  "chrono",
- "maple-kernel-gate",
- "maple-mwl-types",
  "maple-worldline-intent",
  "serde",
  "serde_json",
@@ -2243,6 +2225,8 @@ dependencies = [
  "tokio",
  "tracing",
  "uuid",
+ "worldline-core",
+ "worldline-runtime",
 ]
 
 [[package]]
@@ -2250,7 +2234,6 @@ name = "maple-worldline-compiler"
 version = "0.1.2"
 dependencies = [
  "chrono",
- "maple-mwl-types",
  "maple-worldline-ir",
  "maple-worldline-self-mod-gate",
  "serde",
@@ -2258,6 +2241,7 @@ dependencies = [
  "thiserror",
  "tracing",
  "uuid",
+ "worldline-core",
 ]
 
 [[package]]
@@ -2265,7 +2249,6 @@ name = "maple-worldline-conformance"
 version = "0.1.2"
 dependencies = [
  "chrono",
- "maple-mwl-types",
  "maple-worldline-bootstrap",
  "maple-worldline-codegen",
  "maple-worldline-commitment",
@@ -2286,6 +2269,7 @@ dependencies = [
  "thiserror",
  "tracing",
  "uuid",
+ "worldline-core",
 ]
 
 [[package]]
@@ -2293,7 +2277,6 @@ name = "maple-worldline-consequence"
 version = "0.1.2"
 dependencies = [
  "chrono",
- "maple-mwl-types",
  "maple-worldline-commitment",
  "maple-worldline-intent",
  "maple-worldline-observation",
@@ -2303,6 +2286,7 @@ dependencies = [
  "thiserror",
  "tracing",
  "uuid",
+ "worldline-core",
 ]
 
 [[package]]
@@ -2310,7 +2294,6 @@ name = "maple-worldline-deployment"
 version = "0.1.2"
 dependencies = [
  "chrono",
- "maple-mwl-types",
  "maple-worldline-codegen",
  "maple-worldline-intent",
  "maple-worldline-observation",
@@ -2320,6 +2303,7 @@ dependencies = [
  "thiserror",
  "tracing",
  "uuid",
+ "worldline-core",
 ]
 
 [[package]]
@@ -2327,13 +2311,13 @@ name = "maple-worldline-evos"
 version = "0.1.2"
 dependencies = [
  "chrono",
- "maple-mwl-types",
  "maple-worldline-bootstrap",
  "serde",
  "serde_json",
  "thiserror",
  "tracing",
  "uuid",
+ "worldline-core",
 ]
 
 [[package]]
@@ -2341,7 +2325,6 @@ name = "maple-worldline-hardware"
 version = "0.1.2"
 dependencies = [
  "chrono",
- "maple-mwl-types",
  "maple-worldline-sal",
  "maple-worldline-self-mod-gate",
  "serde",
@@ -2349,6 +2332,7 @@ dependencies = [
  "thiserror",
  "tracing",
  "uuid",
+ "worldline-core",
 ]
 
 [[package]]
@@ -2356,7 +2340,6 @@ name = "maple-worldline-intent"
 version = "0.1.2"
 dependencies = [
  "chrono",
- "maple-mwl-types",
  "maple-worldline-meaning",
  "serde",
  "serde_json",
@@ -2364,6 +2347,7 @@ dependencies = [
  "tokio",
  "tracing",
  "uuid",
+ "worldline-core",
 ]
 
 [[package]]
@@ -2371,13 +2355,13 @@ name = "maple-worldline-ir"
 version = "0.1.2"
 dependencies = [
  "chrono",
- "maple-mwl-types",
  "maple-worldline-self-mod-gate",
  "serde",
  "serde_json",
  "thiserror",
  "tracing",
  "uuid",
+ "worldline-core",
 ]
 
 [[package]]
@@ -2385,7 +2369,6 @@ name = "maple-worldline-langgen"
 version = "0.1.2"
 dependencies = [
  "chrono",
- "maple-mwl-types",
  "maple-worldline-codegen",
  "maple-worldline-intent",
  "maple-worldline-meaning",
@@ -2396,6 +2379,7 @@ dependencies = [
  "thiserror",
  "tracing",
  "uuid",
+ "worldline-core",
 ]
 
 [[package]]
@@ -2403,7 +2387,6 @@ name = "maple-worldline-meaning"
 version = "0.1.2"
 dependencies = [
  "chrono",
- "maple-mwl-types",
  "maple-worldline-observation",
  "serde",
  "serde_json",
@@ -2411,6 +2394,7 @@ dependencies = [
  "tokio",
  "tracing",
  "uuid",
+ "worldline-core",
 ]
 
 [[package]]
@@ -2419,8 +2403,6 @@ version = "0.1.2"
 dependencies = [
  "blake3",
  "chrono",
- "maple-kernel-fabric",
- "maple-mwl-types",
  "rand 0.8.5",
  "serde",
  "serde_json",
@@ -2428,6 +2410,8 @@ dependencies = [
  "tokio",
  "tracing",
  "uuid",
+ "worldline-core",
+ "worldline-runtime",
 ]
 
 [[package]]
@@ -2435,7 +2419,6 @@ name = "maple-worldline-sal"
 version = "0.1.2"
 dependencies = [
  "chrono",
- "maple-mwl-types",
  "maple-worldline-compiler",
  "maple-worldline-ir",
  "maple-worldline-self-mod-gate",
@@ -2444,6 +2427,7 @@ dependencies = [
  "thiserror",
  "tracing",
  "uuid",
+ "worldline-core",
 ]
 
 [[package]]
@@ -2451,14 +2435,14 @@ name = "maple-worldline-self-mod-gate"
 version = "0.1.2"
 dependencies = [
  "chrono",
- "maple-kernel-gate",
- "maple-mwl-types",
  "maple-worldline-intent",
  "serde",
  "serde_json",
  "thiserror",
  "tracing",
  "uuid",
+ "worldline-core",
+ "worldline-runtime",
 ]
 
 [[package]]
@@ -2685,14 +2669,11 @@ name = "mwl-commitment-gate"
 version = "0.1.0"
 dependencies = [
  "colored",
- "maple-kernel-fabric",
- "maple-kernel-gate",
- "maple-kernel-governance",
- "maple-mwl-identity",
- "maple-mwl-types",
  "tokio",
  "tracing",
  "tracing-subscriber",
+ "worldline-core",
+ "worldline-runtime",
 ]
 
 [[package]]
@@ -2700,12 +2681,11 @@ name = "mwl-financial-settlement"
 version = "0.1.0"
 dependencies = [
  "colored",
- "maple-kernel-financial",
- "maple-mwl-identity",
- "maple-mwl-types",
  "tokio",
  "tracing",
  "tracing-subscriber",
+ "worldline-core",
+ "worldline-runtime",
 ]
 
 [[package]]
@@ -2713,13 +2693,11 @@ name = "mwl-human-agency"
 version = "0.1.0"
 dependencies = [
  "colored",
- "maple-kernel-profiles",
- "maple-kernel-safety",
- "maple-mwl-identity",
- "maple-mwl-types",
  "tokio",
  "tracing",
  "tracing-subscriber",
+ "worldline-core",
+ "worldline-runtime",
 ]
 
 [[package]]
@@ -2727,14 +2705,13 @@ name = "mwl-provenance-audit"
 version = "0.1.0"
 dependencies = [
  "colored",
- "maple-kernel-fabric",
- "maple-kernel-provenance",
- "maple-mwl-identity",
- "maple-mwl-types",
  "serde_json",
  "tokio",
  "tracing",
  "tracing-subscriber",
+ "worldline-core",
+ "worldline-ledger",
+ "worldline-runtime",
 ]
 
 [[package]]
@@ -2742,15 +2719,13 @@ name = "mwl-worldline-lifecycle"
 version = "0.1.0"
 dependencies = [
  "colored",
- "maple-kernel-fabric",
- "maple-kernel-memory",
- "maple-kernel-provenance",
- "maple-mwl-identity",
- "maple-mwl-types",
  "serde_json",
  "tokio",
  "tracing",
  "tracing-subscriber",
+ "worldline-core",
+ "worldline-ledger",
+ "worldline-runtime",
 ]
 
 [[package]]
@@ -5929,6 +5904,39 @@ dependencies = [
  "serde_json",
  "thiserror",
  "uuid",
+]
+
+[[package]]
+name = "worldline-core"
+version = "0.1.2"
+dependencies = [
+ "maple-mwl-identity",
+ "maple-mwl-types",
+]
+
+[[package]]
+name = "worldline-ledger"
+version = "0.1.2"
+dependencies = [
+ "maple-kernel-fabric",
+ "maple-kernel-provenance",
+ "maple-mwl-types",
+]
+
+[[package]]
+name = "worldline-runtime"
+version = "0.1.2"
+dependencies = [
+ "maple-kernel-fabric",
+ "maple-kernel-financial",
+ "maple-kernel-gate",
+ "maple-kernel-governance",
+ "maple-kernel-memory",
+ "maple-kernel-mrp",
+ "maple-kernel-profiles",
+ "maple-kernel-provenance",
+ "maple-kernel-safety",
+ "maple-runtime",
 ]
 
 [[package]]

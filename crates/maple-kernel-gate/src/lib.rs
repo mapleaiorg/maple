@@ -38,9 +38,9 @@ pub use error::{GateError, LedgerError};
 pub use gate::{AdjudicationResult, CommitmentGate, CommitmentOutcome, GateConfig};
 pub use ledger::{CommitmentLedger, LedgerEntry, LedgerFilter, LifecycleEvent};
 pub use mocks::{MockCapabilityProvider, MockPolicyProvider};
+pub use stages::risk::RiskConfig;
 pub use stages::{
     CapabilityCheckStage, CoSignatureStage, DeclarationStage, FinalDecisionStage,
     IdentityBindingStage, PolicyEvaluationStage, RiskAssessmentStage,
 };
-pub use stages::risk::RiskConfig;
 pub use traits::{CapabilityProvider, GateStage, PolicyProvider};

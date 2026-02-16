@@ -8,11 +8,9 @@ use chrono::Utc;
 
 use maple_worldline_meaning::types::{SelfMeaning, SelfMeaningCategory};
 
-use crate::intent::{
-    ImpactAssessment, ImprovementEstimate, IntentStatus, SelfRegenerationIntent,
-};
+use crate::intent::{ImpactAssessment, ImprovementEstimate, IntentStatus, SelfRegenerationIntent};
 use crate::proposal::{
-    CodeChangeSpec, PerformanceGate, Comparison, RegenerationProposal, RollbackPlan,
+    CodeChangeSpec, Comparison, PerformanceGate, RegenerationProposal, RollbackPlan,
     RollbackStrategy, SafetyCheck, TestSpec, TestType,
 };
 use crate::types::{
@@ -150,10 +148,7 @@ impl IntentGenerator for PerformanceIntentGenerator {
                     impact: ImpactAssessment {
                         affected_components: vec![component.clone()],
                         risk_score,
-                        risk_factors: root_causes
-                            .iter()
-                            .map(|r| r.description.clone())
-                            .collect(),
+                        risk_factors: root_causes.iter().map(|r| r.description.clone()).collect(),
                         blast_radius: format!("{} subsystem", component),
                     },
                     governance_tier: tier,
@@ -461,13 +456,11 @@ impl IntentGenerator for CodeQualityIntentGenerator {
                         affected_regions: vec![component.clone()],
                         provenance: vec![meaning.id.clone()],
                     }],
-                    required_tests: vec![
-                        TestSpec {
-                            name: format!("test_{}_regression", component),
-                            description: "Regression test after refactoring".into(),
-                            test_type: TestType::Integration,
-                        },
-                    ],
+                    required_tests: vec![TestSpec {
+                        name: format!("test_{}_regression", component),
+                        description: "Regression test after refactoring".into(),
+                        test_type: TestType::Integration,
+                    }],
                     performance_gates: vec![],
                     safety_checks: vec![SafetyCheck {
                         invariant: "behavior_preservation".into(),
@@ -705,10 +698,7 @@ mod tests {
             0.9,
         );
         let intent = gen.generate(&meaning).expect("should generate");
-        assert!(matches!(
-            intent.governance_tier,
-            SubstrateTier::Tier1
-        ));
+        assert!(matches!(intent.governance_tier, SubstrateTier::Tier1));
         assert!(intent.confidence > 0.8);
     }
 

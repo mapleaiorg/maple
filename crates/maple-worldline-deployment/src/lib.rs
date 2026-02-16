@@ -173,7 +173,9 @@ mod tests {
 
         let artifact = make_artifact(
             SelfModTier::Tier1OperatorInternal,
-            DeploymentStrategy::Canary { traffic_fraction: 0.05 },
+            DeploymentStrategy::Canary {
+                traffic_fraction: 0.05,
+            },
             vec![("src/handler.rs", "fn handle() {}")],
         );
 

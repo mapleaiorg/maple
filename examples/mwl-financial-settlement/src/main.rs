@@ -12,11 +12,11 @@
 //! - I.CEP-FIN-1: DvP/PvP required — partial settlement is a violation
 
 use colored::Colorize;
-use maple_kernel_financial::{
+use worldline_core::types::{CommitmentId, IdentityMaterial, TemporalAnchor, WorldlineId};
+use worldline_runtime::financial::{
     AssetId, AtomicSettlement, BalanceProjection, FinancialCommitment, FinancialGateExtension,
     RegulatoryEngine, SettledLeg, SettlementEvent, SettlementLeg, SettlementType,
 };
-use maple_mwl_types::{CommitmentId, IdentityMaterial, TemporalAnchor, WorldlineId};
 
 fn wid(seed: u8) -> WorldlineId {
     WorldlineId::derive(&IdentityMaterial::GenesisHash([seed; 32]))
@@ -41,9 +41,20 @@ async fn main() {
         .init();
 
     println!();
-    println!("{}", "╔══════════════════════════════════════════════════════════════╗".cyan());
-    println!("{}", "║    MWL Example 13: Financial Settlement                     ║".cyan().bold());
-    println!("{}", "╚══════════════════════════════════════════════════════════════╝".cyan());
+    println!(
+        "{}",
+        "╔══════════════════════════════════════════════════════════════╗".cyan()
+    );
+    println!(
+        "{}",
+        "║    MWL Example 13: Financial Settlement                     ║"
+            .cyan()
+            .bold()
+    );
+    println!(
+        "{}",
+        "╚══════════════════════════════════════════════════════════════╝".cyan()
+    );
 
     let alice = wid(1);
     let bob = wid(2);
@@ -58,11 +69,16 @@ async fn main() {
     // Before any settlement, no balance exists
     let result = evos.project(&alice, &usd);
     println!("  {} Before any settlement:", "├".dimmed());
-    println!("  {}   Alice USD balance: {}", "│".dimmed(),
+    println!(
+        "  {}   Alice USD balance: {}",
+        "│".dimmed(),
         match &result {
             Ok(b) => format!("{}", b.balance_minor).yellow().to_string(),
-            Err(e) => format!("ERROR: {} (correct — no trajectory yet)", e).red().to_string(),
-        });
+            Err(e) => format!("ERROR: {} (correct — no trajectory yet)", e)
+                .red()
+                .to_string(),
+        }
+    );
 
     // Record settlement events
     evos.record_for_worldline(
@@ -108,18 +124,24 @@ async fn main() {
     println!("  {}   +$5,000 → +$3,000 → -$1,500", "│".dimmed());
 
     let balance = evos.project(&alice, &usd).unwrap();
-    println!("  {} Alice USD projected balance: {} (${:.2})", "├".dimmed(),
+    println!(
+        "  {} Alice USD projected balance: {} (${:.2})",
+        "├".dimmed(),
         format!("{}", balance.balance_minor).green().bold(),
-        balance.balance_minor as f64 / 100.0);
+        balance.balance_minor as f64 / 100.0
+    );
 
     // Verify idempotency
     let balance2 = evos.project(&alice, &usd).unwrap();
-    println!("  {} Projection idempotent: {}", "└".dimmed(),
+    println!(
+        "  {} Projection idempotent: {}",
+        "└".dimmed(),
         if balance.balance_minor == balance2.balance_minor {
             "YES — replay always gives same result".green()
         } else {
             "FAIL".red()
-        });
+        }
+    );
 
     // ── Part 2: DvP Atomicity ───────────────────────────────────────
     header("Part 2: DvP Atomicity (I.CEP-FIN-1)");
@@ -155,10 +177,25 @@ async fn main() {
 
     let validation = FinancialGateExtension::validate_atomicity(&dvp_ok);
     println!("  {} DvP (all legs settled):", "├".dimmed());
-    println!("  {}   Leg 1: Alice → Bob  $1,000 USD  [{}]", "│".dimmed(), "settled".green());
-    println!("  {}   Leg 2: Bob → Alice  50 BTC      [{}]", "│".dimmed(), "settled".green());
-    println!("  {}   Atomicity: {}", "│".dimmed(),
-        if validation.is_ok() { "VALID".green().bold() } else { "INVALID".red().bold() });
+    println!(
+        "  {}   Leg 1: Alice → Bob  $1,000 USD  [{}]",
+        "│".dimmed(),
+        "settled".green()
+    );
+    println!(
+        "  {}   Leg 2: Bob → Alice  50 BTC      [{}]",
+        "│".dimmed(),
+        "settled".green()
+    );
+    println!(
+        "  {}   Atomicity: {}",
+        "│".dimmed(),
+        if validation.is_ok() {
+            "VALID".green().bold()
+        } else {
+            "INVALID".red().bold()
+        }
+    );
 
     separator();
 
@@ -193,14 +230,25 @@ async fn main() {
 
     let validation = FinancialGateExtension::validate_atomicity(&dvp_partial);
     println!("  {} DvP (one leg failed):", "├".dimmed());
-    println!("  {}   Leg 1: Alice → Bob  $1,000 USD  [{}]", "│".dimmed(), "settled".green());
-    println!("  {}   Leg 2: Bob → Alice  50 BTC      [{}]", "│".dimmed(), "FAILED".red());
-    println!("  {}   Atomicity: {}", "└".dimmed(),
+    println!(
+        "  {}   Leg 1: Alice → Bob  $1,000 USD  [{}]",
+        "│".dimmed(),
+        "settled".green()
+    );
+    println!(
+        "  {}   Leg 2: Bob → Alice  50 BTC      [{}]",
+        "│".dimmed(),
+        "FAILED".red()
+    );
+    println!(
+        "  {}   Atomicity: {}",
+        "└".dimmed(),
         if validation.is_err() {
             "VIOLATION — partial settlement detected".red().bold()
         } else {
             "ERROR: should have failed".red().bold()
-        });
+        }
+    );
 
     // ── Part 3: Regulatory Engine ───────────────────────────────────
     header("Part 3: Regulatory Engine");
@@ -218,11 +266,14 @@ async fn main() {
         created_at: TemporalAnchor::now(0),
     };
 
-    println!("  {} Normal transaction ($5,000): {}", "├".dimmed(),
+    println!(
+        "  {} Normal transaction ($5,000): {}",
+        "├".dimmed(),
         match engine.check_compliance(&commitment) {
             Ok(()) => "COMPLIANT".green().bold().to_string(),
             Err(e) => format!("BLOCKED: {}", e).red().to_string(),
-        });
+        }
+    );
 
     // Large transaction (above AML threshold)
     let large_commitment = FinancialCommitment {
@@ -235,34 +286,59 @@ async fn main() {
         created_at: TemporalAnchor::now(0),
     };
 
-    println!("  {} Large transaction ($300K):   {}", "├".dimmed(),
+    println!(
+        "  {} Large transaction ($300K):   {}",
+        "├".dimmed(),
         match engine.check_compliance(&large_commitment) {
             Ok(()) => "COMPLIANT".green().to_string(),
             Err(e) => format!("BLOCKED — {}", e).red().to_string(),
-        });
+        }
+    );
 
     // Circuit breaker
     engine.activate_circuit_breaker("extreme market volatility");
     println!("  {} Circuit breaker active:", "├".dimmed());
-    println!("  {}   Normal transaction:       {}", "│".dimmed(),
+    println!(
+        "  {}   Normal transaction:       {}",
+        "│".dimmed(),
         match engine.check_compliance(&commitment) {
             Ok(()) => "COMPLIANT".green().to_string(),
             Err(e) => format!("BLOCKED — {}", e).red().to_string(),
-        });
+        }
+    );
 
     engine.deactivate_circuit_breaker();
     println!("  {} Circuit breaker deactivated:", "├".dimmed());
-    println!("  {}   Normal transaction:       {}", "└".dimmed(),
+    println!(
+        "  {}   Normal transaction:       {}",
+        "└".dimmed(),
         match engine.check_compliance(&commitment) {
             Ok(()) => "COMPLIANT".green().to_string(),
             Err(e) => format!("BLOCKED — {}", e).red().to_string(),
-        });
+        }
+    );
 
     // ── Summary ─────────────────────────────────────────────────────
     header("Summary");
-    println!("  {} EVOS:                {}", "├".dimmed(), "Balance computed by replaying trajectory (never stored)".green());
-    println!("  {} DvP Atomicity:       {}", "├".dimmed(), "All legs settle or none — partial = violation".green());
-    println!("  {} Regulatory Engine:   {}", "├".dimmed(), "AML, sanctions, capital adequacy, circuit breakers".green());
-    println!("  {} Invariants:          {}", "└".dimmed(), "I.ME-FIN-1, I.CEP-FIN-1 demonstrated".green());
+    println!(
+        "  {} EVOS:                {}",
+        "├".dimmed(),
+        "Balance computed by replaying trajectory (never stored)".green()
+    );
+    println!(
+        "  {} DvP Atomicity:       {}",
+        "├".dimmed(),
+        "All legs settle or none — partial = violation".green()
+    );
+    println!(
+        "  {} Regulatory Engine:   {}",
+        "├".dimmed(),
+        "AML, sanctions, capital adequacy, circuit breakers".green()
+    );
+    println!(
+        "  {} Invariants:          {}",
+        "└".dimmed(),
+        "I.ME-FIN-1, I.CEP-FIN-1 demonstrated".green()
+    );
     println!();
 }

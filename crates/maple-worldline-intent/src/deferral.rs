@@ -179,9 +179,7 @@ mod tests {
     use super::*;
     use crate::intent::{ImpactAssessment, ImprovementEstimate, IntentStatus};
     use crate::proposal::{RegenerationProposal, RollbackPlan, RollbackStrategy};
-    use crate::types::{
-        ChangeType, IntentId, ProposalId, ReversibilityLevel, SubstrateTier,
-    };
+    use crate::types::{ChangeType, IntentId, ProposalId, ReversibilityLevel, SubstrateTier};
     use maple_worldline_meaning::MeaningId;
 
     fn make_intent(confidence: f64, tier: SubstrateTier) -> SelfRegenerationIntent {
@@ -304,10 +302,7 @@ mod tests {
 
     #[test]
     fn deferral_reason_display() {
-        let reason = DeferralReason::ConcurrentRegeneration {
-            active: 3,
-            max: 2,
-        };
+        let reason = DeferralReason::ConcurrentRegeneration { active: 3, max: 2 };
         assert!(reason.to_string().contains("concurrent"));
 
         let reason = DeferralReason::SystemUnderLoad {

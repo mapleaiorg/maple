@@ -190,7 +190,8 @@ mod tests {
         let meaning = SelfMeaning {
             id: MeaningId::new(),
             category: SelfMeaningCategory::ArchitecturalInsight {
-                insight_type: maple_worldline_meaning::types::ArchitecturalInsightType::CouplingTooTight,
+                insight_type:
+                    maple_worldline_meaning::types::ArchitecturalInsightType::CouplingTooTight,
                 affected_components: vec!["gate".into(), "fabric".into()],
                 structural_pressure: "high coupling".into(),
             },

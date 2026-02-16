@@ -416,7 +416,7 @@ async fn rebalance(&self, id: ResonatorId) -> Result<()>;
 
 ### InvariantGuard
 
-Enforces the 8 canonical invariants:
+Enforces the 9 canonical WorldLine invariants:
 
 ```rust
 pub struct InvariantGuard {
@@ -432,6 +432,7 @@ pub enum ArchitecturalInvariant {
     SafetyOverridesOptimization,
     HumanAgencyCannotBeBypassed,
     FailureMustBeExplicit,
+    ImplementationProvenanceAndEvolution,
 }
 ```
 
@@ -673,7 +674,7 @@ pub fn ibank_runtime_config() -> RuntimeConfig {
 **Key differences:**
 - A2A treats agents as RPC endpoints; MAPLE treats them as persistent entities
 - A2A has no resource bounds; MAPLE has attention economics
-- A2A has no safety guarantees; MAPLE has 8 architectural invariants
+- A2A has no safety guarantees; MAPLE has 9 architectural invariants
 - A2A has no accountability; MAPLE has full audit trails
 
 ### vs. Anthropic MCP (Model Context Protocol)
@@ -693,7 +694,7 @@ pub fn ibank_runtime_config() -> RuntimeConfig {
 
 **Key differences:**
 - MCP provides context to models; MAPLE creates persistent relationships
-- MCP has no safety architecture; MAPLE has 8 invariants
+- MCP has no safety architecture; MAPLE has 9 invariants
 - MCP has no resource management; MAPLE has attention bounds
 - MCP has no accountability; MAPLE has full audit trails
 

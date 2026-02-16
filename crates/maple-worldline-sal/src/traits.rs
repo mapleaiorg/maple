@@ -58,31 +58,27 @@ mod tests {
 
     #[test]
     fn trait_object_can_be_boxed() {
-        let substrate: Box<dyn SubstrateAbstractionLayer> =
-            Box::new(CpuSubstrate::new());
+        let substrate: Box<dyn SubstrateAbstractionLayer> = Box::new(CpuSubstrate::new());
         assert_eq!(substrate.name(), "cpu-substrate");
     }
 
     #[test]
     fn trait_provides_capabilities() {
-        let substrate: Box<dyn SubstrateAbstractionLayer> =
-            Box::new(CpuSubstrate::new());
+        let substrate: Box<dyn SubstrateAbstractionLayer> = Box::new(CpuSubstrate::new());
         let caps = substrate.capabilities();
         assert!(caps.supports_wlir);
     }
 
     #[test]
     fn trait_provides_substrate_id() {
-        let substrate: Box<dyn SubstrateAbstractionLayer> =
-            Box::new(CpuSubstrate::new());
+        let substrate: Box<dyn SubstrateAbstractionLayer> = Box::new(CpuSubstrate::new());
         let id = substrate.substrate_id();
         assert!(id.to_string().contains("cpu"));
     }
 
     #[test]
     fn trait_execute_operator() {
-        let substrate: Box<dyn SubstrateAbstractionLayer> =
-            Box::new(CpuSubstrate::new());
+        let substrate: Box<dyn SubstrateAbstractionLayer> = Box::new(CpuSubstrate::new());
         let input = OperatorInput {
             operator_name: "noop".into(),
             arguments: vec![],
@@ -94,8 +90,7 @@ mod tests {
 
     #[test]
     fn trait_execute_wlir() {
-        let substrate: Box<dyn SubstrateAbstractionLayer> =
-            Box::new(CpuSubstrate::new());
+        let substrate: Box<dyn SubstrateAbstractionLayer> = Box::new(CpuSubstrate::new());
         let result = substrate
             .execute_wlir("test-module", "main", vec![])
             .unwrap();
@@ -104,8 +99,7 @@ mod tests {
 
     #[test]
     fn trait_record_provenance() {
-        let substrate: Box<dyn SubstrateAbstractionLayer> =
-            Box::new(CpuSubstrate::new());
+        let substrate: Box<dyn SubstrateAbstractionLayer> = Box::new(CpuSubstrate::new());
         let prov_id = substrate
             .record_provenance("test-op", "hash-in", "hash-out", 5)
             .unwrap();

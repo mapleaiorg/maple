@@ -46,11 +46,7 @@ impl GateStage for CoSignatureStage {
         }
 
         // Check if we have all required signatures
-        let collected_signers: Vec<_> = context
-            .co_signatures
-            .iter()
-            .map(|s| &s.signer)
-            .collect();
+        let collected_signers: Vec<_> = context.co_signatures.iter().map(|s| &s.signer).collect();
 
         let missing: Vec<_> = required_signers
             .iter()
@@ -110,10 +106,7 @@ mod tests {
 
         // Simulate previous stage requiring co-sign
         let signer = other_worldline();
-        ctx.record_stage(
-            "policy",
-            StageResult::RequireCoSign(vec![signer.clone()]),
-        );
+        ctx.record_stage("policy", StageResult::RequireCoSign(vec![signer.clone()]));
 
         let result = stage.evaluate(&mut ctx).await.unwrap();
         assert!(matches!(result, StageResult::RequireCoSign(_)));
@@ -126,10 +119,7 @@ mod tests {
         let mut ctx = GateContext::new(decl);
 
         let signer = other_worldline();
-        ctx.record_stage(
-            "policy",
-            StageResult::RequireCoSign(vec![signer.clone()]),
-        );
+        ctx.record_stage("policy", StageResult::RequireCoSign(vec![signer.clone()]));
 
         // Add the required co-signature
         ctx.co_signatures.push(CoSignature {

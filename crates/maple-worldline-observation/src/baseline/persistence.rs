@@ -62,10 +62,7 @@ impl JsonFileBaseline {
 impl BaselinePersistence for JsonFileBaseline {
     fn save(&self, baselines: &HashMap<MetricId, MetricBaseline>) -> ObservationResult<()> {
         let json = serde_json::to_string_pretty(baselines).map_err(|e| {
-            crate::error::ObservationError::PersistenceError(format!(
-                "serialization failed: {}",
-                e
-            ))
+            crate::error::ObservationError::PersistenceError(format!("serialization failed: {}", e))
         })?;
 
         // Atomic write: write to .tmp then rename
@@ -82,8 +79,8 @@ impl BaselinePersistence for JsonFileBaseline {
         }
 
         let contents = std::fs::read_to_string(&self.path)?;
-        let baselines: HashMap<MetricId, MetricBaseline> =
-            serde_json::from_str(&contents).map_err(|e| {
+        let baselines: HashMap<MetricId, MetricBaseline> = serde_json::from_str(&contents)
+            .map_err(|e| {
                 crate::error::ObservationError::PersistenceError(format!(
                     "deserialization failed: {}",
                     e
@@ -116,17 +113,19 @@ impl Default for InMemoryBaseline {
 
 impl BaselinePersistence for InMemoryBaseline {
     fn save(&self, baselines: &HashMap<MetricId, MetricBaseline>) -> ObservationResult<()> {
-        let mut data = self.data.lock().map_err(|_| {
-            crate::error::ObservationError::LockError
-        })?;
+        let mut data = self
+            .data
+            .lock()
+            .map_err(|_| crate::error::ObservationError::LockError)?;
         *data = baselines.clone();
         Ok(())
     }
 
     fn load(&self) -> ObservationResult<HashMap<MetricId, MetricBaseline>> {
-        let data = self.data.lock().map_err(|_| {
-            crate::error::ObservationError::LockError
-        })?;
+        let data = self
+            .data
+            .lock()
+            .map_err(|_| crate::error::ObservationError::LockError)?;
         Ok(data.clone())
     }
 }

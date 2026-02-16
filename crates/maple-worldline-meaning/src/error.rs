@@ -40,7 +40,10 @@ mod tests {
     #[test]
     fn error_display_messages() {
         let err = MeaningError::HypothesisGenerationFailed("no anomalies".into());
-        assert_eq!(err.to_string(), "hypothesis generation failed: no anomalies");
+        assert_eq!(
+            err.to_string(),
+            "hypothesis generation failed: no anomalies"
+        );
 
         let err = MeaningError::EvidenceEvaluationFailed("invalid prior".into());
         assert_eq!(err.to_string(), "evidence evaluation failed: invalid prior");
@@ -63,8 +66,7 @@ mod tests {
         let ok: MeaningResult<u32> = Ok(42);
         assert_eq!(ok.unwrap(), 42);
 
-        let err: MeaningResult<u32> =
-            Err(MeaningError::ConfigurationError("bad config".into()));
+        let err: MeaningResult<u32> = Err(MeaningError::ConfigurationError("bad config".into()));
         assert!(err.is_err());
     }
 

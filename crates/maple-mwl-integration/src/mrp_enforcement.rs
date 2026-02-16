@@ -6,14 +6,13 @@
 
 use std::sync::Arc;
 
-use maple_kernel_mrp::{
-    CommitmentEnvelopeBuilder, CommitmentPayload, ConsequenceEnvelopeBuilder,
-    ConsequencePayload, MeaningEnvelopeBuilder,
-    MeaningPayload, MockExecutionLayer, MrpRouter, RouteDecision, RejectionReason,
+use worldline_core::types::{
+    CommitmentId, CommitmentScope, EffectDomain, IdentityMaterial, ResonanceType, WorldlineId,
 };
-use maple_mwl_types::{
-    CommitmentId, CommitmentScope, EffectDomain,
-    IdentityMaterial, ResonanceType, WorldlineId,
+use worldline_runtime::mrp::{
+    CommitmentEnvelopeBuilder, CommitmentPayload, ConsequenceEnvelopeBuilder, ConsequencePayload,
+    MeaningEnvelopeBuilder, MeaningPayload, MockExecutionLayer, MrpRouter, RejectionReason,
+    RouteDecision,
 };
 
 fn test_wid() -> WorldlineId {
@@ -34,7 +33,10 @@ fn test_meaning_to_intent_escalation_rejected() {
         &test_wid(),
         uuid::Uuid::new_v4(),
     );
-    assert!(result.is_err(), "MEANING → INTENT escalation must be rejected");
+    assert!(
+        result.is_err(),
+        "MEANING → INTENT escalation must be rejected"
+    );
 }
 
 /// No implicit type escalation: MEANING → COMMITMENT rejected.
@@ -47,7 +49,10 @@ fn test_meaning_to_commitment_escalation_rejected() {
         &test_wid(),
         uuid::Uuid::new_v4(),
     );
-    assert!(result.is_err(), "MEANING → COMMITMENT escalation must be rejected");
+    assert!(
+        result.is_err(),
+        "MEANING → COMMITMENT escalation must be rejected"
+    );
 }
 
 /// No implicit type escalation: INTENT → COMMITMENT rejected.
@@ -60,7 +65,10 @@ fn test_intent_to_commitment_escalation_rejected() {
         &test_wid(),
         uuid::Uuid::new_v4(),
     );
-    assert!(result.is_err(), "INTENT → COMMITMENT escalation must be rejected");
+    assert!(
+        result.is_err(),
+        "INTENT → COMMITMENT escalation must be rejected"
+    );
 }
 
 /// Same-type routing is always allowed.
@@ -73,12 +81,7 @@ fn test_same_type_always_allowed() {
         ResonanceType::Commitment,
         ResonanceType::Consequence,
     ] {
-        let result = router.validate_non_escalation(
-            rt,
-            rt,
-            &test_wid(),
-            uuid::Uuid::new_v4(),
-        );
+        let result = router.validate_non_escalation(rt, rt, &test_wid(), uuid::Uuid::new_v4());
         assert!(result.is_ok(), "{:?} → {:?} should be allowed", rt, rt);
     }
 }
@@ -135,7 +138,10 @@ async fn test_consequence_only_from_execution_layer() {
 
     let decision = router.route(&consequence).await.unwrap();
     assert!(
-        matches!(decision, RouteDecision::Reject(RejectionReason::InvalidConsequenceOrigin)),
+        matches!(
+            decision,
+            RouteDecision::Reject(RejectionReason::InvalidConsequenceOrigin)
+        ),
         "CONSEQUENCE from non-execution layer must be rejected"
     );
 }
@@ -179,7 +185,7 @@ async fn test_tampered_envelope_quarantined() {
         .unwrap();
 
     // Tamper with body without updating hash
-    envelope.body = maple_kernel_mrp::TypedPayload::Meaning(MeaningPayload {
+    envelope.body = worldline_runtime::mrp::TypedPayload::Meaning(MeaningPayload {
         interpretation: "TAMPERED".into(),
         confidence: 0.1,
         ambiguity_preserved: false,
@@ -213,7 +219,10 @@ async fn test_type_mismatch_rejected() {
 
     let decision = router.route(&envelope).await.unwrap();
     assert!(
-        matches!(decision, RouteDecision::Reject(RejectionReason::TypeMismatch { .. })),
+        matches!(
+            decision,
+            RouteDecision::Reject(RejectionReason::TypeMismatch { .. })
+        ),
         "Type mismatch must be rejected"
     );
 }

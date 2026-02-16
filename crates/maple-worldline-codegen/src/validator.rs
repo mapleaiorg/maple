@@ -12,7 +12,12 @@ use crate::types::{CodegenConfig, GeneratedCode, PerformanceResult, TestResult};
 
 /// File path patterns that indicate safety-critical code.
 const SAFETY_PATTERNS: &[&str] = &[
-    "safety", "rollback", "emergency", "invariant", "gate", "adjudication",
+    "safety",
+    "rollback",
+    "emergency",
+    "invariant",
+    "gate",
+    "adjudication",
 ];
 
 // ── Test Validation ────────────────────────────────────────────────────
@@ -100,7 +105,12 @@ impl PerformanceValidator {
             let failing: Vec<String> = results
                 .iter()
                 .filter(|r| !r.passed)
-                .map(|r| format!("{}: {:.2} (threshold {:.2})", r.metric, r.measured_value, r.threshold))
+                .map(|r| {
+                    format!(
+                        "{}: {:.2} (threshold {:.2})",
+                        r.metric, r.measured_value, r.threshold
+                    )
+                })
                 .collect();
             return Err(CodegenError::PerformanceGateFailed(format!(
                 "{}/{} gates failed: {}",

@@ -67,16 +67,14 @@ pub use types::{
 mod tests {
     use super::*;
     use chrono::{Duration, Utc};
-    use maple_mwl_types::{CommitmentId, IdentityMaterial, WorldlineId};
     use maple_worldline_intent::intent::{
         ImpactAssessment, ImprovementEstimate, IntentStatus, SelfRegenerationIntent,
     };
-    use maple_worldline_intent::proposal::{
-        RegenerationProposal, RollbackPlan, RollbackStrategy,
-    };
+    use maple_worldline_intent::proposal::{RegenerationProposal, RollbackPlan, RollbackStrategy};
     use maple_worldline_intent::types::{
         ChangeType, IntentId, MeaningId, ProposalId, ReversibilityLevel, SubstrateTier,
     };
+    use worldline_core::types::{CommitmentId, IdentityMaterial, WorldlineId};
 
     use crate::bridge::IntentCommitmentBridge;
 
@@ -169,11 +167,7 @@ mod tests {
 
         // Step 4: Record submission
         let cmt_id = CommitmentId::new();
-        let self_cmt_id = engine.record_submission(
-            &intent_id,
-            cmt_id,
-            SubstrateTier::Tier0,
-        );
+        let self_cmt_id = engine.record_submission(&intent_id, cmt_id, SubstrateTier::Tier0);
 
         // Step 5: Record gate approval
         engine.record_gate_result(&self_cmt_id, true, None);
@@ -225,11 +219,8 @@ mod tests {
             let intent_id = intent.id.clone();
             engine.start_observation(intent);
 
-            let self_cmt_id = engine.record_submission(
-                &intent_id,
-                CommitmentId::new(),
-                SubstrateTier::Tier0,
-            );
+            let self_cmt_id =
+                engine.record_submission(&intent_id, CommitmentId::new(), SubstrateTier::Tier0);
             ids.push(self_cmt_id);
         }
 

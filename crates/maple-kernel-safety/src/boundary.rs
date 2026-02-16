@@ -62,7 +62,10 @@ pub enum EnforcementPolicy {
     /// Soft boundary — warning issued, allowed to proceed
     Soft,
     /// Adaptive — enforcement increases with repeated violations
-    Adaptive { violation_count: u32, escalation_threshold: u32 },
+    Adaptive {
+        violation_count: u32,
+        escalation_threshold: u32,
+    },
 }
 
 impl ResonanceBoundary {
@@ -122,7 +125,10 @@ impl ResonanceBoundary {
                     debug!(%msg, "Soft boundary warning");
                     SafetyCheckResult::Warning(msg)
                 }
-                EnforcementPolicy::Adaptive { violation_count, escalation_threshold } => {
+                EnforcementPolicy::Adaptive {
+                    violation_count,
+                    escalation_threshold,
+                } => {
                     if *violation_count >= *escalation_threshold {
                         warn!(%msg, violations = violation_count, "Adaptive boundary escalated to hard");
                         SafetyCheckResult::Blocked(msg)
@@ -156,7 +162,10 @@ impl ResonanceBoundary {
 
     /// Record a violation (for adaptive enforcement).
     pub fn record_violation(&mut self) {
-        if let EnforcementPolicy::Adaptive { violation_count, .. } = &mut self.enforcement {
+        if let EnforcementPolicy::Adaptive {
+            violation_count, ..
+        } = &mut self.enforcement
+        {
             *violation_count += 1;
         }
     }

@@ -155,11 +155,7 @@ impl RegenerationRateLimiter {
     }
 
     /// Record a successful modification.
-    pub fn record_modification(
-        &mut self,
-        tier: SelfModTier,
-        affected_components: Vec<String>,
-    ) {
+    pub fn record_modification(&mut self, tier: SelfModTier, affected_components: Vec<String>) {
         self.history.push_back(ModificationRecord {
             timestamp: Utc::now(),
             tier,
@@ -204,37 +200,52 @@ impl RegenerationRateLimiter {
     /// Default rate limits per tier.
     fn default_limits() -> HashMap<SelfModTier, TierRateLimit> {
         let mut limits = HashMap::new();
-        limits.insert(SelfModTier::Tier0Configuration, TierRateLimit {
-            per_hour: 5,
-            per_day: 20,
-            per_week: 100,
-            min_interval_same_component_secs: 600, // 10 min
-        });
+        limits.insert(
+            SelfModTier::Tier0Configuration,
+            TierRateLimit {
+                per_hour: 5,
+                per_day: 20,
+                per_week: 100,
+                min_interval_same_component_secs: 600, // 10 min
+            },
+        );
         limits.insert(SelfModTier::Tier1OperatorInternal, TierRateLimit::default());
-        limits.insert(SelfModTier::Tier2ApiChange, TierRateLimit {
-            per_hour: 1,
-            per_day: 3,
-            per_week: 10,
-            min_interval_same_component_secs: 7200, // 2 hours
-        });
-        limits.insert(SelfModTier::Tier3KernelChange, TierRateLimit {
-            per_hour: 1,
-            per_day: 1,
-            per_week: 3,
-            min_interval_same_component_secs: 86400, // 24 hours
-        });
-        limits.insert(SelfModTier::Tier4SubstrateChange, TierRateLimit {
-            per_hour: 1,
-            per_day: 1,
-            per_week: 1,
-            min_interval_same_component_secs: 604800, // 1 week
-        });
-        limits.insert(SelfModTier::Tier5ArchitecturalChange, TierRateLimit {
-            per_hour: 1,
-            per_day: 1,
-            per_week: 1,
-            min_interval_same_component_secs: 1209600, // 2 weeks
-        });
+        limits.insert(
+            SelfModTier::Tier2ApiChange,
+            TierRateLimit {
+                per_hour: 1,
+                per_day: 3,
+                per_week: 10,
+                min_interval_same_component_secs: 7200, // 2 hours
+            },
+        );
+        limits.insert(
+            SelfModTier::Tier3KernelChange,
+            TierRateLimit {
+                per_hour: 1,
+                per_day: 1,
+                per_week: 3,
+                min_interval_same_component_secs: 86400, // 24 hours
+            },
+        );
+        limits.insert(
+            SelfModTier::Tier4SubstrateChange,
+            TierRateLimit {
+                per_hour: 1,
+                per_day: 1,
+                per_week: 1,
+                min_interval_same_component_secs: 604800, // 1 week
+            },
+        );
+        limits.insert(
+            SelfModTier::Tier5ArchitecturalChange,
+            TierRateLimit {
+                per_hour: 1,
+                per_day: 1,
+                per_week: 1,
+                min_interval_same_component_secs: 1209600, // 2 weeks
+            },
+        );
         limits
     }
 
@@ -273,10 +284,7 @@ mod tests {
     #[test]
     fn allow_within_limits() {
         let limiter = RegenerationRateLimiter::new();
-        assert!(limiter.allow(
-            &SelfModTier::Tier0Configuration,
-            &["config".to_string()],
-        ));
+        assert!(limiter.allow(&SelfModTier::Tier0Configuration, &["config".to_string()],));
     }
 
     #[test]
@@ -293,10 +301,7 @@ mod tests {
             );
         }
 
-        assert!(!limiter.allow(
-            &SelfModTier::Tier0Configuration,
-            &["new-comp".to_string()],
-        ));
+        assert!(!limiter.allow(&SelfModTier::Tier0Configuration, &["new-comp".to_string()],));
     }
 
     #[test]
@@ -312,35 +317,24 @@ mod tests {
         );
 
         // Tier0 has 10min same-component interval → should be denied
-        assert!(!limiter.allow(
-            &SelfModTier::Tier0Configuration,
-            &["config".to_string()],
-        ));
+        assert!(!limiter.allow(&SelfModTier::Tier0Configuration, &["config".to_string()],));
 
         // Different component should be allowed
-        assert!(limiter.allow(
-            &SelfModTier::Tier0Configuration,
-            &["other".to_string()],
-        ));
+        assert!(limiter.allow(&SelfModTier::Tier0Configuration, &["other".to_string()],));
     }
 
     #[test]
     fn deny_during_rollback_cooldown() {
-        let mut limiter = RegenerationRateLimiter::new()
-            .with_rollback_cooldown(3600); // 1 hour cooldown
+        let mut limiter = RegenerationRateLimiter::new().with_rollback_cooldown(3600); // 1 hour cooldown
 
         limiter.record_rollback();
         assert!(limiter.in_cooldown());
-        assert!(!limiter.allow(
-            &SelfModTier::Tier0Configuration,
-            &["config".to_string()],
-        ));
+        assert!(!limiter.allow(&SelfModTier::Tier0Configuration, &["config".to_string()],));
     }
 
     #[test]
     fn deny_when_escalated() {
-        let mut limiter = RegenerationRateLimiter::new()
-            .with_escalation_threshold(3);
+        let mut limiter = RegenerationRateLimiter::new().with_escalation_threshold(3);
 
         limiter.record_rollback();
         limiter.record_rollback();
@@ -352,10 +346,7 @@ mod tests {
         limiter.set_last_rollback(Utc::now() - Duration::days(1));
         assert!(!limiter.in_cooldown());
         assert!(limiter.is_escalated());
-        assert!(!limiter.allow(
-            &SelfModTier::Tier0Configuration,
-            &["config".to_string()],
-        ));
+        assert!(!limiter.allow(&SelfModTier::Tier0Configuration, &["config".to_string()],));
     }
 
     #[test]

@@ -12,9 +12,7 @@ use maple_worldline_self_mod_gate::commitment::{IntentChain, SelfModificationCom
 use maple_worldline_self_mod_gate::types::{DeploymentStrategy, SelfModTier};
 
 use crate::error::{CodegenError, CodegenResult};
-use crate::types::{
-    CodegenId, CompilationResult, GeneratedCode, PerformanceResult, TestResult,
-};
+use crate::types::{CodegenId, CompilationResult, GeneratedCode, PerformanceResult, TestResult};
 
 // ── Codegen Artifact ───────────────────────────────────────────────────
 
@@ -86,7 +84,11 @@ impl CodegenArtifact {
             self.total_tests,
             self.perf_gates_passed,
             self.total_perf_gates,
-            if self.fully_validated { "VALIDATED" } else { "NOT VALIDATED" },
+            if self.fully_validated {
+                "VALIDATED"
+            } else {
+                "NOT VALIDATED"
+            },
         )
     }
 }
@@ -219,23 +221,48 @@ mod tests {
                 affected_components: vec!["module".into()],
                 code_changes: vec![CodeChangeSpec {
                     file_path: "src/config.rs".into(),
-                    change_type: CodeChangeType::ModifyFunction { function_name: "load".into() },
+                    change_type: CodeChangeType::ModifyFunction {
+                        function_name: "load".into(),
+                    },
                     description: "test".into(),
                     affected_regions: vec![],
                     provenance: vec![MeaningId::new()],
                 }],
-                required_tests: vec![TestSpec { name: "t".into(), description: "t".into(), test_type: TestType::Unit }],
+                required_tests: vec![TestSpec {
+                    name: "t".into(),
+                    description: "t".into(),
+                    test_type: TestType::Unit,
+                }],
                 performance_gates: vec![],
                 safety_checks: vec![],
-                estimated_improvement: ImprovementEstimate { metric: "speed".into(), current_value: 10.0, projected_value: 8.0, confidence: 0.9, unit: "ms".into() },
+                estimated_improvement: ImprovementEstimate {
+                    metric: "speed".into(),
+                    current_value: 10.0,
+                    projected_value: 8.0,
+                    confidence: 0.9,
+                    unit: "ms".into(),
+                },
                 risk_score: 0.1,
-                rollback_plan: RollbackPlan { strategy: RollbackStrategy::GitRevert, steps: vec!["revert".into()], estimated_duration_secs: 60 },
+                rollback_plan: RollbackPlan {
+                    strategy: RollbackStrategy::GitRevert,
+                    steps: vec!["revert".into()],
+                    estimated_duration_secs: 60,
+                },
             },
             SelfModTier::Tier0Configuration,
             DeploymentStrategy::Immediate,
-            RollbackPlan { strategy: RollbackStrategy::GitRevert, steps: vec!["git revert HEAD".into()], estimated_duration_secs: 60 },
-            IntentChain { observation_ids: vec!["obs-1".into()], meaning_ids: vec![MeaningId::new()], intent_id: IntentId::new() },
-        ).unwrap()
+            RollbackPlan {
+                strategy: RollbackStrategy::GitRevert,
+                steps: vec!["git revert HEAD".into()],
+                estimated_duration_secs: 60,
+            },
+            IntentChain {
+                observation_ids: vec!["obs-1".into()],
+                meaning_ids: vec![MeaningId::new()],
+                intent_id: IntentId::new(),
+            },
+        )
+        .unwrap()
     }
 
     fn make_generated_code() -> GeneratedCode {

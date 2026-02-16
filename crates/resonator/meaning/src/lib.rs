@@ -712,12 +712,14 @@ impl MisalignmentDetector {
                     Some("I detected a contradiction. Could you clarify your intent?".to_string())
                 }
             }
-            Some(MisalignmentType::ConfidenceDrop) => {
-                Some("I'm less certain about the current context. Could you provide more details?".to_string())
-            }
-            Some(MisalignmentType::SemanticDrift) => {
-                Some("The topic seems to have shifted. Should I continue with the new direction?".to_string())
-            }
+            Some(MisalignmentType::ConfidenceDrop) => Some(
+                "I'm less certain about the current context. Could you provide more details?"
+                    .to_string(),
+            ),
+            Some(MisalignmentType::SemanticDrift) => Some(
+                "The topic seems to have shifted. Should I continue with the new direction?"
+                    .to_string(),
+            ),
             Some(MisalignmentType::TopicShift) => {
                 Some("It seems we've moved to a new topic. Is this intentional?".to_string())
             }
@@ -771,7 +773,10 @@ impl MeaningFormationEngine {
     ///
     /// This is the main entry point for meaning formation.
     /// It accumulates context, checks for misalignment, and produces a FormedMeaning.
-    pub fn form_meaning(&mut self, input: impl Into<String>) -> Result<FormedMeaning, MeaningError> {
+    pub fn form_meaning(
+        &mut self,
+        input: impl Into<String>,
+    ) -> Result<FormedMeaning, MeaningError> {
         let input = input.into();
 
         // Add input to context
@@ -792,7 +797,10 @@ impl MeaningFormationEngine {
         }
 
         // Create RCF meaning
-        let identity = self.identity.clone().unwrap_or_else(|| IdentityRef::new("unknown"));
+        let identity = self
+            .identity
+            .clone()
+            .unwrap_or_else(|| IdentityRef::new("unknown"));
         let rcf_meaning = RcfMeaning::new(identity, claims.clone()).with_confidence(confidence);
 
         // Create snapshot for misalignment detection
@@ -1109,7 +1117,9 @@ mod tests {
         let mut engine = MeaningFormationEngine::new();
 
         engine.context_mut().add_input("First message");
-        engine.context_mut().add_inference("This is about greetings", 0.8);
+        engine
+            .context_mut()
+            .add_inference("This is about greetings", 0.8);
         engine.context_mut().add_input("Second message");
 
         let context = engine.to_prompt_context();

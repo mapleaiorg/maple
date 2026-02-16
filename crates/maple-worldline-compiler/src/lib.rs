@@ -151,9 +151,7 @@ mod tests {
         );
 
         let mut profiling = ProfilingData::default();
-        profiling
-            .memory_tier_usage
-            .insert("episodic".into(), 200);
+        profiling.memory_tier_usage.insert("episodic".into(), 200);
         profiling
             .operator_call_frequency
             .insert("transfer".into(), 100);
@@ -261,7 +259,9 @@ mod tests {
         let result = pass.apply(&module).unwrap();
 
         // The fence guarding AssertInvariant MUST NOT be removed
-        assert!(result.description.contains("invariant-guarding fences preserved"));
+        assert!(result
+            .description
+            .contains("invariant-guarding fences preserved"));
         // changes_made should be 0 (the only fence guards an invariant)
         assert_eq!(result.changes_made, 0);
     }
@@ -283,7 +283,10 @@ mod tests {
 
     #[test]
     fn generator_names_accessible() {
-        assert_eq!(NativeCodeGen::new(TargetArch::X86_64).name(), "native-codegen");
+        assert_eq!(
+            NativeCodeGen::new(TargetArch::X86_64).name(),
+            "native-codegen"
+        );
         assert_eq!(
             WasmCodeGen::new(WasmEnvironment::Browser).name(),
             "wasm-codegen"

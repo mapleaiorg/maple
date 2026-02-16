@@ -263,8 +263,12 @@ mod tests {
 
     #[test]
     fn reversibility_preference_ordering() {
-        assert!(ReversibilityPreference::RequireReversible < ReversibilityPreference::PreferReversible);
-        assert!(ReversibilityPreference::PreferReversible < ReversibilityPreference::AllowTimeWindowed);
+        assert!(
+            ReversibilityPreference::RequireReversible < ReversibilityPreference::PreferReversible
+        );
+        assert!(
+            ReversibilityPreference::PreferReversible < ReversibilityPreference::AllowTimeWindowed
+        );
         assert!(ReversibilityPreference::AllowTimeWindowed < ReversibilityPreference::AllowAll);
     }
 

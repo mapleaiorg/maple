@@ -57,7 +57,10 @@ impl SafetyCheckResult {
     }
 
     pub fn is_blocked(&self) -> bool {
-        matches!(self, SafetyCheckResult::Blocked(_) | SafetyCheckResult::Override(_))
+        matches!(
+            self,
+            SafetyCheckResult::Blocked(_) | SafetyCheckResult::Override(_)
+        )
     }
 }
 

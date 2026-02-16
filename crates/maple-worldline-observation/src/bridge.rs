@@ -8,16 +8,14 @@
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use maple_kernel_fabric::{EventFabric, EventPayload, KernelEvent, ResonanceStage};
-use maple_mwl_types::CommitmentId;
 use tokio::sync::mpsc;
 use tracing::{debug, warn};
+use worldline_core::types::CommitmentId;
+use worldline_runtime::fabric::{EventFabric, EventPayload, KernelEvent, ResonanceStage};
 
 use crate::collector::ObservationCollector;
 use crate::error::ObservationResult;
-use crate::events::{
-    MemoryOperationType, ObservationMetadata, SelfObservationEvent, SubsystemId,
-};
+use crate::events::{MemoryOperationType, ObservationMetadata, SelfObservationEvent, SubsystemId};
 
 /// Bridge connecting EventFabric subscriptions to the ObservationCollector.
 ///
@@ -158,8 +156,7 @@ impl ObservationBridge {
                     approved: false,
                 }
             }
-            EventPayload::CommitmentFulfilled { .. }
-            | EventPayload::CommitmentFailed { .. } => {
+            EventPayload::CommitmentFulfilled { .. } | EventPayload::CommitmentFailed { .. } => {
                 SelfObservationEvent::FabricEventEmitted {
                     event_id: event.id.clone(),
                     stage: event.stage,
@@ -188,24 +185,20 @@ impl ObservationBridge {
             // System events → Fabric observations
             EventPayload::WorldlineCreated { .. }
             | EventPayload::WorldlineDestroyed { .. }
-            | EventPayload::CheckpointCreated { .. } => {
-                SelfObservationEvent::FabricEventEmitted {
-                    event_id: event.id.clone(),
-                    stage: event.stage,
-                    latency: Duration::from_micros(0),
-                    payload_bytes: estimate_payload_size(&event.payload),
-                }
-            }
+            | EventPayload::CheckpointCreated { .. } => SelfObservationEvent::FabricEventEmitted {
+                event_id: event.id.clone(),
+                stage: event.stage,
+                latency: Duration::from_micros(0),
+                payload_bytes: estimate_payload_size(&event.payload),
+            },
 
             // Remaining events
-            _ => {
-                SelfObservationEvent::FabricEventEmitted {
-                    event_id: event.id.clone(),
-                    stage: event.stage,
-                    latency: Duration::from_micros(0),
-                    payload_bytes: estimate_payload_size(&event.payload),
-                }
-            }
+            _ => SelfObservationEvent::FabricEventEmitted {
+                event_id: event.id.clone(),
+                stage: event.stage,
+                latency: Duration::from_micros(0),
+                payload_bytes: estimate_payload_size(&event.payload),
+            },
         };
 
         Some((obs_event, metadata))
@@ -268,12 +261,7 @@ impl ObservationBridge {
     }
 
     /// Manually record a governance check observation.
-    pub fn record_governance_check(
-        &self,
-        invariant_name: &str,
-        passed: bool,
-        latency: Duration,
-    ) {
+    pub fn record_governance_check(&self, invariant_name: &str, passed: bool, latency: Duration) {
         let event = SelfObservationEvent::InvariantChecked {
             invariant_name: invariant_name.to_string(),
             passed,
@@ -312,21 +300,21 @@ impl ObservationHandle {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use maple_kernel_fabric::FabricConfig;
-    use maple_mwl_types::IdentityMaterial;
+    use worldline_core::types::IdentityMaterial;
+    use worldline_runtime::fabric::FabricConfig;
 
-    fn test_worldline() -> maple_mwl_types::WorldlineId {
-        maple_mwl_types::WorldlineId::derive(&IdentityMaterial::GenesisHash([1u8; 32]))
+    fn test_worldline() -> worldline_core::types::WorldlineId {
+        worldline_core::types::WorldlineId::derive(&IdentityMaterial::GenesisHash([1u8; 32]))
     }
 
     #[test]
     fn map_meaning_event() {
         let event = KernelEvent::new(
-            maple_mwl_types::EventId::new(),
-            maple_kernel_fabric::HlcTimestamp {
+            worldline_core::types::EventId::new(),
+            worldline_runtime::fabric::HlcTimestamp {
                 physical: 1000,
                 logical: 0,
-                node_id: maple_kernel_fabric::NodeId(1),
+                node_id: worldline_runtime::fabric::NodeId(1),
             },
             test_worldline(),
             ResonanceStage::Meaning,
@@ -347,13 +335,13 @@ mod tests {
 
     #[test]
     fn map_commitment_approved() {
-        let cid = maple_mwl_types::CommitmentId::new();
+        let cid = worldline_core::types::CommitmentId::new();
         let event = KernelEvent::new(
-            maple_mwl_types::EventId::new(),
-            maple_kernel_fabric::HlcTimestamp {
+            worldline_core::types::EventId::new(),
+            worldline_runtime::fabric::HlcTimestamp {
                 physical: 2000,
                 logical: 0,
-                node_id: maple_kernel_fabric::NodeId(1),
+                node_id: worldline_runtime::fabric::NodeId(1),
             },
             test_worldline(),
             ResonanceStage::Commitment,
@@ -377,11 +365,11 @@ mod tests {
     #[test]
     fn map_policy_evaluated() {
         let event = KernelEvent::new(
-            maple_mwl_types::EventId::new(),
-            maple_kernel_fabric::HlcTimestamp {
+            worldline_core::types::EventId::new(),
+            worldline_runtime::fabric::HlcTimestamp {
                 physical: 3000,
                 logical: 0,
-                node_id: maple_kernel_fabric::NodeId(1),
+                node_id: worldline_runtime::fabric::NodeId(1),
             },
             test_worldline(),
             ResonanceStage::Governance,
@@ -410,7 +398,7 @@ mod tests {
         let bridge = ObservationBridge::new(collector.clone());
 
         bridge.record_gate_submission(
-            maple_mwl_types::CommitmentId::new(),
+            worldline_core::types::CommitmentId::new(),
             7,
             Duration::from_millis(50),
             true,

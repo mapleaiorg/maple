@@ -240,7 +240,7 @@ struct ActiveContext {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::entry::{MemoryContent, provenance_from};
+    use crate::entry::{provenance_from, MemoryContent};
     use maple_mwl_types::{EventId, IdentityMaterial, WorldlineId};
 
     fn test_worldline() -> WorldlineId {
@@ -282,10 +282,13 @@ mod tests {
         assert_eq!(wp.sensory_len(), 3);
         // Should have s2, s3, s4 (oldest evicted)
         let entries: Vec<_> = wp.query_sensory(&MemoryFilter::new());
-        let texts: Vec<_> = entries.iter().filter_map(|e| match &e.content {
-            MemoryContent::Text(t) => Some(t.as_str()),
-            _ => None,
-        }).collect();
+        let texts: Vec<_> = entries
+            .iter()
+            .filter_map(|e| match &e.content {
+                MemoryContent::Text(t) => Some(t.as_str()),
+                _ => None,
+            })
+            .collect();
         assert_eq!(texts, vec!["s2", "s3", "s4"]);
     }
 

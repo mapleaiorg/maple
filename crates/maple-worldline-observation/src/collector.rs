@@ -348,10 +348,7 @@ impl ObservationCollector {
         summary.record(event.latency(), event.is_error());
 
         // Store in ring buffer
-        self.ring_buffer.push(ObservedEvent {
-            metadata,
-            event,
-        });
+        self.ring_buffer.push(ObservedEvent { metadata, event });
         self.stored_events += 1;
 
         // Track overhead
@@ -430,8 +427,7 @@ impl ObservationCollector {
     /// Aggregate a time window from the ring buffer.
     pub fn aggregate_window(&mut self, window: TimeWindow) {
         let now = Utc::now();
-        let window_duration =
-            chrono::Duration::from_std(window.duration()).unwrap_or_default();
+        let window_duration = chrono::Duration::from_std(window.duration()).unwrap_or_default();
         let window_start = now - window_duration;
 
         let mut agg = WindowAggregate::new(window, window_start);
@@ -468,7 +464,10 @@ impl ObservationCollector {
 
     /// Get aggregated windows for a given size.
     pub fn get_windows(&self, window: &TimeWindow) -> &[WindowAggregate] {
-        self.windows.get(window).map(|v| v.as_slice()).unwrap_or(&[])
+        self.windows
+            .get(window)
+            .map(|v| v.as_slice())
+            .unwrap_or(&[])
     }
 
     /// Manually adjust the sampling rate.
@@ -521,8 +520,8 @@ impl Default for ObservationCollector {
 mod tests {
     use super::*;
     use crate::events::{MemoryOperationType, SubsystemId};
-    use maple_kernel_fabric::ResonanceStage;
-    use maple_mwl_types::EventId;
+    use worldline_core::types::EventId;
+    use worldline_runtime::fabric::ResonanceStage;
 
     // ── RingBuffer tests ────────────────────────────────────────────
 
@@ -668,7 +667,7 @@ mod tests {
         }
 
         let event = SelfObservationEvent::GateSubmission {
-            commitment_id: maple_mwl_types::CommitmentId::new(),
+            commitment_id: worldline_core::types::CommitmentId::new(),
             stages_evaluated: 7,
             total_latency: Duration::from_millis(50),
             approved: false,

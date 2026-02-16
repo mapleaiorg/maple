@@ -30,8 +30,8 @@ maple-worldline-hardware = { path = "../maple-worldline-hardware" }
 maple-worldline-bootstrap = { path = "../maple-worldline-bootstrap" }
 maple-worldline-evos = { path = "../maple-worldline-evos" }
 
-# MWL core types
-maple-mwl-types = { path = "../maple-mwl-types" }
+# WorldLine facade core types
+worldline-core = { workspace = true }
 
 # Runtime and utilities
 serde = { workspace = true }

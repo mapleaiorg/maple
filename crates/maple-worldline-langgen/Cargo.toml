@@ -9,7 +9,7 @@ rust-version.workspace = true
 description = "WorldLine Language Generation — synthesizes domain-specific languages from observed usage patterns"
 
 [dependencies]
-maple-mwl-types = { workspace = true }
+worldline-core = { workspace = true }
 maple-worldline-observation = { workspace = true }
 maple-worldline-meaning = { workspace = true }
 maple-worldline-intent = { workspace = true }

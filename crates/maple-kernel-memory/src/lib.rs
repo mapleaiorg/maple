@@ -15,10 +15,12 @@ pub mod error;
 pub mod filter;
 pub mod working;
 
-pub use engine::{ConsolidationReport, MemoryEngine, MemoryEngineConfig, MemoryStats, RebuildReport};
+pub use engine::{
+    ConsolidationReport, MemoryEngine, MemoryEngineConfig, MemoryStats, RebuildReport,
+};
 pub use entry::{
-    MemoryClass, MemoryContent, MemoryEntry, MemoryEntryBuilder, MemoryId, MemoryPlane,
-    nil_provenance, provenance_from,
+    nil_provenance, provenance_from, MemoryClass, MemoryContent, MemoryEntry, MemoryEntryBuilder,
+    MemoryId, MemoryPlane,
 };
 pub use episodic::EpisodicPlane;
 pub use error::MemoryError;

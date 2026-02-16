@@ -62,9 +62,7 @@ impl IntentValidationResult {
     pub fn is_valid(&self) -> bool {
         match self {
             Self::Valid => true,
-            Self::Invalid { issues } => {
-                !issues.iter().any(|i| i.severity == IssueSeverity::Error)
-            }
+            Self::Invalid { issues } => !issues.iter().any(|i| i.severity == IssueSeverity::Error),
         }
     }
 
@@ -151,9 +149,7 @@ impl IntentValidator {
         }
 
         // Check 4: Safety checks for high-tier changes
-        if intent.governance_tier >= SubstrateTier::Tier2
-            && !intent.proposal.has_safety_checks()
-        {
+        if intent.governance_tier >= SubstrateTier::Tier2 && !intent.proposal.has_safety_checks() {
             issues.push(ValidationIssue {
                 code: "MISSING_SAFETY_CHECKS".into(),
                 description: format!(
@@ -203,12 +199,8 @@ impl IntentValidator {
 mod tests {
     use super::*;
     use crate::intent::{ImpactAssessment, ImprovementEstimate, IntentStatus};
-    use crate::proposal::{
-        RegenerationProposal, RollbackPlan, RollbackStrategy, SafetyCheck,
-    };
-    use crate::types::{
-        ChangeType, IntentId, ProposalId, ReversibilityLevel, SubstrateTier,
-    };
+    use crate::proposal::{RegenerationProposal, RollbackPlan, RollbackStrategy, SafetyCheck};
+    use crate::types::{ChangeType, IntentId, ProposalId, ReversibilityLevel, SubstrateTier};
     use chrono::Utc;
     use maple_worldline_meaning::MeaningId;
 
@@ -281,10 +273,7 @@ mod tests {
         intent.confidence = 0.5;
         let result = validator.validate(&intent);
         assert!(!result.is_valid());
-        assert!(result
-            .issues()
-            .iter()
-            .any(|i| i.code == "LOW_CONFIDENCE"));
+        assert!(result.issues().iter().any(|i| i.code == "LOW_CONFIDENCE"));
     }
 
     #[test]

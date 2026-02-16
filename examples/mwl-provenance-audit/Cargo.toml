@@ -9,10 +9,9 @@ name = "mwl-provenance-audit"
 path = "src/main.rs"
 
 [dependencies]
-maple-mwl-types = { path = "../../crates/maple-mwl-types" }
-maple-mwl-identity = { path = "../../crates/maple-mwl-identity" }
-maple-kernel-fabric = { path = "../../crates/maple-kernel-fabric" }
-maple-kernel-provenance = { path = "../../crates/maple-kernel-provenance" }
+worldline-core = { workspace = true }
+worldline-runtime = { workspace = true }
+worldline-ledger = { workspace = true }
 
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 tracing = "0.1"

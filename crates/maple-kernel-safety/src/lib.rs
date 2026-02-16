@@ -43,9 +43,7 @@ pub use boundary::{
 pub use coercion::{
     CoercionConfig, CoercionDetector, CoercionIndicator, CoercionResponse, CoercionType,
 };
-pub use consent::{
-    ConsentRecord, ConsentType, DisengagementResult, HumanConsentProtocol,
-};
+pub use consent::{ConsentRecord, ConsentType, DisengagementResult, HumanConsentProtocol};
 pub use error::{SafetyCheckResult, SafetyError};
 pub use ethics::{
     ethical_override, AgencyConcern, ConcernSeverity, Decision, EthicalPriority, OverrideDecision,

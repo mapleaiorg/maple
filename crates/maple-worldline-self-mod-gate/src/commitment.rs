@@ -36,8 +36,7 @@ pub struct IntentChain {
 impl IntentChain {
     /// Whether the chain has full provenance (observations + meanings + intent).
     pub fn has_full_provenance(&self) -> bool {
-        !self.observation_ids.is_empty()
-            && !self.meaning_ids.is_empty()
+        !self.observation_ids.is_empty() && !self.meaning_ids.is_empty()
     }
 
     /// Total length of the provenance chain.
@@ -224,7 +223,9 @@ mod tests {
             affected_components: vec!["config".into()],
             code_changes: vec![CodeChangeSpec {
                 file_path: "src/config.rs".into(),
-                change_type: CodeChangeType::ModifyFunction { function_name: "load".into() },
+                change_type: CodeChangeType::ModifyFunction {
+                    function_name: "load".into(),
+                },
                 description: "Cache config".into(),
                 affected_regions: vec!["load()".into()],
                 provenance: vec![MeaningId::new()],
@@ -284,7 +285,10 @@ mod tests {
             },
             make_intent_chain(),
         );
-        assert!(matches!(result, Err(SelfModGateError::RollbackPlanInvalid(_))));
+        assert!(matches!(
+            result,
+            Err(SelfModGateError::RollbackPlanInvalid(_))
+        ));
     }
 
     #[test]
@@ -292,7 +296,7 @@ mod tests {
         let result = SelfModificationCommitment::new(
             make_proposal(),
             SelfModTier::Tier3KernelChange, // High tier
-            DeploymentStrategy::Immediate,   // But immediate deployment
+            DeploymentStrategy::Immediate,  // But immediate deployment
             RollbackPlan {
                 strategy: RollbackStrategy::GitRevert,
                 steps: vec!["git revert HEAD".into()],
@@ -329,7 +333,8 @@ mod tests {
                 estimated_duration_secs: 60,
             },
             make_intent_chain(),
-        ).unwrap();
+        )
+        .unwrap();
         // Tier0: compilation + existing_tests + performance (advisory)
         assert!(c.validation_criteria.len() >= 2);
     }
@@ -339,15 +344,22 @@ mod tests {
         let c = SelfModificationCommitment::new(
             make_proposal(),
             SelfModTier::Tier3KernelChange,
-            DeploymentStrategy::Canary { traffic_fraction: 0.05 },
+            DeploymentStrategy::Canary {
+                traffic_fraction: 0.05,
+            },
             RollbackPlan {
                 strategy: RollbackStrategy::GitRevert,
                 steps: vec!["revert".into()],
                 estimated_duration_secs: 60,
             },
             make_intent_chain(),
-        ).unwrap();
-        let names: Vec<&str> = c.validation_criteria.iter().map(|c| c.name.as_str()).collect();
+        )
+        .unwrap();
+        let names: Vec<&str> = c
+            .validation_criteria
+            .iter()
+            .map(|c| c.name.as_str())
+            .collect();
         assert!(names.contains(&"human_approval"));
         assert!(names.contains(&"governance_approval"));
     }

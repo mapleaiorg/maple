@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use tracing::{debug, info};
 
 use crate::entry::{
-    MemoryClass, MemoryContent, MemoryEntry, MemoryId, MemoryPlane, provenance_from,
+    provenance_from, MemoryClass, MemoryContent, MemoryEntry, MemoryId, MemoryPlane,
 };
 use crate::episodic::EpisodicPlane;
 use crate::error::MemoryError;
@@ -253,7 +253,11 @@ impl MemoryEngine {
         // Second pass: actually rebuild from episodic plane recent entries
         // Use the most recent episodic entries to populate active context
         let recent_episodic = self.episodic.all_episodic_entries();
-        for ep_entry in recent_episodic.into_iter().rev().take(self.config.working.active_max_entries) {
+        for ep_entry in recent_episodic
+            .into_iter()
+            .rev()
+            .take(self.config.working.active_max_entries)
+        {
             let mut rebuilt = ep_entry.clone();
             rebuilt.class = MemoryClass::Active;
             rebuilt.id = MemoryId::new();

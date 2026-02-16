@@ -468,7 +468,9 @@ impl ConsistencyValidator {
         if !contradictions.is_empty() {
             return ConsistencyResult::Contradictory {
                 conflicting_ids: contradictions,
-                suggestion: "Recent intents appear to contradict the current intent. Consider clarifying.".to_string(),
+                suggestion:
+                    "Recent intents appear to contradict the current intent. Consider clarifying."
+                        .to_string(),
             };
         }
 
@@ -511,7 +513,8 @@ impl ConsistencyValidator {
             ConsistencyResult::Inconsistent {
                 score: consistency_score,
                 threshold: self.threshold,
-                reason: "Intent shows moderate but unclear similarity to recent history".to_string(),
+                reason: "Intent shows moderate but unclear similarity to recent history"
+                    .to_string(),
             }
         }
     }
@@ -692,8 +695,7 @@ impl IntentStabilizationEngine {
             TemporalStabilityResult::Unstable { remaining_ms, .. } => {
                 return StabilizationResult::Unstable {
                     reason: UnstableReason::TemporalInstability { remaining_ms },
-                    progress: 1.0
-                        - (remaining_ms as f64 / self.config.stability_window_ms as f64),
+                    progress: 1.0 - (remaining_ms as f64 / self.config.stability_window_ms as f64),
                     current_intent: candidate,
                 };
             }

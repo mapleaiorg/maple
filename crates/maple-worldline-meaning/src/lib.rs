@@ -76,8 +76,7 @@ pub use convergence::{ConfidenceTrend, ConvergenceState, ConvergenceTracker};
 pub use engine::{MeaningHistory, SelfMeaningEngine};
 pub use error::{MeaningError, MeaningResult};
 pub use evidence::{
-    BayesianUpdater, ConfidenceUpdate, EvidenceEvaluator, EvidenceQualityAssessor,
-    UpdateDirection,
+    BayesianUpdater, ConfidenceUpdate, EvidenceEvaluator, EvidenceQualityAssessor, UpdateDirection,
 };
 pub use hypothesis::{
     CodePathGenerator, ComponentIsolationGenerator, EnvironmentalChangeGenerator,
@@ -86,8 +85,8 @@ pub use hypothesis::{
 };
 pub use types::{
     ArchitecturalInsightType, Evidence, EvidenceCategory, GrowthModel, HypothesisId, MeaningConfig,
-    MeaningId, MemoryOptimizationType, OperatorBottleneckType, RedundancyType,
-    RootCauseHypothesis, SelfMeaning, SelfMeaningCategory,
+    MeaningId, MemoryOptimizationType, OperatorBottleneckType, RedundancyType, RootCauseHypothesis,
+    SelfMeaning, SelfMeaningCategory,
 };
 
 #[cfg(test)]
@@ -95,16 +94,11 @@ mod tests {
     use super::*;
     use chrono::Utc;
     use maple_worldline_observation::{
-        AnomalyCategory, AnomalyId, AnomalySeverity, ComponentId, MetricId,
-        PerformanceAnomaly,
+        AnomalyCategory, AnomalyId, AnomalySeverity, ComponentId, MetricId, PerformanceAnomaly,
     };
     use std::collections::HashMap;
 
-    fn make_anomaly(
-        component: &str,
-        category: AnomalyCategory,
-        score: f64,
-    ) -> PerformanceAnomaly {
+    fn make_anomaly(component: &str, category: AnomalyCategory, score: f64) -> PerformanceAnomaly {
         PerformanceAnomaly {
             id: AnomalyId::new(),
             category,
@@ -137,7 +131,11 @@ mod tests {
         // Process anomalies from multiple components
         let anomalies = vec![
             make_anomaly("event-fabric", AnomalyCategory::LatencyRegression, 0.8),
-            make_anomaly("commitment-gate", AnomalyCategory::ThroughputDegradation, 0.7),
+            make_anomaly(
+                "commitment-gate",
+                AnomalyCategory::ThroughputDegradation,
+                0.7,
+            ),
             make_anomaly("memory-engine", AnomalyCategory::MemoryLeak, 0.6),
         ];
 
@@ -151,10 +149,7 @@ mod tests {
 
         // All meanings should be "still forming" (not yet converged)
         let forming = engine.still_forming();
-        assert!(
-            !forming.is_empty(),
-            "New meanings should be still forming"
-        );
+        assert!(!forming.is_empty(), "New meanings should be still forming");
 
         // No meanings should be ready for intent yet
         let ready = engine.ready_for_intent();
@@ -201,9 +196,7 @@ mod tests {
 
         if gate_meanings.len() >= 2 {
             // Verify competition is detected
-            let has_competitors = gate_meanings
-                .iter()
-                .any(|m| !m.competing_with.is_empty());
+            let has_competitors = gate_meanings.iter().any(|m| !m.competing_with.is_empty());
             assert!(
                 has_competitors,
                 "Competing meanings should detect each other"

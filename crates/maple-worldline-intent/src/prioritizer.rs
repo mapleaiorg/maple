@@ -108,9 +108,7 @@ mod tests {
     use super::*;
     use crate::intent::{ImpactAssessment, ImprovementEstimate, IntentStatus};
     use crate::proposal::{RegenerationProposal, RollbackPlan, RollbackStrategy};
-    use crate::types::{
-        ChangeType, IntentId, ProposalId, ReversibilityLevel, SubstrateTier,
-    };
+    use crate::types::{ChangeType, IntentId, ProposalId, ReversibilityLevel, SubstrateTier};
     use chrono::Utc;
     use maple_worldline_meaning::MeaningId;
 

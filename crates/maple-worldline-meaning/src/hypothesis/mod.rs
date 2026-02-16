@@ -11,6 +11,4 @@ pub use generators::{
     CodePathGenerator, ComponentIsolationGenerator, EnvironmentalChangeGenerator,
     HistoricalPatternGenerator, InteractionPatternGenerator, ResourcePressureGenerator,
 };
-pub use types::{
-    Hypothesis, HypothesisGenerator, ObservationSummary, SubsystemSummaryView,
-};
+pub use types::{Hypothesis, HypothesisGenerator, ObservationSummary, SubsystemSummaryView};

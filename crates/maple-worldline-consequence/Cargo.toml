@@ -9,7 +9,7 @@ rust-version.workspace = true
 description = "Self-consequence engine for the MWL self-producing substrate — executes approved self-modifications, records outcomes with receipts, and feeds back to observation"
 
 [dependencies]
-maple-mwl-types = { workspace = true }
+worldline-core = { workspace = true }
 maple-worldline-observation = { workspace = true }
 maple-worldline-intent = { workspace = true }
 maple-worldline-commitment = { workspace = true }

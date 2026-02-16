@@ -87,8 +87,7 @@ mod tests {
 
     #[test]
     fn error_is_std_error() {
-        let e: Box<dyn std::error::Error> =
-            Box::new(DeploymentError::Timeout("5 minutes".into()));
+        let e: Box<dyn std::error::Error> = Box::new(DeploymentError::Timeout("5 minutes".into()));
         assert!(e.to_string().contains("5 minutes"));
     }
 
@@ -97,8 +96,7 @@ mod tests {
         let ok: DeploymentResult<i32> = Ok(42);
         assert_eq!(ok.unwrap(), 42);
 
-        let err: DeploymentResult<i32> =
-            Err(DeploymentError::PhaseFailed("deploy".into()));
+        let err: DeploymentResult<i32> = Err(DeploymentError::PhaseFailed("deploy".into()));
         assert!(err.is_err());
     }
 

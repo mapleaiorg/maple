@@ -392,10 +392,7 @@ mod tests {
 
     #[test]
     fn cycle_phase_next() {
-        assert_eq!(
-            CyclePhase::Observing.next().unwrap(),
-            CyclePhase::Analyzing
-        );
+        assert_eq!(CyclePhase::Observing.next().unwrap(), CyclePhase::Analyzing);
         assert!(CyclePhase::Complete.next().is_none());
     }
 

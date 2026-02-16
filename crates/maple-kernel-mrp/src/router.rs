@@ -199,10 +199,7 @@ impl MrpRouter {
     }
 
     /// Validate envelope integrity.
-    pub fn validate_integrity(
-        &self,
-        envelope: &MrpEnvelope,
-    ) -> Result<(), IntegrityError> {
+    pub fn validate_integrity(&self, envelope: &MrpEnvelope) -> Result<(), IntegrityError> {
         let expected = envelope.compute_hash();
         if envelope.integrity.hash != expected {
             return Err(IntegrityError {

@@ -47,15 +47,8 @@ impl BalanceProjection {
     }
 
     /// Record a settlement event for a specific worldline.
-    pub fn record_for_worldline(
-        &mut self,
-        worldline: WorldlineId,
-        event: SettlementEvent,
-    ) {
-        self.trajectories
-            .entry(worldline)
-            .or_default()
-            .push(event);
+    pub fn record_for_worldline(&mut self, worldline: WorldlineId, event: SettlementEvent) {
+        self.trajectories.entry(worldline).or_default().push(event);
     }
 
     /// Project the current balance for a worldline+asset.
@@ -67,15 +60,14 @@ impl BalanceProjection {
         worldline: &WorldlineId,
         asset: &AssetId,
     ) -> Result<ProjectedBalance, FinancialError> {
-        let trajectory = self.trajectories.get(worldline).ok_or_else(|| {
-            FinancialError::EmptyTrajectory(asset.clone())
-        })?;
+        let trajectory = self
+            .trajectories
+            .get(worldline)
+            .ok_or_else(|| FinancialError::EmptyTrajectory(asset.clone()))?;
 
         // Filter to this asset
-        let asset_events: Vec<&SettlementEvent> = trajectory
-            .iter()
-            .filter(|e| e.asset == *asset)
-            .collect();
+        let asset_events: Vec<&SettlementEvent> =
+            trajectory.iter().filter(|e| e.asset == *asset).collect();
 
         if asset_events.is_empty() {
             return Err(FinancialError::EmptyTrajectory(asset.clone()));
@@ -114,9 +106,10 @@ impl BalanceProjection {
         asset: &AssetId,
         at: &TemporalAnchor,
     ) -> Result<ProjectedBalance, FinancialError> {
-        let trajectory = self.trajectories.get(worldline).ok_or_else(|| {
-            FinancialError::EmptyTrajectory(asset.clone())
-        })?;
+        let trajectory = self
+            .trajectories
+            .get(worldline)
+            .ok_or_else(|| FinancialError::EmptyTrajectory(asset.clone()))?;
 
         let asset_events: Vec<&SettlementEvent> = trajectory
             .iter()
@@ -153,10 +146,7 @@ impl BalanceProjection {
         self.trajectories
             .get(worldline)
             .map(|events| {
-                let mut assets: Vec<AssetId> = events
-                    .iter()
-                    .map(|e| e.asset.clone())
-                    .collect();
+                let mut assets: Vec<AssetId> = events.iter().map(|e| e.asset.clone()).collect();
                 assets.sort_by(|a, b| a.0.cmp(&b.0));
                 assets.dedup();
                 assets
@@ -228,14 +218,8 @@ mod tests {
         let mut evos = BalanceProjection::new();
 
         // Record credits
-        evos.record_for_worldline(
-            wid_a(),
-            settlement_event(wid_b(), usd(), 100_000, "s1"),
-        );
-        evos.record_for_worldline(
-            wid_a(),
-            settlement_event(wid_b(), usd(), 50_000, "s2"),
-        );
+        evos.record_for_worldline(wid_a(), settlement_event(wid_b(), usd(), 100_000, "s1"));
+        evos.record_for_worldline(wid_a(), settlement_event(wid_b(), usd(), 50_000, "s2"));
 
         let balance = evos.project(&wid_a(), &usd()).unwrap();
         assert_eq!(balance.balance_minor, 150_000);
@@ -246,14 +230,8 @@ mod tests {
     fn project_balance_with_debits() {
         let mut evos = BalanceProjection::new();
 
-        evos.record_for_worldline(
-            wid_a(),
-            settlement_event(wid_b(), usd(), 100_000, "s1"),
-        );
-        evos.record_for_worldline(
-            wid_a(),
-            settlement_event(wid_b(), usd(), -30_000, "s2"),
-        );
+        evos.record_for_worldline(wid_a(), settlement_event(wid_b(), usd(), 100_000, "s1"));
+        evos.record_for_worldline(wid_a(), settlement_event(wid_b(), usd(), -30_000, "s2"));
 
         let balance = evos.project(&wid_a(), &usd()).unwrap();
         assert_eq!(balance.balance_minor, 70_000);
@@ -263,10 +241,7 @@ mod tests {
     fn project_balance_can_be_negative() {
         let mut evos = BalanceProjection::new();
 
-        evos.record_for_worldline(
-            wid_a(),
-            settlement_event(wid_b(), usd(), -50_000, "s1"),
-        );
+        evos.record_for_worldline(wid_a(), settlement_event(wid_b(), usd(), -50_000, "s1"));
 
         let balance = evos.project(&wid_a(), &usd()).unwrap();
         assert_eq!(balance.balance_minor, -50_000);
@@ -276,18 +251,9 @@ mod tests {
     fn project_filters_by_asset() {
         let mut evos = BalanceProjection::new();
 
-        evos.record_for_worldline(
-            wid_a(),
-            settlement_event(wid_b(), usd(), 100_000, "s1"),
-        );
-        evos.record_for_worldline(
-            wid_a(),
-            settlement_event(wid_b(), btc(), 50_000_000, "s2"),
-        );
-        evos.record_for_worldline(
-            wid_a(),
-            settlement_event(wid_b(), usd(), 25_000, "s3"),
-        );
+        evos.record_for_worldline(wid_a(), settlement_event(wid_b(), usd(), 100_000, "s1"));
+        evos.record_for_worldline(wid_a(), settlement_event(wid_b(), btc(), 50_000_000, "s2"));
+        evos.record_for_worldline(wid_a(), settlement_event(wid_b(), usd(), 25_000, "s3"));
 
         let usd_balance = evos.project(&wid_a(), &usd()).unwrap();
         assert_eq!(usd_balance.balance_minor, 125_000);
@@ -310,10 +276,7 @@ mod tests {
     #[test]
     fn project_fails_for_no_events_for_asset() {
         let mut evos = BalanceProjection::new();
-        evos.record_for_worldline(
-            wid_a(),
-            settlement_event(wid_b(), usd(), 100_000, "s1"),
-        );
+        evos.record_for_worldline(wid_a(), settlement_event(wid_b(), usd(), 100_000, "s1"));
 
         assert!(matches!(
             evos.project(&wid_a(), &btc()),
@@ -325,19 +288,13 @@ mod tests {
     fn balance_is_always_recomputed() {
         let mut evos = BalanceProjection::new();
 
-        evos.record_for_worldline(
-            wid_a(),
-            settlement_event(wid_b(), usd(), 100_000, "s1"),
-        );
+        evos.record_for_worldline(wid_a(), settlement_event(wid_b(), usd(), 100_000, "s1"));
 
         let balance1 = evos.project(&wid_a(), &usd()).unwrap();
         assert_eq!(balance1.balance_minor, 100_000);
 
         // Add more events
-        evos.record_for_worldline(
-            wid_a(),
-            settlement_event(wid_b(), usd(), 50_000, "s2"),
-        );
+        evos.record_for_worldline(wid_a(), settlement_event(wid_b(), usd(), 50_000, "s2"));
 
         // Balance is recomputed, NOT cached
         let balance2 = evos.project(&wid_a(), &usd()).unwrap();
@@ -353,16 +310,10 @@ mod tests {
         let mut evos = BalanceProjection::new();
         assert_eq!(evos.trajectory_length(&wid_a(), &usd()), 0);
 
-        evos.record_for_worldline(
-            wid_a(),
-            settlement_event(wid_b(), usd(), 100_000, "s1"),
-        );
+        evos.record_for_worldline(wid_a(), settlement_event(wid_b(), usd(), 100_000, "s1"));
         assert_eq!(evos.trajectory_length(&wid_a(), &usd()), 1);
 
-        evos.record_for_worldline(
-            wid_a(),
-            settlement_event(wid_b(), usd(), 50_000, "s2"),
-        );
+        evos.record_for_worldline(wid_a(), settlement_event(wid_b(), usd(), 50_000, "s2"));
         assert_eq!(evos.trajectory_length(&wid_a(), &usd()), 2);
     }
 
@@ -370,18 +321,9 @@ mod tests {
     fn assets_for_worldline_returns_unique_sorted() {
         let mut evos = BalanceProjection::new();
 
-        evos.record_for_worldline(
-            wid_a(),
-            settlement_event(wid_b(), usd(), 100_000, "s1"),
-        );
-        evos.record_for_worldline(
-            wid_a(),
-            settlement_event(wid_b(), btc(), 50_000_000, "s2"),
-        );
-        evos.record_for_worldline(
-            wid_a(),
-            settlement_event(wid_b(), usd(), 25_000, "s3"),
-        );
+        evos.record_for_worldline(wid_a(), settlement_event(wid_b(), usd(), 100_000, "s1"));
+        evos.record_for_worldline(wid_a(), settlement_event(wid_b(), btc(), 50_000_000, "s2"));
+        evos.record_for_worldline(wid_a(), settlement_event(wid_b(), usd(), 25_000, "s3"));
 
         let assets = evos.assets_for_worldline(&wid_a());
         assert_eq!(assets.len(), 2);

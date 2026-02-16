@@ -46,8 +46,8 @@ pub mod evolution;
 pub mod grammar;
 pub mod parser;
 pub mod semantics;
-pub mod typesys;
 pub mod types;
+pub mod typesys;
 
 // ── Re-exports ───────────────────────────────────────────────────────
 
@@ -60,7 +60,6 @@ pub use grammar::{
 };
 pub use parser::{ParserGenerator, SimulatedParserGenerator};
 pub use semantics::{SemanticsEngine, SimulatedSemanticsEngine};
-pub use typesys::{SimulatedTypeSystemDesigner, TypeSystemDesigner};
 pub use types::{
     Associativity, CoercionRule, CoercionSafety, CompilerSpec, CompilerTarget, ConceptProperty,
     ConceptRelationship, ConstraintType, DomainConcept, DomainConstraint, DomainSpec, DslType,
@@ -70,6 +69,7 @@ pub use types::{
     PropertyType, RelationshipType, SemanticRule, SideEffect, TypeConstraint, TypeKind,
     TypeSystemSpec, UsagePattern,
 };
+pub use typesys::{SimulatedTypeSystemDesigner, TypeSystemDesigner};
 
 #[cfg(test)]
 mod tests {
@@ -108,7 +108,12 @@ mod tests {
     fn simple_dsl_generation_e2e() {
         let mut engine = make_engine();
         let id = engine
-            .generate("fin-settle-dsl", "1.0.0", &sample_patterns(), Some("finance"))
+            .generate(
+                "fin-settle-dsl",
+                "1.0.0",
+                &sample_patterns(),
+                Some("finance"),
+            )
             .unwrap();
         let record = engine.find(&id).unwrap();
         assert!(matches!(record.status, LangGenStatus::Complete));

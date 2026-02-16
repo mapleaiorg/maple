@@ -69,8 +69,12 @@ mod tests {
         let cpu = CpuSubstrate::new();
         let gpu = GpuSubstrate::new();
 
-        let cpu_result = cpu.execute_wlir("mod", "entry", vec!["arg".into()]).unwrap();
-        let gpu_result = gpu.execute_wlir("mod", "entry", vec!["arg".into()]).unwrap();
+        let cpu_result = cpu
+            .execute_wlir("mod", "entry", vec!["arg".into()])
+            .unwrap();
+        let gpu_result = gpu
+            .execute_wlir("mod", "entry", vec!["arg".into()])
+            .unwrap();
 
         // Both substrates produce output containing the module/entry
         assert!(cpu_result.output_values[0].contains("mod"));
@@ -163,15 +167,11 @@ mod tests {
         let mut engine = SalEngine::new(Box::new(HybridSubstrate::new()));
 
         // Simple operation → CPU
-        let output1 = engine
-            .execute_operator(&sample_operator("simple"))
-            .unwrap();
+        let output1 = engine.execute_operator(&sample_operator("simple")).unwrap();
         assert!(output1.result.contains("cpu:"));
 
         // WLIR → GPU (hybrid prefers GPU when available)
-        let result = engine
-            .execute_wlir("mod", "main", vec![])
-            .unwrap();
+        let result = engine.execute_wlir("mod", "main", vec![]).unwrap();
         assert!(result.output_values[0].contains("gpu:"));
 
         assert_eq!(engine.record_count(), 2);

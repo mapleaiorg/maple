@@ -381,7 +381,11 @@ mod tests {
         // An unseen key should have a low estimate
         // (may not be exactly 0 due to hash collisions, but should be small)
         let estimate = cms.estimate("never_inserted");
-        assert!(estimate <= 10, "unseen key estimate unexpectedly high: {}", estimate);
+        assert!(
+            estimate <= 10,
+            "unseen key estimate unexpectedly high: {}",
+            estimate
+        );
     }
 
     #[test]
@@ -430,7 +434,11 @@ mod tests {
             hll.insert("same_item");
         }
         // Duplicates should not inflate the cardinality
-        assert!(hll.count() <= 5, "duplicate inflation: count={}", hll.count());
+        assert!(
+            hll.count() <= 5,
+            "duplicate inflation: count={}",
+            hll.count()
+        );
     }
 
     #[test]
@@ -447,7 +455,10 @@ mod tests {
         assert!(
             estimated >= lower && estimated <= upper,
             "HLL estimate {} out of range [{}, {}] for n={}",
-            estimated, lower, upper, n
+            estimated,
+            lower,
+            upper,
+            n
         );
     }
 

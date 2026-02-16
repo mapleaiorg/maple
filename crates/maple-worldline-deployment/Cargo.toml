@@ -9,7 +9,7 @@ rust-version.workspace = true
 description = "Deployment pipeline — strategy execution, health monitoring, rollback, and observation feedback for the MWL self-producing substrate"
 
 [dependencies]
-maple-mwl-types = { workspace = true }
+worldline-core = { workspace = true }
 maple-worldline-observation = { workspace = true }
 maple-worldline-intent = { workspace = true }
 maple-worldline-self-mod-gate = { workspace = true }

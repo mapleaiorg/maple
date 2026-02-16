@@ -5,9 +5,7 @@
 //! WlirInstructions, OperatorCalls, and RustSource.
 
 use crate::error::{LangGenError, LangGenResult};
-use crate::types::{
-    CompilerSpec, CompilerTarget, GrammarSpec, OptimizationLevel, TypeSystemSpec,
-};
+use crate::types::{CompilerSpec, CompilerTarget, GrammarSpec, OptimizationLevel, TypeSystemSpec};
 
 // ── Compiler Generator Trait ─────────────────────────────────────────
 
@@ -150,8 +148,8 @@ mod tests {
     use super::*;
     use crate::domain::{DomainAnalyzer, SimulatedDomainAnalyzer};
     use crate::grammar::{GrammarSynthesizer, SimulatedGrammarSynthesizer};
-    use crate::typesys::{SimulatedTypeSystemDesigner, TypeSystemDesigner};
     use crate::types::{GrammarStyle, UsagePattern};
+    use crate::typesys::{SimulatedTypeSystemDesigner, TypeSystemDesigner};
 
     fn sample_grammar() -> GrammarSpec {
         let analyzer = SimulatedDomainAnalyzer::new();
@@ -163,7 +161,9 @@ mod tests {
         }];
         let domain = analyzer.analyze(&patterns, None).unwrap();
         let synth = SimulatedGrammarSynthesizer::new();
-        synth.synthesize(&domain, &GrammarStyle::Declarative).unwrap()
+        synth
+            .synthesize(&domain, &GrammarStyle::Declarative)
+            .unwrap()
     }
 
     fn sample_type_system() -> TypeSystemSpec {
@@ -185,7 +185,12 @@ mod tests {
         let grammar = sample_grammar();
         let ts = sample_type_system();
         let compiler = gen
-            .generate(&grammar, &ts, &CompilerTarget::WlirInstructions, &OptimizationLevel::Basic)
+            .generate(
+                &grammar,
+                &ts,
+                &CompilerTarget::WlirInstructions,
+                &OptimizationLevel::Basic,
+            )
             .unwrap();
         assert_eq!(compiler.target, CompilerTarget::WlirInstructions);
         assert_eq!(compiler.total_passes, 3);
@@ -197,7 +202,12 @@ mod tests {
         let grammar = sample_grammar();
         let ts = sample_type_system();
         let compiler = gen
-            .generate(&grammar, &ts, &CompilerTarget::OperatorCalls, &OptimizationLevel::None)
+            .generate(
+                &grammar,
+                &ts,
+                &CompilerTarget::OperatorCalls,
+                &OptimizationLevel::None,
+            )
             .unwrap();
         assert_eq!(compiler.target, CompilerTarget::OperatorCalls);
         assert_eq!(compiler.total_passes, 1);
@@ -209,7 +219,12 @@ mod tests {
         let grammar = sample_grammar();
         let ts = sample_type_system();
         let compiler = gen
-            .generate(&grammar, &ts, &CompilerTarget::WlirInstructions, &OptimizationLevel::Aggressive)
+            .generate(
+                &grammar,
+                &ts,
+                &CompilerTarget::WlirInstructions,
+                &OptimizationLevel::Aggressive,
+            )
             .unwrap();
         assert_eq!(compiler.total_passes, 5);
     }
@@ -220,7 +235,12 @@ mod tests {
         let grammar = sample_grammar();
         let ts = sample_type_system();
         let compiler = gen
-            .generate(&grammar, &ts, &CompilerTarget::RustSource, &OptimizationLevel::Basic)
+            .generate(
+                &grammar,
+                &ts,
+                &CompilerTarget::RustSource,
+                &OptimizationLevel::Basic,
+            )
             .unwrap();
         assert!(compiler.source_skeleton.contains("Rust"));
     }

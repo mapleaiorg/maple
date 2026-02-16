@@ -160,7 +160,10 @@ mod tests {
         let report = engine.run_cycle().unwrap();
 
         assert!(report.participating_subsystems() >= 7);
-        assert_eq!(report.healthy_subsystems(), report.participating_subsystems());
+        assert_eq!(
+            report.healthy_subsystems(),
+            report.participating_subsystems()
+        );
     }
 
     // ── Bootstrap Phase Awareness ───────────────────────────────────

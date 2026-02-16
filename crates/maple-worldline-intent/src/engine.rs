@@ -92,8 +92,7 @@ impl IntentStabilizationEngine {
         system_load: f64,
     ) -> IntentResult<Vec<SelfRegenerationIntent>> {
         let ready_refs = bridge.ready_for_intent();
-        let ready_meanings: Vec<SelfMeaning> =
-            ready_refs.into_iter().cloned().collect();
+        let ready_meanings: Vec<SelfMeaning> = ready_refs.into_iter().cloned().collect();
         self.process_meaning_list(&ready_meanings, system_load)
     }
 
@@ -416,10 +415,7 @@ mod tests {
     #[test]
     fn engine_processes_multiple_meanings() {
         let mut engine = IntentStabilizationEngine::with_defaults();
-        let meanings = vec![
-            make_perf_meaning(0.9),
-            make_perf_meaning(0.85),
-        ];
+        let meanings = vec![make_perf_meaning(0.9), make_perf_meaning(0.85)];
         let result = engine
             .process_meaning_list(&meanings, 0.3)
             .expect("should succeed");

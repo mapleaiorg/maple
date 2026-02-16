@@ -117,13 +117,15 @@ impl SimulatedTypeSystemDesigner {
                 from_type: "Amount".into(),
                 to_type: "Decimal".into(),
                 safety: CoercionSafety::Forbidden,
-                description: "Amount to Number is forbidden — currency metadata would be lost".into(),
+                description: "Amount to Number is forbidden — currency metadata would be lost"
+                    .into(),
             },
             CoercionRule {
                 from_type: "Amount".into(),
                 to_type: "Integer".into(),
                 safety: CoercionSafety::Forbidden,
-                description: "Amount to Integer is forbidden — currency metadata would be lost".into(),
+                description: "Amount to Integer is forbidden — currency metadata would be lost"
+                    .into(),
             },
         ]
     }
@@ -150,7 +152,9 @@ impl SimulatedTypeSystemDesigner {
 
         // Always add cross-currency constraint for financial domains
         let has_amount = domain.concepts.iter().any(|c| {
-            c.properties.iter().any(|p| p.property_type == PropertyType::Amount)
+            c.properties
+                .iter()
+                .any(|p| p.property_type == PropertyType::Amount)
         });
 
         if has_amount {

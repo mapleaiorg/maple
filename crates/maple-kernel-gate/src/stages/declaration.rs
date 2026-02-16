@@ -51,7 +51,10 @@ impl GateStage for DeclarationStage {
         }
 
         // Check confidence threshold
-        if !decl.confidence.is_sufficient_for_commitment(self.min_intent_confidence) {
+        if !decl
+            .confidence
+            .is_sufficient_for_commitment(self.min_intent_confidence)
+        {
             return Ok(StageResult::Deny(DenialReason {
                 code: "LOW_CONFIDENCE".into(),
                 message: format!(

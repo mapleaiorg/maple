@@ -9,8 +9,8 @@ rust-version.workspace = true
 description = "Self-Observation Foundation: event monitoring, profiling, and analytics for MWL"
 
 [dependencies]
-maple-mwl-types = { path = "../maple-mwl-types" }
-maple-kernel-fabric = { path = "../maple-kernel-fabric" }
+worldline-core = { workspace = true }
+worldline-runtime = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 tokio = { workspace = true, features = ["full"] }

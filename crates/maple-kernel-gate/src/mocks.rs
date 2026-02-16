@@ -23,12 +23,7 @@ impl MockCapabilityProvider {
     }
 
     /// Grant a capability to a worldline.
-    pub fn grant(
-        &mut self,
-        wid: WorldlineId,
-        cap_id: impl Into<String>,
-        domain: EffectDomain,
-    ) {
+    pub fn grant(&mut self, wid: WorldlineId, cap_id: impl Into<String>, domain: EffectDomain) {
         let cap = Capability {
             id: cap_id.into(),
             name: "mock-capability".into(),

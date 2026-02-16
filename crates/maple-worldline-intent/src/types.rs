@@ -92,10 +92,7 @@ pub enum ChangeType {
     },
 
     /// Generate domain-specific language.
-    DslGeneration {
-        domain: String,
-        description: String,
-    },
+    DslGeneration { domain: String, description: String },
 
     /// Modify compilation/optimization strategy.
     CompilationStrategy {
@@ -147,7 +144,10 @@ pub enum CodeChangeType {
     /// Modify an existing trait.
     ModifyTrait { trait_name: String },
     /// Add a trait implementation.
-    AddImplementation { trait_name: String, struct_name: String },
+    AddImplementation {
+        trait_name: String,
+        struct_name: String,
+    },
     /// Refactor an entire module.
     RefactorModule { module_name: String },
     /// Delete code.
@@ -161,7 +161,10 @@ impl std::fmt::Display for CodeChangeType {
             Self::ModifyFunction { function_name } => write!(f, "modify-fn:{}", function_name),
             Self::ModifyStruct { struct_name } => write!(f, "modify-struct:{}", struct_name),
             Self::ModifyTrait { trait_name } => write!(f, "modify-trait:{}", trait_name),
-            Self::AddImplementation { trait_name, struct_name } => {
+            Self::AddImplementation {
+                trait_name,
+                struct_name,
+            } => {
                 write!(f, "impl:{}:{}", trait_name, struct_name)
             }
             Self::RefactorModule { module_name } => write!(f, "refactor:{}", module_name),
@@ -346,14 +349,42 @@ mod tests {
     #[test]
     fn change_type_all_variants() {
         let variants: Vec<ChangeType> = vec![
-            ChangeType::OperatorModification { operator_id: "a".into(), modification_scope: "b".into() },
-            ChangeType::NewOperator { operator_name: "a".into(), description: "b".into() },
-            ChangeType::KernelModification { module: "a".into(), modification_scope: "b".into() },
-            ChangeType::ApiModification { api_component: "a".into(), breaking: false, migration_plan: None },
-            ChangeType::ConfigurationChange { parameter: "a".into(), current_value: "1".into(), proposed_value: "2".into(), rationale: "c".into() },
-            ChangeType::DslGeneration { domain: "a".into(), description: "b".into() },
-            ChangeType::CompilationStrategy { current_strategy: "a".into(), proposed_changes: vec![] },
-            ChangeType::ArchitecturalChange { description: "a".into(), affected_modules: vec![], migration_plan: "b".into() },
+            ChangeType::OperatorModification {
+                operator_id: "a".into(),
+                modification_scope: "b".into(),
+            },
+            ChangeType::NewOperator {
+                operator_name: "a".into(),
+                description: "b".into(),
+            },
+            ChangeType::KernelModification {
+                module: "a".into(),
+                modification_scope: "b".into(),
+            },
+            ChangeType::ApiModification {
+                api_component: "a".into(),
+                breaking: false,
+                migration_plan: None,
+            },
+            ChangeType::ConfigurationChange {
+                parameter: "a".into(),
+                current_value: "1".into(),
+                proposed_value: "2".into(),
+                rationale: "c".into(),
+            },
+            ChangeType::DslGeneration {
+                domain: "a".into(),
+                description: "b".into(),
+            },
+            ChangeType::CompilationStrategy {
+                current_strategy: "a".into(),
+                proposed_changes: vec![],
+            },
+            ChangeType::ArchitecturalChange {
+                description: "a".into(),
+                affected_modules: vec![],
+                migration_plan: "b".into(),
+            },
         ];
         let labels: std::collections::HashSet<&str> = variants.iter().map(|c| c.label()).collect();
         assert_eq!(labels.len(), 8);
@@ -369,7 +400,10 @@ mod tests {
     #[test]
     fn substrate_tier_thresholds() {
         assert!(SubstrateTier::Tier3.min_confidence() > SubstrateTier::Tier0.min_confidence());
-        assert!(SubstrateTier::Tier3.min_observation_secs() > SubstrateTier::Tier0.min_observation_secs());
+        assert!(
+            SubstrateTier::Tier3.min_observation_secs()
+                > SubstrateTier::Tier0.min_observation_secs()
+        );
     }
 
     #[test]
@@ -392,7 +426,9 @@ mod tests {
 
     #[test]
     fn code_change_type_display() {
-        let ct = CodeChangeType::ModifyFunction { function_name: "process".into() };
+        let ct = CodeChangeType::ModifyFunction {
+            function_name: "process".into(),
+        };
         assert_eq!(ct.to_string(), "modify-fn:process");
 
         let ct = CodeChangeType::CreateFile;

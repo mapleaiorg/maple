@@ -4,14 +4,12 @@
 //! for various reasons, and that denials are recorded as first-class
 //! entries in the ledger with full accountability.
 
-use maple_kernel_gate::{AdjudicationResult, CommitmentDeclaration};
-use maple_kernel_mrp::{
-    MeaningEnvelopeBuilder, MeaningPayload, MrpRouter, RouteDecision,
+use worldline_core::types::{
+    AdjudicationDecision, CapabilityId, CommitmentScope, EffectDomain, EventId, IdentityMaterial,
+    WorldlineId,
 };
-use maple_mwl_types::{
-    AdjudicationDecision, CapabilityId, CommitmentScope, EffectDomain, EventId,
-    IdentityMaterial, WorldlineId,
-};
+use worldline_runtime::gate::{AdjudicationResult, CommitmentDeclaration};
+use worldline_runtime::mrp::{MeaningEnvelopeBuilder, MeaningPayload, MrpRouter, RouteDecision};
 
 use crate::helpers::{KernelOptions, TestKernel};
 

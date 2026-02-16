@@ -83,7 +83,11 @@ pub struct PerformanceGate {
 
 impl std::fmt::Display for PerformanceGate {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} {} {:.2}", self.metric, self.comparison, self.threshold)
+        write!(
+            f,
+            "{} {} {:.2}",
+            self.metric, self.comparison, self.threshold
+        )
     }
 }
 

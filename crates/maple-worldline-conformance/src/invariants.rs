@@ -10,20 +10,34 @@ use crate::types::{InvariantCategory, InvariantResult};
 /// All 22 WorldLine safety invariant IDs in canonical order.
 pub const ALL_WORLDLINE_INVARIANT_IDS: &[&str] = &[
     // Observation (5)
-    "I.OBS-1", "I.OBS-2", "I.OBS-3", "I.OBS-4", "I.OBS-5",
+    "I.OBS-1",
+    "I.OBS-2",
+    "I.OBS-3",
+    "I.OBS-4",
+    "I.OBS-5",
     // Self-Mod Gate (7)
-    "I.REGEN-1", "I.REGEN-2", "I.REGEN-3", "I.REGEN-4", "I.REGEN-5",
-    "I.REGEN-6", "I.REGEN-7",
+    "I.REGEN-1",
+    "I.REGEN-2",
+    "I.REGEN-3",
+    "I.REGEN-4",
+    "I.REGEN-5",
+    "I.REGEN-6",
+    "I.REGEN-7",
     // Consequence (2)
-    "I.CSQ-1", "I.CSQ-2",
+    "I.CSQ-1",
+    "I.CSQ-2",
     // Compiler (2)
-    "I.COMPILE-1", "I.COMPILE-2",
+    "I.COMPILE-1",
+    "I.COMPILE-2",
     // SAL (2)
-    "I.SAL-1", "I.SAL-5",
+    "I.SAL-1",
+    "I.SAL-5",
     // Bootstrap (2)
-    "I.BOOT-1", "I.BOOT-2",
+    "I.BOOT-1",
+    "I.BOOT-2",
     // EVOS (2)
-    "I.EVOS-1", "I.EVOS-2",
+    "I.EVOS-1",
+    "I.EVOS-2",
 ];
 
 /// Map an invariant ID to its category.
@@ -114,10 +128,10 @@ fn check_obs_1_overhead() -> InvariantResult {
 
 /// I.OBS-2: Observation never triggers action.
 fn check_obs_2_no_action() -> InvariantResult {
+    use chrono::Utc;
     use maple_worldline_observation::snapshot::ObservationSnapshot;
     use maple_worldline_observation::UsageAnalyticsSnapshot;
     use std::collections::HashMap;
-    use chrono::Utc;
 
     // An observation snapshot is purely informational — it exposes no
     // mutation methods and stores only read-only data.
@@ -150,10 +164,10 @@ fn check_obs_2_no_action() -> InvariantResult {
 
 /// I.OBS-3: All data provenance-tagged.
 fn check_obs_3_provenance() -> InvariantResult {
+    use chrono::Utc;
     use maple_worldline_observation::snapshot::ObservationSnapshot;
     use maple_worldline_observation::UsageAnalyticsSnapshot;
     use std::collections::HashMap;
-    use chrono::Utc;
 
     // Every snapshot carries a timestamp (provenance marker).
     let snapshot = ObservationSnapshot {
@@ -204,7 +218,10 @@ fn check_obs_4_memory_bounded() -> InvariantResult {
             "I.OBS-4",
             InvariantCategory::Observation,
             "Memory bounded (64MB)",
-            &format!("Memory enforced at {} byte budget", MAX_OBSERVATION_MEMORY_BYTES),
+            &format!(
+                "Memory enforced at {} byte budget",
+                MAX_OBSERVATION_MEMORY_BYTES
+            ),
         )
     } else {
         InvariantResult::fail(
@@ -249,8 +266,8 @@ fn check_obs_5_sampling() -> InvariantResult {
 fn make_test_commitment() -> maple_worldline_self_mod_gate::SelfModificationCommitment {
     use maple_worldline_intent::intent::ImprovementEstimate;
     use maple_worldline_intent::proposal::{
-        CodeChangeSpec, Comparison, PerformanceGate, RegenerationProposal,
-        RollbackPlan, RollbackStrategy, SafetyCheck, TestSpec, TestType,
+        CodeChangeSpec, Comparison, PerformanceGate, RegenerationProposal, RollbackPlan,
+        RollbackStrategy, SafetyCheck, TestSpec, TestType,
     };
     use maple_worldline_intent::types::{CodeChangeType, IntentId, MeaningId, ProposalId};
     use maple_worldline_self_mod_gate::{
@@ -487,8 +504,8 @@ fn check_regen_7_human_override() -> InvariantResult {
 
 /// I.CSQ-1: Only approved commitments produce consequences.
 fn check_csq_1_approved_only() -> InvariantResult {
-    use maple_worldline_consequence::types::{ConsequenceRecord, ConsequenceStatus};
     use maple_worldline_commitment::types::SelfCommitmentId;
+    use maple_worldline_consequence::types::{ConsequenceRecord, ConsequenceStatus};
     use maple_worldline_intent::types::IntentId;
     use maple_worldline_intent::types::SubstrateTier;
 
@@ -525,9 +542,9 @@ fn check_csq_1_approved_only() -> InvariantResult {
 
 /// I.CSQ-2: Verifiable receipt for every execution.
 fn check_csq_2_receipt() -> InvariantResult {
+    use maple_worldline_commitment::types::SelfCommitmentId;
     use maple_worldline_consequence::receipt::ExecutionReceipt;
     use maple_worldline_consequence::types::SelfConsequenceId;
-    use maple_worldline_commitment::types::SelfCommitmentId;
     use maple_worldline_intent::types::IntentId;
     use maple_worldline_intent::types::SubstrateTier;
 
@@ -592,7 +609,7 @@ fn check_compile_1_semantics() -> InvariantResult {
 
 /// I.COMPILE-2: Commitment gates preserved.
 fn check_compile_2_gates() -> InvariantResult {
-    use maple_worldline_ir::instructions::{WlirInstruction, BoundaryDirection};
+    use maple_worldline_ir::instructions::{BoundaryDirection, WlirInstruction};
 
     // WLIR has explicit CommitmentBoundary instructions.
     // If the IR can represent commitment boundaries, the compiler must preserve them.
@@ -649,8 +666,7 @@ fn check_sal_1_opacity() -> InvariantResult {
 /// I.SAL-5: Migration state integrity.
 fn check_sal_5_migration() -> InvariantResult {
     use maple_worldline_sal::migration::{
-        MigrationPlan, MigrationStrategy, SimulatedMigrator, StateChecksum,
-        SubstrateMigrator,
+        MigrationPlan, MigrationStrategy, SimulatedMigrator, StateChecksum, SubstrateMigrator,
     };
     use maple_worldline_sal::types::SubstrateId;
 
@@ -747,9 +763,11 @@ fn check_boot_1_monotonic() -> InvariantResult {
 
 /// I.BOOT-2: Provenance chain no gaps.
 fn check_boot_2_provenance() -> InvariantResult {
-    use maple_worldline_bootstrap::provenance::{ProvenanceChain, SimulatedProvenanceTracker, ProvenanceTracker};
-    use maple_worldline_bootstrap::types::BootstrapPhase;
     use maple_worldline_bootstrap::fingerprint::SubstrateFingerprint;
+    use maple_worldline_bootstrap::provenance::{
+        ProvenanceChain, ProvenanceTracker, SimulatedProvenanceTracker,
+    };
+    use maple_worldline_bootstrap::types::BootstrapPhase;
 
     let tracker = SimulatedProvenanceTracker::new();
     let mut chain = ProvenanceChain::new();
@@ -805,8 +823,8 @@ fn check_boot_2_provenance() -> InvariantResult {
 
 /// I.EVOS-1: Cycle completeness.
 fn check_evos_1_cycle() -> InvariantResult {
-    use maple_worldline_evos::cycle::SimulatedCycleRunner;
     use maple_worldline_evos::cycle::CycleRunner;
+    use maple_worldline_evos::cycle::SimulatedCycleRunner;
     use maple_worldline_evos::health::{HealthChecker, SimulatedHealthChecker};
     use maple_worldline_evos::types::EvosConfig;
 
@@ -911,11 +929,7 @@ mod tests {
     #[test]
     fn test_category_mapping_complete() {
         for id in ALL_WORLDLINE_INVARIANT_IDS {
-            assert!(
-                category_for(id).is_some(),
-                "no category mapping for {}",
-                id
-            );
+            assert!(category_for(id).is_some(), "no category mapping for {}", id);
         }
     }
 

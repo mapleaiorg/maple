@@ -100,8 +100,7 @@ impl EvidenceQualityAssessor {
         let category_score = self.compute_category_weight(evidence);
         let strength_score = evidence.strength.clamp(0.0, 1.0);
 
-        let total_weight =
-            self.recency_weight + self.category_weight + self.strength_weight;
+        let total_weight = self.recency_weight + self.category_weight + self.strength_weight;
         if total_weight.abs() < f64::EPSILON {
             return 0.5;
         }
@@ -116,9 +115,7 @@ impl EvidenceQualityAssessor {
 
     /// Compute recency score: recent evidence is weighted higher.
     fn compute_recency(&self, evidence: &Evidence) -> f64 {
-        let age_secs = (Utc::now() - evidence.timestamp)
-            .num_seconds()
-            .max(0) as f64;
+        let age_secs = (Utc::now() - evidence.timestamp).num_seconds().max(0) as f64;
 
         // Exponential decay: half-life of 1 hour (3600 seconds)
         let half_life = 3600.0;
@@ -128,11 +125,11 @@ impl EvidenceQualityAssessor {
     /// Category-based quality weight.
     fn compute_category_weight(&self, evidence: &Evidence) -> f64 {
         match evidence.category {
-            EvidenceCategory::Anomaly => 0.9,       // Direct detection signal
-            EvidenceCategory::Observation => 0.8,    // Direct measurement
-            EvidenceCategory::Correlation => 0.7,    // Cross-signal
-            EvidenceCategory::Historical => 0.6,     // Past pattern match
-            EvidenceCategory::Absence => 0.4,        // Negative evidence (weakest)
+            EvidenceCategory::Anomaly => 0.9,     // Direct detection signal
+            EvidenceCategory::Observation => 0.8, // Direct measurement
+            EvidenceCategory::Correlation => 0.7, // Cross-signal
+            EvidenceCategory::Historical => 0.6,  // Past pattern match
+            EvidenceCategory::Absence => 0.4,     // Negative evidence (weakest)
         }
     }
 }
@@ -161,11 +158,7 @@ impl EvidenceEvaluator {
     ///
     /// Computes the likelihood from evidence strength and quality,
     /// then applies Bayesian update.
-    pub fn update_hypothesis(
-        &self,
-        prior: f64,
-        evidence: &Evidence,
-    ) -> ConfidenceUpdate {
+    pub fn update_hypothesis(&self, prior: f64, evidence: &Evidence) -> ConfidenceUpdate {
         let quality = self.quality_assessor.assess(evidence);
 
         // Likelihood: combine evidence strength with quality
@@ -194,11 +187,7 @@ impl EvidenceEvaluator {
     ///
     /// Applies sequential Bayesian updates, starting from the given prior.
     /// Returns the final posterior confidence.
-    pub fn evaluate_evidence_set(
-        &self,
-        prior: f64,
-        evidence: &[Evidence],
-    ) -> f64 {
+    pub fn evaluate_evidence_set(&self, prior: f64, evidence: &[Evidence]) -> f64 {
         let mut confidence = prior;
         for e in evidence {
             let update = self.update_hypothesis(confidence, e);
@@ -227,7 +216,10 @@ mod tests {
         let updater = BayesianUpdater;
         let prior = 0.5;
         let posterior = updater.update(prior, 0.9);
-        assert!(posterior > prior, "Strong evidence should increase confidence");
+        assert!(
+            posterior > prior,
+            "Strong evidence should increase confidence"
+        );
     }
 
     #[test]
@@ -235,7 +227,10 @@ mod tests {
         let updater = BayesianUpdater;
         let prior = 0.5;
         let posterior = updater.update(prior, 0.1);
-        assert!(posterior < prior, "Weak evidence should decrease confidence");
+        assert!(
+            posterior < prior,
+            "Weak evidence should decrease confidence"
+        );
     }
 
     #[test]

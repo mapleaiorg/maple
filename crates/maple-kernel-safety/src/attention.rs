@@ -66,11 +66,7 @@ impl AttentionBudget {
     /// Allocate attention to a worldline.
     ///
     /// Returns error if insufficient attention is available.
-    pub fn allocate(
-        &mut self,
-        wid: &WorldlineId,
-        amount: u64,
-    ) -> Result<(), SafetyError> {
+    pub fn allocate(&mut self, wid: &WorldlineId, amount: u64) -> Result<(), SafetyError> {
         let available = self.available();
         if amount > available {
             warn!(
@@ -153,11 +149,7 @@ impl AttentionBudget {
     /// Check if a new allocation would be safe.
     ///
     /// Returns Ok if the allocation is within bounds.
-    pub fn check_allocation(
-        &self,
-        _wid: &WorldlineId,
-        amount: u64,
-    ) -> Result<(), SafetyError> {
+    pub fn check_allocation(&self, _wid: &WorldlineId, amount: u64) -> Result<(), SafetyError> {
         let available = self.available();
         if amount > available {
             return Err(SafetyError::InsufficientAttention {

@@ -10,13 +10,19 @@ cd maple
 cargo build
 ```
 
-## 2. Run Core WorldLine Verification
+## 2. Validate Phase A Facades
+
+```bash
+cargo test -p worldline-core -p worldline-runtime -p worldline-ledger
+```
+
+## 3. Run Core WorldLine Verification
 
 ```bash
 cargo test -p maple-mwl-conformance -p maple-mwl-integration -p maple-worldline-conformance
 ```
 
-## 3. Start the Daemon (Terminal A)
+## 4. Start the Daemon (Terminal A)
 
 ```bash
 cargo run -p palm-daemon
@@ -24,7 +30,7 @@ cargo run -p palm-daemon
 
 WorldLine API is available at `http://localhost:8080/api/v1`.
 
-## 4. Use WorldLine CLI Commands (Terminal B)
+## 5. Use WorldLine CLI Commands (Terminal B)
 
 List available command groups:
 
@@ -47,7 +53,7 @@ cargo run -p maple-cli -- kernel status
 cargo run -p maple-cli -- kernel metrics
 ```
 
-## 5. Submit a Commitment
+## 6. Submit a Commitment
 
 ```bash
 cat >/tmp/worldline-commitment.json <<'JSON'
@@ -65,7 +71,7 @@ JSON
 cargo run -p maple-cli -- commit submit --file /tmp/worldline-commitment.json
 ```
 
-## 6. Submit a Settlement + Check Projection
+## 7. Submit a Settlement + Check Projection
 
 ```bash
 cat >/tmp/worldline-settlement.json <<'JSON'
@@ -84,7 +90,7 @@ cargo run -p maple-cli -- financial settle --file /tmp/worldline-settlement.json
 cargo run -p maple-cli -- financial projection REPLACE_WL_B USD
 ```
 
-## 7. Query Provenance and Policies
+## 8. Query Provenance and Policies
 
 ```bash
 cargo run -p maple-cli -- policy list
@@ -109,7 +115,7 @@ cargo run -p maple-cli -- provenance ancestors EVENT_ID --depth 5
 cargo run -p maple-cli -- provenance worldline-history REPLACE_WORLDLINE_ID
 ```
 
-## 8. Run Demonstration Programs
+## 9. Run Demonstration Programs
 
 ```bash
 cargo run --manifest-path examples/mwl-worldline-lifecycle/Cargo.toml
@@ -119,7 +125,25 @@ cargo run --manifest-path examples/mwl-human-agency/Cargo.toml
 cargo run --manifest-path examples/mwl-financial-settlement/Cargo.toml
 ```
 
-## 9. Optional: Direct REST Calls
+All five demos are now wired to `worldline-core`, `worldline-runtime`, and
+`worldline-ledger` (Phase A facade crates).
+
+## 10. Use Facade Crates in Your Own App
+
+```toml
+[dependencies]
+worldline-core = "0.1.2"
+worldline-runtime = "0.1.2"
+worldline-ledger = "0.1.2"
+```
+
+```rust
+use worldline_core::types::WorldlineId;
+use worldline_runtime::gate::CommitmentGate;
+use worldline_ledger::provenance::ProvenanceIndex;
+```
+
+## 11. Optional: Direct REST Calls
 
 ```bash
 curl -s http://localhost:8080/api/v1/worldlines
@@ -127,7 +151,7 @@ curl -s http://localhost:8080/api/v1/kernel/status
 curl -s http://localhost:8080/api/v1/kernel/metrics
 ```
 
-## 10. Next
+## 12. Next
 
 - Framework map: [WorldLine Framework Guide](../worldline-framework.md)
 - Demo catalog: [Examples and Demos](../../examples/README.md)

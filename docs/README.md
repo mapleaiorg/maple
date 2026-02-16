@@ -6,7 +6,7 @@ Welcome to the MAPLE AI Framework documentation.
 
 | Document | Description |
 |----------|-------------|
-| [WorldLine Framework Guide](worldline-framework.md) | Prompt 1-28 implementation map, interfaces, and verification commands |
+| [WorldLine Framework Guide](worldline-framework.md) | Prompt 1-28 map plus Phase A old->new facade crate mapping |
 | [WorldLine Quickstart](tutorials/worldline-quickstart.md) | End-to-end CLI/API/demo walkthrough for WorldLine |
 | [Architecture 00: Overview](architecture/00-overview.md) | EVOS system map, data plane vs control plane split, invariants |
 | [Architecture 01: WorldLine](architecture/01-worldline.md) | Canonical WorldLine model and lifecycle |

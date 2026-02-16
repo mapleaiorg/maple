@@ -69,7 +69,10 @@ impl GateStage for RiskAssessmentStage {
             }
             Reversibility::Conditional { conditions } => {
                 score += self.config.irreversible_penalty * 0.5;
-                factors.push(format!("Conditional reversal: {} conditions", conditions.len()));
+                factors.push(format!(
+                    "Conditional reversal: {} conditions",
+                    conditions.len()
+                ));
             }
             Reversibility::TimeWindow { window_ms } => {
                 if *window_ms < 60_000 {

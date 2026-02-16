@@ -7,12 +7,9 @@
 //! Run with: `cargo run --example 08_memory_and_conversation`
 
 use maple_runtime::{config::RuntimeConfig, MapleRuntime, ResonatorSpec};
+use resonator_conversation::{ConversationMessage, SessionManager, SessionManagerConfig};
 use resonator_memory::{
-    MemoryItem, MemoryType, ShortTermMemory,
-    WorkingMemory, LongTermMemory, EpisodicMemory,
-};
-use resonator_conversation::{
-    SessionManager, SessionManagerConfig, ConversationMessage,
+    EpisodicMemory, LongTermMemory, MemoryItem, MemoryType, ShortTermMemory, WorkingMemory,
 };
 use resonator_types::ResonatorId;
 
@@ -55,7 +52,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Turn 1: User greeting
     println!("\n🗣️  Turn 1: User");
-    let msg1 = ConversationMessage::user("Hello! I'd like to discuss the new feature requirements.");
+    let msg1 =
+        ConversationMessage::user("Hello! I'd like to discuss the new feature requirements.");
     session_manager.add_message(&session_id, msg1.clone())?;
     println!("   \"{}\"", msg1.content);
 
@@ -95,7 +93,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Turn 3: User details - this is important, store in working memory
     println!("\n🗣️  Turn 3: User");
     let msg3 = ConversationMessage::user(
-        "I need a real-time notification system that can handle 10,000 concurrent users."
+        "I need a real-time notification system that can handle 10,000 concurrent users.",
     );
     session_manager.add_message(&session_id, msg3.clone())?;
     println!("   \"{}\"", msg3.content);

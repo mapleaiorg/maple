@@ -41,7 +41,7 @@ impl Default for AmlConfig {
     fn default() -> Self {
         Self {
             enhanced_due_diligence_threshold: 1_000_000, // $10,000
-            block_threshold: 25_000_000,                  // $250,000
+            block_threshold: 25_000_000,                 // $250,000
             enabled: true,
         }
     }
@@ -87,7 +87,7 @@ impl Default for CapitalConfig {
     fn default() -> Self {
         Self {
             minimum_ratio: 0.08,
-            current_capital: 100_000_000, // $1M
+            current_capital: 100_000_000,      // $1M
             risk_weighted_assets: 500_000_000, // $5M
             enabled: true,
         }
@@ -217,10 +217,7 @@ impl RegulatoryEngine {
     }
 
     /// Run all compliance checks on a financial commitment.
-    pub fn check_compliance(
-        &self,
-        commitment: &FinancialCommitment,
-    ) -> Result<(), FinancialError> {
+    pub fn check_compliance(&self, commitment: &FinancialCommitment) -> Result<(), FinancialError> {
         // 1. Circuit breaker check (highest priority)
         self.check_circuit_breaker()?;
 
@@ -260,10 +257,7 @@ impl RegulatoryEngine {
     }
 
     /// Check sanctions list.
-    fn check_sanctions(
-        &self,
-        commitment: &FinancialCommitment,
-    ) -> Result<(), FinancialError> {
+    fn check_sanctions(&self, commitment: &FinancialCommitment) -> Result<(), FinancialError> {
         let counterparty_str = format!("{}", commitment.counterparty);
         if self.sanctions.is_sanctioned(&counterparty_str) {
             return Err(FinancialError::SanctionsHit {
@@ -282,10 +276,7 @@ impl RegulatoryEngine {
     }
 
     /// Check AML compliance.
-    fn check_aml(
-        &self,
-        commitment: &FinancialCommitment,
-    ) -> Result<(), FinancialError> {
+    fn check_aml(&self, commitment: &FinancialCommitment) -> Result<(), FinancialError> {
         if !self.aml.enabled {
             return Ok(());
         }

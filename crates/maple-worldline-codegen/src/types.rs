@@ -330,7 +330,9 @@ mod tests {
         assert_eq!(CodegenStatus::Generated.to_string(), "generated");
         assert_eq!(CodegenStatus::Compiled.to_string(), "compiled");
         assert_eq!(CodegenStatus::Validated.to_string(), "validated");
-        assert!(CodegenStatus::Failed("oops".into()).to_string().contains("oops"));
+        assert!(CodegenStatus::Failed("oops".into())
+            .to_string()
+            .contains("oops"));
     }
 
     #[test]
@@ -392,7 +394,8 @@ mod tests {
 
     #[test]
     fn generation_record_failure() {
-        let mut record = GenerationRecord::new("commit-2".into(), SelfModTier::Tier1OperatorInternal);
+        let mut record =
+            GenerationRecord::new("commit-2".into(), SelfModTier::Tier1OperatorInternal);
         record.mark_failed("compilation error".into());
         assert!(matches!(record.status, CodegenStatus::Failed(_)));
         assert!(record.completed_at.is_some());

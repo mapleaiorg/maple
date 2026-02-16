@@ -4,10 +4,14 @@
 //! collection, provenance tracking, and phase transitions.
 
 use crate::error::{BootstrapError, BootstrapResult};
-use crate::fingerprint::{FingerprintCollector, SimulatedFingerprintCollector, SubstrateFingerprint};
+use crate::fingerprint::{
+    FingerprintCollector, SimulatedFingerprintCollector, SubstrateFingerprint,
+};
 use crate::phases::{PhaseManager, PhaseTransition};
 use crate::provenance::{ProvenanceChain, ProvenanceTracker, SimulatedProvenanceTracker};
-use crate::readiness::{ReadinessChecker, ReadinessCriteria, ReadinessReport, SimulatedReadinessChecker};
+use crate::readiness::{
+    ReadinessChecker, ReadinessCriteria, ReadinessReport, SimulatedReadinessChecker,
+};
 use crate::types::{BootstrapConfig, BootstrapPhase};
 
 // ── Bootstrap Manager ───────────────────────────────────────────────
@@ -192,7 +196,9 @@ impl BootstrapManager {
             BootstrapError::PhaseTransitionFailed("cannot rollback from Phase 0".into())
         })?;
 
-        let transition = self.phase_manager.transition(target, "bootstrap-manager-rollback")?;
+        let transition = self
+            .phase_manager
+            .transition(target, "bootstrap-manager-rollback")?;
         Ok(transition)
     }
 }
@@ -242,10 +248,7 @@ mod tests {
         let (transition, report) = mgr.advance().unwrap();
         assert!(transition.is_advance);
         assert!(report.all_passed);
-        assert_eq!(
-            *mgr.current_phase(),
-            BootstrapPhase::Phase1ConfigSelfTuning
-        );
+        assert_eq!(*mgr.current_phase(), BootstrapPhase::Phase1ConfigSelfTuning);
         assert_eq!(mgr.provenance_chain().len(), 2);
     }
 
@@ -339,8 +342,7 @@ mod tests {
             observation_hours: 100,
             governance_approved: true,
         };
-        let mut mgr = BootstrapManager::new()
-            .with_readiness_checker(Box::new(checker));
+        let mut mgr = BootstrapManager::new().with_readiness_checker(Box::new(checker));
         mgr.capture_origin().unwrap();
         let result = mgr.advance();
         // Stability 0.5 < threshold 0.7 for phase 1

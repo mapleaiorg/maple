@@ -206,10 +206,22 @@ impl ConformanceReport {
                 .push(test.clone());
         }
 
-        let passed = tests.iter().filter(|t| t.status == TestStatus::Passed).count();
-        let failed = tests.iter().filter(|t| t.status == TestStatus::Failed).count();
-        let skipped = tests.iter().filter(|t| t.status == TestStatus::Skipped).count();
-        let errors = tests.iter().filter(|t| t.status == TestStatus::Error).count();
+        let passed = tests
+            .iter()
+            .filter(|t| t.status == TestStatus::Passed)
+            .count();
+        let failed = tests
+            .iter()
+            .filter(|t| t.status == TestStatus::Failed)
+            .count();
+        let skipped = tests
+            .iter()
+            .filter(|t| t.status == TestStatus::Skipped)
+            .count();
+        let errors = tests
+            .iter()
+            .filter(|t| t.status == TestStatus::Error)
+            .count();
 
         // Check if all invariants have at least one passing test
         let all_invariants_verified = Invariant::all().iter().all(|inv| {
@@ -245,7 +257,11 @@ impl std::fmt::Display for ConformanceReport {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "MAPLE Resonance Architecture Conformance Report")?;
         writeln!(f, "================================================")?;
-        writeln!(f, "Timestamp: {}", self.timestamp.format("%Y-%m-%d %H:%M:%S UTC"))?;
+        writeln!(
+            f,
+            "Timestamp: {}",
+            self.timestamp.format("%Y-%m-%d %H:%M:%S UTC")
+        )?;
         writeln!(f, "Duration: {}ms", self.duration_ms)?;
         writeln!(f)?;
 
@@ -360,7 +376,10 @@ impl ConformanceSuite {
             error: None,
             details: HashMap::from([
                 ("enforcement".to_string(), "compile-time".to_string()),
-                ("mechanism".to_string(), "ResonatorId newtype pattern".to_string()),
+                (
+                    "mechanism".to_string(),
+                    "ResonatorId newtype pattern".to_string(),
+                ),
             ]),
         };
 
@@ -372,9 +391,7 @@ impl ConformanceSuite {
             status: TestStatus::Passed,
             duration_ms: 0,
             error: None,
-            details: HashMap::from([
-                ("enforcement".to_string(), "type-system".to_string()),
-            ]),
+            details: HashMap::from([("enforcement".to_string(), "type-system".to_string())]),
         };
 
         vec![test1, test2]
@@ -391,9 +408,10 @@ impl ConformanceSuite {
             status: TestStatus::Passed,
             duration_ms: 0,
             error: None,
-            details: HashMap::from([
-                ("enforcement".to_string(), "constructor parameter".to_string()),
-            ]),
+            details: HashMap::from([(
+                "enforcement".to_string(),
+                "constructor parameter".to_string(),
+            )]),
         };
 
         let test2 = TestCase {
@@ -420,9 +438,7 @@ impl ConformanceSuite {
             status: TestStatus::Passed,
             duration_ms: 0,
             error: None,
-            details: HashMap::from([
-                ("enforcement".to_string(), "type-system".to_string()),
-            ]),
+            details: HashMap::from([("enforcement".to_string(), "type-system".to_string())]),
         };
 
         let test2 = TestCase {
@@ -440,12 +456,12 @@ impl ConformanceSuite {
 
     /// Test Invariant #4: Commitment precedes Consequence.
     fn test_invariant_4_commitment_precedes_consequence(&self) -> Vec<TestCase> {
+        use rcf_commitment::CommitmentId;
         use resonator_commitment::InMemoryContractEngine;
         use resonator_consequence::{
-            ConsequenceRequest, ConsequenceTracker, ConsequenceType,
-            ConsequenceSeverity, InMemoryConsequenceStore,
+            ConsequenceRequest, ConsequenceSeverity, ConsequenceTracker, ConsequenceType,
+            InMemoryConsequenceStore,
         };
-        use rcf_commitment::CommitmentId;
 
         let invariant = Invariant::CommitmentPrecedesConsequence;
         let mut tests = Vec::new();
@@ -460,7 +476,10 @@ impl ConformanceSuite {
             error: None,
             details: HashMap::from([
                 ("enforcement".to_string(), "type-system".to_string()),
-                ("field".to_string(), "ConsequenceRequest.commitment_id".to_string()),
+                (
+                    "field".to_string(),
+                    "ConsequenceRequest.commitment_id".to_string(),
+                ),
             ]),
         };
         tests.push(test1);
@@ -486,7 +505,8 @@ impl ConformanceSuite {
         let result = tracker.request_consequence(request);
         let test2 = TestCase {
             name: "reject_consequence_without_active_commitment".to_string(),
-            description: "ConsequenceTracker rejects recording without active commitment".to_string(),
+            description: "ConsequenceTracker rejects recording without active commitment"
+                .to_string(),
             invariant,
             status: if result.is_err() {
                 TestStatus::Passed
@@ -499,9 +519,7 @@ impl ConformanceSuite {
             } else {
                 None
             },
-            details: HashMap::from([
-                ("enforcement".to_string(), "runtime validation".to_string()),
-            ]),
+            details: HashMap::from([("enforcement".to_string(), "runtime validation".to_string())]),
         };
         tests.push(test2);
 
@@ -513,9 +531,7 @@ impl ConformanceSuite {
             status: TestStatus::Passed,
             duration_ms: 0,
             error: None,
-            details: HashMap::from([
-                ("valid_states".to_string(), "Active, Executing".to_string()),
-            ]),
+            details: HashMap::from([("valid_states".to_string(), "Active, Executing".to_string())]),
         };
         tests.push(test3);
 
@@ -533,9 +549,7 @@ impl ConformanceSuite {
             status: TestStatus::Passed,
             duration_ms: 0,
             error: None,
-            details: HashMap::from([
-                ("hash_algorithm".to_string(), "SHA-256".to_string()),
-            ]),
+            details: HashMap::from([("hash_algorithm".to_string(), "SHA-256".to_string())]),
         };
 
         let test2 = TestCase {
@@ -545,9 +559,10 @@ impl ConformanceSuite {
             status: TestStatus::Passed,
             duration_ms: 0,
             error: None,
-            details: HashMap::from([
-                ("enforcement".to_string(), "no &mut self methods".to_string()),
-            ]),
+            details: HashMap::from([(
+                "enforcement".to_string(),
+                "no &mut self methods".to_string(),
+            )]),
         };
 
         let test3 = TestCase {
@@ -557,9 +572,10 @@ impl ConformanceSuite {
             status: TestStatus::Passed,
             duration_ms: 0,
             error: None,
-            details: HashMap::from([
-                ("trait_methods".to_string(), "store, get, list_by_commitment".to_string()),
-            ]),
+            details: HashMap::from([(
+                "trait_methods".to_string(),
+                "store, get, list_by_commitment".to_string(),
+            )]),
         };
 
         vec![test1, test2, test3]
@@ -576,9 +592,7 @@ impl ConformanceSuite {
             status: TestStatus::Passed,
             duration_ms: 0,
             error: None,
-            details: HashMap::from([
-                ("type".to_string(), "Vec<StatusChange>".to_string()),
-            ]),
+            details: HashMap::from([("type".to_string(), "Vec<StatusChange>".to_string())]),
         };
 
         let test2 = TestCase {
@@ -615,9 +629,7 @@ impl ConformanceSuite {
             status: TestStatus::Passed,
             duration_ms: 0,
             error: None,
-            details: HashMap::from([
-                ("field".to_string(), "Vec<CapabilityRef>".to_string()),
-            ]),
+            details: HashMap::from([("field".to_string(), "Vec<CapabilityRef>".to_string())]),
         };
 
         let test2 = TestCase {
@@ -627,9 +639,7 @@ impl ConformanceSuite {
             status: TestStatus::Passed,
             duration_ms: 0,
             error: None,
-            details: HashMap::from([
-                ("field".to_string(), "capability_id: String".to_string()),
-            ]),
+            details: HashMap::from([("field".to_string(), "capability_id: String".to_string())]),
         };
 
         let test3 = TestCase {
@@ -639,9 +649,7 @@ impl ConformanceSuite {
             status: TestStatus::Passed,
             duration_ms: 0,
             error: None,
-            details: HashMap::from([
-                ("adapter".to_string(), "McpAdapter".to_string()),
-            ]),
+            details: HashMap::from([("adapter".to_string(), "McpAdapter".to_string())]),
         };
 
         vec![test1, test2, test3]
@@ -658,9 +666,7 @@ impl ConformanceSuite {
             status: TestStatus::Passed,
             duration_ms: 0,
             error: None,
-            details: HashMap::from([
-                ("type".to_string(), "TemporalValidity".to_string()),
-            ]),
+            details: HashMap::from([("type".to_string(), "TemporalValidity".to_string())]),
         };
 
         let test2 = TestCase {
@@ -670,9 +676,7 @@ impl ConformanceSuite {
             status: TestStatus::Passed,
             duration_ms: 0,
             error: None,
-            details: HashMap::from([
-                ("field".to_string(), "timestamp: DateTime<Utc>".to_string()),
-            ]),
+            details: HashMap::from([("field".to_string(), "timestamp: DateTime<Utc>".to_string())]),
         };
 
         let test3 = TestCase {
@@ -692,9 +696,7 @@ impl ConformanceSuite {
             status: TestStatus::Passed,
             duration_ms: 0,
             error: None,
-            details: HashMap::from([
-                ("field".to_string(), "turn_number: usize".to_string()),
-            ]),
+            details: HashMap::from([("field".to_string(), "turn_number: usize".to_string())]),
         };
 
         vec![test1, test2, test3, test4]
@@ -704,10 +706,14 @@ impl ConformanceSuite {
     pub fn run_for_invariant(&self, invariant: Invariant) -> ConformanceReport {
         let start = Utc::now();
         let tests = match invariant {
-            Invariant::PresencePrecedesCoupling => self.test_invariant_1_presence_precedes_coupling(),
+            Invariant::PresencePrecedesCoupling => {
+                self.test_invariant_1_presence_precedes_coupling()
+            }
             Invariant::CouplingPrecedesMeaning => self.test_invariant_2_coupling_precedes_meaning(),
             Invariant::MeaningPrecedesIntent => self.test_invariant_3_meaning_precedes_intent(),
-            Invariant::CommitmentPrecedesConsequence => self.test_invariant_4_commitment_precedes_consequence(),
+            Invariant::CommitmentPrecedesConsequence => {
+                self.test_invariant_4_commitment_precedes_consequence()
+            }
             Invariant::ReceiptsImmutable => self.test_invariant_5_receipts_immutable(),
             Invariant::AuditAppendOnly => self.test_invariant_6_audit_append_only(),
             Invariant::CapabilitiesGateActions => self.test_invariant_7_capabilities_gate_actions(),
@@ -761,7 +767,10 @@ mod tests {
 
         // Specifically, the test for rejecting consequences without active commitment
         // should pass (meaning the invariant IS enforced)
-        let rejection_test = report.tests.iter().find(|t| t.name == "reject_consequence_without_active_commitment");
+        let rejection_test = report
+            .tests
+            .iter()
+            .find(|t| t.name == "reject_consequence_without_active_commitment");
         assert!(rejection_test.is_some());
         assert_eq!(rejection_test.unwrap().status, TestStatus::Passed);
     }

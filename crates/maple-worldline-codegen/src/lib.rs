@@ -139,9 +139,12 @@ mod tests {
         );
 
         let commitment = make_commitment(
-            vec![("src/config.rs", CodeChangeType::ModifyFunction {
-                function_name: "load".into(),
-            })],
+            vec![(
+                "src/config.rs",
+                CodeChangeType::ModifyFunction {
+                    function_name: "load".into(),
+                },
+            )],
             SelfModTier::Tier0Configuration,
             DeploymentStrategy::Immediate,
         );
@@ -164,17 +167,40 @@ mod tests {
 
         let commitment = make_commitment(
             vec![
-                ("src/config.rs", CodeChangeType::ModifyFunction { function_name: "load".into() }),
-                ("src/handler.rs", CodeChangeType::ModifyStruct { struct_name: "Handler".into() }),
-                ("src/traits.rs", CodeChangeType::ModifyTrait { trait_name: "Execute".into() }),
-                ("src/impl.rs", CodeChangeType::AddImplementation { trait_name: "Execute".into(), struct_name: "Handler".into() }),
+                (
+                    "src/config.rs",
+                    CodeChangeType::ModifyFunction {
+                        function_name: "load".into(),
+                    },
+                ),
+                (
+                    "src/handler.rs",
+                    CodeChangeType::ModifyStruct {
+                        struct_name: "Handler".into(),
+                    },
+                ),
+                (
+                    "src/traits.rs",
+                    CodeChangeType::ModifyTrait {
+                        trait_name: "Execute".into(),
+                    },
+                ),
+                (
+                    "src/impl.rs",
+                    CodeChangeType::AddImplementation {
+                        trait_name: "Execute".into(),
+                        struct_name: "Handler".into(),
+                    },
+                ),
                 ("src/new_module.rs", CodeChangeType::CreateFile),
             ],
             SelfModTier::Tier0Configuration,
             DeploymentStrategy::Immediate,
         );
 
-        let artifact = engine.generate(&commitment, &PolicyDecisionCard::approved()).unwrap();
+        let artifact = engine
+            .generate(&commitment, &PolicyDecisionCard::approved())
+            .unwrap();
         assert_eq!(artifact.total_files, 5);
         assert!(artifact.is_deployable());
     }
@@ -187,12 +213,19 @@ mod tests {
         );
 
         let commitment = make_commitment(
-            vec![("src/config.rs", CodeChangeType::ModifyFunction { function_name: "load".into() })],
+            vec![(
+                "src/config.rs",
+                CodeChangeType::ModifyFunction {
+                    function_name: "load".into(),
+                },
+            )],
             SelfModTier::Tier0Configuration,
             DeploymentStrategy::Immediate,
         );
 
-        let artifact = engine.generate(&commitment, &PolicyDecisionCard::approved()).unwrap();
+        let artifact = engine
+            .generate(&commitment, &PolicyDecisionCard::approved())
+            .unwrap();
         assert!(artifact.intent_chain.has_full_provenance());
         assert_eq!(artifact.intent_chain.observation_ids, vec!["obs-1"]);
     }
@@ -205,7 +238,12 @@ mod tests {
         );
 
         let commitment = make_commitment(
-            vec![("src/config.rs", CodeChangeType::ModifyFunction { function_name: "load".into() })],
+            vec![(
+                "src/config.rs",
+                CodeChangeType::ModifyFunction {
+                    function_name: "load".into(),
+                },
+            )],
             SelfModTier::Tier0Configuration,
             DeploymentStrategy::Immediate,
         );
@@ -227,13 +265,21 @@ mod tests {
         );
 
         let commitment = make_commitment(
-            vec![("src/config.rs", CodeChangeType::ModifyFunction { function_name: "load".into() })],
+            vec![(
+                "src/config.rs",
+                CodeChangeType::ModifyFunction {
+                    function_name: "load".into(),
+                },
+            )],
             SelfModTier::Tier0Configuration,
             DeploymentStrategy::Immediate,
         );
 
         let result = engine.generate(&commitment, &PolicyDecisionCard::approved());
-        assert!(matches!(result, Err(CodegenError::PerformanceGateFailed(_))));
+        assert!(matches!(
+            result,
+            Err(CodegenError::PerformanceGateFailed(_))
+        ));
     }
 
     #[test]
@@ -244,14 +290,26 @@ mod tests {
         );
 
         let commitment = make_commitment(
-            vec![("src/operator.rs", CodeChangeType::ModifyFunction { function_name: "handle".into() })],
+            vec![(
+                "src/operator.rs",
+                CodeChangeType::ModifyFunction {
+                    function_name: "handle".into(),
+                },
+            )],
             SelfModTier::Tier1OperatorInternal,
-            DeploymentStrategy::Canary { traffic_fraction: 0.05 },
+            DeploymentStrategy::Canary {
+                traffic_fraction: 0.05,
+            },
         );
 
-        let artifact = engine.generate(&commitment, &PolicyDecisionCard::approved()).unwrap();
+        let artifact = engine
+            .generate(&commitment, &PolicyDecisionCard::approved())
+            .unwrap();
         assert!(artifact.is_deployable());
         assert_eq!(artifact.tier, SelfModTier::Tier1OperatorInternal);
-        assert!(matches!(artifact.deployment_strategy, DeploymentStrategy::Canary { .. }));
+        assert!(matches!(
+            artifact.deployment_strategy,
+            DeploymentStrategy::Canary { .. }
+        ));
     }
 }

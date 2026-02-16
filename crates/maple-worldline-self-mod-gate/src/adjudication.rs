@@ -40,14 +40,12 @@ impl SelfModificationGate {
     /// 2. Run all self-modification checks
     /// 3. If any mandatory check fails → denied
     /// 4. Tier-specific approval decision
-    pub fn adjudicate(
-        &self,
-        commitment: &SelfModificationCommitment,
-    ) -> PolicyDecisionCard {
+    pub fn adjudicate(&self, commitment: &SelfModificationCommitment) -> PolicyDecisionCard {
         // 1. Rate limit check
         if !self.rate_limiter.allow(
             &commitment.tier,
-            &commitment.affected_components()
+            &commitment
+                .affected_components()
                 .iter()
                 .map(|s| s.to_string())
                 .collect::<Vec<_>>(),
@@ -89,12 +87,10 @@ impl SelfModificationGate {
     /// - Tier 2+: Pending review with requirements
     fn tier_approval(tier: &SelfModTier) -> PolicyDecisionCard {
         match tier {
-            SelfModTier::Tier0Configuration => {
-                PolicyDecisionCard::approved_with_conditions(vec![
-                    Condition::NotifyGovernance,
-                    Condition::AutoRollbackOnRegression,
-                ])
-            }
+            SelfModTier::Tier0Configuration => PolicyDecisionCard::approved_with_conditions(vec![
+                Condition::NotifyGovernance,
+                Condition::AutoRollbackOnRegression,
+            ]),
             SelfModTier::Tier1OperatorInternal => {
                 PolicyDecisionCard::approved_with_conditions(vec![
                     Condition::CanaryRequired {
@@ -105,29 +101,21 @@ impl SelfModificationGate {
                 ])
             }
             SelfModTier::Tier2ApiChange => {
-                PolicyDecisionCard::pending_review(vec![
-                    ReviewRequirement::GovernanceReview,
-                ])
+                PolicyDecisionCard::pending_review(vec![ReviewRequirement::GovernanceReview])
             }
-            SelfModTier::Tier3KernelChange => {
-                PolicyDecisionCard::pending_review(vec![
-                    ReviewRequirement::MultiPartyGovernance { min_approvers: 2 },
-                    ReviewRequirement::HumanReview,
-                ])
-            }
-            SelfModTier::Tier4SubstrateChange => {
-                PolicyDecisionCard::pending_review(vec![
-                    ReviewRequirement::GovernanceBoard,
-                    ReviewRequirement::HumanQuorum { min_approvers: 3 },
-                ])
-            }
-            SelfModTier::Tier5ArchitecturalChange => {
-                PolicyDecisionCard::pending_review(vec![
-                    ReviewRequirement::GovernanceBoard,
-                    ReviewRequirement::HumanQuorum { min_approvers: 3 },
-                    ReviewRequirement::GovernanceReview,
-                ])
-            }
+            SelfModTier::Tier3KernelChange => PolicyDecisionCard::pending_review(vec![
+                ReviewRequirement::MultiPartyGovernance { min_approvers: 2 },
+                ReviewRequirement::HumanReview,
+            ]),
+            SelfModTier::Tier4SubstrateChange => PolicyDecisionCard::pending_review(vec![
+                ReviewRequirement::GovernanceBoard,
+                ReviewRequirement::HumanQuorum { min_approvers: 3 },
+            ]),
+            SelfModTier::Tier5ArchitecturalChange => PolicyDecisionCard::pending_review(vec![
+                ReviewRequirement::GovernanceBoard,
+                ReviewRequirement::HumanQuorum { min_approvers: 3 },
+                ReviewRequirement::GovernanceReview,
+            ]),
         }
     }
 }
@@ -139,17 +127,26 @@ mod tests {
     use crate::types::DeploymentStrategy;
     use maple_worldline_intent::intent::ImprovementEstimate;
     use maple_worldline_intent::proposal::*;
-    use maple_worldline_intent::types::{CodeChangeType, IntentId, ProposalId};
     use maple_worldline_intent::types::MeaningId;
+    use maple_worldline_intent::types::{CodeChangeType, IntentId, ProposalId};
 
-    fn make_commitment(tier: SelfModTier, deployment: DeploymentStrategy, files: Vec<&str>) -> SelfModificationCommitment {
-        let changes: Vec<CodeChangeSpec> = files.iter().map(|f| CodeChangeSpec {
-            file_path: f.to_string(),
-            change_type: CodeChangeType::ModifyFunction { function_name: "test".into() },
-            description: "test".into(),
-            affected_regions: vec![],
-            provenance: vec![MeaningId::new()],
-        }).collect();
+    fn make_commitment(
+        tier: SelfModTier,
+        deployment: DeploymentStrategy,
+        files: Vec<&str>,
+    ) -> SelfModificationCommitment {
+        let changes: Vec<CodeChangeSpec> = files
+            .iter()
+            .map(|f| CodeChangeSpec {
+                file_path: f.to_string(),
+                change_type: CodeChangeType::ModifyFunction {
+                    function_name: "test".into(),
+                },
+                description: "test".into(),
+                affected_regions: vec![],
+                provenance: vec![MeaningId::new()],
+            })
+            .collect();
 
         SelfModificationCommitment::new(
             RegenerationProposal {
@@ -158,12 +155,19 @@ mod tests {
                 rationale: "Testing".into(),
                 affected_components: vec!["module".into()],
                 code_changes: changes,
-                required_tests: vec![TestSpec { name: "t".into(), description: "t".into(), test_type: TestType::Unit }],
+                required_tests: vec![TestSpec {
+                    name: "t".into(),
+                    description: "t".into(),
+                    test_type: TestType::Unit,
+                }],
                 performance_gates: vec![],
                 safety_checks: vec![],
                 estimated_improvement: ImprovementEstimate {
-                    metric: "speed".into(), current_value: 10.0, projected_value: 8.0,
-                    confidence: 0.9, unit: "ms".into(),
+                    metric: "speed".into(),
+                    current_value: 10.0,
+                    projected_value: 8.0,
+                    confidence: 0.9,
+                    unit: "ms".into(),
                 },
                 risk_score: 0.1,
                 rollback_plan: RollbackPlan {
@@ -184,7 +188,8 @@ mod tests {
                 meaning_ids: vec![MeaningId::new()],
                 intent_id: IntentId::new(),
             },
-        ).unwrap()
+        )
+        .unwrap()
     }
 
     #[test]
@@ -199,7 +204,10 @@ mod tests {
         let decision = gate.adjudicate(&commitment);
         assert!(decision.is_approved());
         assert!(!decision.conditions.is_empty());
-        assert!(decision.conditions.iter().any(|c| matches!(c, Condition::NotifyGovernance)));
+        assert!(decision
+            .conditions
+            .iter()
+            .any(|c| matches!(c, Condition::NotifyGovernance)));
     }
 
     #[test]
@@ -207,13 +215,18 @@ mod tests {
         let gate = SelfModificationGate::new();
         let commitment = make_commitment(
             SelfModTier::Tier1OperatorInternal,
-            DeploymentStrategy::Canary { traffic_fraction: 0.05 },
+            DeploymentStrategy::Canary {
+                traffic_fraction: 0.05,
+            },
             vec!["src/operator.rs"],
         );
 
         let decision = gate.adjudicate(&commitment);
         assert!(decision.is_approved());
-        assert!(decision.conditions.iter().any(|c| matches!(c, Condition::CanaryRequired { .. })));
+        assert!(decision
+            .conditions
+            .iter()
+            .any(|c| matches!(c, Condition::CanaryRequired { .. })));
     }
 
     #[test]
@@ -227,7 +240,10 @@ mod tests {
 
         let decision = gate.adjudicate(&commitment);
         assert!(decision.is_pending());
-        assert!(decision.review_requirements.iter().any(|r| matches!(r, ReviewRequirement::GovernanceReview)));
+        assert!(decision
+            .review_requirements
+            .iter()
+            .any(|r| matches!(r, ReviewRequirement::GovernanceReview)));
     }
 
     #[test]
@@ -241,10 +257,14 @@ mod tests {
 
         let decision = gate.adjudicate(&commitment);
         assert!(decision.is_pending());
-        assert!(decision.review_requirements.iter().any(|r|
-            matches!(r, ReviewRequirement::MultiPartyGovernance { min_approvers: 2 })
-        ));
-        assert!(decision.review_requirements.iter().any(|r| matches!(r, ReviewRequirement::HumanReview)));
+        assert!(decision.review_requirements.iter().any(|r| matches!(
+            r,
+            ReviewRequirement::MultiPartyGovernance { min_approvers: 2 }
+        )));
+        assert!(decision
+            .review_requirements
+            .iter()
+            .any(|r| matches!(r, ReviewRequirement::HumanReview)));
     }
 
     #[test]

@@ -1,0 +1,21 @@
+[package]
+name = "worldline-runtime"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Phase A facade crate for WorldLine runtime and kernel subsystems"
+
+[dependencies]
+maple-runtime = { workspace = true }
+maple-kernel-fabric = { workspace = true }
+maple-kernel-memory = { workspace = true }
+maple-kernel-gate = { workspace = true }
+maple-kernel-mrp = { workspace = true }
+maple-kernel-provenance = { workspace = true }
+maple-kernel-governance = { workspace = true }
+maple-kernel-safety = { workspace = true }
+maple-kernel-profiles = { workspace = true }
+maple-kernel-financial = { workspace = true }

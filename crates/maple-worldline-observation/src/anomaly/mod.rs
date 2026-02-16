@@ -23,8 +23,8 @@ pub mod detector;
 pub mod types;
 
 pub use detector::{
-    AnomalyAlgorithm, AnomalyDetector, CorrelationAnomaly, PatternAnomaly,
-    PercentileAnomaly, StatisticalAnomaly, TrendAnomaly,
+    AnomalyAlgorithm, AnomalyDetector, CorrelationAnomaly, PatternAnomaly, PercentileAnomaly,
+    StatisticalAnomaly, TrendAnomaly,
 };
 pub use types::{
     AnomalyCategory, AnomalyDetectorConfig, AnomalyId, AnomalySeverity, ComponentId,

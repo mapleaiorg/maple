@@ -88,8 +88,7 @@ mod tests {
 
     #[test]
     fn error_is_std_error() {
-        let e: Box<dyn std::error::Error> =
-            Box::new(WlirError::TypeError("wrong type".into()));
+        let e: Box<dyn std::error::Error> = Box::new(WlirError::TypeError("wrong type".into()));
         assert!(e.to_string().contains("wrong type"));
     }
 

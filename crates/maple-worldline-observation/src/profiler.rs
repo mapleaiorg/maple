@@ -326,8 +326,12 @@ mod tests {
             .start_session(SubsystemId::EventFabric, 100)
             .unwrap();
 
-        profiler.record_sample(&sid, make_sample("emit", 5)).unwrap();
-        profiler.record_sample(&sid, make_sample("emit", 10)).unwrap();
+        profiler
+            .record_sample(&sid, make_sample("emit", 5))
+            .unwrap();
+        profiler
+            .record_sample(&sid, make_sample("emit", 10))
+            .unwrap();
 
         assert_eq!(profiler.active_session_count(), 1);
 

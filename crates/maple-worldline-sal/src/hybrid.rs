@@ -74,14 +74,22 @@ impl HybridSubstrate {
         let gpu_times: Vec<u64> = self
             .feedback_history
             .iter()
-            .filter(|f| f.operator_name == input.operator_name && f.routed_to == SubstrateKind::Gpu && f.success)
+            .filter(|f| {
+                f.operator_name == input.operator_name
+                    && f.routed_to == SubstrateKind::Gpu
+                    && f.success
+            })
             .map(|f| f.execution_time_ms)
             .collect();
 
         let cpu_times: Vec<u64> = self
             .feedback_history
             .iter()
-            .filter(|f| f.operator_name == input.operator_name && f.routed_to == SubstrateKind::Cpu && f.success)
+            .filter(|f| {
+                f.operator_name == input.operator_name
+                    && f.routed_to == SubstrateKind::Cpu
+                    && f.success
+            })
             .map(|f| f.execution_time_ms)
             .collect();
 
@@ -258,18 +266,14 @@ mod tests {
     #[test]
     fn hybrid_wlir_uses_gpu_when_available() {
         let hybrid = HybridSubstrate::new();
-        let result = hybrid
-            .execute_wlir("mod", "main", vec![])
-            .unwrap();
+        let result = hybrid.execute_wlir("mod", "main", vec![]).unwrap();
         assert!(result.output_values[0].contains("gpu:"));
     }
 
     #[test]
     fn hybrid_wlir_falls_back_to_cpu() {
         let hybrid = HybridSubstrate::with_gpu_availability(false);
-        let result = hybrid
-            .execute_wlir("mod", "main", vec![])
-            .unwrap();
+        let result = hybrid.execute_wlir("mod", "main", vec![]).unwrap();
         assert!(result.output_values[0].contains("cpu:"));
     }
 
@@ -292,9 +296,7 @@ mod tests {
     #[test]
     fn hybrid_record_provenance() {
         let hybrid = HybridSubstrate::new();
-        let prov_id = hybrid
-            .record_provenance("op", "in", "out", 5)
-            .unwrap();
+        let prov_id = hybrid.record_provenance("op", "in", "out", 5).unwrap();
         assert!(prov_id.to_string().starts_with("provenance:"));
     }
 }

@@ -125,18 +125,10 @@ impl AdaptiveCompiler {
         target: &CompilationTarget,
     ) -> CompilerResult<Box<dyn CodeGenerator>> {
         let gen: Box<dyn CodeGenerator> = match target {
-            CompilationTarget::Native { arch } => {
-                Box::new(NativeCodeGen::new(arch.clone()))
-            }
-            CompilationTarget::Wasm { env } => {
-                Box::new(WasmCodeGen::new(env.clone()))
-            }
-            CompilationTarget::OperatorCall => {
-                Box::new(OperatorCallCodeGen::new())
-            }
-            CompilationTarget::Interpreted => {
-                Box::new(WlirInterpreterCodeGen::new())
-            }
+            CompilationTarget::Native { arch } => Box::new(NativeCodeGen::new(arch.clone())),
+            CompilationTarget::Wasm { env } => Box::new(WasmCodeGen::new(env.clone())),
+            CompilationTarget::OperatorCall => Box::new(OperatorCallCodeGen::new()),
+            CompilationTarget::Interpreted => Box::new(WlirInterpreterCodeGen::new()),
         };
         Ok(gen)
     }

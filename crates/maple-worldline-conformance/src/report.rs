@@ -154,7 +154,11 @@ impl fmt::Display for ConformanceReport {
             writeln!(f, "  Benchmarks ({} measured):", benchmarks.len())?;
             for b in benchmarks {
                 let mark = if b.passed { "+" } else { "x" };
-                writeln!(f, "      [{}] {} — {}us", mark, b.invariant_id, b.elapsed_us)?;
+                writeln!(
+                    f,
+                    "      [{}] {} — {}us",
+                    mark, b.invariant_id, b.elapsed_us
+                )?;
             }
         }
 
@@ -162,11 +166,7 @@ impl fmt::Display for ConformanceReport {
         if self.all_passed() {
             writeln!(f, "  ALL 22 WORLDLINE SAFETY INVARIANTS SATISFIED")?;
         } else {
-            writeln!(
-                f,
-                "  {} INVARIANT(S) VIOLATED",
-                self.summary.failed,
-            )?;
+            writeln!(f, "  {} INVARIANT(S) VIOLATED", self.summary.failed,)?;
         }
         Ok(())
     }
@@ -291,15 +291,13 @@ mod tests {
     fn test_report_display_with_benchmarks() {
         let now = Utc::now();
         let mut report = ConformanceReport::from_results(make_results(2, 0), 0, now, now);
-        report.benchmarks = Some(vec![
-            crate::benchmarks::BenchmarkResult {
-                invariant_id: "I.OBS-1".into(),
-                category: InvariantCategory::Observation,
-                elapsed_us: 42,
-                passed: true,
-                measured_at: now,
-            },
-        ]);
+        report.benchmarks = Some(vec![crate::benchmarks::BenchmarkResult {
+            invariant_id: "I.OBS-1".into(),
+            category: InvariantCategory::Observation,
+            elapsed_us: 42,
+            passed: true,
+            measured_at: now,
+        }]);
         let output = format!("{}", report);
         assert!(output.contains("Benchmarks"));
         assert!(output.contains("42us"));

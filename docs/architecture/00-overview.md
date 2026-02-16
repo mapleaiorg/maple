@@ -81,33 +81,33 @@ Compatibility note:
 
 These are enforced by `worldline-runtime` (kernel-owned):
 
-I1 - Ordering (Resonance)
-- WorldLine cognition progresses in order:
-  `presence -> coupling -> meaning -> intention -> proposal`.
-- Stage skips require explicit policy and ledger annotations.
+I.1 - WorldLine Primacy
+- Important entities are trajectories (WorldLines), not sessions.
+- Identity is continuity of commitments + provenance.
 
-I2 - Commitment gating
-- All irreversible actions require a commitment receipt.
-- No direct side effects from cognition stages.
+I.2 - Intrinsic Typed Memory
+- Memory is typed and lifecycle-aware: working, episodic, semantic, parametric.
 
-I3 - Non-bypassability
-- Exactly one execution path to consequences: the commitment boundary.
+I.3 - Commitment Boundary
+- No external consequence without explicit commitment, policy check, and provenance.
 
-I4 - Append-only receipts
-- Commitments and outcomes are immutable and append-only.
+I.4 - Causal Provenance
+- Commitments and consequences must be attributable to persistent identity + continuity DAG.
 
-I5 - Monotonic time
-- WorldLine event time is monotonic per worldline.
-- Replays must preserve order.
+I.5 - Resonance-Bounded Coupling
+- Coupling is bounded by available attention; no unbounded resonance.
 
-I6 - Capability + policy enforcement
-- Every commitment must carry capability proofs/grants and pass governance policy.
+I.6 - Pluggable Evolution Laws
+- Evolution operators are swappable, but swaps are commitment-gated and provable.
 
-I7 - Replayable evolution
-- A WorldLine can be reconstructed from snapshot + receipts and validated.
+I.7 - Safety Overrides Optimization
+- Safety and agency constraints override task optimization and performance goals.
 
-I8 - Provenance completeness
-- Every consequence must be attributable to a commitment and evidence bundle.
+I.8 - Substrate Independence
+- The architecture remains valid across digital, hybrid, distributed, and sovereign substrates.
+
+I.9 - Implementation Provenance & Constitutional Evolution
+- Operator upgrades require an upgrade commitment, replay verification, and evidence anchoring.
 
 ## 0.5 What this enables
 

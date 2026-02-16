@@ -9,7 +9,7 @@ rust-version.workspace = true
 description = "Adaptive compiler — compiles WLIR to native/WASM/operator-calls with evolving optimization strategies"
 
 [dependencies]
-maple-mwl-types = { workspace = true }
+worldline-core = { workspace = true }
 maple-worldline-ir = { workspace = true }
 maple-worldline-self-mod-gate = { workspace = true }
 serde = { workspace = true, features = ["derive"] }

@@ -95,7 +95,12 @@ impl std::fmt::Display for ImprovementEstimate {
         write!(
             f,
             "{}: {:.2}{} → {:.2}{} (confidence={:.2})",
-            self.metric, self.current_value, self.unit, self.projected_value, self.unit, self.confidence
+            self.metric,
+            self.current_value,
+            self.unit,
+            self.projected_value,
+            self.unit,
+            self.confidence
         )
     }
 }

@@ -108,7 +108,12 @@ pub enum WlirInstruction {
     /// Negate: result = -a
     Neg { result: u32, a: u32 },
     /// Comparison: result = a cmp b (result is bool)
-    Compare { result: u32, a: u32, b: u32, op: CompareOp },
+    Compare {
+        result: u32,
+        a: u32,
+        b: u32,
+        op: CompareOp,
+    },
     /// Boolean AND: result = a && b
     And { result: u32, a: u32, b: u32 },
     /// Boolean OR: result = a || b
@@ -124,9 +129,17 @@ pub enum WlirInstruction {
     /// Unconditional jump.
     Jump { target: u32 },
     /// Conditional branch.
-    Branch { condition: u32, true_target: u32, false_target: u32 },
+    Branch {
+        condition: u32,
+        true_target: u32,
+        false_target: u32,
+    },
     /// Function call.
-    Call { result: u32, function: FunctionId, args: Vec<u32> },
+    Call {
+        result: u32,
+        function: FunctionId,
+        args: Vec<u32>,
+    },
     /// Return from function.
     Return { value: Option<u32> },
 
@@ -197,7 +210,10 @@ pub enum WlirInstruction {
     /// Associate a source location with subsequent instructions.
     SetSourceLocation { location: SourceLocation },
     /// Annotate a register with a type (for the verifier).
-    TypeAnnotation { register: u32, annotated_type: WlirType },
+    TypeAnnotation {
+        register: u32,
+        annotated_type: WlirType,
+    },
     /// No operation (placeholder/alignment).
     Nop,
 }
@@ -236,9 +252,9 @@ impl WlirInstruction {
             | Self::CoercionCheck { .. }
             | Self::SafetyFence { .. } => InstructionCategory::Safety,
 
-            Self::SetSourceLocation { .. }
-            | Self::TypeAnnotation { .. }
-            | Self::Nop => InstructionCategory::Metadata,
+            Self::SetSourceLocation { .. } | Self::TypeAnnotation { .. } | Self::Nop => {
+                InstructionCategory::Metadata
+            }
         }
     }
 
@@ -260,10 +276,7 @@ impl WlirInstruction {
     pub fn is_control_flow(&self) -> bool {
         matches!(
             self,
-            Self::Jump { .. }
-                | Self::Branch { .. }
-                | Self::Call { .. }
-                | Self::Return { .. }
+            Self::Jump { .. } | Self::Branch { .. } | Self::Call { .. } | Self::Return { .. }
         )
     }
 
@@ -271,9 +284,7 @@ impl WlirInstruction {
     pub fn is_safety(&self) -> bool {
         matches!(
             self,
-            Self::AssertInvariant { .. }
-                | Self::CoercionCheck { .. }
-                | Self::SafetyFence { .. }
+            Self::AssertInvariant { .. } | Self::CoercionCheck { .. } | Self::SafetyFence { .. }
         )
     }
 
@@ -295,7 +306,9 @@ impl WlirInstruction {
             Self::Branch { condition, .. } => vec![*condition],
             Self::Call { args, .. } => args.clone(),
             Self::Return { value } => value.iter().copied().collect(),
-            Self::EmitEvent { payload_registers, .. } => payload_registers.clone(),
+            Self::EmitEvent {
+                payload_registers, ..
+            } => payload_registers.clone(),
             Self::RecordProvenance { inputs, .. } => inputs.clone(),
             Self::MemoryQuery { key, .. } => vec![*key],
             Self::MemoryStore { key, value, .. } => vec![*key, *value],
@@ -327,7 +340,9 @@ impl WlirInstruction {
             | Self::InvokeOperator { result, .. }
             | Self::CoercionCheck { result, .. } => Some(*result),
 
-            Self::EmitEvent { result_event_id, .. } => Some(*result_event_id),
+            Self::EmitEvent {
+                result_event_id, ..
+            } => Some(*result_event_id),
             Self::RecordProvenance { output, .. } => Some(*output),
 
             _ => None,
@@ -341,7 +356,11 @@ mod tests {
 
     #[test]
     fn add_category_is_standard() {
-        let inst = WlirInstruction::Add { result: 0, a: 1, b: 2 };
+        let inst = WlirInstruction::Add {
+            result: 0,
+            a: 1,
+            b: 2,
+        };
         assert_eq!(inst.category(), InstructionCategory::Standard);
     }
 
@@ -389,7 +408,11 @@ mod tests {
 
     #[test]
     fn add_has_no_side_effects() {
-        let inst = WlirInstruction::Add { result: 0, a: 1, b: 2 };
+        let inst = WlirInstruction::Add {
+            result: 0,
+            a: 1,
+            b: 2,
+        };
         assert!(!inst.has_side_effects());
     }
 
@@ -401,7 +424,11 @@ mod tests {
 
     #[test]
     fn add_is_not_control_flow() {
-        let inst = WlirInstruction::Add { result: 0, a: 1, b: 2 };
+        let inst = WlirInstruction::Add {
+            result: 0,
+            a: 1,
+            b: 2,
+        };
         assert!(!inst.is_control_flow());
     }
 
@@ -417,7 +444,11 @@ mod tests {
 
     #[test]
     fn add_reads_and_writes() {
-        let inst = WlirInstruction::Add { result: 0, a: 1, b: 2 };
+        let inst = WlirInstruction::Add {
+            result: 0,
+            a: 1,
+            b: 2,
+        };
         assert_eq!(inst.reads(), vec![1, 2]);
         assert_eq!(inst.writes(), Some(0));
     }

@@ -188,10 +188,10 @@ impl Default for AgentAccountabilityService {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::Arc;
     use crate::invariants::SystemState;
     use crate::policy::{PolicyAction, PolicyCondition};
     use maple_mwl_types::IdentityMaterial;
+    use std::sync::Arc;
 
     fn test_material() -> IdentityMaterial {
         IdentityMaterial::GenesisHash([1u8; 32])
@@ -200,7 +200,7 @@ mod tests {
     #[test]
     fn create_aas_with_defaults() {
         let aas = AgentAccountabilityService::with_constitutional_defaults();
-        assert_eq!(aas.invariants.count(), 8);
+        assert_eq!(aas.invariants.count(), 9);
         assert!(aas.policies.constitutional_count() >= 3);
     }
 
@@ -349,9 +349,9 @@ mod tests {
     async fn gate_integration_with_real_aas() {
         use maple_kernel_fabric::{EventFabric, FabricConfig};
         use maple_kernel_gate::{
-            CapabilityCheckStage, CoSignatureStage, CommitmentDeclaration, CommitmentGate,
-            DeclarationStage, FinalDecisionStage, GateConfig, IdentityBindingStage,
-            PolicyEvaluationStage, RiskAssessmentStage, RiskConfig, AdjudicationResult,
+            AdjudicationResult, CapabilityCheckStage, CoSignatureStage, CommitmentDeclaration,
+            CommitmentGate, DeclarationStage, FinalDecisionStage, GateConfig, IdentityBindingStage,
+            PolicyEvaluationStage, RiskAssessmentStage, RiskConfig,
         };
         use maple_mwl_types::{CapabilityId, CommitmentScope, EventId};
         use std::sync::RwLock;

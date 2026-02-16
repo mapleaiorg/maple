@@ -12,9 +12,7 @@ use serde::{Deserialize, Serialize};
 use crate::epu::{EpuDesigner, EpuSpec, SimulatedEpuDesigner};
 use crate::error::HardwareResult;
 use crate::fpga::{Bitstream, BitstreamGenerator, SimulatedBitstreamGenerator};
-use crate::governance::{
-    enforce_governance, HardwareGovernance, SimulatedHardwareGovernance,
-};
+use crate::governance::{enforce_governance, HardwareGovernance, SimulatedHardwareGovernance};
 use crate::hdl::{GeneratedHdl, HdlGenerator, SimulatedHdlGenerator};
 use crate::simulation::{HardwareSimulator, SimulatedHardwareSimulator, TestVector};
 use crate::types::{EpuId, HardwareConfig, HardwareSummary, SimulationResult};
@@ -91,7 +89,12 @@ impl HardwareEngine {
         &mut self,
         name: &str,
         target_latency_ns: u64,
-    ) -> HardwareResult<(EpuSpec, GeneratedHdl, Option<SimulationResult>, Option<Bitstream>)> {
+    ) -> HardwareResult<(
+        EpuSpec,
+        GeneratedHdl,
+        Option<SimulationResult>,
+        Option<Bitstream>,
+    )> {
         // Step 1: Design EPU
         let spec = self.designer.design(name, target_latency_ns)?;
 
@@ -168,11 +171,7 @@ impl HardwareEngine {
             .iter()
             .filter(|r| r.simulation_passed.is_some())
             .count();
-        let bitstreams = self
-            .records
-            .iter()
-            .filter(|r| r.bitstream_produced)
-            .count();
+        let bitstreams = self.records.iter().filter(|r| r.bitstream_produced).count();
 
         HardwareSummary {
             total_generations: total,

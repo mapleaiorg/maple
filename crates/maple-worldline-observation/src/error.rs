@@ -37,8 +37,8 @@ pub enum ObservationError {
     PersistenceError(String),
 }
 
-impl From<maple_kernel_fabric::FabricError> for ObservationError {
-    fn from(e: maple_kernel_fabric::FabricError) -> Self {
+impl From<worldline_runtime::fabric::FabricError> for ObservationError {
+    fn from(e: worldline_runtime::fabric::FabricError) -> Self {
         ObservationError::FabricError(e.to_string())
     }
 }

@@ -401,7 +401,8 @@ impl AnomalyAlgorithm for CorrelationAnomaly {
                     continue;
                 }
                 let actual_ratio = va / vb;
-                let deviation = (actual_ratio - expected_ratio).abs() / expected_ratio.abs().max(f64::EPSILON);
+                let deviation =
+                    (actual_ratio - expected_ratio).abs() / expected_ratio.abs().max(f64::EPSILON);
 
                 if deviation > self.tolerance {
                     anomalies.push(RawAnomaly {
@@ -637,8 +638,7 @@ impl AnomalyDetector {
                 .max()
                 .cloned()
                 .unwrap_or(AnomalySeverity::Info);
-            let avg_score =
-                group.iter().map(|r| r.score).sum::<f64>() / group.len() as f64;
+            let avg_score = group.iter().map(|r| r.score).sum::<f64>() / group.len() as f64;
             let detectors: Vec<String> = group.iter().map(|r| r.detector_name.clone()).collect();
             let description = group
                 .iter()
@@ -813,10 +813,7 @@ mod tests {
 
         // Current value 100 vs hour mean 50 = 5 std devs
         let raws = algo.detect(&mid, 100.0, &baseline);
-        assert!(
-            !raws.is_empty(),
-            "should detect seasonal deviation"
-        );
+        assert!(!raws.is_empty(), "should detect seasonal deviation");
     }
 
     // ── Correlation detector tests ──────────────────────────────────
@@ -837,10 +834,7 @@ mod tests {
 
         // Record value for A that breaks the ratio (expected: 10 * 100 = 1000, actual: 500)
         let raws = algo.detect(&mid_a, 500.0, &baseline_a);
-        assert!(
-            !raws.is_empty(),
-            "should detect correlation break"
-        );
+        assert!(!raws.is_empty(), "should detect correlation break");
     }
 
     // ── Fusion tests ────────────────────────────────────────────────
@@ -858,7 +852,10 @@ mod tests {
 
         // A value within normal range won't trigger enough detectors
         let anomalies = detector.detect(&mid, 105.0, &baseline);
-        assert!(anomalies.is_empty(), "normal value should not trigger anomaly");
+        assert!(
+            anomalies.is_empty(),
+            "normal value should not trigger anomaly"
+        );
     }
 
     #[test]

@@ -196,7 +196,10 @@ mod tests {
     #[test]
     fn governance_decision_display() {
         assert_eq!(GovernanceDecision::Approved.to_string(), "approved");
-        assert_eq!(GovernanceDecision::PendingReview.to_string(), "pending-review");
+        assert_eq!(
+            GovernanceDecision::PendingReview.to_string(),
+            "pending-review"
+        );
         assert!(GovernanceDecision::Denied("too risky".into())
             .to_string()
             .contains("too risky"));

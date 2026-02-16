@@ -2,7 +2,7 @@ use maple_mwl_types::EffectDomain;
 use maple_mwl_types::RiskClass;
 
 use crate::dimensions::{
-    AttentionBudgetConfig, CommitmentAuthority, ConsequenceScopeLimit, ConsentLevel,
+    AttentionBudgetConfig, CommitmentAuthority, ConsentLevel, ConsequenceScopeLimit,
     CouplingLimits, ExhaustionBehavior, HumanInvolvementConfig, IntentResolutionRules,
     OversightLevel, ProfileType, ReversibilityPreference, WorldlineProfile,
 };
@@ -42,10 +42,7 @@ pub fn human_profile() -> WorldlineProfile {
             allow_auto_commitment: false,
         },
         commitment_authority: CommitmentAuthority {
-            allowed_domains: vec![
-                EffectDomain::Communication,
-                EffectDomain::DataMutation,
-            ],
+            allowed_domains: vec![EffectDomain::Communication, EffectDomain::DataMutation],
             max_risk_class: RiskClass::Medium,
             allow_irreversible: false,
             max_affected_parties: Some(10),
@@ -222,10 +219,7 @@ pub fn world_profile() -> WorldlineProfile {
             allow_auto_commitment: true,
         },
         commitment_authority: CommitmentAuthority {
-            allowed_domains: vec![
-                EffectDomain::Communication,
-                EffectDomain::DataMutation,
-            ],
+            allowed_domains: vec![EffectDomain::Communication, EffectDomain::DataMutation],
             max_risk_class: RiskClass::Low,
             allow_irreversible: false,
             max_affected_parties: None,
@@ -334,14 +328,26 @@ mod tests {
         let agent = agent_profile();
 
         // Human has stricter coupling limits
-        assert!(human.coupling_limits.max_initial_strength <= agent.coupling_limits.max_initial_strength);
-        assert!(human.coupling_limits.max_sustained_strength <= agent.coupling_limits.max_sustained_strength);
+        assert!(
+            human.coupling_limits.max_initial_strength
+                <= agent.coupling_limits.max_initial_strength
+        );
+        assert!(
+            human.coupling_limits.max_sustained_strength
+                <= agent.coupling_limits.max_sustained_strength
+        );
 
         // Human requires informed consent
-        assert_eq!(human.coupling_limits.consent_required, ConsentLevel::Informed);
+        assert_eq!(
+            human.coupling_limits.consent_required,
+            ConsentLevel::Informed
+        );
 
         // Human has full oversight
-        assert_eq!(human.human_involvement.oversight_level, OversightLevel::FullOversight);
+        assert_eq!(
+            human.human_involvement.oversight_level,
+            OversightLevel::FullOversight
+        );
 
         // Human has coercion detection and agency protection
         assert!(human.human_involvement.coercion_detection_enabled);
@@ -353,7 +359,10 @@ mod tests {
         let agent = agent_profile();
 
         // Agent requires explicit consent
-        assert_eq!(agent.coupling_limits.consent_required, ConsentLevel::Explicit);
+        assert_eq!(
+            agent.coupling_limits.consent_required,
+            ConsentLevel::Explicit
+        );
 
         // Agent requires human for high-risk
         assert!(agent.human_involvement.require_human_for_high_risk);
@@ -372,14 +381,23 @@ mod tests {
         let human = human_profile();
 
         // Financial has lowest risk class
-        assert!(financial.commitment_authority.max_risk_class <= human.commitment_authority.max_risk_class);
-        assert!(financial.commitment_authority.max_risk_class <= agent.commitment_authority.max_risk_class);
+        assert!(
+            financial.commitment_authority.max_risk_class
+                <= human.commitment_authority.max_risk_class
+        );
+        assert!(
+            financial.commitment_authority.max_risk_class
+                <= agent.commitment_authority.max_risk_class
+        );
 
         // Financial requires audit trail
         assert!(financial.commitment_authority.require_audit_trail);
 
         // Financial has highest confidence threshold
-        assert!(financial.intent_resolution.min_confidence_threshold >= agent.intent_resolution.min_confidence_threshold);
+        assert!(
+            financial.intent_resolution.min_confidence_threshold
+                >= agent.intent_resolution.min_confidence_threshold
+        );
     }
 
     #[test]
@@ -390,7 +408,10 @@ mod tests {
         assert!(world.coupling_limits.max_concurrent_couplings >= 50);
 
         // World has implicit consent (observable context)
-        assert_eq!(world.coupling_limits.consent_required, ConsentLevel::Implicit);
+        assert_eq!(
+            world.coupling_limits.consent_required,
+            ConsentLevel::Implicit
+        );
 
         // World has low coupling strength
         assert!(world.coupling_limits.max_initial_strength <= 0.3);
@@ -460,8 +481,14 @@ mod tests {
         let human = human_profile();
         let financial = financial_profile();
 
-        assert_eq!(human.coupling_limits.consent_required, ConsentLevel::Informed);
-        assert_eq!(financial.coupling_limits.consent_required, ConsentLevel::Informed);
+        assert_eq!(
+            human.coupling_limits.consent_required,
+            ConsentLevel::Informed
+        );
+        assert_eq!(
+            financial.coupling_limits.consent_required,
+            ConsentLevel::Informed
+        );
     }
 
     #[test]

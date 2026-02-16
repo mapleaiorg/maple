@@ -148,9 +148,19 @@ mod tests {
     fn serialization_roundtrip_preserves_instructions() {
         let mut module = WlirModule::new("roundtrip", "2.0.0");
         let mut f = WlirFunction::new("compute", vec![("x".into(), WlirType::I32)], WlirType::I32);
-        f.push_instruction(WlirInstruction::LoadLocal { result: 0, local_index: 0 });
-        f.push_instruction(WlirInstruction::LoadConst { result: 1, constant_index: 0 });
-        f.push_instruction(WlirInstruction::Add { result: 2, a: 0, b: 1 });
+        f.push_instruction(WlirInstruction::LoadLocal {
+            result: 0,
+            local_index: 0,
+        });
+        f.push_instruction(WlirInstruction::LoadConst {
+            result: 1,
+            constant_index: 0,
+        });
+        f.push_instruction(WlirInstruction::Add {
+            result: 2,
+            a: 0,
+            b: 1,
+        });
         f.push_instruction(WlirInstruction::Return { value: Some(2) });
         module.add_function(f);
 

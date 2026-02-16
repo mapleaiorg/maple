@@ -54,11 +54,11 @@ impl SelfModTier {
     /// Minimum observation period (seconds) for this tier.
     pub fn min_observation_secs(&self) -> u64 {
         match self {
-            Self::Tier0Configuration => 1800,     // 30 minutes
-            Self::Tier1OperatorInternal => 3600,   // 1 hour
-            Self::Tier2ApiChange => 86400,         // 24 hours
-            Self::Tier3KernelChange => 259200,     // 72 hours
-            Self::Tier4SubstrateChange => 604800,  // 1 week
+            Self::Tier0Configuration => 1800,          // 30 minutes
+            Self::Tier1OperatorInternal => 3600,       // 1 hour
+            Self::Tier2ApiChange => 86400,             // 24 hours
+            Self::Tier3KernelChange => 259200,         // 72 hours
+            Self::Tier4SubstrateChange => 604800,      // 1 week
             Self::Tier5ArchitecturalChange => 1209600, // 2 weeks
         }
     }
@@ -67,9 +67,7 @@ impl SelfModTier {
     pub fn requires_human_review(&self) -> bool {
         matches!(
             self,
-            Self::Tier3KernelChange
-                | Self::Tier4SubstrateChange
-                | Self::Tier5ArchitecturalChange
+            Self::Tier3KernelChange | Self::Tier4SubstrateChange | Self::Tier5ArchitecturalChange
         )
     }
 
@@ -86,20 +84,17 @@ impl SelfModTier {
 
     /// Whether this tier auto-approves (with conditions).
     pub fn is_auto_approve(&self) -> bool {
-        matches!(
-            self,
-            Self::Tier0Configuration | Self::Tier1OperatorInternal
-        )
+        matches!(self, Self::Tier0Configuration | Self::Tier1OperatorInternal)
     }
 
     /// Default maximum deployment duration (seconds) for this tier.
     pub fn default_max_deployment_secs(&self) -> u64 {
         match self {
-            Self::Tier0Configuration => 300,       // 5 minutes
-            Self::Tier1OperatorInternal => 3600,   // 1 hour
-            Self::Tier2ApiChange => 7200,          // 2 hours
-            Self::Tier3KernelChange => 14400,      // 4 hours
-            Self::Tier4SubstrateChange => 28800,   // 8 hours
+            Self::Tier0Configuration => 300,         // 5 minutes
+            Self::Tier1OperatorInternal => 3600,     // 1 hour
+            Self::Tier2ApiChange => 7200,            // 2 hours
+            Self::Tier3KernelChange => 14400,        // 4 hours
+            Self::Tier4SubstrateChange => 28800,     // 8 hours
             Self::Tier5ArchitecturalChange => 86400, // 24 hours
         }
     }
@@ -294,9 +289,10 @@ impl DeploymentStrategy {
         match (self, tier) {
             // Immediate is only valid for Tier 0
             (DeploymentStrategy::Immediate, SelfModTier::Tier0Configuration) => Ok(()),
-            (DeploymentStrategy::Immediate, other) => Err(SelfModGateError::TierMismatch(
-                format!("Immediate deployment not allowed for {}", other),
-            )),
+            (DeploymentStrategy::Immediate, other) => Err(SelfModGateError::TierMismatch(format!(
+                "Immediate deployment not allowed for {}",
+                other
+            ))),
             // Canary required for Tier 1+
             (DeploymentStrategy::Canary { traffic_fraction }, _) => {
                 if *traffic_fraction <= 0.0 || *traffic_fraction > 1.0 {
@@ -317,7 +313,9 @@ impl std::fmt::Display for DeploymentStrategy {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Immediate => write!(f, "immediate"),
-            Self::Canary { traffic_fraction } => write!(f, "canary({:.0}%)", traffic_fraction * 100.0),
+            Self::Canary { traffic_fraction } => {
+                write!(f, "canary({:.0}%)", traffic_fraction * 100.0)
+            }
             Self::Staged => write!(f, "staged"),
             Self::BlueGreen => write!(f, "blue-green"),
         }
@@ -330,14 +328,26 @@ mod tests {
 
     #[test]
     fn tier_from_substrate_tier() {
-        assert_eq!(SelfModTier::from(SubstrateTier::Tier0), SelfModTier::Tier0Configuration);
-        assert_eq!(SelfModTier::from(SubstrateTier::Tier3), SelfModTier::Tier3KernelChange);
+        assert_eq!(
+            SelfModTier::from(SubstrateTier::Tier0),
+            SelfModTier::Tier0Configuration
+        );
+        assert_eq!(
+            SelfModTier::from(SubstrateTier::Tier3),
+            SelfModTier::Tier3KernelChange
+        );
     }
 
     #[test]
     fn tier_display() {
-        assert_eq!(SelfModTier::Tier0Configuration.to_string(), "tier-0-configuration");
-        assert_eq!(SelfModTier::Tier5ArchitecturalChange.to_string(), "tier-5-architectural-change");
+        assert_eq!(
+            SelfModTier::Tier0Configuration.to_string(),
+            "tier-0-configuration"
+        );
+        assert_eq!(
+            SelfModTier::Tier5ArchitecturalChange.to_string(),
+            "tier-5-architectural-change"
+        );
     }
 
     #[test]
@@ -415,14 +425,26 @@ mod tests {
     #[test]
     fn deployment_strategy_validate() {
         // Immediate valid for Tier0
-        assert!(DeploymentStrategy::Immediate.validate_for_tier(&SelfModTier::Tier0Configuration).is_ok());
+        assert!(DeploymentStrategy::Immediate
+            .validate_for_tier(&SelfModTier::Tier0Configuration)
+            .is_ok());
         // Immediate invalid for Tier1+
-        assert!(DeploymentStrategy::Immediate.validate_for_tier(&SelfModTier::Tier1OperatorInternal).is_err());
+        assert!(DeploymentStrategy::Immediate
+            .validate_for_tier(&SelfModTier::Tier1OperatorInternal)
+            .is_err());
         // Canary valid for any tier
-        let canary = DeploymentStrategy::Canary { traffic_fraction: 0.05 };
-        assert!(canary.validate_for_tier(&SelfModTier::Tier3KernelChange).is_ok());
+        let canary = DeploymentStrategy::Canary {
+            traffic_fraction: 0.05,
+        };
+        assert!(canary
+            .validate_for_tier(&SelfModTier::Tier3KernelChange)
+            .is_ok());
         // Invalid canary fraction
-        let bad_canary = DeploymentStrategy::Canary { traffic_fraction: 0.0 };
-        assert!(bad_canary.validate_for_tier(&SelfModTier::Tier0Configuration).is_err());
+        let bad_canary = DeploymentStrategy::Canary {
+            traffic_fraction: 0.0,
+        };
+        assert!(bad_canary
+            .validate_for_tier(&SelfModTier::Tier0Configuration)
+            .is_err());
     }
 }

@@ -88,12 +88,15 @@ impl SelfModCheck for ProposalCompleteness {
         if commitment.rollback_plan.steps.is_empty() {
             return SelfModCheckResult::fail(self.name(), "No rollback steps defined");
         }
-        SelfModCheckResult::pass(self.name(), format!(
-            "{} changes, {} tests, {} rollback steps",
-            commitment.proposal.code_changes.len(),
-            commitment.proposal.required_tests.len(),
-            commitment.rollback_plan.steps.len(),
-        ))
+        SelfModCheckResult::pass(
+            self.name(),
+            format!(
+                "{} changes, {} tests, {} rollback steps",
+                commitment.proposal.code_changes.len(),
+                commitment.proposal.required_tests.len(),
+                commitment.rollback_plan.steps.len(),
+            ),
+        )
     }
 
     fn mandatory(&self) -> bool {
@@ -116,15 +119,21 @@ impl SelfModCheck for RollbackViability {
         }
         // Rollback should not take longer than the deployment itself
         if plan.estimated_duration_secs > commitment.max_deployment_duration_secs {
-            return SelfModCheckResult::fail(self.name(), format!(
-                "Rollback duration ({}s) exceeds max deployment duration ({}s)",
-                plan.estimated_duration_secs, commitment.max_deployment_duration_secs,
-            ));
+            return SelfModCheckResult::fail(
+                self.name(),
+                format!(
+                    "Rollback duration ({}s) exceeds max deployment duration ({}s)",
+                    plan.estimated_duration_secs, commitment.max_deployment_duration_secs,
+                ),
+            );
         }
-        SelfModCheckResult::pass(self.name(), format!(
-            "Rollback via {} in ~{}s",
-            plan.strategy, plan.estimated_duration_secs,
-        ))
+        SelfModCheckResult::pass(
+            self.name(),
+            format!(
+                "Rollback via {} in ~{}s",
+                plan.strategy, plan.estimated_duration_secs,
+            ),
+        )
     }
 
     fn mandatory(&self) -> bool {
@@ -141,7 +150,12 @@ pub struct SafetyInvariantPreservation;
 /// Files that are considered safety-critical and should not be modified
 /// without explicit governance approval.
 const SAFETY_CRITICAL_PATTERNS: &[&str] = &[
-    "safety", "rollback", "emergency", "invariant", "consent", "coercion",
+    "safety",
+    "rollback",
+    "emergency",
+    "invariant",
+    "consent",
+    "coercion",
 ];
 
 impl SelfModCheck for SafetyInvariantPreservation {
@@ -155,10 +169,13 @@ impl SelfModCheck for SafetyInvariantPreservation {
             let lower = file.to_lowercase();
             for pattern in SAFETY_CRITICAL_PATTERNS {
                 if lower.contains(pattern) {
-                    return SelfModCheckResult::fail(self.name(), format!(
-                        "File '{}' matches safety-critical pattern '{}'",
-                        file, pattern,
-                    ));
+                    return SelfModCheckResult::fail(
+                        self.name(),
+                        format!(
+                            "File '{}' matches safety-critical pattern '{}'",
+                            file, pattern,
+                        ),
+                    );
                 }
             }
         }
@@ -176,9 +193,8 @@ impl SelfModCheck for SafetyInvariantPreservation {
 /// be weakened by self-modification.
 pub struct GateIntegrityProtection;
 
-const GATE_CRITICAL_PATTERNS: &[&str] = &[
-    "gate", "adjudication", "commitment_gate", "self_mod_gate",
-];
+const GATE_CRITICAL_PATTERNS: &[&str] =
+    &["gate", "adjudication", "commitment_gate", "self_mod_gate"];
 
 impl SelfModCheck for GateIntegrityProtection {
     fn name(&self) -> &str {
@@ -191,10 +207,13 @@ impl SelfModCheck for GateIntegrityProtection {
             let lower = file.to_lowercase();
             for pattern in GATE_CRITICAL_PATTERNS {
                 if lower.contains(pattern) {
-                    return SelfModCheckResult::fail(self.name(), format!(
-                        "File '{}' matches gate-critical pattern '{}' — gate integrity at risk",
-                        file, pattern,
-                    ));
+                    return SelfModCheckResult::fail(
+                        self.name(),
+                        format!(
+                            "File '{}' matches gate-critical pattern '{}' — gate integrity at risk",
+                            file, pattern,
+                        ),
+                    );
                 }
             }
         }
@@ -226,15 +245,19 @@ impl SelfModCheck for BoundedScope {
             return SelfModCheckResult::fail(self.name(), "No affected components listed");
         }
         if components.len() > MAX_AFFECTED_COMPONENTS {
-            return SelfModCheckResult::fail(self.name(), format!(
-                "Too many affected components ({} > max {})",
-                components.len(), MAX_AFFECTED_COMPONENTS,
-            ));
+            return SelfModCheckResult::fail(
+                self.name(),
+                format!(
+                    "Too many affected components ({} > max {})",
+                    components.len(),
+                    MAX_AFFECTED_COMPONENTS,
+                ),
+            );
         }
-        SelfModCheckResult::pass(self.name(), format!(
-            "{} components affected (within bound)",
-            components.len(),
-        ))
+        SelfModCheckResult::pass(
+            self.name(),
+            format!("{} components affected (within bound)", components.len(),),
+        )
     }
 
     fn mandatory(&self) -> bool {
@@ -248,9 +271,7 @@ impl SelfModCheck for BoundedScope {
 /// violate any of the RA invariants.
 pub struct InvariantPreservation;
 
-const INVARIANT_CRITICAL_PATTERNS: &[&str] = &[
-    "rate_limiter", "rate-limiter", "emergency_stop",
-];
+const INVARIANT_CRITICAL_PATTERNS: &[&str] = &["rate_limiter", "rate-limiter", "emergency_stop"];
 
 impl SelfModCheck for InvariantPreservation {
     fn name(&self) -> &str {
@@ -263,10 +284,13 @@ impl SelfModCheck for InvariantPreservation {
             let lower = file.to_lowercase();
             for pattern in INVARIANT_CRITICAL_PATTERNS {
                 if lower.contains(pattern) {
-                    return SelfModCheckResult::fail(self.name(), format!(
-                        "File '{}' contains invariant-critical pattern '{}'",
-                        file, pattern,
-                    ));
+                    return SelfModCheckResult::fail(
+                        self.name(),
+                        format!(
+                            "File '{}' contains invariant-critical pattern '{}'",
+                            file, pattern,
+                        ),
+                    );
                 }
             }
         }
@@ -337,7 +361,10 @@ impl SelfModificationGate {
     }
 
     /// Run all checks against a commitment and return results.
-    pub fn run_checks(&self, commitment: &SelfModificationCommitment) -> Vec<(SelfModCheckResult, bool)> {
+    pub fn run_checks(
+        &self,
+        commitment: &SelfModificationCommitment,
+    ) -> Vec<(SelfModCheckResult, bool)> {
         self.checks
             .iter()
             .map(|check| {
@@ -361,15 +388,17 @@ mod tests {
     use crate::commitment::IntentChain;
     use maple_worldline_intent::intent::ImprovementEstimate;
     use maple_worldline_intent::proposal::*;
-    use maple_worldline_intent::types::{CodeChangeType, IntentId, ProposalId};
     use maple_worldline_intent::types::MeaningId;
+    use maple_worldline_intent::types::{CodeChangeType, IntentId, ProposalId};
 
     fn make_commitment(files: Vec<&str>, components: Vec<&str>) -> SelfModificationCommitment {
         let changes: Vec<CodeChangeSpec> = files
             .iter()
             .map(|f| CodeChangeSpec {
                 file_path: f.to_string(),
-                change_type: CodeChangeType::ModifyFunction { function_name: "test".into() },
+                change_type: CodeChangeType::ModifyFunction {
+                    function_name: "test".into(),
+                },
                 description: "test change".into(),
                 affected_regions: vec![],
                 provenance: vec![MeaningId::new()],

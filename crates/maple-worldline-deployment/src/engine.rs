@@ -23,7 +23,9 @@ use crate::feedback::DeploymentFeedback;
 use crate::github::GitHubIntegration;
 use crate::rollback::DeploymentRollbackExecutor;
 use crate::strategy::{execute_strategy, plan_strategy};
-use crate::types::{DeploymentConfig, DeploymentId, DeploymentPhase, DeploymentRecord, DeploymentSummary};
+use crate::types::{
+    DeploymentConfig, DeploymentId, DeploymentPhase, DeploymentRecord, DeploymentSummary,
+};
 
 // ── Learning Metrics ───────────────────────────────────────────────────
 
@@ -110,7 +112,11 @@ impl DeploymentEngine {
                 artifact.commitment_id.clone(),
                 artifact.tier.clone(),
                 artifact.deployment_strategy.clone(),
-                artifact.affected_files().into_iter().map(String::from).collect(),
+                artifact
+                    .affected_files()
+                    .into_iter()
+                    .map(String::from)
+                    .collect(),
             );
             record.mark_failed("Artifact not deployable".into());
             self.store_record(record);
@@ -165,8 +171,7 @@ impl DeploymentEngine {
                         &format!("[deploy] {}", artifact.commitment_id),
                         &format!(
                             "Automated deployment for commitment {}.\n\nFiles: {:?}",
-                            artifact.commitment_id,
-                            record.files_deployed,
+                            artifact.commitment_id, record.files_deployed,
                         ),
                     );
                 }
@@ -176,10 +181,9 @@ impl DeploymentEngine {
                 if self.config.auto_rollback {
                     record.advance_phase(DeploymentPhase::RollingBack);
 
-                    let rollback_result = self.rollback_executor.rollback(
-                        &artifact.rollback_plan,
-                        &record.files_deployed,
-                    );
+                    let rollback_result = self
+                        .rollback_executor
+                        .rollback(&artifact.rollback_plan, &record.files_deployed);
 
                     match rollback_result {
                         Ok(rb) if rb.success => {
@@ -294,11 +298,11 @@ impl DeploymentEngine {
         let succeeded = terminal.iter().filter(|r| r.status.is_success()).count();
         let rolled_back = terminal.iter().filter(|r| r.rollback_triggered).count();
 
-        let total_duration: i64 = terminal
+        let total_duration: i64 = terminal.iter().filter_map(|r| r.duration_ms()).sum();
+        let duration_count = terminal
             .iter()
-            .filter_map(|r| r.duration_ms())
-            .sum();
-        let duration_count = terminal.iter().filter(|r| r.duration_ms().is_some()).count();
+            .filter(|r| r.duration_ms().is_some())
+            .count();
 
         // Per-tier breakdown
         let tiers = [
@@ -312,10 +316,7 @@ impl DeploymentEngine {
         let per_tier_success: Vec<(SelfModTier, f64)> = tiers
             .iter()
             .filter_map(|tier| {
-                let tier_records: Vec<_> = terminal
-                    .iter()
-                    .filter(|r| r.tier == *tier)
-                    .collect();
+                let tier_records: Vec<_> = terminal.iter().filter(|r| r.tier == *tier).collect();
                 if tier_records.is_empty() {
                     None
                 } else {
@@ -392,10 +393,7 @@ mod tests {
     use maple_worldline_self_mod_gate::commitment::IntentChain;
     use maple_worldline_self_mod_gate::types::DeploymentStrategy;
 
-    fn make_artifact(
-        tier: SelfModTier,
-        strategy: DeploymentStrategy,
-    ) -> CodegenArtifact {
+    fn make_artifact(tier: SelfModTier, strategy: DeploymentStrategy) -> CodegenArtifact {
         CodegenArtifact {
             codegen_id: CodegenId::new(),
             commitment_id: "commit-1".into(),
@@ -480,7 +478,9 @@ mod tests {
         let mut engine = make_engine();
         let artifact = make_artifact(
             SelfModTier::Tier1OperatorInternal,
-            DeploymentStrategy::Canary { traffic_fraction: 0.05 },
+            DeploymentStrategy::Canary {
+                traffic_fraction: 0.05,
+            },
         );
         let result = engine.deploy(&artifact);
         assert!(result.is_ok());
@@ -499,7 +499,9 @@ mod tests {
         );
         let artifact = make_artifact(
             SelfModTier::Tier1OperatorInternal,
-            DeploymentStrategy::Canary { traffic_fraction: 0.05 },
+            DeploymentStrategy::Canary {
+                traffic_fraction: 0.05,
+            },
         );
         let result = engine.deploy(&artifact);
         assert!(result.is_err());
@@ -518,7 +520,9 @@ mod tests {
         );
         let artifact = make_artifact(
             SelfModTier::Tier1OperatorInternal,
-            DeploymentStrategy::Canary { traffic_fraction: 0.05 },
+            DeploymentStrategy::Canary {
+                traffic_fraction: 0.05,
+            },
         );
         let result = engine.deploy(&artifact);
         assert!(result.is_err());
@@ -642,10 +646,7 @@ mod tests {
     #[test]
     fn deploy_staged_success() {
         let mut engine = make_engine();
-        let artifact = make_artifact(
-            SelfModTier::Tier2ApiChange,
-            DeploymentStrategy::Staged,
-        );
+        let artifact = make_artifact(SelfModTier::Tier2ApiChange, DeploymentStrategy::Staged);
         let result = engine.deploy(&artifact);
         assert!(result.is_ok());
 
@@ -661,13 +662,18 @@ mod tests {
         let mut engine = make_engine();
 
         // Tier0 success
-        let a0 = make_artifact(SelfModTier::Tier0Configuration, DeploymentStrategy::Immediate);
+        let a0 = make_artifact(
+            SelfModTier::Tier0Configuration,
+            DeploymentStrategy::Immediate,
+        );
         engine.deploy(&a0).unwrap();
 
         // Tier1 success
         let a1 = make_artifact(
             SelfModTier::Tier1OperatorInternal,
-            DeploymentStrategy::Canary { traffic_fraction: 0.05 },
+            DeploymentStrategy::Canary {
+                traffic_fraction: 0.05,
+            },
         );
         engine.deploy(&a1).unwrap();
 
@@ -689,7 +695,9 @@ mod tests {
         );
         let artifact = make_artifact(
             SelfModTier::Tier1OperatorInternal,
-            DeploymentStrategy::Canary { traffic_fraction: 0.05 },
+            DeploymentStrategy::Canary {
+                traffic_fraction: 0.05,
+            },
         );
         let result = engine.deploy(&artifact);
         assert!(result.is_err());

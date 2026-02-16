@@ -91,7 +91,10 @@ pub enum OverrideDecision {
 
 impl OverrideDecision {
     pub fn is_override(&self) -> bool {
-        matches!(self, OverrideDecision::Override { .. } | OverrideDecision::Block { .. })
+        matches!(
+            self,
+            OverrideDecision::Override { .. } | OverrideDecision::Block { .. }
+        )
     }
 
     pub fn is_blocked(&self) -> bool {
@@ -144,8 +147,7 @@ pub fn ethical_override(decision: &Decision) -> OverrideDecision {
 
     // Check agency concerns (second highest)
     for concern in &decision.agency_concerns {
-        if concern.severity >= ConcernSeverity::High
-            && decision.priority < EthicalPriority::Agency
+        if concern.severity >= ConcernSeverity::High && decision.priority < EthicalPriority::Agency
         {
             info!(
                 concern = %concern.description,
@@ -261,7 +263,8 @@ mod tests {
         assert!(result.is_override());
 
         if let OverrideDecision::Override {
-            overriding_priority, ..
+            overriding_priority,
+            ..
         } = result
         {
             assert_eq!(overriding_priority, EthicalPriority::Agency);

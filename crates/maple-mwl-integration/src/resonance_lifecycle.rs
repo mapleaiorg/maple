@@ -5,17 +5,15 @@
 //!
 //! Flow: Presence → Coupling → Meaning → Intent → Commitment → Consequence
 
-use maple_kernel_fabric::{EventPayload, ResonanceStage, CouplingScope};
-use maple_kernel_gate::{AdjudicationResult, CommitmentOutcome};
-use maple_kernel_mrp::{
-    MeaningEnvelopeBuilder, IntentEnvelopeBuilder, CommitmentEnvelopeBuilder,
-    MeaningPayload, IntentPayload, CommitmentPayload, RouteDecision,
-};
-use maple_mwl_types::{
-    CommitmentScope, ConfidenceProfile, EffectDomain,
+use worldline_core::types::{CommitmentScope, ConfidenceProfile, EffectDomain};
+use worldline_runtime::fabric::{CouplingScope, EventPayload, ResonanceStage};
+use worldline_runtime::gate::{AdjudicationResult, CommitmentOutcome};
+use worldline_runtime::mrp::{
+    CommitmentEnvelopeBuilder, CommitmentPayload, IntentEnvelopeBuilder, IntentPayload,
+    MeaningEnvelopeBuilder, MeaningPayload, RouteDecision,
 };
 
-use crate::helpers::{TestKernel, KernelOptions};
+use crate::helpers::{KernelOptions, TestKernel};
 
 /// Test the complete resonance flow from presence through consequence.
 #[tokio::test]
@@ -157,7 +155,7 @@ async fn test_full_resonance_lifecycle() {
     let ledger_entry = kernel.gate.ledger().history(&commitment_id).unwrap();
     assert_eq!(
         ledger_entry.decision.decision,
-        maple_mwl_types::AdjudicationDecision::Approve
+        worldline_core::types::AdjudicationDecision::Approve
     );
 
     // ── 7. CONSEQUENCE: Record outcome ────────────────────────────────
@@ -186,7 +184,10 @@ async fn test_full_resonance_lifecycle() {
     let path = kernel
         .provenance
         .causal_path(&genesis_a.id, &meaning_event.id);
-    assert!(path.is_some(), "Causal path from genesis to meaning must exist");
+    assert!(
+        path.is_some(),
+        "Causal path from genesis to meaning must exist"
+    );
 
     // ── 9. VERIFY: Fabric integrity ───────────────────────────────────
     let integrity = kernel.fabric.verify().await.unwrap();

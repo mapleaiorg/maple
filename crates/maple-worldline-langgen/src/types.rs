@@ -672,13 +672,30 @@ mod tests {
     fn status_display_all_variants() {
         assert_eq!(LangGenStatus::Started.to_string(), "started");
         assert_eq!(LangGenStatus::DomainAnalyzed.to_string(), "domain-analyzed");
-        assert_eq!(LangGenStatus::GrammarSynthesized.to_string(), "grammar-synthesized");
-        assert_eq!(LangGenStatus::TypeSystemDesigned.to_string(), "type-system-designed");
-        assert_eq!(LangGenStatus::SemanticsMapped.to_string(), "semantics-mapped");
-        assert_eq!(LangGenStatus::ParserGenerated.to_string(), "parser-generated");
-        assert_eq!(LangGenStatus::CompilerGenerated.to_string(), "compiler-generated");
+        assert_eq!(
+            LangGenStatus::GrammarSynthesized.to_string(),
+            "grammar-synthesized"
+        );
+        assert_eq!(
+            LangGenStatus::TypeSystemDesigned.to_string(),
+            "type-system-designed"
+        );
+        assert_eq!(
+            LangGenStatus::SemanticsMapped.to_string(),
+            "semantics-mapped"
+        );
+        assert_eq!(
+            LangGenStatus::ParserGenerated.to_string(),
+            "parser-generated"
+        );
+        assert_eq!(
+            LangGenStatus::CompilerGenerated.to_string(),
+            "compiler-generated"
+        );
         assert_eq!(LangGenStatus::Complete.to_string(), "complete");
-        assert!(LangGenStatus::Failed("bad".into()).to_string().contains("bad"));
+        assert!(LangGenStatus::Failed("bad".into())
+            .to_string()
+            .contains("bad"));
     }
 
     #[test]
@@ -731,7 +748,10 @@ mod tests {
 
     #[test]
     fn compiler_target_display() {
-        assert_eq!(CompilerTarget::WlirInstructions.to_string(), "wlir-instructions");
+        assert_eq!(
+            CompilerTarget::WlirInstructions.to_string(),
+            "wlir-instructions"
+        );
         assert_eq!(CompilerTarget::OperatorCalls.to_string(), "operator-calls");
         assert_eq!(CompilerTarget::RustSource.to_string(), "rust-source");
     }

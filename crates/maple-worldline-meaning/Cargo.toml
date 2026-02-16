@@ -9,7 +9,7 @@ rust-version.workspace = true
 description = "Self-Meaning Formation: hypothesis generation, evidence evaluation, and ambiguity management for MWL"
 
 [dependencies]
-maple-mwl-types = { path = "../maple-mwl-types" }
+worldline-core = { workspace = true }
 maple-worldline-observation = { path = "../maple-worldline-observation" }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }

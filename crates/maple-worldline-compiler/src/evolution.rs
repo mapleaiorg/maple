@@ -36,10 +36,7 @@ impl StrategyProposal {
         for pass in &self.disable_passes {
             evolved.disable_pass(pass);
         }
-        evolved.description = format!(
-            "{} (evolved: {})",
-            evolved.description, self.reason
-        );
+        evolved.description = format!("{} (evolved: {})", evolved.description, self.reason);
         evolved
     }
 }
@@ -62,11 +59,8 @@ impl std::fmt::Display for StrategyProposal {
 /// Trait for evolving compilation strategies based on profiling data.
 pub trait StrategyEvolver: Send + Sync {
     /// Analyze profiling data and propose strategy modifications.
-    fn propose(
-        &self,
-        current: &CompilationStrategy,
-        profiling: &ProfilingData,
-    ) -> StrategyProposal;
+    fn propose(&self, current: &CompilationStrategy, profiling: &ProfilingData)
+        -> StrategyProposal;
 
     /// Name of this evolver implementation.
     fn name(&self) -> &str;
@@ -113,9 +107,7 @@ impl StrategyEvolver for SimulatedEvolver {
 
         // Frequent operator calls → OperatorDispatchSpecialization
         let total_operator_calls: u64 = profiling.operator_call_frequency.values().sum();
-        if total_operator_calls > 50
-            && !current.has_pass(&PassId::OperatorDispatchSpecialization)
-        {
+        if total_operator_calls > 50 && !current.has_pass(&PassId::OperatorDispatchSpecialization) {
             enable.push(PassId::OperatorDispatchSpecialization);
             reasons.push("frequent operator calls");
         }
@@ -189,12 +181,12 @@ mod tests {
         let evolver = SimulatedEvolver::new();
         let strategy = base_strategy();
         let mut profiling = ProfilingData::default();
-        profiling
-            .memory_tier_usage
-            .insert("episodic".into(), 200);
+        profiling.memory_tier_usage.insert("episodic".into(), 200);
         let proposal = evolver.propose(&strategy, &profiling);
         assert!(proposal.has_changes());
-        assert!(proposal.enable_passes.contains(&PassId::MemoryTierPromotion));
+        assert!(proposal
+            .enable_passes
+            .contains(&PassId::MemoryTierPromotion));
     }
 
     #[test]
@@ -218,9 +210,7 @@ mod tests {
         let mut profiling = ProfilingData::default();
         profiling.commitment_boundary_crossings = 50;
         let proposal = evolver.propose(&strategy, &profiling);
-        assert!(proposal
-            .enable_passes
-            .contains(&PassId::CommitmentBatching));
+        assert!(proposal.enable_passes.contains(&PassId::CommitmentBatching));
     }
 
     #[test]

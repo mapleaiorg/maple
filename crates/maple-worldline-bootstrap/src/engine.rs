@@ -346,7 +346,10 @@ mod tests {
 
     #[test]
     fn engine_operation_display() {
-        assert_eq!(BootstrapOperation::CaptureOrigin.to_string(), "capture-origin");
+        assert_eq!(
+            BootstrapOperation::CaptureOrigin.to_string(),
+            "capture-origin"
+        );
         assert_eq!(BootstrapOperation::Advance.to_string(), "advance");
         assert_eq!(BootstrapOperation::Rollback.to_string(), "rollback");
     }

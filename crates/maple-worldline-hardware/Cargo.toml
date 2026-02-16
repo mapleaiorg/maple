@@ -7,7 +7,7 @@ description = "Hardware Description Operators — EPU generation targeting FPGA/
 license.workspace = true
 
 [dependencies]
-maple-mwl-types = { workspace = true }
+worldline-core = { workspace = true }
 maple-worldline-self-mod-gate = { workspace = true }
 maple-worldline-sal = { workspace = true }
 serde = { workspace = true }

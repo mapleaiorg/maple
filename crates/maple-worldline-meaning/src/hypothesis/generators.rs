@@ -132,8 +132,7 @@ impl HypothesisGenerator for InteractionPatternGenerator {
         // If multiple components are affected, hypothesize interaction issue
         if by_component.len() >= 2 {
             let affected: Vec<String> = by_component.keys().cloned().collect();
-            let avg_score =
-                anomalies.iter().map(|a| a.score).sum::<f64>() / anomalies.len() as f64;
+            let avg_score = anomalies.iter().map(|a| a.score).sum::<f64>() / anomalies.len() as f64;
 
             let evidence: Vec<Evidence> = anomalies
                 .iter()
@@ -195,21 +194,18 @@ impl HypothesisGenerator for ResourcePressureGenerator {
             .iter()
             .filter_map(|anomaly| {
                 let category = match &anomaly.category {
-                    AnomalyCategory::ResourceExhaustion => {
-                        SelfMeaningCategory::CapacityForecast {
-                            resource: anomaly.component.0.clone(),
-                            current_utilization: anomaly.observed_value
-                                / anomaly.baseline_mean.max(1.0),
-                            projected_exhaustion_hours: if anomaly.severity
-                                == AnomalySeverity::Critical
-                            {
-                                Some(2.0)
-                            } else {
-                                Some(24.0)
-                            },
-                            growth_model: GrowthModel::Linear,
-                        }
-                    }
+                    AnomalyCategory::ResourceExhaustion => SelfMeaningCategory::CapacityForecast {
+                        resource: anomaly.component.0.clone(),
+                        current_utilization: anomaly.observed_value
+                            / anomaly.baseline_mean.max(1.0),
+                        projected_exhaustion_hours: if anomaly.severity == AnomalySeverity::Critical
+                        {
+                            Some(2.0)
+                        } else {
+                            Some(24.0)
+                        },
+                        growth_model: GrowthModel::Linear,
+                    },
                     AnomalyCategory::MemoryLeak => SelfMeaningCategory::MemoryOptimization {
                         component: anomaly.component.0.clone(),
                         optimization_type: MemoryOptimizationType::EvictionTuning,
@@ -334,8 +330,7 @@ impl HypothesisGenerator for HistoricalPatternGenerator {
                 let matching_history: Vec<&SelfMeaning> = history
                     .iter()
                     .filter(|m| {
-                        m.category.primary_component()
-                            == Some(anomaly.component.0.as_str())
+                        m.category.primary_component() == Some(anomaly.component.0.as_str())
                     })
                     .collect();
 
@@ -423,8 +418,7 @@ impl HypothesisGenerator for EnvironmentalChangeGenerator {
         }
 
         let affected: Vec<String> = distinct_components.iter().map(|s| s.to_string()).collect();
-        let avg_score =
-            anomalies.iter().map(|a| a.score).sum::<f64>() / anomalies.len() as f64;
+        let avg_score = anomalies.iter().map(|a| a.score).sum::<f64>() / anomalies.len() as f64;
 
         let evidence: Vec<Evidence> = anomalies
             .iter()
@@ -712,16 +706,41 @@ mod tests {
 
         // Below threshold — no hypothesis
         let few = vec![
-            make_anomaly("a", AnomalyCategory::LatencyRegression, AnomalySeverity::Warning, 0.6),
-            make_anomaly("b", AnomalyCategory::LatencyRegression, AnomalySeverity::Warning, 0.5),
+            make_anomaly(
+                "a",
+                AnomalyCategory::LatencyRegression,
+                AnomalySeverity::Warning,
+                0.6,
+            ),
+            make_anomaly(
+                "b",
+                AnomalyCategory::LatencyRegression,
+                AnomalySeverity::Warning,
+                0.5,
+            ),
         ];
         assert!(gen.generate(&few, &empty_summary(), &[]).is_empty());
 
         // Above threshold, multiple components — hypothesis generated
         let many = vec![
-            make_anomaly("a", AnomalyCategory::LatencyRegression, AnomalySeverity::Warning, 0.6),
-            make_anomaly("b", AnomalyCategory::ThroughputDegradation, AnomalySeverity::Warning, 0.5),
-            make_anomaly("c", AnomalyCategory::ErrorRateSpike, AnomalySeverity::Critical, 0.8),
+            make_anomaly(
+                "a",
+                AnomalyCategory::LatencyRegression,
+                AnomalySeverity::Warning,
+                0.6,
+            ),
+            make_anomaly(
+                "b",
+                AnomalyCategory::ThroughputDegradation,
+                AnomalySeverity::Warning,
+                0.5,
+            ),
+            make_anomaly(
+                "c",
+                AnomalyCategory::ErrorRateSpike,
+                AnomalySeverity::Critical,
+                0.8,
+            ),
         ];
         let hyps = gen.generate(&many, &empty_summary(), &[]);
         assert_eq!(hyps.len(), 1);
@@ -733,9 +752,24 @@ mod tests {
         let gen = EnvironmentalChangeGenerator;
         // 3 anomalies but same component — no hypothesis
         let same = vec![
-            make_anomaly("a", AnomalyCategory::LatencyRegression, AnomalySeverity::Warning, 0.6),
-            make_anomaly("a", AnomalyCategory::ThroughputDegradation, AnomalySeverity::Warning, 0.5),
-            make_anomaly("a", AnomalyCategory::ErrorRateSpike, AnomalySeverity::Warning, 0.4),
+            make_anomaly(
+                "a",
+                AnomalyCategory::LatencyRegression,
+                AnomalySeverity::Warning,
+                0.6,
+            ),
+            make_anomaly(
+                "a",
+                AnomalyCategory::ThroughputDegradation,
+                AnomalySeverity::Warning,
+                0.5,
+            ),
+            make_anomaly(
+                "a",
+                AnomalyCategory::ErrorRateSpike,
+                AnomalySeverity::Warning,
+                0.4,
+            ),
         ];
         assert!(gen.generate(&same, &empty_summary(), &[]).is_empty());
     }
@@ -750,8 +784,7 @@ mod tests {
             Box::new(HistoricalPatternGenerator),
             Box::new(EnvironmentalChangeGenerator),
         ];
-        let names: std::collections::HashSet<&str> =
-            generators.iter().map(|g| g.name()).collect();
+        let names: std::collections::HashSet<&str> = generators.iter().map(|g| g.name()).collect();
         assert_eq!(names.len(), 6);
     }
 }

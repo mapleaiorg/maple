@@ -109,10 +109,7 @@ impl ContinuityChain {
             return Err(ContinuityError::SegmentAlreadyActive(active_idx));
         }
 
-        let previous_hash = self
-            .segments
-            .last()
-            .map(|seg| seg.compute_hash());
+        let previous_hash = self.segments.last().map(|seg| seg.compute_hash());
 
         let new_index = self.segments.len() as u32;
         let segment = ContinuitySegment {
@@ -198,15 +195,12 @@ impl ContinuityChain {
     pub fn total_runtime(&self) -> std::time::Duration {
         let mut total_ms: u64 = 0;
         for seg in &self.segments {
-            let end_ms = seg
-                .ended
-                .map(|e| e.physical_ms)
-                .unwrap_or_else(|| {
-                    std::time::SystemTime::now()
-                        .duration_since(std::time::UNIX_EPOCH)
-                        .unwrap()
-                        .as_millis() as u64
-                });
+            let end_ms = seg.ended.map(|e| e.physical_ms).unwrap_or_else(|| {
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_millis() as u64
+            });
             total_ms += end_ms.saturating_sub(seg.started.physical_ms);
         }
         std::time::Duration::from_millis(total_ms)
@@ -265,7 +259,9 @@ mod tests {
         let mut chain = ContinuityChain::new(test_worldline(), test_key_ref("key-0"));
         chain.end_segment([1u8; 32]).unwrap();
 
-        let idx = chain.start_segment(test_key_ref("key-1"), [2u8; 32]).unwrap();
+        let idx = chain
+            .start_segment(test_key_ref("key-1"), [2u8; 32])
+            .unwrap();
         assert_eq!(idx, 1);
         assert_eq!(chain.segments.len(), 2);
         assert!(chain.segments[1].previous_hash.is_some());
@@ -276,9 +272,13 @@ mod tests {
         let mut chain = ContinuityChain::new(test_worldline(), test_key_ref("key-0"));
 
         chain.end_segment([1u8; 32]).unwrap();
-        chain.start_segment(test_key_ref("key-1"), [2u8; 32]).unwrap();
+        chain
+            .start_segment(test_key_ref("key-1"), [2u8; 32])
+            .unwrap();
         chain.end_segment([3u8; 32]).unwrap();
-        chain.start_segment(test_key_ref("key-2"), [4u8; 32]).unwrap();
+        chain
+            .start_segment(test_key_ref("key-2"), [4u8; 32])
+            .unwrap();
 
         assert_eq!(chain.segments.len(), 3);
         chain.verify_integrity().unwrap();
@@ -288,7 +288,9 @@ mod tests {
     fn verify_integrity_detects_tampered_hash() {
         let mut chain = ContinuityChain::new(test_worldline(), test_key_ref("key-0"));
         chain.end_segment([1u8; 32]).unwrap();
-        chain.start_segment(test_key_ref("key-1"), [2u8; 32]).unwrap();
+        chain
+            .start_segment(test_key_ref("key-1"), [2u8; 32])
+            .unwrap();
 
         // Tamper with the previous_hash
         chain.segments[1].previous_hash = Some([0xff; 32]);
@@ -323,7 +325,9 @@ mod tests {
         assert!(chain.active_segment.is_none());
 
         // Resume
-        chain.start_segment(test_key_ref("key-0"), [10u8; 32]).unwrap();
+        chain
+            .start_segment(test_key_ref("key-0"), [10u8; 32])
+            .unwrap();
         let ctx = chain.current_context().unwrap();
         assert_eq!(ctx.worldline_id, wid);
         assert_eq!(ctx.segment_index, 1);
@@ -351,7 +355,9 @@ mod tests {
     fn chain_serialization_roundtrip() {
         let mut chain = ContinuityChain::new(test_worldline(), test_key_ref("key-0"));
         chain.end_segment([1u8; 32]).unwrap();
-        chain.start_segment(test_key_ref("key-1"), [2u8; 32]).unwrap();
+        chain
+            .start_segment(test_key_ref("key-1"), [2u8; 32])
+            .unwrap();
 
         let json = serde_json::to_string(&chain).unwrap();
         let restored: ContinuityChain = serde_json::from_str(&json).unwrap();

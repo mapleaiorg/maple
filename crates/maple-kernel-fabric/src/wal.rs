@@ -103,7 +103,10 @@ impl WalStorage for FileStorage {
             let name = entry.file_name();
             let name = name.to_string_lossy();
             if name.starts_with("wal-") && name.ends_with(".seg") {
-                if let Some(hex) = name.strip_prefix("wal-").and_then(|s| s.strip_suffix(".seg")) {
+                if let Some(hex) = name
+                    .strip_prefix("wal-")
+                    .and_then(|s| s.strip_suffix(".seg"))
+                {
                     if let Ok(id) = u64::from_str_radix(hex, 16) {
                         segments.push(id);
                     }
@@ -211,10 +214,7 @@ impl Default for MemoryStorage {
 
 impl WalStorage for MemoryStorage {
     fn create_segment(&self, segment_id: u64) -> Result<Box<dyn SegmentWriter>, FabricError> {
-        self.segments
-            .lock()
-            .unwrap()
-            .insert(segment_id, Vec::new());
+        self.segments.lock().unwrap().insert(segment_id, Vec::new());
         Ok(Box::new(MemorySegmentWriter {
             segment_id,
             buffer: Vec::new(),
@@ -409,7 +409,10 @@ pub struct WriteAheadLog {
 
 impl WriteAheadLog {
     /// Open or create a WAL with the given storage backend.
-    pub async fn open(config: WalConfig, storage: Box<dyn WalStorage>) -> Result<Self, FabricError> {
+    pub async fn open(
+        config: WalConfig,
+        storage: Box<dyn WalStorage>,
+    ) -> Result<Self, FabricError> {
         let existing_segments = storage.list_segments()?;
 
         let mut segments_meta = Vec::new();
@@ -472,12 +475,11 @@ impl WriteAheadLog {
         }
 
         // Create or reuse the current segment
-        let current_seg_id = segments_meta
-            .last()
-            .map(|s| s.id)
-            .unwrap_or(0);
+        let current_seg_id = segments_meta.last().map(|s| s.id).unwrap_or(0);
 
-        let (writer, seg_size) = if segments_meta.is_empty() || segments_meta.last().unwrap().size_bytes >= config.max_segment_size {
+        let (writer, seg_size) = if segments_meta.is_empty()
+            || segments_meta.last().unwrap().size_bytes >= config.max_segment_size
+        {
             // Need a new segment
             let new_id = current_seg_id + 1;
             let mut writer = storage.create_segment(new_id)?;
@@ -559,9 +561,7 @@ impl WriteAheadLog {
 
         {
             let mut writer_guard = self.current_writer.write().await;
-            let writer = writer_guard
-                .as_mut()
-                .ok_or(FabricError::Closed)?;
+            let writer = writer_guard.as_mut().ok_or(FabricError::Closed)?;
 
             writer.write_all(&entry)?;
 
@@ -933,7 +933,9 @@ mod tests {
 
     #[tokio::test]
     async fn append_and_read_roundtrip() {
-        let wal = WriteAheadLog::open_memory(WalConfig::default()).await.unwrap();
+        let wal = WriteAheadLog::open_memory(WalConfig::default())
+            .await
+            .unwrap();
 
         let event = test_event(1);
         let seq = wal.append(&event).await.unwrap();
@@ -948,7 +950,9 @@ mod tests {
 
     #[tokio::test]
     async fn append_multiple_and_read() {
-        let wal = WriteAheadLog::open_memory(WalConfig::default()).await.unwrap();
+        let wal = WriteAheadLog::open_memory(WalConfig::default())
+            .await
+            .unwrap();
 
         for i in 0..10 {
             wal.append(&test_event(i)).await.unwrap();
@@ -967,7 +971,9 @@ mod tests {
 
     #[tokio::test]
     async fn read_from_middle() {
-        let wal = WriteAheadLog::open_memory(WalConfig::default()).await.unwrap();
+        let wal = WriteAheadLog::open_memory(WalConfig::default())
+            .await
+            .unwrap();
 
         for i in 0..10 {
             wal.append(&test_event(i)).await.unwrap();
@@ -980,7 +986,9 @@ mod tests {
 
     #[tokio::test]
     async fn read_with_limit() {
-        let wal = WriteAheadLog::open_memory(WalConfig::default()).await.unwrap();
+        let wal = WriteAheadLog::open_memory(WalConfig::default())
+            .await
+            .unwrap();
 
         for i in 0..10 {
             wal.append(&test_event(i)).await.unwrap();
@@ -1018,7 +1026,9 @@ mod tests {
 
     #[tokio::test]
     async fn integrity_verification() {
-        let wal = WriteAheadLog::open_memory(WalConfig::default()).await.unwrap();
+        let wal = WriteAheadLog::open_memory(WalConfig::default())
+            .await
+            .unwrap();
 
         for i in 0..5 {
             wal.append(&test_event(i)).await.unwrap();
@@ -1032,25 +1042,43 @@ mod tests {
 
     #[tokio::test]
     async fn read_worldline_filter() {
-        let wal = WriteAheadLog::open_memory(WalConfig::default()).await.unwrap();
+        let wal = WriteAheadLog::open_memory(WalConfig::default())
+            .await
+            .unwrap();
 
         let wid1 = WorldlineId::derive(&IdentityMaterial::GenesisHash([1u8; 32]));
         let wid2 = WorldlineId::derive(&IdentityMaterial::GenesisHash([2u8; 32]));
 
         let e1 = KernelEvent::new(
             EventId::new(),
-            HlcTimestamp { physical: 1000, logical: 0, node_id: NodeId(1) },
+            HlcTimestamp {
+                physical: 1000,
+                logical: 0,
+                node_id: NodeId(1),
+            },
             wid1.clone(),
             ResonanceStage::Meaning,
-            EventPayload::MeaningFormed { interpretation_count: 1, confidence: 0.5, ambiguity_preserved: true },
+            EventPayload::MeaningFormed {
+                interpretation_count: 1,
+                confidence: 0.5,
+                ambiguity_preserved: true,
+            },
             vec![],
         );
         let e2 = KernelEvent::new(
             EventId::new(),
-            HlcTimestamp { physical: 1001, logical: 0, node_id: NodeId(1) },
+            HlcTimestamp {
+                physical: 1001,
+                logical: 0,
+                node_id: NodeId(1),
+            },
             wid2.clone(),
             ResonanceStage::Meaning,
-            EventPayload::MeaningFormed { interpretation_count: 2, confidence: 0.5, ambiguity_preserved: true },
+            EventPayload::MeaningFormed {
+                interpretation_count: 2,
+                confidence: 0.5,
+                ambiguity_preserved: true,
+            },
             vec![],
         );
 
@@ -1068,7 +1096,9 @@ mod tests {
 
     #[tokio::test]
     async fn checkpoint() {
-        let wal = WriteAheadLog::open_memory(WalConfig::default()).await.unwrap();
+        let wal = WriteAheadLog::open_memory(WalConfig::default())
+            .await
+            .unwrap();
 
         for i in 0..5 {
             wal.append(&test_event(i)).await.unwrap();
@@ -1080,7 +1110,9 @@ mod tests {
 
     #[tokio::test]
     async fn replay() {
-        let wal = WriteAheadLog::open_memory(WalConfig::default()).await.unwrap();
+        let wal = WriteAheadLog::open_memory(WalConfig::default())
+            .await
+            .unwrap();
 
         for i in 0..5 {
             wal.append(&test_event(i)).await.unwrap();
@@ -1101,7 +1133,9 @@ mod tests {
 
     #[tokio::test]
     async fn batch_append() {
-        let wal = WriteAheadLog::open_memory(WalConfig::default()).await.unwrap();
+        let wal = WriteAheadLog::open_memory(WalConfig::default())
+            .await
+            .unwrap();
 
         let events: Vec<_> = (0..5).map(|i| test_event(i)).collect();
         let seqs = wal.append_batch(&events).await.unwrap();

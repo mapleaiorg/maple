@@ -46,11 +46,7 @@ impl std::fmt::Display for ConflictResolution {
 /// Trait for synthesizing a grammar from a domain specification.
 pub trait GrammarSynthesizer: Send + Sync {
     /// Synthesize a grammar from a domain spec and style.
-    fn synthesize(
-        &self,
-        domain: &DomainSpec,
-        style: &GrammarStyle,
-    ) -> LangGenResult<GrammarSpec>;
+    fn synthesize(&self, domain: &DomainSpec, style: &GrammarStyle) -> LangGenResult<GrammarSpec>;
 
     /// Detect keyword conflicts in a set of keywords.
     fn detect_conflicts(&self, keywords: &[String]) -> Vec<KeywordConflict>;
@@ -99,24 +95,20 @@ impl SimulatedGrammarSynthesizer {
                     concept: concept_name.into(),
                 },
             ],
-            GrammarStyle::Expressive => vec![
-                Production {
-                    id: ProductionId::from_name(&format!("{}_pipe", lower)),
-                    name: format!("{}_pipe", lower),
-                    pattern: format!("{} |> <transform>", lower),
-                    description: format!("Transform a {} through a pipeline", lower),
-                    concept: concept_name.into(),
-                },
-            ],
-            GrammarStyle::Configuration => vec![
-                Production {
-                    id: ProductionId::from_name(&format!("{}_config", lower)),
-                    name: format!("{}_config", lower),
-                    pattern: format!("{} {{ <key>: <value>, ... }}", lower),
-                    description: format!("Configure a {}", lower),
-                    concept: concept_name.into(),
-                },
-            ],
+            GrammarStyle::Expressive => vec![Production {
+                id: ProductionId::from_name(&format!("{}_pipe", lower)),
+                name: format!("{}_pipe", lower),
+                pattern: format!("{} |> <transform>", lower),
+                description: format!("Transform a {} through a pipeline", lower),
+                concept: concept_name.into(),
+            }],
+            GrammarStyle::Configuration => vec![Production {
+                id: ProductionId::from_name(&format!("{}_config", lower)),
+                name: format!("{}_config", lower),
+                pattern: format!("{} {{ <key>: <value>, ... }}", lower),
+                description: format!("Configure a {}", lower),
+                concept: concept_name.into(),
+            }],
             GrammarStyle::Scripting => vec![
                 Production {
                     id: ProductionId::from_name(&format!("{}_stmt", lower)),
@@ -195,16 +187,38 @@ impl SimulatedGrammarSynthesizer {
     fn keywords_for_style(style: &GrammarStyle) -> Vec<String> {
         match style {
             GrammarStyle::Declarative => {
-                vec!["CREATE".into(), "SELECT".into(), "WHERE".into(), "SET".into(), "FROM".into()]
+                vec![
+                    "CREATE".into(),
+                    "SELECT".into(),
+                    "WHERE".into(),
+                    "SET".into(),
+                    "FROM".into(),
+                ]
             }
             GrammarStyle::Expressive => {
-                vec!["pipe".into(), "map".into(), "filter".into(), "reduce".into()]
+                vec![
+                    "pipe".into(),
+                    "map".into(),
+                    "filter".into(),
+                    "reduce".into(),
+                ]
             }
             GrammarStyle::Configuration => {
-                vec!["config".into(), "set".into(), "default".into(), "override".into()]
+                vec![
+                    "config".into(),
+                    "set".into(),
+                    "default".into(),
+                    "override".into(),
+                ]
             }
             GrammarStyle::Scripting => {
-                vec!["let".into(), "if".into(), "else".into(), "for".into(), "fn".into()]
+                vec![
+                    "let".into(),
+                    "if".into(),
+                    "else".into(),
+                    "for".into(),
+                    "fn".into(),
+                ]
             }
         }
     }
@@ -217,11 +231,7 @@ impl Default for SimulatedGrammarSynthesizer {
 }
 
 impl GrammarSynthesizer for SimulatedGrammarSynthesizer {
-    fn synthesize(
-        &self,
-        domain: &DomainSpec,
-        style: &GrammarStyle,
-    ) -> LangGenResult<GrammarSpec> {
+    fn synthesize(&self, domain: &DomainSpec, style: &GrammarStyle) -> LangGenResult<GrammarSpec> {
         if self.should_fail {
             return Err(LangGenError::GrammarSynthesisFailed(
                 "simulated failure".into(),
@@ -296,7 +306,9 @@ mod tests {
     fn synthesize_declarative_grammar() {
         let synth = SimulatedGrammarSynthesizer::new();
         let domain = sample_domain();
-        let grammar = synth.synthesize(&domain, &GrammarStyle::Declarative).unwrap();
+        let grammar = synth
+            .synthesize(&domain, &GrammarStyle::Declarative)
+            .unwrap();
         assert_eq!(grammar.style, GrammarStyle::Declarative);
         // 3 concepts × 2 productions each = 6
         assert_eq!(grammar.productions.len(), 6);
@@ -307,7 +319,9 @@ mod tests {
     fn synthesize_expressive_grammar() {
         let synth = SimulatedGrammarSynthesizer::new();
         let domain = sample_domain();
-        let grammar = synth.synthesize(&domain, &GrammarStyle::Expressive).unwrap();
+        let grammar = synth
+            .synthesize(&domain, &GrammarStyle::Expressive)
+            .unwrap();
         assert_eq!(grammar.style, GrammarStyle::Expressive);
         // 3 concepts × 1 production each = 3
         assert_eq!(grammar.productions.len(), 3);
@@ -327,7 +341,9 @@ mod tests {
     fn grammar_has_operators() {
         let synth = SimulatedGrammarSynthesizer::new();
         let domain = sample_domain();
-        let grammar = synth.synthesize(&domain, &GrammarStyle::Declarative).unwrap();
+        let grammar = synth
+            .synthesize(&domain, &GrammarStyle::Declarative)
+            .unwrap();
         assert_eq!(grammar.operators.len(), 4);
         let add = grammar.operators.iter().find(|o| o.name == "add").unwrap();
         assert_eq!(add.symbol, "+");
@@ -338,11 +354,21 @@ mod tests {
     fn grammar_has_precedence_levels() {
         let synth = SimulatedGrammarSynthesizer::new();
         let domain = sample_domain();
-        let grammar = synth.synthesize(&domain, &GrammarStyle::Declarative).unwrap();
+        let grammar = synth
+            .synthesize(&domain, &GrammarStyle::Declarative)
+            .unwrap();
         assert_eq!(grammar.precedence_levels.len(), 3);
         // Multiplication has higher precedence than addition
-        let mul_level = grammar.precedence_levels.iter().find(|p| p.operators.contains(&"*".into())).unwrap();
-        let add_level = grammar.precedence_levels.iter().find(|p| p.operators.contains(&"+".into())).unwrap();
+        let mul_level = grammar
+            .precedence_levels
+            .iter()
+            .find(|p| p.operators.contains(&"*".into()))
+            .unwrap();
+        let add_level = grammar
+            .precedence_levels
+            .iter()
+            .find(|p| p.operators.contains(&"+".into()))
+            .unwrap();
         assert!(mul_level.level > add_level.level);
     }
 
@@ -380,8 +406,12 @@ mod tests {
 
     #[test]
     fn conflict_resolution_display() {
-        assert!(ConflictResolution::Renamed("foo".into()).to_string().contains("foo"));
-        assert!(ConflictResolution::Prefixed("dsl_".into()).to_string().contains("dsl_"));
+        assert!(ConflictResolution::Renamed("foo".into())
+            .to_string()
+            .contains("foo"));
+        assert!(ConflictResolution::Prefixed("dsl_".into())
+            .to_string()
+            .contains("dsl_"));
         assert_eq!(ConflictResolution::Dropped.to_string(), "dropped");
     }
 

@@ -82,9 +82,7 @@ impl BitstreamGenerator for SimulatedBitstreamGenerator {
         // Simulated bitstream size based on HDL source size
         let size_bytes = (hdl.source.len() as u64) * 100; // ~100x expansion
 
-        let max_freq = sim_result
-            .map(|s| s.max_frequency_mhz)
-            .unwrap_or(100.0);
+        let max_freq = sim_result.map(|s| s.max_frequency_mhz).unwrap_or(100.0);
 
         Ok(Bitstream {
             id: BitstreamId::new(),
@@ -111,7 +109,9 @@ mod tests {
     use crate::types::HdlFormat;
 
     fn sample_spec() -> EpuSpec {
-        SimulatedEpuDesigner::new().design("fpga-test", 100).unwrap()
+        SimulatedEpuDesigner::new()
+            .design("fpga-test", 100)
+            .unwrap()
     }
 
     fn sample_hdl(spec: &EpuSpec) -> GeneratedHdl {

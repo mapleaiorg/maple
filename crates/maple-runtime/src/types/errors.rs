@@ -139,6 +139,9 @@ pub enum InvariantViolation {
 
     #[error("Silent failure detected")]
     SilentFailure,
+
+    #[error("Implementation provenance violation")]
+    ImplementationProvenanceViolation,
 }
 
 /// Commitment errors

@@ -15,5 +15,7 @@ Some cross-cutting layers remain flat because they are shared protocol/foundatio
 
 - `rcf-*`, `ual-*`, `mrp-*`, `aas-*`, `eve-*`, `workflow-*`, `collective-*`
 - `maple-runtime`, `maple-cli`, `maple-integration`
+- `maple-mwl-*`, `maple-kernel-*`, `maple-worldline-*` (current WorldLine implementation set)
+- `worldline-core`, `worldline-runtime`, `worldline-ledger` (Phase A facade crates)
 
 This keeps package names stable while improving navigation and modular deployment boundaries.

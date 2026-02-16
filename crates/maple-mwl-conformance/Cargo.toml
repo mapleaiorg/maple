@@ -13,18 +13,10 @@ name = "mwl_conformance"
 path = "src/lib.rs"
 
 [dependencies]
-# All MWL kernel crates
-maple-mwl-types = { path = "../maple-mwl-types" }
-maple-mwl-identity = { path = "../maple-mwl-identity" }
-maple-kernel-fabric = { path = "../maple-kernel-fabric" }
-maple-kernel-memory = { path = "../maple-kernel-memory" }
-maple-kernel-gate = { path = "../maple-kernel-gate" }
-maple-kernel-mrp = { path = "../maple-kernel-mrp" }
-maple-kernel-provenance = { path = "../maple-kernel-provenance" }
-maple-kernel-governance = { path = "../maple-kernel-governance" }
-maple-kernel-safety = { path = "../maple-kernel-safety" }
-maple-kernel-profiles = { path = "../maple-kernel-profiles" }
-maple-kernel-financial = { path = "../maple-kernel-financial" }
+# WorldLine facade crates (Phase A)
+worldline-core = { workspace = true }
+worldline-runtime = { workspace = true }
+worldline-ledger = { workspace = true }
 
 # Runtime and utilities
 tokio = { workspace = true }

@@ -67,9 +67,9 @@ impl WlirFunction {
 
     /// Whether this function crosses any commitment boundaries.
     pub fn crosses_commitment_boundary(&self) -> bool {
-        self.instructions.iter().any(|i| {
-            matches!(i, WlirInstruction::CrossCommitmentBoundary { .. })
-        })
+        self.instructions
+            .iter()
+            .any(|i| matches!(i, WlirInstruction::CrossCommitmentBoundary { .. }))
     }
 
     /// Extract all source locations from this function.
@@ -276,7 +276,9 @@ mod tests {
         let mut module = WlirModule::new("test", "1.0");
         module.add_type(WlirTypeDecl {
             name: "Amount".into(),
-            underlying: WlirType::Amount { currency: "USD".into() },
+            underlying: WlirType::Amount {
+                currency: "USD".into(),
+            },
             description: "USD amount".into(),
         });
         assert_eq!(module.types.len(), 1);

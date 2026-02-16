@@ -62,11 +62,19 @@ pub mod python;
 // CLI re-exports
 #[cfg(feature = "cli")]
 pub use cli::{
-    handle_mwl_command, MwlCommands,
+    handle_mwl_command,
     // Response DTOs
-    AuditEventResponse, AuditTrailResponse, BalanceResponse, CommitmentResponse,
-    KernelMetricsResponse, KernelStatusResponse, PolicyResponse, ProvenanceNodeResponse,
-    ProvenanceResponse, WorldlineResponse,
+    AuditEventResponse,
+    AuditTrailResponse,
+    BalanceResponse,
+    CommitmentResponse,
+    KernelMetricsResponse,
+    KernelStatusResponse,
+    MwlCommands,
+    PolicyResponse,
+    ProvenanceNodeResponse,
+    ProvenanceResponse,
+    WorldlineResponse,
 };
 
 // API re-exports

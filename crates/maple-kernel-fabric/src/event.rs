@@ -50,7 +50,8 @@ impl KernelEvent {
         payload: EventPayload,
         parents: Vec<EventId>,
     ) -> Self {
-        let integrity_hash = Self::compute_hash(&id, &timestamp, &worldline_id, &stage, &payload, &parents);
+        let integrity_hash =
+            Self::compute_hash(&id, &timestamp, &worldline_id, &stage, &payload, &parents);
         Self {
             id,
             timestamp,
@@ -286,7 +287,14 @@ mod tests {
             ambiguity_preserved: false,
         };
 
-        let e1 = KernelEvent::new(id.clone(), ts.clone(), wid.clone(), ResonanceStage::Meaning, payload.clone(), vec![]);
+        let e1 = KernelEvent::new(
+            id.clone(),
+            ts.clone(),
+            wid.clone(),
+            ResonanceStage::Meaning,
+            payload.clone(),
+            vec![],
+        );
         let e2 = KernelEvent::new(id, ts, wid, ResonanceStage::Meaning, payload, vec![]);
         assert_eq!(e1.integrity_hash, e2.integrity_hash);
     }
@@ -313,10 +321,23 @@ mod tests {
     #[test]
     fn all_payload_variants_serialize() {
         let payloads = vec![
-            EventPayload::PresenceAsserted { discoverability: 0.8, responsiveness: 0.9 },
-            EventPayload::PresenceWithdrawn { reason: "shutdown".into() },
-            EventPayload::MeaningFormed { interpretation_count: 2, confidence: 0.7, ambiguity_preserved: true },
-            EventPayload::IntentStabilized { direction: "forward".into(), confidence: 0.9, conditions: vec![] },
+            EventPayload::PresenceAsserted {
+                discoverability: 0.8,
+                responsiveness: 0.9,
+            },
+            EventPayload::PresenceWithdrawn {
+                reason: "shutdown".into(),
+            },
+            EventPayload::MeaningFormed {
+                interpretation_count: 2,
+                confidence: 0.7,
+                ambiguity_preserved: true,
+            },
+            EventPayload::IntentStabilized {
+                direction: "forward".into(),
+                confidence: 0.9,
+                conditions: vec![],
+            },
             EventPayload::CommitmentDeclared {
                 commitment_id: CommitmentId::new(),
                 scope: serde_json::json!({"type": "test"}),
@@ -326,10 +347,20 @@ mod tests {
                 commitment_id: CommitmentId::new(),
                 state_changes: serde_json::json!({}),
             },
-            EventPayload::PolicyEvaluated { policy_id: "P1".into(), result: "pass".into() },
-            EventPayload::WorldlineCreated { profile: "test".into() },
-            EventPayload::CheckpointCreated { sequence_number: 42 },
-            EventPayload::Custom { type_name: "test".into(), data: serde_json::json!(null) },
+            EventPayload::PolicyEvaluated {
+                policy_id: "P1".into(),
+                result: "pass".into(),
+            },
+            EventPayload::WorldlineCreated {
+                profile: "test".into(),
+            },
+            EventPayload::CheckpointCreated {
+                sequence_number: 42,
+            },
+            EventPayload::Custom {
+                type_name: "test".into(),
+                data: serde_json::json!(null),
+            },
         ];
 
         for p in &payloads {

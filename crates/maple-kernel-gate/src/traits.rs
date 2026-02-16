@@ -2,9 +2,9 @@ use async_trait::async_trait;
 use maple_mwl_types::{Capability, CapabilityId, PolicyDecisionCard, WorldlineId};
 
 use crate::context::GateContext;
+use crate::context::StageResult;
 use crate::declaration::CommitmentDeclaration;
 use crate::error::GateError;
-use crate::context::StageResult;
 
 /// GateStage trait — each stage of the 7-stage pipeline.
 ///

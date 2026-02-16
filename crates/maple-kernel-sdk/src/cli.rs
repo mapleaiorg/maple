@@ -294,11 +294,7 @@ pub struct KernelMetricsResponse {
 /// Handle an MWL CLI command. Dispatches to the appropriate handler.
 ///
 /// `endpoint` is the PALM daemon base URL (e.g., "http://localhost:8080").
-pub async fn handle_mwl_command(
-    command: MwlCommands,
-    endpoint: &str,
-    client: &Client,
-) {
+pub async fn handle_mwl_command(command: MwlCommands, endpoint: &str, client: &Client) {
     let base = format!("{}/api/v1", endpoint.trim_end_matches('/'));
 
     match command {
@@ -318,48 +314,62 @@ async fn handle_worldline(cmd: WorldlineCommands, base: &str, client: &Client) {
                 "profile": profile.as_str(),
                 "label": label,
             });
-            match client.post(format!("{}/worldlines", base)).json(&body).send().await {
+            match client
+                .post(format!("{}/worldlines", base))
+                .json(&body)
+                .send()
+                .await
+            {
                 Ok(resp) => print_response(resp).await,
                 Err(e) => eprintln!("Error: {}", e),
             }
         }
         WorldlineCommands::Status { id } => {
-            match client.get(format!("{}/worldlines/{}", base, id)).send().await {
+            match client
+                .get(format!("{}/worldlines/{}", base, id))
+                .send()
+                .await
+            {
                 Ok(resp) => print_response(resp).await,
                 Err(e) => eprintln!("Error: {}", e),
             }
         }
-        WorldlineCommands::List => {
-            match client.get(format!("{}/worldlines", base)).send().await {
-                Ok(resp) => print_response(resp).await,
-                Err(e) => eprintln!("Error: {}", e),
-            }
-        }
+        WorldlineCommands::List => match client.get(format!("{}/worldlines", base)).send().await {
+            Ok(resp) => print_response(resp).await,
+            Err(e) => eprintln!("Error: {}", e),
+        },
     }
 }
 
 async fn handle_commit(cmd: CommitCommands, base: &str, client: &Client) {
     match cmd {
-        CommitCommands::Submit { file } => {
-            match std::fs::read_to_string(&file) {
-                Ok(content) => {
-                    let body: serde_json::Value = match serde_json::from_str(&content) {
-                        Ok(v) => v,
-                        Err(e) => {
-                            eprintln!("Invalid JSON in {}: {}", file, e);
-                            return;
-                        }
-                    };
-                    match client.post(format!("{}/commitments", base)).json(&body).send().await {
-                        Ok(resp) => print_response(resp).await,
-                        Err(e) => eprintln!("Error: {}", e),
+        CommitCommands::Submit { file } => match std::fs::read_to_string(&file) {
+            Ok(content) => {
+                let body: serde_json::Value = match serde_json::from_str(&content) {
+                    Ok(v) => v,
+                    Err(e) => {
+                        eprintln!("Invalid JSON in {}: {}", file, e);
+                        return;
                     }
+                };
+                match client
+                    .post(format!("{}/commitments", base))
+                    .json(&body)
+                    .send()
+                    .await
+                {
+                    Ok(resp) => print_response(resp).await,
+                    Err(e) => eprintln!("Error: {}", e),
                 }
-                Err(e) => eprintln!("Cannot read file {}: {}", file, e),
             }
-        }
+            Err(e) => eprintln!("Cannot read file {}: {}", file, e),
+        },
         CommitCommands::Status { id } => {
-            match client.get(format!("{}/commitments/{}", base, id)).send().await {
+            match client
+                .get(format!("{}/commitments/{}", base, id))
+                .send()
+                .await
+            {
                 Ok(resp) => print_response(resp).await,
                 Err(e) => eprintln!("Error: {}", e),
             }
@@ -414,7 +424,10 @@ async fn handle_provenance(cmd: ProvenanceCommands, base: &str, client: &Client)
 
 async fn handle_financial(cmd: FinancialCommands, base: &str, client: &Client) {
     match cmd {
-        FinancialCommands::Projection { worldline_id, asset } => {
+        FinancialCommands::Projection {
+            worldline_id,
+            asset,
+        } => {
             match client
                 .get(format!(
                     "{}/financial/{}/balance/{}",
@@ -427,63 +440,63 @@ async fn handle_financial(cmd: FinancialCommands, base: &str, client: &Client) {
                 Err(e) => eprintln!("Error: {}", e),
             }
         }
-        FinancialCommands::Settle { file } => {
-            match std::fs::read_to_string(&file) {
-                Ok(content) => {
-                    let body: serde_json::Value = match serde_json::from_str(&content) {
-                        Ok(v) => v,
-                        Err(e) => {
-                            eprintln!("Invalid JSON in {}: {}", file, e);
-                            return;
-                        }
-                    };
-                    match client
-                        .post(format!("{}/financial/settle", base))
-                        .json(&body)
-                        .send()
-                        .await
-                    {
-                        Ok(resp) => print_response(resp).await,
-                        Err(e) => eprintln!("Error: {}", e),
+        FinancialCommands::Settle { file } => match std::fs::read_to_string(&file) {
+            Ok(content) => {
+                let body: serde_json::Value = match serde_json::from_str(&content) {
+                    Ok(v) => v,
+                    Err(e) => {
+                        eprintln!("Invalid JSON in {}: {}", file, e);
+                        return;
                     }
+                };
+                match client
+                    .post(format!("{}/financial/settle", base))
+                    .json(&body)
+                    .send()
+                    .await
+                {
+                    Ok(resp) => print_response(resp).await,
+                    Err(e) => eprintln!("Error: {}", e),
                 }
-                Err(e) => eprintln!("Cannot read file {}: {}", file, e),
             }
-        }
+            Err(e) => eprintln!("Cannot read file {}: {}", file, e),
+        },
     }
 }
 
 async fn handle_policy(cmd: PolicyCommands, base: &str, client: &Client) {
     match cmd {
         PolicyCommands::List => {
-            match client.get(format!("{}/governance/policies", base)).send().await {
+            match client
+                .get(format!("{}/governance/policies", base))
+                .send()
+                .await
+            {
                 Ok(resp) => print_response(resp).await,
                 Err(e) => eprintln!("Error: {}", e),
             }
         }
-        PolicyCommands::Simulate { file } => {
-            match std::fs::read_to_string(&file) {
-                Ok(content) => {
-                    let body: serde_json::Value = match serde_json::from_str(&content) {
-                        Ok(v) => v,
-                        Err(e) => {
-                            eprintln!("Invalid JSON in {}: {}", file, e);
-                            return;
-                        }
-                    };
-                    match client
-                        .post(format!("{}/governance/simulate", base))
-                        .json(&body)
-                        .send()
-                        .await
-                    {
-                        Ok(resp) => print_response(resp).await,
-                        Err(e) => eprintln!("Error: {}", e),
+        PolicyCommands::Simulate { file } => match std::fs::read_to_string(&file) {
+            Ok(content) => {
+                let body: serde_json::Value = match serde_json::from_str(&content) {
+                    Ok(v) => v,
+                    Err(e) => {
+                        eprintln!("Invalid JSON in {}: {}", file, e);
+                        return;
                     }
+                };
+                match client
+                    .post(format!("{}/governance/simulate", base))
+                    .json(&body)
+                    .send()
+                    .await
+                {
+                    Ok(resp) => print_response(resp).await,
+                    Err(e) => eprintln!("Error: {}", e),
                 }
-                Err(e) => eprintln!("Cannot read file {}: {}", file, e),
             }
-        }
+            Err(e) => eprintln!("Cannot read file {}: {}", file, e),
+        },
     }
 }
 
@@ -593,11 +606,11 @@ mod tests {
             worldline_count: 10,
             commitment_count: 50,
             profile_types: vec!["human".into(), "agent".into()],
-            invariants_active: 8,
+            invariants_active: 9,
         };
         let json = serde_json::to_string(&resp).unwrap();
         let restored: KernelStatusResponse = serde_json::from_str(&json).unwrap();
-        assert_eq!(restored.invariants_active, 8);
+        assert_eq!(restored.invariants_active, 9);
     }
 
     #[test]

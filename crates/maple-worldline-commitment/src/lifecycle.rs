@@ -8,8 +8,8 @@ use std::collections::VecDeque;
 
 use chrono::Utc;
 
-use maple_mwl_types::CommitmentId;
 use maple_worldline_intent::types::{IntentId, SubstrateTier};
+use worldline_core::types::CommitmentId;
 
 use crate::types::{
     CommitmentLifecycleStatus, CommitmentRecord, CommitmentSummary, SelfCommitmentId,
@@ -108,10 +108,7 @@ impl CommitmentLifecycleManager {
     }
 
     /// Find a record by gate commitment ID.
-    pub fn find_by_commitment(
-        &self,
-        commitment_id: &CommitmentId,
-    ) -> Option<&CommitmentRecord> {
+    pub fn find_by_commitment(&self, commitment_id: &CommitmentId) -> Option<&CommitmentRecord> {
         self.records
             .iter()
             .find(|r| r.commitment_id.as_ref() == Some(commitment_id))
@@ -183,11 +180,7 @@ mod tests {
 
     fn make_submission() -> (SelfCommitmentId, CommitmentLifecycleManager) {
         let mut mgr = CommitmentLifecycleManager::new(256);
-        let id = mgr.record_submission(
-            IntentId::new(),
-            CommitmentId::new(),
-            SubstrateTier::Tier0,
-        );
+        let id = mgr.record_submission(IntentId::new(), CommitmentId::new(), SubstrateTier::Tier0);
         (id, mgr)
     }
 
@@ -210,10 +203,7 @@ mod tests {
         mgr.record_approval(&id);
 
         let record = mgr.find(&id).unwrap();
-        assert!(matches!(
-            record.status,
-            CommitmentLifecycleStatus::Approved
-        ));
+        assert!(matches!(record.status, CommitmentLifecycleStatus::Approved));
         assert!(record.status.is_active());
     }
 
@@ -261,11 +251,7 @@ mod tests {
     fn find_by_intent() {
         let mut mgr = CommitmentLifecycleManager::new(256);
         let intent_id = IntentId::new();
-        mgr.record_submission(
-            intent_id.clone(),
-            CommitmentId::new(),
-            SubstrateTier::Tier1,
-        );
+        mgr.record_submission(intent_id.clone(), CommitmentId::new(), SubstrateTier::Tier1);
 
         assert!(mgr.find_by_intent(&intent_id).is_some());
         assert!(mgr.find_by_intent(&IntentId::new()).is_none());
@@ -275,21 +261,10 @@ mod tests {
     fn summary_statistics() {
         let mut mgr = CommitmentLifecycleManager::new(256);
 
-        let id1 = mgr.record_submission(
-            IntentId::new(),
-            CommitmentId::new(),
-            SubstrateTier::Tier0,
-        );
-        let id2 = mgr.record_submission(
-            IntentId::new(),
-            CommitmentId::new(),
-            SubstrateTier::Tier0,
-        );
-        let _id3 = mgr.record_submission(
-            IntentId::new(),
-            CommitmentId::new(),
-            SubstrateTier::Tier0,
-        );
+        let id1 = mgr.record_submission(IntentId::new(), CommitmentId::new(), SubstrateTier::Tier0);
+        let id2 = mgr.record_submission(IntentId::new(), CommitmentId::new(), SubstrateTier::Tier0);
+        let _id3 =
+            mgr.record_submission(IntentId::new(), CommitmentId::new(), SubstrateTier::Tier0);
 
         mgr.record_approval(&id1);
         mgr.record_fulfilled(&id1);
@@ -308,11 +283,7 @@ mod tests {
         let mut mgr = CommitmentLifecycleManager::new(3);
 
         for _ in 0..5 {
-            mgr.record_submission(
-                IntentId::new(),
-                CommitmentId::new(),
-                SubstrateTier::Tier0,
-            );
+            mgr.record_submission(IntentId::new(), CommitmentId::new(), SubstrateTier::Tier0);
         }
 
         assert_eq!(mgr.len(), 3); // capped at max

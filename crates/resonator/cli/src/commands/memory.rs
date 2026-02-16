@@ -324,22 +324,34 @@ fn show_architecture(format: OutputFormat) -> CliResult<()> {
             println!();
 
             println!("  ┌─────────────────────────────────────────────────────┐");
-            println!("  │  {} (immediate context)      │", "Short-Term Memory".bold());
+            println!(
+                "  │  {} (immediate context)      │",
+                "Short-Term Memory".bold()
+            );
             println!("  │  Capacity: ~100 items, Retention: minutes          │");
             println!("  └───────────────────────┬─────────────────────────────┘");
             println!("                          │ decay / promote");
             println!("  ┌───────────────────────▼─────────────────────────────┐");
-            println!("  │  {} (active reasoning)           │", "Working Memory".bold());
+            println!(
+                "  │  {} (active reasoning)           │",
+                "Working Memory".bold()
+            );
             println!("  │  Capacity: ~50 items, Retention: task duration     │");
             println!("  └───────────────────────┬─────────────────────────────┘");
             println!("                          │ consolidate");
             println!("  ┌───────────────────────▼─────────────────────────────┐");
-            println!("  │  {} (persistent knowledge)       │", "Long-Term Memory".bold());
+            println!(
+                "  │  {} (persistent knowledge)       │",
+                "Long-Term Memory".bold()
+            );
             println!("  │  Capacity: unlimited, Retention: permanent         │");
             println!("  └─────────────────────────────────────────────────────┘");
             println!();
             println!("  ┌─────────────────────────────────────────────────────┐");
-            println!("  │  {} (experience sequences)         │", "Episodic Memory".bold());
+            println!(
+                "  │  {} (experience sequences)         │",
+                "Episodic Memory".bold()
+            );
             println!("  │  Stores temporal patterns across interactions      │");
             println!("  └─────────────────────────────────────────────────────┘");
         }

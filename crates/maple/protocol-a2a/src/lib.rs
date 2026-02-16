@@ -377,10 +377,7 @@ pub struct A2aTaskRecord {
 #[async_trait]
 pub trait A2aTaskHandler: Send + Sync {
     /// Handle a task send request.
-    async fn handle_task(
-        &self,
-        request: A2aTaskSendRequest,
-    ) -> Result<A2aTask, A2aAdapterError>;
+    async fn handle_task(&self, request: A2aTaskSendRequest) -> Result<A2aTask, A2aAdapterError>;
 
     /// Get task status.
     async fn get_task(&self, task_id: &str) -> Result<Option<A2aTask>, A2aAdapterError>;
@@ -511,11 +508,7 @@ impl A2aAdapter {
 
     /// List available agents.
     pub fn list_agents(&self) -> Vec<A2aAgentCard> {
-        self.registry
-            .list_agents()
-            .into_iter()
-            .cloned()
-            .collect()
+        self.registry.list_agents().into_iter().cloned().collect()
     }
 
     /// Build a commitment for an A2A task.
@@ -571,14 +564,8 @@ impl A2aAdapter {
 
         // Check concurrent task limit
         {
-            let tasks = self
-                .tasks
-                .read()
-                .map_err(|_| A2aAdapterError::LockError)?;
-            let active_count = tasks
-                .values()
-                .filter(|t| !t.status.is_terminal())
-                .count();
+            let tasks = self.tasks.read().map_err(|_| A2aAdapterError::LockError)?;
+            let active_count = tasks.values().filter(|t| !t.status.is_terminal()).count();
             if active_count >= self.config.max_concurrent_tasks {
                 return Err(A2aAdapterError::TooManyTasks);
             }
@@ -595,10 +582,7 @@ impl A2aAdapter {
 
         // Store task
         {
-            let mut tasks = self
-                .tasks
-                .write()
-                .map_err(|_| A2aAdapterError::LockError)?;
+            let mut tasks = self.tasks.write().map_err(|_| A2aAdapterError::LockError)?;
             tasks.insert(task.id.clone(), task.clone());
         }
 
@@ -631,10 +615,7 @@ impl A2aAdapter {
 
     /// Get a task by ID.
     pub fn get_task(&self, task_id: &str) -> Result<Option<A2aTask>, A2aAdapterError> {
-        let tasks = self
-            .tasks
-            .read()
-            .map_err(|_| A2aAdapterError::LockError)?;
+        let tasks = self.tasks.read().map_err(|_| A2aAdapterError::LockError)?;
         Ok(tasks.get(task_id).cloned())
     }
 
@@ -644,10 +625,7 @@ impl A2aAdapter {
         task_id: &str,
         status: A2aTaskStatus,
     ) -> Result<(), A2aAdapterError> {
-        let mut tasks = self
-            .tasks
-            .write()
-            .map_err(|_| A2aAdapterError::LockError)?;
+        let mut tasks = self.tasks.write().map_err(|_| A2aAdapterError::LockError)?;
 
         let task = tasks
             .get_mut(task_id)
@@ -663,10 +641,7 @@ impl A2aAdapter {
         task_id: &str,
         message: A2aMessage,
     ) -> Result<(), A2aAdapterError> {
-        let mut tasks = self
-            .tasks
-            .write()
-            .map_err(|_| A2aAdapterError::LockError)?;
+        let mut tasks = self.tasks.write().map_err(|_| A2aAdapterError::LockError)?;
 
         let task = tasks
             .get_mut(task_id)
@@ -682,10 +657,7 @@ impl A2aAdapter {
         task_id: &str,
         artifact: A2aArtifact,
     ) -> Result<(), A2aAdapterError> {
-        let mut tasks = self
-            .tasks
-            .write()
-            .map_err(|_| A2aAdapterError::LockError)?;
+        let mut tasks = self.tasks.write().map_err(|_| A2aAdapterError::LockError)?;
 
         let task = tasks
             .get_mut(task_id)
@@ -781,10 +753,7 @@ pub struct EchoTaskHandler;
 
 #[async_trait]
 impl A2aTaskHandler for EchoTaskHandler {
-    async fn handle_task(
-        &self,
-        request: A2aTaskSendRequest,
-    ) -> Result<A2aTask, A2aAdapterError> {
+    async fn handle_task(&self, request: A2aTaskSendRequest) -> Result<A2aTask, A2aAdapterError> {
         let task_id = request
             .id
             .unwrap_or_else(|| format!("task-{}", uuid::Uuid::new_v4()));
@@ -911,11 +880,8 @@ mod tests {
 
         let card = sample_agent_card();
         let resonator_id = ResonatorId::new("res-123");
-        let mapping = A2aResonatorMapping::consequential(
-            card,
-            resonator_id,
-            EffectDomain::Computation,
-        );
+        let mapping =
+            A2aResonatorMapping::consequential(card, resonator_id, EffectDomain::Computation);
 
         adapter.register_agent(mapping);
 
@@ -984,11 +950,8 @@ mod tests {
         };
 
         let resonator_id = ResonatorId::new("res-456");
-        let card = A2aAdapter::profile_to_agent_card(
-            &resonator_id,
-            &profile,
-            "https://example.com/agent",
-        );
+        let card =
+            A2aAdapter::profile_to_agent_card(&resonator_id, &profile, "https://example.com/agent");
 
         assert_eq!(card.name, "TestResonator");
         assert_eq!(card.skills.len(), 2);

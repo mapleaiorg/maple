@@ -9,7 +9,7 @@ rust-version.workspace = true
 description = "Self-Intent Stabilization: transforming converged meanings into validated self-modification proposals for MWL"
 
 [dependencies]
-maple-mwl-types = { path = "../maple-mwl-types" }
+worldline-core = { workspace = true }
 maple-worldline-meaning = { path = "../maple-worldline-meaning" }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }

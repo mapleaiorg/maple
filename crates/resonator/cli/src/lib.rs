@@ -106,14 +106,46 @@ fn show_invariants(format: output::OutputFormat) -> CliResult<()> {
     use colored::Colorize;
 
     let invariants = [
-        ("1", "Presence precedes Coupling", "Active agents must register presence before interactions"),
-        ("2", "Coupling precedes Meaning", "Context established before interpretation"),
-        ("3", "Meaning precedes Intent", "Understanding drives goal formation"),
-        ("4", "Commitment precedes Consequence", "All state changes require prior commitment"),
-        ("5", "Receipts are immutable", "Once recorded, consequences cannot be altered"),
-        ("6", "Audit trails are append-only", "History preserved for accountability"),
-        ("7", "Capabilities gate actions", "Authorization checked before execution"),
-        ("8", "Time anchors are monotonic", "Temporal ordering preserved"),
+        (
+            "1",
+            "Presence precedes Coupling",
+            "Active agents must register presence before interactions",
+        ),
+        (
+            "2",
+            "Coupling precedes Meaning",
+            "Context established before interpretation",
+        ),
+        (
+            "3",
+            "Meaning precedes Intent",
+            "Understanding drives goal formation",
+        ),
+        (
+            "4",
+            "Commitment precedes Consequence",
+            "All state changes require prior commitment",
+        ),
+        (
+            "5",
+            "Receipts are immutable",
+            "Once recorded, consequences cannot be altered",
+        ),
+        (
+            "6",
+            "Audit trails are append-only",
+            "History preserved for accountability",
+        ),
+        (
+            "7",
+            "Capabilities gate actions",
+            "Authorization checked before execution",
+        ),
+        (
+            "8",
+            "Time anchors are monotonic",
+            "Temporal ordering preserved",
+        ),
     ];
 
     match format {
@@ -174,12 +206,36 @@ fn show_pipeline(format: output::OutputFormat) -> CliResult<()> {
     use colored::Colorize;
 
     let stages = [
-        ("Presence", "Agent registration and discovery", "resonator-types"),
-        ("Coupling", "Context establishment and binding", "resonator-types"),
-        ("Meaning", "Semantic interpretation and formation", "resonator-meaning"),
-        ("Intent", "Goal stabilization and validation", "resonator-intent"),
-        ("Commitment", "Contract formation and lifecycle", "resonator-commitment"),
-        ("Consequence", "Effect tracking and receipts", "resonator-consequence"),
+        (
+            "Presence",
+            "Agent registration and discovery",
+            "resonator-types",
+        ),
+        (
+            "Coupling",
+            "Context establishment and binding",
+            "resonator-types",
+        ),
+        (
+            "Meaning",
+            "Semantic interpretation and formation",
+            "resonator-meaning",
+        ),
+        (
+            "Intent",
+            "Goal stabilization and validation",
+            "resonator-intent",
+        ),
+        (
+            "Commitment",
+            "Contract formation and lifecycle",
+            "resonator-commitment",
+        ),
+        (
+            "Consequence",
+            "Effect tracking and receipts",
+            "resonator-consequence",
+        ),
     ];
 
     match format {

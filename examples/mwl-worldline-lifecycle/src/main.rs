@@ -15,10 +15,10 @@
 //! - I.7 (Non-Repudiation): Provenance records are append-only
 
 use colored::Colorize;
-use maple_kernel_fabric::{EventFabric, EventPayload, FabricConfig, ResonanceStage};
-use maple_kernel_provenance::ProvenanceIndex;
-use maple_mwl_identity::IdentityManager;
-use maple_mwl_types::IdentityMaterial;
+use worldline_core::identity::IdentityManager;
+use worldline_core::types::{CommitmentId, IdentityMaterial, WorldlineId};
+use worldline_ledger::provenance::ProvenanceIndex;
+use worldline_runtime::fabric::{EventFabric, EventPayload, FabricConfig, ResonanceStage};
 
 fn separator() {
     println!("{}", "━".repeat(72).dimmed());
@@ -39,9 +39,20 @@ async fn main() {
         .init();
 
     println!();
-    println!("{}", "╔══════════════════════════════════════════════════════════════╗".cyan());
-    println!("{}", "║    MWL Example 11: WorldLine Lifecycle                      ║".cyan().bold());
-    println!("{}", "╚══════════════════════════════════════════════════════════════╝".cyan());
+    println!(
+        "{}",
+        "╔══════════════════════════════════════════════════════════════╗".cyan()
+    );
+    println!(
+        "{}",
+        "║    MWL Example 11: WorldLine Lifecycle                      ║"
+            .cyan()
+            .bold()
+    );
+    println!(
+        "{}",
+        "╚══════════════════════════════════════════════════════════════╝".cyan()
+    );
 
     // ── Part 1: Identity Derivation ─────────────────────────────────
     header("Part 1: Deterministic Identity Derivation (I.1)");
@@ -52,15 +63,29 @@ async fn main() {
     let material_alice = IdentityMaterial::GenesisHash([1u8; 32]);
     let material_bob = IdentityMaterial::GenesisHash([2u8; 32]);
 
-    let alice = identity_mgr.create_worldline(material_alice.clone()).unwrap();
+    let alice = identity_mgr
+        .create_worldline(material_alice.clone())
+        .unwrap();
     let bob = identity_mgr.create_worldline(material_bob.clone()).unwrap();
 
-    println!("  {} Alice WorldlineId: {}", "├".dimmed(), format!("{}", alice).green());
-    println!("  {} Bob   WorldlineId: {}", "├".dimmed(), format!("{}", bob).green());
+    println!(
+        "  {} Alice WorldlineId: {}",
+        "├".dimmed(),
+        format!("{}", alice).green()
+    );
+    println!(
+        "  {} Bob   WorldlineId: {}",
+        "├".dimmed(),
+        format!("{}", bob).green()
+    );
 
     // Verify determinism: re-derive from same material
-    let alice_again = maple_mwl_types::WorldlineId::derive(&material_alice);
-    println!("  {} Re-derived Alice:  {}", "├".dimmed(), format!("{}", alice_again).green());
+    let alice_again = WorldlineId::derive(&material_alice);
+    println!(
+        "  {} Re-derived Alice:  {}",
+        "├".dimmed(),
+        format!("{}", alice_again).green()
+    );
     println!(
         "  {} Deterministic: {}",
         "└".dimmed(),
@@ -74,10 +99,16 @@ async fn main() {
     separator();
 
     // Verify identity manager knows these worldlines
-    println!("  {} Alice verified: {}", "├".dimmed(),
-        format!("{}", identity_mgr.verify(&alice, &material_alice)).yellow());
-    println!("  {} Bob verified:   {}", "└".dimmed(),
-        format!("{}", identity_mgr.verify(&bob, &material_bob)).yellow());
+    println!(
+        "  {} Alice verified: {}",
+        "├".dimmed(),
+        format!("{}", identity_mgr.verify(&alice, &material_alice)).yellow()
+    );
+    println!(
+        "  {} Bob verified:   {}",
+        "└".dimmed(),
+        format!("{}", identity_mgr.verify(&bob, &material_bob)).yellow()
+    );
 
     // ── Part 2: Event Fabric — Resonance Stages ─────────────────────
     header("Part 2: Event Fabric — Resonance Stages (I.4, I.6)");
@@ -97,10 +128,17 @@ async fn main() {
         .await
         .unwrap();
 
-    println!("  {} Genesis event:  {}", "├".dimmed(),
-        format!("{:?}", e_genesis.id).yellow());
+    println!(
+        "  {} Genesis event:  {}",
+        "├".dimmed(),
+        format!("{:?}", e_genesis.id).yellow()
+    );
     println!("  {}   stage:        {}", "│".dimmed(), "System".blue());
-    println!("  {}   parents:      {}", "│".dimmed(), "[] (genesis)".dimmed());
+    println!(
+        "  {}   parents:      {}",
+        "│".dimmed(),
+        "[] (genesis)".dimmed()
+    );
 
     // Meaning event (child of genesis)
     let e_meaning = fabric
@@ -117,12 +155,18 @@ async fn main() {
         .await
         .unwrap();
 
-    println!("  {} Meaning event:  {}", "├".dimmed(),
-        format!("{:?}", e_meaning.id).yellow());
+    println!(
+        "  {} Meaning event:  {}",
+        "├".dimmed(),
+        format!("{:?}", e_meaning.id).yellow()
+    );
     println!("  {}   stage:        {}", "│".dimmed(), "Meaning".blue());
     println!("  {}   confidence:   {}", "│".dimmed(), "0.85".green());
-    println!("  {}   parents:      {}", "│".dimmed(),
-        format!("[{:?}]", e_genesis.id).dimmed());
+    println!(
+        "  {}   parents:      {}",
+        "│".dimmed(),
+        format!("[{:?}]", e_genesis.id).dimmed()
+    );
 
     // Intent event (child of meaning)
     let e_intent = fabric
@@ -139,10 +183,17 @@ async fn main() {
         .await
         .unwrap();
 
-    println!("  {} Intent event:   {}", "├".dimmed(),
-        format!("{:?}", e_intent.id).yellow());
+    println!(
+        "  {} Intent event:   {}",
+        "├".dimmed(),
+        format!("{:?}", e_intent.id).yellow()
+    );
     println!("  {}   stage:        {}", "│".dimmed(), "Intent".blue());
-    println!("  {}   direction:    {}", "│".dimmed(), "send greeting to Bob".green());
+    println!(
+        "  {}   direction:    {}",
+        "│".dimmed(),
+        "send greeting to Bob".green()
+    );
     println!("  {}   confidence:   {}", "│".dimmed(), "0.92".green());
 
     // Commitment event
@@ -151,7 +202,7 @@ async fn main() {
             alice.clone(),
             ResonanceStage::Commitment,
             EventPayload::CommitmentDeclared {
-                commitment_id: maple_mwl_types::CommitmentId::new(),
+                commitment_id: CommitmentId::new(),
                 scope: serde_json::Value::String("Communication".into()),
                 parties: vec![bob.clone()],
             },
@@ -160,8 +211,11 @@ async fn main() {
         .await
         .unwrap();
 
-    println!("  {} Commitment:     {}", "├".dimmed(),
-        format!("{:?}", e_commit.id).yellow());
+    println!(
+        "  {} Commitment:     {}",
+        "├".dimmed(),
+        format!("{:?}", e_commit.id).yellow()
+    );
     println!("  {}   stage:        {}", "│".dimmed(), "Commitment".blue());
 
     // Consequence event
@@ -170,15 +224,18 @@ async fn main() {
             alice.clone(),
             ResonanceStage::Consequence,
             EventPayload::CommitmentFulfilled {
-                commitment_id: maple_mwl_types::CommitmentId::new(),
+                commitment_id: CommitmentId::new(),
             },
             vec![e_commit.id.clone()],
         )
         .await
         .unwrap();
 
-    println!("  {} Consequence:    {}", "└".dimmed(),
-        format!("{:?}", e_consequence.id).yellow());
+    println!(
+        "  {} Consequence:    {}",
+        "└".dimmed(),
+        format!("{:?}", e_consequence.id).yellow()
+    );
 
     // ── Part 3: Integrity Verification ──────────────────────────────
     header("Part 3: Integrity Verification (I.6)");
@@ -191,7 +248,11 @@ async fn main() {
             "  {} Event {:?} integrity: {}",
             prefix.dimmed(),
             event.id,
-            if ok { "VERIFIED".green() } else { "FAILED".red() }
+            if ok {
+                "VERIFIED".green()
+            } else {
+                "FAILED".red()
+            }
         );
     }
 
@@ -199,9 +260,20 @@ async fn main() {
     let report = fabric.verify().await.unwrap();
     separator();
     println!("  {} Fabric integrity report:", "┌".dimmed());
-    println!("  {}   total events:    {}", "├".dimmed(), format!("{}", report.total_events).yellow());
-    println!("  {}   clean:           {}", "└".dimmed(),
-        if report.is_clean() { "YES".green() } else { "NO".red() });
+    println!(
+        "  {}   total events:    {}",
+        "├".dimmed(),
+        format!("{}", report.total_events).yellow()
+    );
+    println!(
+        "  {}   clean:           {}",
+        "└".dimmed(),
+        if report.is_clean() {
+            "YES".green()
+        } else {
+            "NO".red()
+        }
+    );
 
     // ── Part 4: Provenance Tracking ─────────────────────────────────
     header("Part 4: Provenance Tracking (I.7)");
@@ -214,35 +286,80 @@ async fn main() {
     provenance.add_event(&e_consequence).unwrap();
 
     let history = provenance.worldline_history(&alice, None);
-    println!("  {} Alice's provenance trail: {} events", "├".dimmed(),
-        format!("{}", history.len()).yellow());
+    println!(
+        "  {} Alice's provenance trail: {} events",
+        "├".dimmed(),
+        format!("{}", history.len()).yellow()
+    );
 
     for (i, event_id) in history.iter().enumerate() {
-        let prefix = if i < history.len() - 1 { "│  ├" } else { "│  └" };
+        let prefix = if i < history.len() - 1 {
+            "│  ├"
+        } else {
+            "│  └"
+        };
         println!("  {}  {:?}", prefix.dimmed(), event_id);
     }
 
-    println!("  {} Total provenance records: {}", "└".dimmed(),
-        format!("{}", provenance.len()).yellow());
+    println!(
+        "  {} Total provenance records: {}",
+        "└".dimmed(),
+        format!("{}", provenance.len()).yellow()
+    );
 
     // ── Part 5: Continuity Context ──────────────────────────────────
     header("Part 5: Continuity Context");
 
     if let Some(ctx) = identity_mgr.continuity_context(&alice) {
         println!("  {} Alice continuity:", "├".dimmed());
-        println!("  {}   worldline_id:   {}", "│".dimmed(), format!("{}", ctx.worldline_id).green());
-        println!("  {}   segment_index:  {}", "│".dimmed(), format!("{}", ctx.segment_index).yellow());
-        println!("  {}   chain_hash:     {}", "└".dimmed(), format!("{:?}", ctx.chain_hash).dimmed());
+        println!(
+            "  {}   worldline_id:   {}",
+            "│".dimmed(),
+            format!("{}", ctx.worldline_id).green()
+        );
+        println!(
+            "  {}   segment_index:  {}",
+            "│".dimmed(),
+            format!("{}", ctx.segment_index).yellow()
+        );
+        println!(
+            "  {}   chain_hash:     {}",
+            "└".dimmed(),
+            format!("{:?}", ctx.chain_hash).dimmed()
+        );
     } else {
-        println!("  {} No continuity context (identity manager may not track it)", "└".dimmed());
+        println!(
+            "  {} No continuity context (identity manager may not track it)",
+            "└".dimmed()
+        );
     }
 
     // ── Summary ─────────────────────────────────────────────────────
     header("Summary");
-    println!("  {} WorldLines created:       {}", "├".dimmed(), "2 (Alice, Bob)".green());
-    println!("  {} Resonance events emitted:  {}", "├".dimmed(), "5 (System→Meaning→Intent→Commitment→Consequence)".green());
-    println!("  {} Integrity verified:        {}", "├".dimmed(), "all events pass BLAKE3 hash check".green());
-    println!("  {} Provenance records:        {}", "├".dimmed(), "5 append-only entries".green());
-    println!("  {} Constitutional invariants: {}", "└".dimmed(), "I.1, I.4, I.6, I.7 demonstrated".green());
+    println!(
+        "  {} WorldLines created:       {}",
+        "├".dimmed(),
+        "2 (Alice, Bob)".green()
+    );
+    println!(
+        "  {} Resonance events emitted:  {}",
+        "├".dimmed(),
+        "5 (System→Meaning→Intent→Commitment→Consequence)".green()
+    );
+    println!(
+        "  {} Integrity verified:        {}",
+        "├".dimmed(),
+        "all events pass BLAKE3 hash check".green()
+    );
+    println!(
+        "  {} Provenance records:        {}",
+        "├".dimmed(),
+        "5 append-only entries".green()
+    );
+    println!(
+        "  {} Constitutional invariants: {}",
+        "└".dimmed(),
+        "I.1, I.4, I.6, I.7 demonstrated".green()
+    );
     println!();
 }

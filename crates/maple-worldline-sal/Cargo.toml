@@ -7,7 +7,7 @@ description = "Substrate Abstraction Layer — platform independence for WorldLi
 license.workspace = true
 
 [dependencies]
-maple-mwl-types = { workspace = true }
+worldline-core = { workspace = true }
 maple-worldline-ir = { workspace = true }
 maple-worldline-compiler = { workspace = true }
 maple-worldline-self-mod-gate = { workspace = true }

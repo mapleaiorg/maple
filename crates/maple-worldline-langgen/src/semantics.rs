@@ -5,9 +5,7 @@
 //! `RecordProvenance` side effect for full auditability.
 
 use crate::error::{LangGenError, LangGenResult};
-use crate::types::{
-    EvaluationStrategy, GrammarSpec, SemanticRule, SideEffect,
-};
+use crate::types::{EvaluationStrategy, GrammarSpec, SemanticRule, SideEffect};
 
 // ── Semantics Engine Trait ───────────────────────────────────────────
 
@@ -132,7 +130,9 @@ mod tests {
         }];
         let domain = analyzer.analyze(&patterns, None).unwrap();
         let synth = SimulatedGrammarSynthesizer::new();
-        synth.synthesize(&domain, &GrammarStyle::Declarative).unwrap()
+        synth
+            .synthesize(&domain, &GrammarStyle::Declarative)
+            .unwrap()
     }
 
     #[test]

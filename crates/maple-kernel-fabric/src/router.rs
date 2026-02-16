@@ -101,7 +101,10 @@ impl CausalRouter {
         if !closed_ids.is_empty() {
             let mut subs = self.subscriptions.write().await;
             subs.retain(|s| !closed_ids.contains(&s.id));
-            debug!(removed = closed_ids.len(), "Cleaned up closed subscriptions");
+            debug!(
+                removed = closed_ids.len(),
+                "Cleaned up closed subscriptions"
+            );
         }
 
         Ok(delivered)
@@ -183,7 +186,11 @@ mod tests {
         // This SHOULD match
         let commitment_event = KernelEvent::new(
             EventId::new(),
-            HlcTimestamp { physical: 1001, logical: 0, node_id: NodeId(1) },
+            HlcTimestamp {
+                physical: 1001,
+                logical: 0,
+                node_id: NodeId(1),
+            },
             test_worldline(1),
             ResonanceStage::Commitment,
             EventPayload::CommitmentDeclared {

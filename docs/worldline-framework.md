@@ -64,6 +64,19 @@ Compatibility:
 - Existing `palm-*` and `maple-*` names remain in use in the current repository.
 - See migration phases in [Architecture Migration Plan](architecture/phase-plan.md).
 
+### Phase A compatibility mapping (old -> facade)
+
+| Existing | Facade (Phase A) |
+|---|---|
+| `maple-mwl-types` + `maple-mwl-identity` | `worldline-core` |
+| `maple-runtime` + `maple-kernel-*` runtime subsystems | `worldline-runtime` |
+| `maple-kernel-provenance` (+ fabric/types for lineage) | `worldline-ledger` |
+
+Implementation note:
+- `maple-mwl-types` and `maple-mwl-identity` remain foundational in Phase A.
+- Higher-level crates (`maple-worldline-*`, `maple-mwl-conformance`, `maple-mwl-integration`)
+  now consume `worldline-*` facades directly.
+
 ### CLI (maple)
 
 The umbrella `maple` CLI exposes WorldLine commands directly:
@@ -92,9 +105,13 @@ WorldLine routes are merged into PALM daemon under `/api/v1`:
 
 The following suites pass in this repository:
 
+- `cargo test -p worldline-core -p worldline-runtime -p worldline-ledger`
 - `cargo test -p maple-mwl-conformance -p maple-mwl-integration -p maple-worldline-conformance`
 - `cargo test -p maple-worldline-observation -p maple-worldline-meaning -p maple-worldline-intent -p maple-worldline-commitment -p maple-worldline-consequence -p maple-worldline-self-mod-gate -p maple-worldline-codegen -p maple-worldline-deployment -p maple-worldline-langgen -p maple-worldline-ir -p maple-worldline-compiler -p maple-worldline-sal -p maple-worldline-hardware -p maple-worldline-bootstrap -p maple-worldline-evos`
 - `cargo test -p maple-kernel-sdk -p maple-cli -p palm-daemon`
+
+The `examples/mwl-*` demos are wired to the facade crates so users can adopt
+Phase A naming without changing runtime behavior.
 
 ## Next Step
 

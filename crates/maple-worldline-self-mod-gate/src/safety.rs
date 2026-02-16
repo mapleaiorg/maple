@@ -64,7 +64,12 @@ const GATE_PATTERNS: &[&str] = &["gate", "adjudication", "commitment_gate", "sel
 const RATE_LIMITER_PATTERNS: &[&str] = &["rate_limiter", "rate-limiter", "rate_limit"];
 
 /// Patterns that indicate emergency stop / human override code.
-const EMERGENCY_PATTERNS: &[&str] = &["emergency", "human_override", "kill_switch", "circuit_breaker"];
+const EMERGENCY_PATTERNS: &[&str] = &[
+    "emergency",
+    "human_override",
+    "kill_switch",
+    "circuit_breaker",
+];
 
 /// Patterns that indicate resonance invariant code.
 const INVARIANT_PATTERNS: &[&str] = &["safety", "invariant", "consent", "coercion"];

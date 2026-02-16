@@ -52,10 +52,7 @@ impl SubstrateFingerprint {
             drifts.push(format!("os: {} → {}", self.os, other.os));
         }
         if self.cpu_arch != other.cpu_arch {
-            drifts.push(format!(
-                "cpu_arch: {} → {}",
-                self.cpu_arch, other.cpu_arch
-            ));
+            drifts.push(format!("cpu_arch: {} → {}", self.cpu_arch, other.cpu_arch));
         }
         if self.cargo_lock_hash != other.cargo_lock_hash {
             drifts.push(format!(

@@ -16,11 +16,11 @@ use crate::error::LangGenResult;
 use crate::grammar::GrammarSynthesizer;
 use crate::parser::ParserGenerator;
 use crate::semantics::SemanticsEngine;
-use crate::typesys::TypeSystemDesigner;
 use crate::types::{
-    GeneratedLanguage, LangGenConfig, LangGenId, LangGenStatus, LangGenSummary,
-    LanguageId, UsagePattern,
+    GeneratedLanguage, LangGenConfig, LangGenId, LangGenStatus, LangGenSummary, LanguageId,
+    UsagePattern,
 };
+use crate::typesys::TypeSystemDesigner;
 use maple_worldline_self_mod_gate::types::SelfModTier;
 
 // ── Language Generation Record ───────────────────────────────────────
@@ -365,7 +365,11 @@ mod tests {
             .generate("lang-v1", "1.0.0", &sample_patterns(), None)
             .unwrap();
         let id2 = engine
-            .evolve(&LanguageId::from_name("lang-v1"), "2.0.0", &sample_patterns())
+            .evolve(
+                &LanguageId::from_name("lang-v1"),
+                "2.0.0",
+                &sample_patterns(),
+            )
             .unwrap();
         assert_ne!(id1.0, id2.0);
         assert_eq!(engine.all_records().len(), 2);

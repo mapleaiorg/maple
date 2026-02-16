@@ -57,8 +57,7 @@ mod tests {
         let ok: IntentResult<u32> = Ok(42);
         assert_eq!(ok.unwrap(), 42);
 
-        let err: IntentResult<u32> =
-            Err(IntentError::ConfigurationError("bad config".into()));
+        let err: IntentResult<u32> = Err(IntentError::ConfigurationError("bad config".into()));
         assert!(err.is_err());
     }
 

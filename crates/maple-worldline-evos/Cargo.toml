@@ -9,7 +9,7 @@ rust-version.workspace = true
 description = "EVOS integration — self-producing substrate cycle orchestration"
 
 [dependencies]
-maple-mwl-types = { workspace = true }
+worldline-core = { workspace = true }
 maple-worldline-bootstrap = { workspace = true }
 
 serde = { workspace = true }

@@ -8,8 +8,8 @@
 //! Run with: `cargo run --example 09_observability_demo`
 
 use resonator_observability::{
-    MetricsCollector, SpanTracker, AlertEngine,
-    AlertRule, AlertSeverity, AlertOperator, PipelineStage,
+    AlertEngine, AlertOperator, AlertRule, AlertSeverity, MetricsCollector, PipelineStage,
+    SpanTracker,
 };
 use std::time::Duration;
 use tokio::time::sleep;
@@ -62,7 +62,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Start a root span for the entire operation
     let root_span = spans.start_span("pipeline.full_cycle");
-    println!("   Started span: pipeline.full_cycle (id: {})", root_span.id.0);
+    println!(
+        "   Started span: pipeline.full_cycle (id: {})",
+        root_span.id.0
+    );
 
     // Presence stage
     metrics.record_pipeline_request(PipelineStage::Presence);

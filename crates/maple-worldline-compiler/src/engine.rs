@@ -86,11 +86,7 @@ impl AdaptiveCompilerEngine {
     }
 
     /// Record a compilation result.
-    fn record_result(
-        &mut self,
-        module: &WlirModule,
-        result: &CompilerResult<CompilationArtifact>,
-    ) {
+    fn record_result(&mut self, module: &WlirModule, result: &CompilerResult<CompilationArtifact>) {
         let record = match result {
             Ok(artifact) => CompilationRecord {
                 compilation_id: artifact.compilation_id.clone(),
@@ -281,9 +277,7 @@ mod tests {
             },
             OptimizationLevel::Aggressive,
         );
-        let artifact = engine
-            .compile_with_strategy(&module, &strategy)
-            .unwrap();
+        let artifact = engine.compile_with_strategy(&module, &strategy).unwrap();
         assert_eq!(
             artifact.strategy.target,
             CompilationTarget::Wasm {

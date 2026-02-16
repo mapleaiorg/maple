@@ -72,7 +72,12 @@ impl StateChecksum {
     /// Compute a simulated checksum from state data.
     pub fn compute(state_data: &str) -> Self {
         // Simulated: use a simple hash
-        let hash = state_data.len() * 31 + state_data.as_bytes().iter().map(|b| *b as usize).sum::<usize>();
+        let hash = state_data.len() * 31
+            + state_data
+                .as_bytes()
+                .iter()
+                .map(|b| *b as usize)
+                .sum::<usize>();
         Self(format!("{:016x}", hash))
     }
 
@@ -153,9 +158,9 @@ impl SubstrateMigrator for SimulatedMigrator {
         }
 
         let actual_downtime_ms = match plan.strategy {
-            MigrationStrategy::Live => 10,       // ~10ms
-            MigrationStrategy::Snapshot => 100,   // ~100ms
-            MigrationStrategy::Parallel => 5,     // ~5ms (dual execution)
+            MigrationStrategy::Live => 10,      // ~10ms
+            MigrationStrategy::Snapshot => 100, // ~100ms
+            MigrationStrategy::Parallel => 5,   // ~5ms (dual execution)
         };
 
         let completed_at = Utc::now();
@@ -208,7 +213,9 @@ mod tests {
     fn migration_status_display() {
         assert_eq!(MigrationStatus::Pending.to_string(), "pending");
         assert_eq!(MigrationStatus::Complete.to_string(), "complete");
-        assert!(MigrationStatus::Failed("oops".into()).to_string().contains("oops"));
+        assert!(MigrationStatus::Failed("oops".into())
+            .to_string()
+            .contains("oops"));
     }
 
     #[test]
@@ -232,7 +239,9 @@ mod tests {
         let record = migrator.migrate(&plan, "worldline-state-data").unwrap();
         assert_eq!(record.status, MigrationStatus::Complete);
         assert!(record.target_checksum.is_some());
-        assert!(record.source_checksum.matches(record.target_checksum.as_ref().unwrap()));
+        assert!(record
+            .source_checksum
+            .matches(record.target_checksum.as_ref().unwrap()));
     }
 
     #[test]

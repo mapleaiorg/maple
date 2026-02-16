@@ -183,10 +183,22 @@ impl EpuDesigner for SimulatedEpuDesigner {
 
         let total_resources = ResourceUtilization {
             luts: components.iter().map(|c| c.estimated_resources.luts).sum(),
-            flip_flops: components.iter().map(|c| c.estimated_resources.flip_flops).sum(),
-            bram_kb: components.iter().map(|c| c.estimated_resources.bram_kb).sum(),
-            dsp_slices: components.iter().map(|c| c.estimated_resources.dsp_slices).sum(),
-            power_mw: components.iter().map(|c| c.estimated_resources.power_mw).sum(),
+            flip_flops: components
+                .iter()
+                .map(|c| c.estimated_resources.flip_flops)
+                .sum(),
+            bram_kb: components
+                .iter()
+                .map(|c| c.estimated_resources.bram_kb)
+                .sum(),
+            dsp_slices: components
+                .iter()
+                .map(|c| c.estimated_resources.dsp_slices)
+                .sum(),
+            power_mw: components
+                .iter()
+                .map(|c| c.estimated_resources.power_mw)
+                .sum(),
         };
 
         Ok(EpuSpec {
@@ -216,11 +228,23 @@ mod tests {
 
     #[test]
     fn component_kind_display() {
-        assert_eq!(EpuComponentKind::CommitmentGate.to_string(), "commitment-gate");
-        assert_eq!(EpuComponentKind::ProvenanceUnit.to_string(), "provenance-unit");
-        assert_eq!(EpuComponentKind::EventInterface.to_string(), "event-interface");
+        assert_eq!(
+            EpuComponentKind::CommitmentGate.to_string(),
+            "commitment-gate"
+        );
+        assert_eq!(
+            EpuComponentKind::ProvenanceUnit.to_string(),
+            "provenance-unit"
+        );
+        assert_eq!(
+            EpuComponentKind::EventInterface.to_string(),
+            "event-interface"
+        );
         assert_eq!(EpuComponentKind::OperatorUnit.to_string(), "operator-unit");
-        assert_eq!(EpuComponentKind::MemoryController.to_string(), "memory-controller");
+        assert_eq!(
+            EpuComponentKind::MemoryController.to_string(),
+            "memory-controller"
+        );
     }
 
     #[test]

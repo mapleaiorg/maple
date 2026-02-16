@@ -5,13 +5,13 @@
 //! (governed by substrate tiers, meaning provenance) and the gate world
 //! (governed by effect domains, capability refs, confidence profiles).
 
-use maple_kernel_gate::CommitmentDeclaration;
-use maple_mwl_types::{
-    CapabilityId, CommitmentScope, ConfidenceProfile, EffectDomain, EventId,
-    Reversibility, WorldlineId,
-};
 use maple_worldline_intent::intent::SelfRegenerationIntent;
 use maple_worldline_intent::types::{ChangeType, ReversibilityLevel, SubstrateTier};
+use worldline_core::types::{
+    CapabilityId, CommitmentScope, ConfidenceProfile, EffectDomain, EventId, Reversibility,
+    WorldlineId,
+};
+use worldline_runtime::gate::CommitmentDeclaration;
 
 use crate::error::CommitmentResult;
 
@@ -63,14 +63,12 @@ impl DeclarationMapper {
             .build();
 
         // Attach evidence via a fresh builder (evidence added one at a time)
-        let mut builder = CommitmentDeclaration::builder(
-            decl.declaring_identity.clone(),
-            decl.scope.clone(),
-        )
-        .derived_from_intent(decl.derived_from_intent.unwrap_or_else(EventId::new))
-        .confidence(decl.confidence.clone())
-        .reversibility(decl.reversibility.clone())
-        .capabilities(decl.capability_refs.clone());
+        let mut builder =
+            CommitmentDeclaration::builder(decl.declaring_identity.clone(), decl.scope.clone())
+                .derived_from_intent(decl.derived_from_intent.unwrap_or_else(EventId::new))
+                .confidence(decl.confidence.clone())
+                .reversibility(decl.reversibility.clone())
+                .capabilities(decl.capability_refs.clone());
 
         for e in &evidence {
             builder = builder.evidence(e.as_str());
@@ -175,16 +173,12 @@ pub fn map_effect_domain(change_type: &ChangeType) -> EffectDomain {
 pub fn map_reversibility(level: &ReversibilityLevel) -> Reversibility {
     match level {
         ReversibilityLevel::FullyReversible => Reversibility::FullyReversible,
-        ReversibilityLevel::ConditionallyReversible { conditions } => {
-            Reversibility::Conditional {
-                conditions: conditions.clone(),
-            }
-        }
-        ReversibilityLevel::TimeWindowReversible { window_secs } => {
-            Reversibility::TimeWindow {
-                window_ms: window_secs * 1000,
-            }
-        }
+        ReversibilityLevel::ConditionallyReversible { conditions } => Reversibility::Conditional {
+            conditions: conditions.clone(),
+        },
+        ReversibilityLevel::TimeWindowReversible { window_secs } => Reversibility::TimeWindow {
+            window_ms: window_secs * 1000,
+        },
         ReversibilityLevel::Irreversible => Reversibility::Irreversible,
     }
 }
@@ -200,10 +194,10 @@ pub fn map_confidence(confidence: f64, tier: &SubstrateTier) -> ConfidenceProfil
     };
 
     ConfidenceProfile::new(
-        confidence,             // overall confidence from intent
+        confidence,               // overall confidence from intent
         confidence * tier_factor, // stability scales with tier
-        confidence * 0.9,       // signal consistency
-        confidence * 0.85,      // historical alignment
+        confidence * 0.9,         // signal consistency
+        confidence * 0.85,        // historical alignment
     )
 }
 
@@ -211,13 +205,11 @@ pub fn map_confidence(confidence: f64, tier: &SubstrateTier) -> ConfidenceProfil
 mod tests {
     use super::*;
     use chrono::Utc;
-    use maple_mwl_types::IdentityMaterial;
     use maple_worldline_intent::intent::{ImpactAssessment, ImprovementEstimate, IntentStatus};
-    use maple_worldline_intent::proposal::{
-        RegenerationProposal, RollbackPlan, RollbackStrategy,
-    };
-    use maple_worldline_intent::types::{IntentId, ProposalId};
+    use maple_worldline_intent::proposal::{RegenerationProposal, RollbackPlan, RollbackStrategy};
     use maple_worldline_intent::types::MeaningId;
+    use maple_worldline_intent::types::{IntentId, ProposalId};
+    use worldline_core::types::IdentityMaterial;
 
     fn test_worldline() -> WorldlineId {
         WorldlineId::derive(&IdentityMaterial::GenesisHash([1u8; 32]))
@@ -335,9 +327,7 @@ mod tests {
             Reversibility::FullyReversible
         ));
         assert!(matches!(
-            map_reversibility(&ReversibilityLevel::ConditionallyReversible {
-                conditions: vec![]
-            }),
+            map_reversibility(&ReversibilityLevel::ConditionallyReversible { conditions: vec![] }),
             Reversibility::Conditional { .. }
         ));
         assert!(matches!(

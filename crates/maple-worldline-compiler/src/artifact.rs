@@ -41,7 +41,11 @@ impl CompilationArtifact {
 
     /// One-line summary of optimizations.
     pub fn optimizations_summary(&self) -> String {
-        let applied = self.optimization_results.iter().filter(|r| r.applied).count();
+        let applied = self
+            .optimization_results
+            .iter()
+            .filter(|r| r.applied)
+            .count();
         let total = self.optimization_results.len();
         let changes = self.total_optimizations_applied();
         format!(
@@ -99,15 +103,15 @@ impl ArtifactBuilder {
     }
 
     pub fn build(self) -> CompilerResult<CompilationArtifact> {
-        let module_id = self.module_id.ok_or_else(|| {
-            CompilerError::ConfigurationError("module_id is required".into())
-        })?;
-        let module_name = self.module_name.ok_or_else(|| {
-            CompilerError::ConfigurationError("module_name is required".into())
-        })?;
-        let strategy = self.strategy.ok_or_else(|| {
-            CompilerError::ConfigurationError("strategy is required".into())
-        })?;
+        let module_id = self
+            .module_id
+            .ok_or_else(|| CompilerError::ConfigurationError("module_id is required".into()))?;
+        let module_name = self
+            .module_name
+            .ok_or_else(|| CompilerError::ConfigurationError("module_name is required".into()))?;
+        let strategy = self
+            .strategy
+            .ok_or_else(|| CompilerError::ConfigurationError("strategy is required".into()))?;
         let generated_code = self.generated_code.ok_or_else(|| {
             CompilerError::ConfigurationError("generated_code is required".into())
         })?;
@@ -137,14 +141,18 @@ mod tests {
     fn sample_strategy() -> CompilationStrategy {
         CompilationStrategy::new(
             "test",
-            CompilationTarget::Native { arch: TargetArch::X86_64 },
+            CompilationTarget::Native {
+                arch: TargetArch::X86_64,
+            },
             OptimizationLevel::Basic,
         )
     }
 
     fn sample_code() -> GeneratedCode {
         GeneratedCode {
-            target: CompilationTarget::Native { arch: TargetArch::X86_64 },
+            target: CompilationTarget::Native {
+                arch: TargetArch::X86_64,
+            },
             content: "push rbp\nret\n".into(),
             content_hash: GeneratedCode::compute_hash("push rbp\nret\n"),
             size_bytes: 13,

@@ -197,7 +197,10 @@ mod tests {
     fn report_healthy_subsystems() {
         let record = run_cycle(vec![], true);
         let report = CycleReport::from_record(&record);
-        assert_eq!(report.healthy_subsystems(), report.participating_subsystems());
+        assert_eq!(
+            report.healthy_subsystems(),
+            report.participating_subsystems()
+        );
     }
 
     #[test]
@@ -227,7 +230,11 @@ mod tests {
         let report = CycleReport::from_record(&record);
         // Each subsystem entry should have at least one metric
         for entry in &report.subsystem_summaries {
-            assert!(!entry.metrics.is_empty(), "no metrics for {}", entry.subsystem_id);
+            assert!(
+                !entry.metrics.is_empty(),
+                "no metrics for {}",
+                entry.subsystem_id
+            );
         }
     }
 }

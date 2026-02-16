@@ -10,7 +10,9 @@ pub enum ProvenanceError {
     #[error("duplicate event: {0}")]
     DuplicateEvent(EventId),
 
-    #[error("missing causal parent: event {child} references parent {parent} which is not in the index")]
+    #[error(
+        "missing causal parent: event {child} references parent {parent} which is not in the index"
+    )]
     MissingParent { child: EventId, parent: EventId },
 
     #[error("event without parents and not a genesis event: {0}")]

@@ -57,9 +57,7 @@ impl SubstrateAbstractionLayer for CpuSubstrate {
             input.arguments.join(", ")
         );
 
-        let elapsed = (Utc::now() - execution_start)
-            .num_milliseconds()
-            .max(0) as u64;
+        let elapsed = (Utc::now() - execution_start).num_milliseconds().max(0) as u64;
 
         let prov_id = ProvenanceId::new();
 
@@ -91,9 +89,7 @@ impl SubstrateAbstractionLayer for CpuSubstrate {
         let instructions_executed = 100 + (args.len() as u64 * 10);
         let memory_used = 4096 + (args.len() as u64 * 256);
 
-        let elapsed = (Utc::now() - execution_start)
-            .num_milliseconds()
-            .max(0) as u64;
+        let elapsed = (Utc::now() - execution_start).num_milliseconds().max(0) as u64;
 
         Ok(ExecutionResult {
             execution_id,

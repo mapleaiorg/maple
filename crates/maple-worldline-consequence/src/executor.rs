@@ -95,8 +95,8 @@ mod tests {
     use super::*;
     use maple_worldline_intent::intent::ImprovementEstimate;
     use maple_worldline_intent::proposal::*;
-    use maple_worldline_intent::types::{CodeChangeType, ProposalId};
     use maple_worldline_intent::types::MeaningId;
+    use maple_worldline_intent::types::{CodeChangeType, ProposalId};
 
     fn make_test_proposal() -> RegenerationProposal {
         RegenerationProposal {

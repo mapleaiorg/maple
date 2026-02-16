@@ -97,7 +97,9 @@ fn list_commitments(
         .iter()
         .filter(|c| {
             if let Some(ref status) = status_filter {
-                format!("{:?}", c.status).to_lowercase().starts_with(&status.to_lowercase())
+                format!("{:?}", c.status)
+                    .to_lowercase()
+                    .starts_with(&status.to_lowercase())
             } else {
                 true
             }
@@ -149,11 +151,17 @@ fn print_contract_row(contract: &StoredContract) {
         ContractStatus::Disputed { .. } => "magenta",
         ContractStatus::Expired => "white",
         ContractStatus::Revoked { .. } | ContractStatus::Rejected { .. } => "white",
-        ContractStatus::Suspended { .. } | ContractStatus::Resolved { .. } | ContractStatus::Inactive => "white",
+        ContractStatus::Suspended { .. }
+        | ContractStatus::Resolved { .. }
+        | ContractStatus::Inactive => "white",
     };
 
     let id_str = &contract.contract.commitment_id.0;
-    let display_id = if id_str.len() > 8 { &id_str[..8] } else { id_str };
+    let display_id = if id_str.len() > 8 {
+        &id_str[..8]
+    } else {
+        id_str
+    };
 
     println!(
         "  {} {} {}",
@@ -228,7 +236,8 @@ fn show_lifecycle(format: OutputFormat) -> CliResult<()> {
             println!("{}", "Commitment Lifecycle States".bold().cyan());
             println!("{}", "=".repeat(60));
             println!();
-            println!("  {} → {} → {} → {} → {} → {}",
+            println!(
+                "  {} → {} → {} → {} → {} → {}",
                 "Draft".yellow(),
                 "Proposed".blue(),
                 "Accepted".green(),

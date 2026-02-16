@@ -3,15 +3,12 @@
 //! Verifies EVOS (balance-as-projection), ARES (DvP atomicity),
 //! and regulatory policy enforcement.
 
-use maple_kernel_financial::{
-    FinancialGateExtension,
-    BalanceProjection,
-    LiquidityFieldOperator,
-    RegulatoryEngine,
-    AssetId, AtomicSettlement, FinancialCommitment, SettledLeg, SettlementChannel,
-    SettlementEvent, SettlementLeg, SettlementNetwork, SettlementType,
+use worldline_core::types::{CommitmentId, IdentityMaterial, TemporalAnchor, WorldlineId};
+use worldline_runtime::financial::{
+    AssetId, AtomicSettlement, BalanceProjection, FinancialCommitment, FinancialGateExtension,
+    LiquidityFieldOperator, RegulatoryEngine, SettledLeg, SettlementChannel, SettlementEvent,
+    SettlementLeg, SettlementNetwork, SettlementType,
 };
-use maple_mwl_types::{CommitmentId, IdentityMaterial, TemporalAnchor, WorldlineId};
 
 fn alice() -> WorldlineId {
     WorldlineId::derive(&IdentityMaterial::GenesisHash([1u8; 32]))
@@ -120,9 +117,15 @@ fn test_dvp_atomic_settlement() {
     }
 
     // Both balances updated
-    assert_eq!(evos.project(&alice_wid, &usd).unwrap().balance_minor, 50_000);
+    assert_eq!(
+        evos.project(&alice_wid, &usd).unwrap().balance_minor,
+        50_000
+    );
     assert_eq!(evos.project(&bob_wid, &usd).unwrap().balance_minor, 50_000);
-    assert_eq!(evos.project(&alice_wid, &btc).unwrap().balance_minor, 500_000);
+    assert_eq!(
+        evos.project(&alice_wid, &btc).unwrap().balance_minor,
+        500_000
+    );
     assert_eq!(evos.project(&bob_wid, &btc).unwrap().balance_minor, 500_000);
 }
 
@@ -134,12 +137,24 @@ fn test_balance_is_projection_not_stored() {
     let usd = AssetId::new("USD");
 
     // Initially no trajectory → project returns error
-    assert!(evos.project(&wid, &usd).is_err(), "No trajectory should return error");
+    assert!(
+        evos.project(&wid, &usd).is_err(),
+        "No trajectory should return error"
+    );
 
     // Record a series of settlements
-    evos.record_for_worldline(wid.clone(), settlement_event(bob(), usd.clone(), 100_000, "s1"));
-    evos.record_for_worldline(wid.clone(), settlement_event(bob(), usd.clone(), -30_000, "s2"));
-    evos.record_for_worldline(wid.clone(), settlement_event(bob(), usd.clone(), 15_000, "s3"));
+    evos.record_for_worldline(
+        wid.clone(),
+        settlement_event(bob(), usd.clone(), 100_000, "s1"),
+    );
+    evos.record_for_worldline(
+        wid.clone(),
+        settlement_event(bob(), usd.clone(), -30_000, "s2"),
+    );
+    evos.record_for_worldline(
+        wid.clone(),
+        settlement_event(bob(), usd.clone(), 15_000, "s3"),
+    );
 
     // Balance = sum of trajectory (100000 - 30000 + 15000 = 85000)
     let balance = evos.project(&wid, &usd).unwrap();
@@ -160,8 +175,14 @@ fn test_multi_asset_projection() {
     let usd = AssetId::new("USD");
     let eur = AssetId::new("EUR");
 
-    evos.record_for_worldline(wid.clone(), settlement_event(bob(), usd.clone(), 100_000, "s1"));
-    evos.record_for_worldline(wid.clone(), settlement_event(bob(), eur.clone(), 50_000, "s2"));
+    evos.record_for_worldline(
+        wid.clone(),
+        settlement_event(bob(), usd.clone(), 100_000, "s1"),
+    );
+    evos.record_for_worldline(
+        wid.clone(),
+        settlement_event(bob(), eur.clone(), 50_000, "s2"),
+    );
 
     assert_eq!(evos.project(&wid, &usd).unwrap().balance_minor, 100_000);
     assert_eq!(evos.project(&wid, &eur).unwrap().balance_minor, 50_000);
@@ -214,15 +235,13 @@ fn test_liquidity_field_computation() {
 
     let network = SettlementNetwork {
         participants: vec![alice(), bob()],
-        channels: vec![
-            SettlementChannel {
-                from: alice(),
-                to: bob(),
-                asset: AssetId::new("USD"),
-                liquidity_minor: 900_000,
-                capacity_minor: 1_000_000,
-            },
-        ],
+        channels: vec![SettlementChannel {
+            from: alice(),
+            to: bob(),
+            asset: AssetId::new("USD"),
+            liquidity_minor: 900_000,
+            capacity_minor: 1_000_000,
+        }],
     };
 
     let field = operator.compute_field(&network);
@@ -244,8 +263,5 @@ fn test_trajectory_hash_deterministic() {
     let hash1 = evos1.project(&wid, &usd).unwrap().trajectory_hash;
     let hash2 = evos2.project(&wid, &usd).unwrap().trajectory_hash;
 
-    assert_eq!(
-        hash1, hash2,
-        "Same trajectory should produce same hash"
-    );
+    assert_eq!(hash1, hash2, "Same trajectory should produce same hash");
 }

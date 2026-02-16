@@ -42,11 +42,7 @@ impl EpisodicPlane {
         let id = entry.id.clone();
         let anchor = entry.created;
 
-        self.episodic
-            .entries
-            .entry(anchor)
-            .or_default()
-            .push(entry);
+        self.episodic.entries.entry(anchor).or_default().push(entry);
 
         debug!(id = %id, "Stored episodic entry");
         Ok(id)
@@ -76,11 +72,7 @@ impl EpisodicPlane {
     }
 
     /// Query episodic entries by time range (inclusive).
-    pub fn query_temporal(
-        &self,
-        from: &TemporalAnchor,
-        to: &TemporalAnchor,
-    ) -> Vec<&MemoryEntry> {
+    pub fn query_temporal(&self, from: &TemporalAnchor, to: &TemporalAnchor) -> Vec<&MemoryEntry> {
         self.episodic
             .entries
             .range(*from..=*to)
@@ -134,23 +126,14 @@ impl EpisodicPlane {
             .filter(|e| filter.matches(e))
             .collect();
 
-        results.extend(
-            self.semantic
-                .entries
-                .values()
-                .filter(|e| filter.matches(e)),
-        );
+        results.extend(self.semantic.entries.values().filter(|e| filter.matches(e)));
 
         results
     }
 
     /// Get counts for statistics.
     pub fn episodic_count(&self) -> usize {
-        self.episodic
-            .entries
-            .values()
-            .map(|v| v.len())
-            .sum()
+        self.episodic.entries.values().map(|v| v.len()).sum()
     }
 
     pub fn semantic_count(&self) -> usize {
@@ -186,7 +169,7 @@ struct SemanticStore {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::entry::{MemoryContent, nil_provenance, provenance_from};
+    use crate::entry::{nil_provenance, provenance_from, MemoryContent};
     use maple_mwl_types::{EventId, IdentityMaterial};
 
     fn test_worldline() -> WorldlineId {
@@ -265,9 +248,12 @@ mod tests {
         let wid1 = test_worldline();
         let wid2 = other_worldline();
 
-        ep.store_episodic(episodic_entry_with_wid("w1-a", wid1.clone())).unwrap();
-        ep.store_episodic(episodic_entry_with_wid("w1-b", wid1.clone())).unwrap();
-        ep.store_episodic(episodic_entry_with_wid("w2-a", wid2.clone())).unwrap();
+        ep.store_episodic(episodic_entry_with_wid("w1-a", wid1.clone()))
+            .unwrap();
+        ep.store_episodic(episodic_entry_with_wid("w1-b", wid1.clone()))
+            .unwrap();
+        ep.store_episodic(episodic_entry_with_wid("w2-a", wid2.clone()))
+            .unwrap();
 
         let w1_results = ep.query_by_worldline(&wid1);
         assert_eq!(w1_results.len(), 2);
@@ -292,7 +278,8 @@ mod tests {
         ep.store_episodic(entry2).unwrap();
 
         // Unrelated entry
-        ep.store_episodic(episodic_entry_at("unrelated", 300)).unwrap();
+        ep.store_episodic(episodic_entry_at("unrelated", 300))
+            .unwrap();
 
         let results = ep.query_by_provenance(&prov);
         assert_eq!(results.len(), 2);
@@ -359,8 +346,10 @@ mod tests {
     #[test]
     fn semantic_count() {
         let mut ep = EpisodicPlane::new();
-        ep.store_semantic("k1".into(), semantic_entry("v1")).unwrap();
-        ep.store_semantic("k2".into(), semantic_entry("v2")).unwrap();
+        ep.store_semantic("k1".into(), semantic_entry("v1"))
+            .unwrap();
+        ep.store_semantic("k2".into(), semantic_entry("v2"))
+            .unwrap();
         assert_eq!(ep.semantic_count(), 2);
     }
 
@@ -368,8 +357,10 @@ mod tests {
     fn query_with_filter() {
         let mut ep = EpisodicPlane::new();
 
-        ep.store_episodic(episodic_entry_at("important data", 100)).unwrap();
-        ep.store_episodic(episodic_entry_at("trivial", 200)).unwrap();
+        ep.store_episodic(episodic_entry_at("important data", 100))
+            .unwrap();
+        ep.store_episodic(episodic_entry_at("trivial", 200))
+            .unwrap();
 
         let filter = MemoryFilter::new().with_content_contains("important");
         let results = ep.query(&filter);

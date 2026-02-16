@@ -4,19 +4,20 @@
 
 use std::sync::Arc;
 
-use maple_kernel_fabric::{EventFabric, EventPayload, FabricConfig, KernelEvent, ResonanceStage};
-use maple_kernel_gate::{
-    CapabilityCheckStage, CoSignatureStage, CommitmentDeclaration,
-    CommitmentGate, DeclarationStage, FinalDecisionStage, GateConfig, IdentityBindingStage,
-    MockCapabilityProvider, MockPolicyProvider, PolicyEvaluationStage, RiskAssessmentStage,
-    RiskConfig,
-};
-use maple_kernel_mrp::MrpRouter;
-use maple_kernel_provenance::ProvenanceIndex;
-use maple_mwl_identity::IdentityManager;
-use maple_mwl_types::{
+use worldline_core::identity::IdentityManager;
+use worldline_core::types::{
     CapabilityId, CommitmentScope, EffectDomain, EventId, IdentityMaterial, WorldlineId,
 };
+use worldline_ledger::provenance::ProvenanceIndex;
+use worldline_runtime::fabric::{
+    EventFabric, EventPayload, FabricConfig, KernelEvent, ResonanceStage,
+};
+use worldline_runtime::gate::{
+    CapabilityCheckStage, CoSignatureStage, CommitmentDeclaration, CommitmentGate,
+    DeclarationStage, FinalDecisionStage, GateConfig, IdentityBindingStage, MockCapabilityProvider,
+    MockPolicyProvider, PolicyEvaluationStage, RiskAssessmentStage, RiskConfig,
+};
+use worldline_runtime::mrp::MrpRouter;
 
 /// A fully initialized MWL kernel for integration testing.
 pub struct TestKernel {
@@ -55,11 +56,12 @@ impl TestKernel {
         let identity_mgr = Arc::new(std::sync::RwLock::new(IdentityManager::new()));
         let cap_provider = Arc::new(MockCapabilityProvider::new());
 
-        let policy_provider: Arc<dyn maple_kernel_gate::PolicyProvider> = if opts.approve_policies {
-            Arc::new(MockPolicyProvider::approve_all())
-        } else {
-            Arc::new(MockPolicyProvider::deny_all())
-        };
+        let policy_provider: Arc<dyn worldline_runtime::gate::PolicyProvider> =
+            if opts.approve_policies {
+                Arc::new(MockPolicyProvider::approve_all())
+            } else {
+                Arc::new(MockPolicyProvider::deny_all())
+            };
 
         let gate_config = GateConfig {
             min_intent_confidence: 0.6,
@@ -144,11 +146,7 @@ impl TestKernel {
     }
 
     /// Emit a meaning event.
-    pub async fn emit_meaning(
-        &mut self,
-        wid: &WorldlineId,
-        parents: Vec<EventId>,
-    ) -> KernelEvent {
+    pub async fn emit_meaning(&mut self, wid: &WorldlineId, parents: Vec<EventId>) -> KernelEvent {
         let event = self
             .fabric
             .emit(
@@ -168,11 +166,7 @@ impl TestKernel {
     }
 
     /// Emit an intent event.
-    pub async fn emit_intent(
-        &mut self,
-        wid: &WorldlineId,
-        parents: Vec<EventId>,
-    ) -> KernelEvent {
+    pub async fn emit_intent(&mut self, wid: &WorldlineId, parents: Vec<EventId>) -> KernelEvent {
         let event = self
             .fabric
             .emit(

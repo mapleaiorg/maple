@@ -11,10 +11,7 @@ pub enum ConformanceError {
         reason: String,
     },
     /// A subsystem was unreachable or failed to initialize.
-    SubsystemUnavailable {
-        subsystem: String,
-        reason: String,
-    },
+    SubsystemUnavailable { subsystem: String, reason: String },
     /// Configuration error (e.g., invalid category filter).
     InvalidConfiguration(String),
     /// A check timed out.
@@ -29,7 +26,10 @@ pub enum ConformanceError {
 impl fmt::Display for ConformanceError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::InvariantViolation { invariant_id, reason } => {
+            Self::InvariantViolation {
+                invariant_id,
+                reason,
+            } => {
                 write!(f, "invariant {} violated: {}", invariant_id, reason)
             }
             Self::SubsystemUnavailable { subsystem, reason } => {
@@ -38,8 +38,15 @@ impl fmt::Display for ConformanceError {
             Self::InvalidConfiguration(msg) => {
                 write!(f, "invalid configuration: {}", msg)
             }
-            Self::Timeout { invariant_id, elapsed_ms } => {
-                write!(f, "invariant {} timed out after {}ms", invariant_id, elapsed_ms)
+            Self::Timeout {
+                invariant_id,
+                elapsed_ms,
+            } => {
+                write!(
+                    f,
+                    "invariant {} timed out after {}ms",
+                    invariant_id, elapsed_ms
+                )
             }
             Self::Internal(msg) => {
                 write!(f, "internal error: {}", msg)

@@ -227,8 +227,7 @@ mod tests {
 
     #[test]
     fn substrate_at_phase5() {
-        let substrate =
-            EvosSubstrate::at_phase(BootstrapPhase::Phase5SubstrateSelfDescription);
+        let substrate = EvosSubstrate::at_phase(BootstrapPhase::Phase5SubstrateSelfDescription);
         assert!(substrate.is_self_hosting());
     }
 
@@ -263,11 +262,7 @@ mod tests {
     fn manifest_all_subsystems_present() {
         let manifest = SubstrateManifest::canonical();
         for subsystem in SubsystemId::all() {
-            assert!(
-                manifest.find(subsystem).is_some(),
-                "missing: {}",
-                subsystem,
-            );
+            assert!(manifest.find(subsystem).is_some(), "missing: {}", subsystem,);
         }
     }
 }

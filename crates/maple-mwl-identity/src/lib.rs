@@ -3,12 +3,12 @@
 //! Implements persistent identity without accounts or sessions (I.1: Worldline Primacy).
 //! Identity persists across restarts, migrations, and key rotations through continuity chains.
 
+pub mod bridge;
 pub mod continuity;
 pub mod error;
 pub mod manager;
-pub mod bridge;
 
+pub use bridge::{resonator_id_to_worldline, ResonatorIdentity};
 pub use continuity::{ContinuityChain, ContinuityContext, ContinuitySegment, KeyRef};
 pub use error::{ContinuityError, IdentityError};
 pub use manager::{IdentityManager, IdentityRecord};
-pub use bridge::{resonator_id_to_worldline, ResonatorIdentity};

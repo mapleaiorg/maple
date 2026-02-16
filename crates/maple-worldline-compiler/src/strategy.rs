@@ -111,11 +111,7 @@ pub struct CompilationStrategy {
 
 impl CompilationStrategy {
     /// Create a new strategy.
-    pub fn new(
-        name: &str,
-        target: CompilationTarget,
-        level: OptimizationLevel,
-    ) -> Self {
+    pub fn new(name: &str, target: CompilationTarget, level: OptimizationLevel) -> Self {
         let enabled_passes = match &level {
             OptimizationLevel::None => vec![],
             OptimizationLevel::Basic => PassId::standard_passes(),
@@ -155,11 +151,7 @@ impl CompilationStrategy {
 /// Trait for selecting a compilation strategy based on module and config.
 pub trait StrategySelector: Send + Sync {
     /// Select a strategy for the given module and configuration.
-    fn select_strategy(
-        &self,
-        module: &WlirModule,
-        config: &CompilerConfig,
-    ) -> CompilationStrategy;
+    fn select_strategy(&self, module: &WlirModule, config: &CompilerConfig) -> CompilationStrategy;
 
     /// Name of this selector implementation.
     fn name(&self) -> &str;
@@ -181,11 +173,7 @@ impl Default for SimulatedStrategySelector {
 }
 
 impl StrategySelector for SimulatedStrategySelector {
-    fn select_strategy(
-        &self,
-        module: &WlirModule,
-        config: &CompilerConfig,
-    ) -> CompilationStrategy {
+    fn select_strategy(&self, module: &WlirModule, config: &CompilerConfig) -> CompilationStrategy {
         let name = format!("{}-{}", config.target, config.optimization_level);
         let mut strategy = CompilationStrategy::new(
             &name,
@@ -234,7 +222,9 @@ mod tests {
     fn strategy_creation_basic() {
         let s = CompilationStrategy::new(
             "basic",
-            CompilationTarget::Native { arch: TargetArch::X86_64 },
+            CompilationTarget::Native {
+                arch: TargetArch::X86_64,
+            },
             OptimizationLevel::Basic,
         );
         assert_eq!(s.enabled_passes.len(), 5);
@@ -245,7 +235,9 @@ mod tests {
     fn strategy_creation_aggressive() {
         let s = CompilationStrategy::new(
             "aggro",
-            CompilationTarget::Native { arch: TargetArch::X86_64 },
+            CompilationTarget::Native {
+                arch: TargetArch::X86_64,
+            },
             OptimizationLevel::Aggressive,
         );
         assert_eq!(s.enabled_passes.len(), 11);
@@ -268,8 +260,14 @@ mod tests {
     #[test]
     fn pass_id_display() {
         assert_eq!(PassId::ConstantFolding.to_string(), "constant-folding");
-        assert_eq!(PassId::CommitmentBatching.to_string(), "commitment-batching");
-        assert_eq!(PassId::SafetyFenceMinimization.to_string(), "safety-fence-minimization");
+        assert_eq!(
+            PassId::CommitmentBatching.to_string(),
+            "commitment-batching"
+        );
+        assert_eq!(
+            PassId::SafetyFenceMinimization.to_string(),
+            "safety-fence-minimization"
+        );
     }
 
     #[test]

@@ -9,7 +9,7 @@ rust-version.workspace = true
 description = "Bootstrap protocol — from external substrate to self-hosted WorldLine"
 
 [dependencies]
-maple-mwl-types = { workspace = true }
+worldline-core = { workspace = true }
 maple-worldline-self-mod-gate = { workspace = true }
 maple-worldline-sal = { workspace = true }
 

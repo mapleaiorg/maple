@@ -160,15 +160,9 @@ impl ObservationPeriodTracker {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use maple_worldline_intent::intent::{
-        ImpactAssessment, ImprovementEstimate, IntentStatus,
-    };
-    use maple_worldline_intent::proposal::{
-        RegenerationProposal, RollbackPlan, RollbackStrategy,
-    };
-    use maple_worldline_intent::types::{
-        ChangeType, MeaningId, ProposalId, ReversibilityLevel,
-    };
+    use maple_worldline_intent::intent::{ImpactAssessment, ImprovementEstimate, IntentStatus};
+    use maple_worldline_intent::proposal::{RegenerationProposal, RollbackPlan, RollbackStrategy};
+    use maple_worldline_intent::types::{ChangeType, MeaningId, ProposalId, ReversibilityLevel};
 
     fn make_intent(tier: SubstrateTier) -> SelfRegenerationIntent {
         SelfRegenerationIntent {
@@ -301,7 +295,7 @@ mod tests {
         let r0 = tracker.get(&t0.id).unwrap();
         let r3 = tracker.get(&t3.id).unwrap();
 
-        assert_eq!(r0.required_secs, 1800);    // 30 min
-        assert_eq!(r3.required_secs, 259200);   // 72 hr
+        assert_eq!(r0.required_secs, 1800); // 30 min
+        assert_eq!(r3.required_secs, 259200); // 72 hr
     }
 }

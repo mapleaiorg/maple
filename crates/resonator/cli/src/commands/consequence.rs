@@ -4,9 +4,7 @@ use crate::error::{CliError, CliResult};
 use crate::output::OutputFormat;
 use clap::Subcommand;
 use colored::Colorize;
-use resonator_consequence::{
-    ConsequenceStore, InMemoryConsequenceStore, RecordedConsequence,
-};
+use resonator_consequence::{ConsequenceStore, InMemoryConsequenceStore, RecordedConsequence};
 use serde::Serialize;
 
 /// Consequence subcommands
@@ -134,10 +132,18 @@ fn list_consequences(
 
 fn print_consequence_row(consequence: &RecordedConsequence) {
     let id_str = &consequence.id.0;
-    let display_id = if id_str.len() > 8 { &id_str[..8] } else { id_str };
+    let display_id = if id_str.len() > 8 {
+        &id_str[..8]
+    } else {
+        id_str
+    };
 
     let cid_str = &consequence.request.commitment_id.0;
-    let display_cid = if cid_str.len() > 8 { &cid_str[..8] } else { cid_str };
+    let display_cid = if cid_str.len() > 8 {
+        &cid_str[..8]
+    } else {
+        cid_str
+    };
 
     println!(
         "  {} {} {}",
@@ -205,11 +211,36 @@ fn verify_receipt(signature: &str, format: OutputFormat) -> CliResult<()> {
 
 fn show_types(format: OutputFormat) -> CliResult<()> {
     let types = [
-        ("Computation", "Computation-only effect (no external side effects)", true, "Low"),
-        ("DataMutation", "Modification to persistent data", false, "Medium"),
-        ("Financial", "Movement of financial value", false, "Critical"),
-        ("Communication", "Message sent to external system", false, "High"),
-        ("ExternalSystem", "Interaction with external system", false, "High"),
+        (
+            "Computation",
+            "Computation-only effect (no external side effects)",
+            true,
+            "Low",
+        ),
+        (
+            "DataMutation",
+            "Modification to persistent data",
+            false,
+            "Medium",
+        ),
+        (
+            "Financial",
+            "Movement of financial value",
+            false,
+            "Critical",
+        ),
+        (
+            "Communication",
+            "Message sent to external system",
+            false,
+            "High",
+        ),
+        (
+            "ExternalSystem",
+            "Interaction with external system",
+            false,
+            "High",
+        ),
     ];
 
     match format {
@@ -302,22 +333,47 @@ fn show_invariant4(format: OutputFormat) -> CliResult<()> {
             println!("{}", serde_yaml::to_string(&yaml)?);
         }
         OutputFormat::Table => {
-            println!("{}", "Invariant #4: Commitment precedes Consequence".bold().cyan());
+            println!(
+                "{}",
+                "Invariant #4: Commitment precedes Consequence"
+                    .bold()
+                    .cyan()
+            );
             println!("{}", "=".repeat(60));
             println!();
-            println!("  {}", "Every consequence MUST reference a valid commitment.".bold());
+            println!(
+                "  {}",
+                "Every consequence MUST reference a valid commitment.".bold()
+            );
             println!();
-            println!("  Enforcement: {} (Rust type system)", "Compile-time".green());
+            println!(
+                "  Enforcement: {} (Rust type system)",
+                "Compile-time".green()
+            );
             println!();
             println!("  Flow:");
-            println!("    {} Commitment drafted via ContractEngine", "1.".yellow());
+            println!(
+                "    {} Commitment drafted via ContractEngine",
+                "1.".yellow()
+            );
             println!("    {} Commitment approved and activated", "2.".yellow());
-            println!("    {} ConsequenceTracker.record() requires CommitmentId", "3.".yellow());
-            println!("    {} Tracker validates commitment is Active/Executing", "4.".yellow());
-            println!("    {} Consequence recorded with cryptographic receipt", "5.".yellow());
+            println!(
+                "    {} ConsequenceTracker.record() requires CommitmentId",
+                "3.".yellow()
+            );
+            println!(
+                "    {} Tracker validates commitment is Active/Executing",
+                "4.".yellow()
+            );
+            println!(
+                "    {} Consequence recorded with cryptographic receipt",
+                "5.".yellow()
+            );
             println!();
-            println!("  Without step 1-2, step 3-5 {} at compile time.",
-                "cannot execute".red().bold());
+            println!(
+                "  Without step 1-2, step 3-5 {} at compile time.",
+                "cannot execute".red().bold()
+            );
         }
     }
 

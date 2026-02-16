@@ -3,12 +3,10 @@
 //! Verifies graceful degradation, identity persistence across
 //! restarts, and explicit failure recording.
 
-use maple_kernel_fabric::{EventFabric, EventPayload, FabricConfig, ResonanceStage};
-use maple_kernel_gate::{AdjudicationResult, CommitmentOutcome};
-use maple_mwl_identity::IdentityManager;
-use maple_mwl_types::{
-    EffectDomain, FailureReason, IdentityMaterial, WorldlineId,
-};
+use worldline_core::identity::IdentityManager;
+use worldline_core::types::{EffectDomain, FailureReason, IdentityMaterial, WorldlineId};
+use worldline_runtime::fabric::{EventFabric, EventPayload, FabricConfig, ResonanceStage};
+use worldline_runtime::gate::{AdjudicationResult, CommitmentOutcome};
 
 use crate::helpers::{KernelOptions, TestKernel};
 
@@ -56,10 +54,7 @@ fn test_continuity_chain_extension() {
         ctx.worldline_id, wid,
         "Continuity context should reference the correct worldline"
     );
-    assert_eq!(
-        ctx.segment_index, 0,
-        "First segment should have index 0"
-    );
+    assert_eq!(ctx.segment_index, 0, "First segment should have index 0");
 }
 
 /// Commitment failure is explicitly recorded, never silent (I.S-4).
@@ -103,9 +98,10 @@ async fn test_commitment_failure_explicit() {
     let entry = kernel.gate.ledger().history(&cid).unwrap();
 
     // Find the Failed lifecycle event
-    let has_failure = entry.lifecycle.iter().any(|ev| {
-        matches!(ev, maple_kernel_gate::LifecycleEvent::Failed { .. })
-    });
+    let has_failure = entry
+        .lifecycle
+        .iter()
+        .any(|ev| matches!(ev, worldline_runtime::gate::LifecycleEvent::Failed { .. }));
     assert!(
         has_failure,
         "I.S-4: Failure must be explicitly recorded in ledger"

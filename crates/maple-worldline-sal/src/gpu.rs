@@ -75,7 +75,10 @@ impl SubstrateAbstractionLayer for GpuSubstrate {
     fn execute_operator(&self, input: &OperatorInput) -> SalResult<OperatorOutput> {
         // Fallback to CPU if device not available or operation not compatible
         if !self.device_available || !self.is_gpu_compatible(input) {
-            tracing::info!("GPU: falling back to CPU for operator '{}'", input.operator_name);
+            tracing::info!(
+                "GPU: falling back to CPU for operator '{}'",
+                input.operator_name
+            );
             return self.cpu_fallback.execute_operator(input);
         }
 
@@ -89,9 +92,7 @@ impl SubstrateAbstractionLayer for GpuSubstrate {
             self.compute_units
         );
 
-        let elapsed = (Utc::now() - execution_start)
-            .num_milliseconds()
-            .max(0) as u64;
+        let elapsed = (Utc::now() - execution_start).num_milliseconds().max(0) as u64;
 
         Ok(OperatorOutput {
             result,
@@ -110,7 +111,9 @@ impl SubstrateAbstractionLayer for GpuSubstrate {
         // WLIR always falls back to CPU interpretation on GPU substrate
         if !self.device_available {
             tracing::info!("GPU: falling back to CPU for WLIR execution");
-            return self.cpu_fallback.execute_wlir(module_name, entry_function, args);
+            return self
+                .cpu_fallback
+                .execute_wlir(module_name, entry_function, args);
         }
 
         let execution_id = ExecutionId::new();
@@ -127,9 +130,7 @@ impl SubstrateAbstractionLayer for GpuSubstrate {
         let instructions_executed = 100 + (args.len() as u64 * 10);
         let memory_used = 8192 + (args.len() as u64 * 512); // GPU uses more memory
 
-        let elapsed = (Utc::now() - execution_start)
-            .num_milliseconds()
-            .max(0) as u64;
+        let elapsed = (Utc::now() - execution_start).num_milliseconds().max(0) as u64;
 
         Ok(ExecutionResult {
             execution_id,
@@ -149,7 +150,7 @@ impl SubstrateAbstractionLayer for GpuSubstrate {
         SubstrateCapabilities {
             parallelism: self.compute_units,
             memory_bytes: 16 * 1024 * 1024 * 1024, // 16 GiB VRAM
-            base_latency_us: 10, // GPU is faster for parallel work
+            base_latency_us: 10,                   // GPU is faster for parallel work
             supports_wlir: true,
             supports_gpu_operators: true,
             features: Default::default(),
@@ -243,9 +244,7 @@ mod tests {
     #[test]
     fn gpu_execute_wlir() {
         let gpu = GpuSubstrate::new();
-        let result = gpu
-            .execute_wlir("mod", "main", vec!["arg".into()])
-            .unwrap();
+        let result = gpu.execute_wlir("mod", "main", vec!["arg".into()]).unwrap();
         assert!(result.output_values[0].contains("gpu:"));
         assert!(result.output_values[0].contains("vectorized"));
     }
@@ -253,9 +252,7 @@ mod tests {
     #[test]
     fn gpu_execute_wlir_unavailable_fallback() {
         let gpu = GpuSubstrate::unavailable();
-        let result = gpu
-            .execute_wlir("mod", "main", vec![])
-            .unwrap();
+        let result = gpu.execute_wlir("mod", "main", vec![]).unwrap();
         assert!(result.output_values[0].contains("cpu:"));
     }
 
@@ -279,9 +276,7 @@ mod tests {
     #[test]
     fn gpu_record_provenance() {
         let gpu = GpuSubstrate::new();
-        let prov_id = gpu
-            .record_provenance("op", "in", "out", 5)
-            .unwrap();
+        let prov_id = gpu.record_provenance("op", "in", "out", 5).unwrap();
         assert!(prov_id.to_string().starts_with("provenance:"));
     }
 }

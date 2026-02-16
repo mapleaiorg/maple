@@ -88,7 +88,6 @@ impl WorldlineId {
     pub fn derivation_version(&self) -> u8 {
         self.derivation_version
     }
-
 }
 
 impl std::fmt::Display for WorldlineId {

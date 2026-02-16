@@ -11,9 +11,9 @@
 
 use std::time::Duration;
 
-use maple_mwl_types::CommitmentId;
 use maple_worldline_observation::events::{ObservationMetadata, SubsystemId};
 use maple_worldline_observation::SelfObservationEvent;
+use worldline_core::types::CommitmentId;
 
 use crate::types::ConsequenceRecord;
 
@@ -101,7 +101,11 @@ mod tests {
 
         let (event, metadata) = result.unwrap();
         match event {
-            SelfObservationEvent::GateSubmission { approved, stages_evaluated, .. } => {
+            SelfObservationEvent::GateSubmission {
+                approved,
+                stages_evaluated,
+                ..
+            } => {
                 assert!(approved);
                 assert_eq!(stages_evaluated, 5);
             }
@@ -126,7 +130,11 @@ mod tests {
 
         let (event, _) = result.unwrap();
         match event {
-            SelfObservationEvent::GateSubmission { approved, stages_evaluated, .. } => {
+            SelfObservationEvent::GateSubmission {
+                approved,
+                stages_evaluated,
+                ..
+            } => {
                 assert!(!approved);
                 assert_eq!(stages_evaluated, 5); // 3 passed + 2 failed
             }

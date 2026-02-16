@@ -47,9 +47,9 @@ pub use canonical::{
     world_profile,
 };
 pub use dimensions::{
-    AttentionBudgetConfig, CommitmentAuthority, ConsentLevel, ConsequenceScopeLimit, CouplingLimits,
-    ExhaustionBehavior, HumanInvolvementConfig, IntentResolutionRules, OversightLevel, ProfileType,
-    ReversibilityPreference, WorldlineProfile,
+    AttentionBudgetConfig, CommitmentAuthority, ConsentLevel, ConsequenceScopeLimit,
+    CouplingLimits, ExhaustionBehavior, HumanInvolvementConfig, IntentResolutionRules,
+    OversightLevel, ProfileType, ReversibilityPreference, WorldlineProfile,
 };
 pub use enforcer::{CommitmentProposal, CouplingProposal, ProfileEnforcer};
 pub use error::{

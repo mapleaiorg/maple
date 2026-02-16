@@ -197,9 +197,7 @@ impl AmbiguityManager {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::{
-        Evidence, EvidenceCategory, GrowthModel, SelfMeaningCategory,
-    };
+    use crate::types::{Evidence, EvidenceCategory, GrowthModel, SelfMeaningCategory};
     use chrono::Utc;
 
     fn make_evidence(n: usize) -> Vec<Evidence> {
@@ -272,7 +270,7 @@ mod tests {
             },
             0.9,
             0.1,
-            3,     // not enough evidence (min is 10)
+            3, // not enough evidence (min is 10)
             false,
         );
 
@@ -297,7 +295,7 @@ mod tests {
                 growth_model: GrowthModel::Exponential,
             },
             0.6,
-            0.7,  // high ambiguity
+            0.7, // high ambiguity
             15,
             false,
         );
@@ -378,7 +376,7 @@ mod tests {
                 structural_pressure: "test".into(),
             },
             evidence: make_evidence(15),
-            confidence: 0.3,  // much lower than winner
+            confidence: 0.3, // much lower than winner
             ambiguity: 0.6,
             formed_at: Utc::now(),
             temporal_stability_secs: 3600.0,
@@ -405,7 +403,7 @@ mod tests {
                 improvement_direction: "test".into(),
             },
             0.6,
-            0.6,  // high ambiguity, but not safety-relevant
+            0.6, // high ambiguity, but not safety-relevant
             15,
             false,
         );
@@ -440,9 +438,6 @@ mod tests {
         };
         let json = serde_json::to_string(&decision).unwrap();
         let restored: AmbiguityDecision = serde_json::from_str(&json).unwrap();
-        assert!(matches!(
-            restored,
-            AmbiguityDecision::ReadyForIntent { .. }
-        ));
+        assert!(matches!(restored, AmbiguityDecision::ReadyForIntent { .. }));
     }
 }

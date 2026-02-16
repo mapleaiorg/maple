@@ -353,16 +353,18 @@ impl ProvenanceIndex {
                 ResonanceStage::Governance => 6,
                 ResonanceStage::System => 7,
             };
-            let current_max = highest_stage.map(|s| match s {
-                ResonanceStage::Presence => 0,
-                ResonanceStage::Coupling => 1,
-                ResonanceStage::Meaning => 2,
-                ResonanceStage::Intent => 3,
-                ResonanceStage::Commitment => 4,
-                ResonanceStage::Consequence => 5,
-                ResonanceStage::Governance => 6,
-                ResonanceStage::System => 7,
-            }).unwrap_or(0);
+            let current_max = highest_stage
+                .map(|s| match s {
+                    ResonanceStage::Presence => 0,
+                    ResonanceStage::Coupling => 1,
+                    ResonanceStage::Meaning => 2,
+                    ResonanceStage::Intent => 3,
+                    ResonanceStage::Commitment => 4,
+                    ResonanceStage::Consequence => 5,
+                    ResonanceStage::Governance => 6,
+                    ResonanceStage::System => 7,
+                })
+                .unwrap_or(0);
             if stage_ord >= current_max {
                 highest_stage = Some(node.resonance_stage);
             }
@@ -517,9 +519,7 @@ fn extract_metadata(payload: &EventPayload) -> (Option<CommitmentId>, Option<Str
             (Some(commitment_id.clone()), None)
         }
         EventPayload::PolicyEvaluated { policy_id, .. } => (None, Some(policy_id.clone())),
-        EventPayload::InvariantChecked { invariant_id, .. } => {
-            (None, Some(invariant_id.clone()))
-        }
+        EventPayload::InvariantChecked { invariant_id, .. } => (None, Some(invariant_id.clone())),
         _ => (None, None),
     }
 }
@@ -638,10 +638,20 @@ mod tests {
         let genesis = make_genesis(wid.clone(), 100);
         index.add_event(&genesis).unwrap();
 
-        let e1 = make_event(vec![genesis.id.clone()], ResonanceStage::Meaning, wid.clone(), 200);
+        let e1 = make_event(
+            vec![genesis.id.clone()],
+            ResonanceStage::Meaning,
+            wid.clone(),
+            200,
+        );
         index.add_event(&e1).unwrap();
 
-        let e2 = make_event(vec![e1.id.clone()], ResonanceStage::Intent, wid.clone(), 300);
+        let e2 = make_event(
+            vec![e1.id.clone()],
+            ResonanceStage::Intent,
+            wid.clone(),
+            300,
+        );
         index.add_event(&e2).unwrap();
 
         assert_eq!(index.len(), 3);
@@ -694,13 +704,28 @@ mod tests {
         let g = make_genesis(wid.clone(), 100);
         index.add_event(&g).unwrap();
 
-        let e1 = make_event(vec![g.id.clone()], ResonanceStage::Meaning, wid.clone(), 200);
+        let e1 = make_event(
+            vec![g.id.clone()],
+            ResonanceStage::Meaning,
+            wid.clone(),
+            200,
+        );
         index.add_event(&e1).unwrap();
 
-        let e2 = make_event(vec![e1.id.clone()], ResonanceStage::Intent, wid.clone(), 300);
+        let e2 = make_event(
+            vec![e1.id.clone()],
+            ResonanceStage::Intent,
+            wid.clone(),
+            300,
+        );
         index.add_event(&e2).unwrap();
 
-        let e3 = make_event(vec![e2.id.clone()], ResonanceStage::Commitment, wid.clone(), 400);
+        let e3 = make_event(
+            vec![e2.id.clone()],
+            ResonanceStage::Commitment,
+            wid.clone(),
+            400,
+        );
         index.add_event(&e3).unwrap();
 
         let ancestors = index.ancestors(&e3.id, None);
@@ -723,10 +748,20 @@ mod tests {
         let g = make_genesis(wid.clone(), 100);
         index.add_event(&g).unwrap();
 
-        let e1 = make_event(vec![g.id.clone()], ResonanceStage::Meaning, wid.clone(), 200);
+        let e1 = make_event(
+            vec![g.id.clone()],
+            ResonanceStage::Meaning,
+            wid.clone(),
+            200,
+        );
         index.add_event(&e1).unwrap();
 
-        let e2 = make_event(vec![e1.id.clone()], ResonanceStage::Intent, wid.clone(), 300);
+        let e2 = make_event(
+            vec![e1.id.clone()],
+            ResonanceStage::Intent,
+            wid.clone(),
+            300,
+        );
         index.add_event(&e2).unwrap();
 
         let descendants = index.descendants(&g.id, None);
@@ -748,13 +783,28 @@ mod tests {
         let g = make_genesis(wid.clone(), 100);
         index.add_event(&g).unwrap();
 
-        let e1 = make_event(vec![g.id.clone()], ResonanceStage::Meaning, wid.clone(), 200);
+        let e1 = make_event(
+            vec![g.id.clone()],
+            ResonanceStage::Meaning,
+            wid.clone(),
+            200,
+        );
         index.add_event(&e1).unwrap();
 
-        let e2 = make_event(vec![e1.id.clone()], ResonanceStage::Intent, wid.clone(), 300);
+        let e2 = make_event(
+            vec![e1.id.clone()],
+            ResonanceStage::Intent,
+            wid.clone(),
+            300,
+        );
         index.add_event(&e2).unwrap();
 
-        let e3 = make_event(vec![e2.id.clone()], ResonanceStage::Commitment, wid.clone(), 400);
+        let e3 = make_event(
+            vec![e2.id.clone()],
+            ResonanceStage::Commitment,
+            wid.clone(),
+            400,
+        );
         index.add_event(&e3).unwrap();
 
         let path = index.causal_path(&g.id, &e3.id).unwrap();
@@ -807,7 +857,11 @@ mod tests {
         // Approval event for same commitment
         let c2 = KernelEvent::new(
             EventId::new(),
-            HlcTimestamp { physical: 300, logical: 0, node_id: NodeId(1) },
+            HlcTimestamp {
+                physical: 300,
+                logical: 0,
+                node_id: NodeId(1),
+            },
             wid.clone(),
             ResonanceStage::Commitment,
             EventPayload::CommitmentApproved {
@@ -819,7 +873,12 @@ mod tests {
         index.add_event(&c2).unwrap();
 
         // Unrelated event
-        let other = make_event(vec![g.id.clone()], ResonanceStage::Meaning, wid.clone(), 250);
+        let other = make_event(
+            vec![g.id.clone()],
+            ResonanceStage::Meaning,
+            wid.clone(),
+            250,
+        );
         index.add_event(&other).unwrap();
 
         let trail = index.audit_trail(&cid);
@@ -843,10 +902,20 @@ mod tests {
         let g2 = make_genesis(wid2.clone(), 150);
         index.add_event(&g2).unwrap();
 
-        let e1 = make_event(vec![g1.id.clone()], ResonanceStage::Meaning, wid1.clone(), 200);
+        let e1 = make_event(
+            vec![g1.id.clone()],
+            ResonanceStage::Meaning,
+            wid1.clone(),
+            200,
+        );
         index.add_event(&e1).unwrap();
 
-        let e2 = make_event(vec![g2.id.clone()], ResonanceStage::Intent, wid2.clone(), 250);
+        let e2 = make_event(
+            vec![g2.id.clone()],
+            ResonanceStage::Intent,
+            wid2.clone(),
+            250,
+        );
         index.add_event(&e2).unwrap();
 
         let history1 = index.worldline_history(&wid1, None);
@@ -864,13 +933,28 @@ mod tests {
         let g = make_genesis(wid.clone(), 100);
         index.add_event(&g).unwrap();
 
-        let e1 = make_event(vec![g.id.clone()], ResonanceStage::Meaning, wid.clone(), 200);
+        let e1 = make_event(
+            vec![g.id.clone()],
+            ResonanceStage::Meaning,
+            wid.clone(),
+            200,
+        );
         index.add_event(&e1).unwrap();
 
-        let e2 = make_event(vec![e1.id.clone()], ResonanceStage::Intent, wid.clone(), 300);
+        let e2 = make_event(
+            vec![e1.id.clone()],
+            ResonanceStage::Intent,
+            wid.clone(),
+            300,
+        );
         index.add_event(&e2).unwrap();
 
-        let e3 = make_event(vec![e2.id.clone()], ResonanceStage::Commitment, wid.clone(), 400);
+        let e3 = make_event(
+            vec![e2.id.clone()],
+            ResonanceStage::Commitment,
+            wid.clone(),
+            400,
+        );
         index.add_event(&e3).unwrap();
 
         let range = (
@@ -922,13 +1006,28 @@ mod tests {
         let g = make_genesis(wid1.clone(), 100);
         index.add_event(&g).unwrap();
 
-        let e1 = make_event(vec![g.id.clone()], ResonanceStage::Meaning, wid1.clone(), 200);
+        let e1 = make_event(
+            vec![g.id.clone()],
+            ResonanceStage::Meaning,
+            wid1.clone(),
+            200,
+        );
         index.add_event(&e1).unwrap();
 
-        let e2 = make_event(vec![e1.id.clone()], ResonanceStage::Intent, wid2.clone(), 300);
+        let e2 = make_event(
+            vec![e1.id.clone()],
+            ResonanceStage::Intent,
+            wid2.clone(),
+            300,
+        );
         index.add_event(&e2).unwrap();
 
-        let e3 = make_event(vec![e2.id.clone()], ResonanceStage::Commitment, wid1.clone(), 400);
+        let e3 = make_event(
+            vec![e2.id.clone()],
+            ResonanceStage::Commitment,
+            wid1.clone(),
+            400,
+        );
         index.add_event(&e3).unwrap();
 
         let report = index.impact_analysis(&g.id);
@@ -954,10 +1053,20 @@ mod tests {
         index.add_event(&g2).unwrap();
 
         // wid1 event causes wid2 event
-        let e1 = make_event(vec![g1.id.clone()], ResonanceStage::Meaning, wid1.clone(), 200);
+        let e1 = make_event(
+            vec![g1.id.clone()],
+            ResonanceStage::Meaning,
+            wid1.clone(),
+            200,
+        );
         index.add_event(&e1).unwrap();
 
-        let e2 = make_event(vec![e1.id.clone()], ResonanceStage::Intent, wid2.clone(), 300);
+        let e2 = make_event(
+            vec![e1.id.clone()],
+            ResonanceStage::Intent,
+            wid2.clone(),
+            300,
+        );
         index.add_event(&e2).unwrap();
 
         let report = index.risk_contagion(&wid1);
@@ -977,13 +1086,28 @@ mod tests {
         let g = make_genesis(wid.clone(), 100);
         index.add_event(&g).unwrap();
 
-        let e1 = make_event(vec![g.id.clone()], ResonanceStage::Meaning, wid.clone(), 200);
+        let e1 = make_event(
+            vec![g.id.clone()],
+            ResonanceStage::Meaning,
+            wid.clone(),
+            200,
+        );
         index.add_event(&e1).unwrap();
 
-        let e2 = make_event(vec![e1.id.clone()], ResonanceStage::Intent, wid.clone(), 300);
+        let e2 = make_event(
+            vec![e1.id.clone()],
+            ResonanceStage::Intent,
+            wid.clone(),
+            300,
+        );
         index.add_event(&e2).unwrap();
 
-        let e3 = make_event(vec![e2.id.clone()], ResonanceStage::Commitment, wid.clone(), 400);
+        let e3 = make_event(
+            vec![e2.id.clone()],
+            ResonanceStage::Commitment,
+            wid.clone(),
+            400,
+        );
         index.add_event(&e3).unwrap();
 
         let before_len = index.len();
@@ -1002,10 +1126,16 @@ mod tests {
         // e1's child e2 is NOT in the compress set, so e1 IS boundary.
 
         // After checkpoint: e1 (boundary), e2, e3 should remain
-        assert!(index.get(&e1.id).is_some(), "Boundary event e1 should be preserved");
+        assert!(
+            index.get(&e1.id).is_some(),
+            "Boundary event e1 should be preserved"
+        );
         assert!(index.get(&e2.id).is_some());
         assert!(index.get(&e3.id).is_some());
-        assert!(index.get(&g.id).is_none(), "Non-boundary event g should be removed");
+        assert!(
+            index.get(&g.id).is_none(),
+            "Non-boundary event g should be removed"
+        );
 
         // Causal path from e1 to e3 still works
         let path = index.causal_path(&e1.id, &e3.id).unwrap();
@@ -1039,7 +1169,9 @@ mod tests {
             .emit(
                 wid.clone(),
                 ResonanceStage::System,
-                EventPayload::WorldlineCreated { profile: "test".into() },
+                EventPayload::WorldlineCreated {
+                    profile: "test".into(),
+                },
                 vec![],
             )
             .await

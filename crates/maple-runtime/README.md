@@ -296,7 +296,7 @@ Enables:
 
 #### **InvariantGuard** - Safety Enforcement
 
-Runtime enforcement of the 8 canonical invariants. Any violation = system error.
+Runtime enforcement of the 9 canonical WorldLine invariants. Any violation = system error.
 
 #### **TemporalCoordinator** - Causal Ordering
 

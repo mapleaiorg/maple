@@ -226,7 +226,10 @@ impl SelfModificationLedger {
         if terminal.is_empty() {
             return 0.0;
         }
-        let succeeded = terminal.iter().filter(|e| e.deployment_status.is_success()).count();
+        let succeeded = terminal
+            .iter()
+            .filter(|e| e.deployment_status.is_success())
+            .count();
         succeeded as f64 / terminal.len() as f64
     }
 

@@ -1,0 +1,13 @@
+[package]
+name = "worldline-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Phase A facade crate for WorldLine core identity and types"
+
+[dependencies]
+maple-mwl-types = { workspace = true }
+maple-mwl-identity = { workspace = true }

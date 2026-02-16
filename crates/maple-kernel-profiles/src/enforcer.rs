@@ -1,12 +1,8 @@
-use maple_mwl_types::{EffectDomain, RiskClass, Reversibility};
+use maple_mwl_types::{EffectDomain, Reversibility, RiskClass};
 use tracing::{debug, warn};
 
-use crate::dimensions::{
-    ConsentLevel, OversightLevel, ReversibilityPreference, WorldlineProfile,
-};
-use crate::error::{
-    EnforcementResult, ProfileViolation, ViolationDimension, ViolationSeverity,
-};
+use crate::dimensions::{ConsentLevel, OversightLevel, ReversibilityPreference, WorldlineProfile};
+use crate::error::{EnforcementResult, ProfileViolation, ViolationDimension, ViolationSeverity};
 
 /// ProfileEnforcer — validates operations against profile constraints.
 ///
@@ -165,7 +161,11 @@ impl ProfileEnforcer {
         let mut warnings = Vec::new();
 
         // Check domain permission
-        if !profile.commitment_authority.allowed_domains.contains(&proposal.domain) {
+        if !profile
+            .commitment_authority
+            .allowed_domains
+            .contains(&proposal.domain)
+        {
             violations.push(ProfileViolation {
                 profile_type: profile.name.clone(),
                 dimension: ViolationDimension::CommitmentAuthority,
@@ -243,9 +243,10 @@ impl ProfileEnforcer {
         }
 
         // Check consequence value
-        if let (Some(value), Some(max_value)) =
-            (proposal.consequence_value, profile.commitment_authority.max_consequence_value)
-        {
+        if let (Some(value), Some(max_value)) = (
+            proposal.consequence_value,
+            profile.commitment_authority.max_consequence_value,
+        ) {
             if value > max_value {
                 violations.push(ProfileViolation {
                     profile_type: profile.name.clone(),
@@ -308,9 +309,7 @@ impl ProfileEnforcer {
     ) -> bool {
         match profile.human_involvement.oversight_level {
             OversightLevel::FullOversight => true,
-            OversightLevel::ApprovalForHighRisk => {
-                risk_class >= RiskClass::High || is_irreversible
-            }
+            OversightLevel::ApprovalForHighRisk => risk_class >= RiskClass::High || is_irreversible,
             OversightLevel::Notification => is_irreversible,
             OversightLevel::AuditOnly => false,
             OversightLevel::None => false,
@@ -512,22 +511,46 @@ mod tests {
     fn requires_human_oversight_full() {
         let profile = human_profile();
         // Full oversight means always required
-        assert!(ProfileEnforcer::requires_human_oversight(&profile, RiskClass::Low, false));
+        assert!(ProfileEnforcer::requires_human_oversight(
+            &profile,
+            RiskClass::Low,
+            false
+        ));
     }
 
     #[test]
     fn requires_human_oversight_approval_for_high_risk() {
         let profile = agent_profile();
-        assert!(!ProfileEnforcer::requires_human_oversight(&profile, RiskClass::Low, false));
-        assert!(ProfileEnforcer::requires_human_oversight(&profile, RiskClass::High, false));
-        assert!(ProfileEnforcer::requires_human_oversight(&profile, RiskClass::Low, true));
+        assert!(!ProfileEnforcer::requires_human_oversight(
+            &profile,
+            RiskClass::Low,
+            false
+        ));
+        assert!(ProfileEnforcer::requires_human_oversight(
+            &profile,
+            RiskClass::High,
+            false
+        ));
+        assert!(ProfileEnforcer::requires_human_oversight(
+            &profile,
+            RiskClass::Low,
+            true
+        ));
     }
 
     #[test]
     fn requires_human_oversight_audit_only() {
         let profile = world_profile();
-        assert!(!ProfileEnforcer::requires_human_oversight(&profile, RiskClass::High, false));
-        assert!(!ProfileEnforcer::requires_human_oversight(&profile, RiskClass::Critical, true));
+        assert!(!ProfileEnforcer::requires_human_oversight(
+            &profile,
+            RiskClass::High,
+            false
+        ));
+        assert!(!ProfileEnforcer::requires_human_oversight(
+            &profile,
+            RiskClass::Critical,
+            true
+        ));
     }
 
     #[test]
@@ -537,7 +560,10 @@ mod tests {
         proposal.strength = 0.55; // 91% of limit
         proposal.consent_provided = ConsentLevel::Explicit;
         let result = ProfileEnforcer::check_coupling(&profile, &proposal);
-        assert!(matches!(result, EnforcementResult::PermittedWithWarnings(_)));
+        assert!(matches!(
+            result,
+            EnforcementResult::PermittedWithWarnings(_)
+        ));
     }
 
     #[test]

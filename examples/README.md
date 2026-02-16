@@ -2,6 +2,10 @@
 
 All examples are workspace members and can be run directly.
 
+Phase A note:
+- `mwl-*` demos use the facade crates (`worldline-core`, `worldline-runtime`, `worldline-ledger`).
+- Legacy `maple-*` crates remain supported for one compatibility cycle.
+
 ## Core WorldLine Demos
 
 | Example | Focus | Run |

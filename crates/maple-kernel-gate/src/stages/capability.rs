@@ -69,10 +69,7 @@ impl GateStage for CapabilityCheckStage {
         if !covers_domain {
             return Ok(StageResult::Deny(DenialReason {
                 code: "DOMAIN_NOT_COVERED".into(),
-                message: format!(
-                    "No held capability covers effect domain {:?}",
-                    domain
-                ),
+                message: format!("No held capability covers effect domain {:?}", domain),
                 policy_refs: vec![],
             }));
         }

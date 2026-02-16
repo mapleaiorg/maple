@@ -52,7 +52,10 @@ mod tests {
     #[test]
     fn error_display_commitment_not_approved() {
         let err = CodegenError::CommitmentNotApproved("decision is Denied".into());
-        assert_eq!(err.to_string(), "commitment not approved: decision is Denied");
+        assert_eq!(
+            err.to_string(),
+            "commitment not approved: decision is Denied"
+        );
     }
 
     #[test]

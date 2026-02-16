@@ -103,8 +103,16 @@ fn generate_verilog(spec: &EpuSpec) -> String {
     s.push_str("  input wire rst_n,\n");
     for comp in &spec.components {
         s.push_str(&format!("  // {} ({})\n", comp.name, comp.kind));
-        s.push_str(&format!("  input wire [{}-1:0] {}_in,\n", comp.port_count * 8, comp.name));
-        s.push_str(&format!("  output wire [{}-1:0] {}_out,\n", comp.port_count * 8, comp.name));
+        s.push_str(&format!(
+            "  input wire [{}-1:0] {}_in,\n",
+            comp.port_count * 8,
+            comp.name
+        ));
+        s.push_str(&format!(
+            "  output wire [{}-1:0] {}_out,\n",
+            comp.port_count * 8,
+            comp.name
+        ));
     }
     s.push_str("  output wire ready\n");
     s.push_str(");\n\n");
@@ -115,7 +123,10 @@ fn generate_verilog(spec: &EpuSpec) -> String {
 
 fn generate_systemverilog(spec: &EpuSpec) -> String {
     let mut s = String::new();
-    s.push_str(&format!("// EPU: {} v{} (SystemVerilog)\n", spec.name, spec.version));
+    s.push_str(&format!(
+        "// EPU: {} v{} (SystemVerilog)\n",
+        spec.name, spec.version
+    ));
     s.push_str(&format!("module {} (\n", spec.name));
     s.push_str("  input logic clk,\n");
     s.push_str("  input logic rst_n,\n");
@@ -209,7 +220,9 @@ mod tests {
     #[test]
     fn generate_systemverilog_format() {
         let gen = SimulatedHdlGenerator::new();
-        let hdl = gen.generate(&sample_spec(), &HdlFormat::SystemVerilog).unwrap();
+        let hdl = gen
+            .generate(&sample_spec(), &HdlFormat::SystemVerilog)
+            .unwrap();
         assert_eq!(hdl.format, HdlFormat::SystemVerilog);
         assert!(hdl.source.contains("input logic clk"));
         assert!(hdl.source.contains("always_comb"));

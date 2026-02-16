@@ -53,7 +53,7 @@ We have successfully implemented the MAPLE Resonance Runtime, a revolutionary mu
 
 ### Safety and Governance (`invariants/`)
 
-✅ **InvariantGuard** - Runtime enforcement of 8 canonical invariants
+✅ **InvariantGuard** - Runtime enforcement of 9 canonical WorldLine invariants
 1. Presence precedes meaning ✓
 2. Meaning precedes intent ✓
 3. Intent precedes commitment ✓
@@ -62,6 +62,7 @@ We have successfully implemented the MAPLE Resonance Runtime, a revolutionary mu
 6. Safety overrides optimization ✓
 7. Human agency cannot be bypassed ✓
 8. Failure must be explicit ✓
+9. Implementation provenance & constitutional evolution ✓
 
 ### Temporal Coordination (`temporal/`)
 
@@ -159,7 +160,7 @@ Traditional frameworks: `Agent A --[message]--> Agent B`
 MAPLE: `Resonator A <==[coupling]==> Resonator B` (stateful, evolving relationships)
 
 #### 2. **Architectural Safety**
-- 8 runtime-enforced invariants (NOT policy-based)
+- 9 runtime-enforced invariants (NOT policy-based)
 - Human agency protection built into architecture
 - Attention economics prevent abuse
 
@@ -335,7 +336,7 @@ Not ephemeral connections. Couplings that strengthen gradually and track meaning
 ✅ **Examples run successfully** (5/5)
 ✅ **Comprehensive documentation** with README
 ✅ **Three platform configurations** (Mapleverse, Finalverse, iBank)
-✅ **8 architectural invariants** enforced
+✅ **9 architectural invariants** enforced
 ✅ **Attention economics** implemented
 ✅ **Gradient presence** implemented
 ✅ **Coupling dynamics** with gradual strengthening
@@ -379,7 +380,7 @@ We've built a production-quality implementation of the Resonance Architecture th
 - ✅ Has comprehensive test coverage
 - ✅ Includes working examples for all three platforms
 - ✅ Has world-class documentation
-- ✅ Implements all 8 architectural invariants
+- ✅ Implements all 9 architectural invariants
 - ✅ Provides attention economics, gradient presence, and commitment accountability
 - ✅ Scales to 100M+ concurrent Resonators
 

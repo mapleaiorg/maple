@@ -55,7 +55,10 @@ fn merge_coupling_limits(a: &CouplingLimits, b: &CouplingLimits) -> CouplingLimi
 }
 
 /// Merge attention budget: take the more restrictive of each field.
-fn merge_attention_budget(a: &AttentionBudgetConfig, b: &AttentionBudgetConfig) -> AttentionBudgetConfig {
+fn merge_attention_budget(
+    a: &AttentionBudgetConfig,
+    b: &AttentionBudgetConfig,
+) -> AttentionBudgetConfig {
     AttentionBudgetConfig {
         // Lower capacity = more restrictive
         default_capacity: a.default_capacity.min(b.default_capacity),
@@ -66,7 +69,10 @@ fn merge_attention_budget(a: &AttentionBudgetConfig, b: &AttentionBudgetConfig) 
             .max_single_coupling_fraction
             .min(b.max_single_coupling_fraction),
         // Most restrictive exhaustion behavior
-        exhaustion_behavior: merge_exhaustion_behavior(&a.exhaustion_behavior, &b.exhaustion_behavior),
+        exhaustion_behavior: merge_exhaustion_behavior(
+            &a.exhaustion_behavior,
+            &b.exhaustion_behavior,
+        ),
     }
 }
 
@@ -81,7 +87,11 @@ fn merge_exhaustion_behavior(a: &ExhaustionBehavior, b: &ExhaustionBehavior) -> 
         }
     }
     // Higher severity = more restrictive
-    if severity(a) >= severity(b) { a.clone() } else { b.clone() }
+    if severity(a) >= severity(b) {
+        a.clone()
+    } else {
+        b.clone()
+    }
 }
 
 /// Merge intent resolution: take the more restrictive of each field.
@@ -188,8 +198,12 @@ fn merge_human_involvement(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::canonical::{agent_profile, coordination_profile, financial_profile, human_profile, world_profile};
-    use crate::dimensions::{ConsentLevel, ExhaustionBehavior, OversightLevel, ReversibilityPreference};
+    use crate::canonical::{
+        agent_profile, coordination_profile, financial_profile, human_profile, world_profile,
+    };
+    use crate::dimensions::{
+        ConsentLevel, ExhaustionBehavior, OversightLevel, ReversibilityPreference,
+    };
     use maple_mwl_types::{EffectDomain, RiskClass};
 
     #[test]
@@ -209,10 +223,16 @@ mod tests {
         );
 
         // Consent: takes higher (Informed > Explicit)
-        assert_eq!(merged.coupling_limits.consent_required, ConsentLevel::Informed);
+        assert_eq!(
+            merged.coupling_limits.consent_required,
+            ConsentLevel::Informed
+        );
 
         // Oversight: takes higher (FullOversight > ApprovalForHighRisk)
-        assert_eq!(merged.human_involvement.oversight_level, OversightLevel::FullOversight);
+        assert_eq!(
+            merged.human_involvement.oversight_level,
+            OversightLevel::FullOversight
+        );
 
         // Coercion detection: enabled if either (both have it)
         assert!(merged.human_involvement.coercion_detection_enabled);
@@ -240,12 +260,13 @@ mod tests {
         assert_eq!(merged.coupling_limits.max_concurrent_couplings, 10);
 
         // Consent: agent is higher (Explicit > Implicit)
-        assert_eq!(merged.coupling_limits.consent_required, ConsentLevel::Explicit);
+        assert_eq!(
+            merged.coupling_limits.consent_required,
+            ConsentLevel::Explicit
+        );
 
         // Confidence: agent is higher (0.8 > 0.6)
-        assert!(
-            (merged.intent_resolution.min_confidence_threshold - 0.8).abs() < f64::EPSILON
-        );
+        assert!((merged.intent_resolution.min_confidence_threshold - 0.8).abs() < f64::EPSILON);
 
         // Audit: required if either (agent requires it)
         assert!(merged.commitment_authority.require_audit_trail);
@@ -261,15 +282,22 @@ mod tests {
         assert_eq!(merged.commitment_authority.max_risk_class, RiskClass::Low);
 
         // Confidence: financial is higher (0.9 > 0.75)
-        assert!(
-            (merged.intent_resolution.min_confidence_threshold - 0.9).abs() < f64::EPSILON
-        );
+        assert!((merged.intent_resolution.min_confidence_threshold - 0.9).abs() < f64::EPSILON);
 
         // Domains: intersection only
-        assert!(merged.commitment_authority.allowed_domains.contains(&EffectDomain::DataMutation));
-        assert!(merged.commitment_authority.allowed_domains.contains(&EffectDomain::Governance));
+        assert!(merged
+            .commitment_authority
+            .allowed_domains
+            .contains(&EffectDomain::DataMutation));
+        assert!(merged
+            .commitment_authority
+            .allowed_domains
+            .contains(&EffectDomain::Governance));
         // Communication only in coord but not in financial's Financial domain
-        assert!(!merged.commitment_authority.allowed_domains.contains(&EffectDomain::Financial));
+        assert!(!merged
+            .commitment_authority
+            .allowed_domains
+            .contains(&EffectDomain::Financial));
 
         // Cross-domain: financial disallows it
         assert!(!merged.consequence_scope.allow_cross_domain);
@@ -285,7 +313,8 @@ mod tests {
 
         // Numeric constraints should be the same regardless of order
         assert!(
-            (ab.coupling_limits.max_initial_strength - ba.coupling_limits.max_initial_strength).abs()
+            (ab.coupling_limits.max_initial_strength - ba.coupling_limits.max_initial_strength)
+                .abs()
                 < f64::EPSILON
         );
         assert!(
@@ -317,7 +346,8 @@ mod tests {
         let merged = merged_constraints(&agent, &agent);
 
         assert!(
-            (merged.coupling_limits.max_initial_strength - agent.coupling_limits.max_initial_strength)
+            (merged.coupling_limits.max_initial_strength
+                - agent.coupling_limits.max_initial_strength)
                 .abs()
                 < f64::EPSILON
         );
@@ -355,7 +385,10 @@ mod tests {
 
         // Only DataMutation is in both
         assert_eq!(merged.commitment_authority.allowed_domains.len(), 1);
-        assert!(merged.commitment_authority.allowed_domains.contains(&EffectDomain::DataMutation));
+        assert!(merged
+            .commitment_authority
+            .allowed_domains
+            .contains(&EffectDomain::DataMutation));
     }
 
     #[test]
@@ -363,12 +396,18 @@ mod tests {
         let human = human_profile(); // Block
         let agent = agent_profile(); // DegradeWeakest
         let merged = merged_constraints(&human, &agent);
-        assert_eq!(merged.attention_budget.exhaustion_behavior, ExhaustionBehavior::Block);
+        assert_eq!(
+            merged.attention_budget.exhaustion_behavior,
+            ExhaustionBehavior::Block
+        );
 
         let coord = coordination_profile(); // Queue
         let world = world_profile(); // DegradeWeakest
         let merged2 = merged_constraints(&coord, &world);
-        assert_eq!(merged2.attention_budget.exhaustion_behavior, ExhaustionBehavior::Queue);
+        assert_eq!(
+            merged2.attention_budget.exhaustion_behavior,
+            ExhaustionBehavior::Queue
+        );
     }
 
     #[test]

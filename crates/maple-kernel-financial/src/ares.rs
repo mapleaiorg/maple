@@ -58,22 +58,20 @@ impl FinancialGateExtension {
     ///
     /// Verifies that the declaring identity has enough unlocked collateral
     /// of the specified asset to cover the commitment amount.
-    pub fn collateral_check(
-        &self,
-        commitment: &FinancialCommitment,
-    ) -> Result<(), FinancialError> {
+    pub fn collateral_check(&self, commitment: &FinancialCommitment) -> Result<(), FinancialError> {
         let key = (
             commitment.declaring_identity.clone(),
             commitment.asset.clone(),
         );
 
-        let record = self.collateral.get(&key).ok_or_else(|| {
-            FinancialError::InsufficientCollateral {
-                asset: commitment.asset.clone(),
-                required: commitment.amount_minor,
-                available: 0,
-            }
-        })?;
+        let record =
+            self.collateral
+                .get(&key)
+                .ok_or_else(|| FinancialError::InsufficientCollateral {
+                    asset: commitment.asset.clone(),
+                    required: commitment.amount_minor,
+                    available: 0,
+                })?;
 
         let available = record.available_minor - record.locked_minor;
         if available < commitment.amount_minor {
@@ -197,10 +195,7 @@ impl FinancialGateExtension {
     }
 
     /// Regulatory compliance check — delegates to the regulatory engine.
-    pub fn regulatory_check(
-        &self,
-        commitment: &FinancialCommitment,
-    ) -> Result<(), FinancialError> {
+    pub fn regulatory_check(&self, commitment: &FinancialCommitment) -> Result<(), FinancialError> {
         self.regulatory.check_compliance(commitment)
     }
 
@@ -210,10 +205,7 @@ impl FinancialGateExtension {
     /// 1. Collateral check
     /// 2. Regulatory check
     /// (DvP atomicity is checked during settlement execution)
-    pub fn pre_check(
-        &self,
-        commitment: &FinancialCommitment,
-    ) -> Result<(), FinancialError> {
+    pub fn pre_check(&self, commitment: &FinancialCommitment) -> Result<(), FinancialError> {
         self.collateral_check(commitment)?;
         self.regulatory_check(commitment)?;
         Ok(())

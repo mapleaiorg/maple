@@ -58,23 +58,14 @@ impl CapabilityManager {
     /// Grant a capability to a worldline.
     ///
     /// Returns the assigned CapabilityId.
-    pub fn grant(
-        &mut self,
-        to: &WorldlineId,
-        cap: Capability,
-    ) -> Result<CapabilityId, AasError> {
+    pub fn grant(&mut self, to: &WorldlineId, cap: Capability) -> Result<CapabilityId, AasError> {
         let caps = self.grants.entry(to.clone()).or_default();
 
         // Check for duplicate: same id and domain
-        let already_held = caps
-            .iter()
-            .any(|g| g.active && g.capability.id == cap.id);
+        let already_held = caps.iter().any(|g| g.active && g.capability.id == cap.id);
 
         if already_held {
-            return Err(AasError::DuplicateCapability(
-                cap.id.clone(),
-                to.clone(),
-            ));
+            return Err(AasError::DuplicateCapability(cap.id.clone(), to.clone()));
         }
 
         let cap_id = CapabilityId(cap.id.clone());
@@ -222,10 +213,7 @@ impl maple_kernel_gate::CapabilityProvider for CapabilityManager {
     }
 
     fn get_capabilities(&self, wid: &WorldlineId) -> Vec<Capability> {
-        self.get_capabilities(wid)
-            .into_iter()
-            .cloned()
-            .collect()
+        self.get_capabilities(wid).into_iter().cloned().collect()
     }
 }
 
@@ -244,7 +232,13 @@ mod tests {
         let wid = test_worldline();
 
         let cap_id = mgr
-            .grant_simple(&wid, "CAP-COMM", "Communication", EffectDomain::Communication, RiskClass::Low)
+            .grant_simple(
+                &wid,
+                "CAP-COMM",
+                "Communication",
+                EffectDomain::Communication,
+                RiskClass::Low,
+            )
             .unwrap();
 
         assert!(mgr.check(&wid, &cap_id));
@@ -257,7 +251,13 @@ mod tests {
         let wid = test_worldline();
 
         let cap_id = mgr
-            .grant_simple(&wid, "CAP-COMM", "Communication", EffectDomain::Communication, RiskClass::Low)
+            .grant_simple(
+                &wid,
+                "CAP-COMM",
+                "Communication",
+                EffectDomain::Communication,
+                RiskClass::Low,
+            )
             .unwrap();
         assert!(mgr.check(&wid, &cap_id));
 
@@ -272,7 +272,13 @@ mod tests {
         let wid = test_worldline();
 
         let cap_id = mgr
-            .grant_simple(&wid, "CAP-COMM", "Communication", EffectDomain::Communication, RiskClass::Low)
+            .grant_simple(
+                &wid,
+                "CAP-COMM",
+                "Communication",
+                EffectDomain::Communication,
+                RiskClass::Low,
+            )
             .unwrap();
         mgr.revoke(&cap_id, &wid, "Security concern").unwrap();
 
@@ -285,9 +291,21 @@ mod tests {
         let mut mgr = CapabilityManager::new();
         let wid = test_worldline();
 
-        mgr.grant_simple(&wid, "CAP-COMM", "Communication", EffectDomain::Communication, RiskClass::Low)
-            .unwrap();
-        let result = mgr.grant_simple(&wid, "CAP-COMM", "Communication", EffectDomain::Communication, RiskClass::Low);
+        mgr.grant_simple(
+            &wid,
+            "CAP-COMM",
+            "Communication",
+            EffectDomain::Communication,
+            RiskClass::Low,
+        )
+        .unwrap();
+        let result = mgr.grant_simple(
+            &wid,
+            "CAP-COMM",
+            "Communication",
+            EffectDomain::Communication,
+            RiskClass::Low,
+        );
         assert!(result.is_err());
     }
 
@@ -306,13 +324,25 @@ mod tests {
         let wid = test_worldline();
 
         let cap_id = mgr
-            .grant_simple(&wid, "CAP-COMM", "Communication", EffectDomain::Communication, RiskClass::Low)
+            .grant_simple(
+                &wid,
+                "CAP-COMM",
+                "Communication",
+                EffectDomain::Communication,
+                RiskClass::Low,
+            )
             .unwrap();
         mgr.revoke(&cap_id, &wid, "temporary").unwrap();
 
         // Re-grant after revocation should succeed
         let new_id = mgr
-            .grant_simple(&wid, "CAP-COMM", "Communication", EffectDomain::Communication, RiskClass::Low)
+            .grant_simple(
+                &wid,
+                "CAP-COMM",
+                "Communication",
+                EffectDomain::Communication,
+                RiskClass::Low,
+            )
             .unwrap();
         assert!(mgr.check(&wid, &new_id));
     }
@@ -325,8 +355,14 @@ mod tests {
         let wid = test_worldline();
         let cap_id = CapabilityId("CAP-COMM".into());
 
-        mgr.grant_simple(&wid, "CAP-COMM", "Communication", EffectDomain::Communication, RiskClass::Low)
-            .unwrap();
+        mgr.grant_simple(
+            &wid,
+            "CAP-COMM",
+            "Communication",
+            EffectDomain::Communication,
+            RiskClass::Low,
+        )
+        .unwrap();
 
         // Use the trait method
         assert!(CapabilityProvider::has_capability(&mgr, &wid, &cap_id));

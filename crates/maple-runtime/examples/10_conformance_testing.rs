@@ -7,9 +7,7 @@
 //!
 //! Run with: `cargo run --example 10_conformance_testing`
 
-use resonator_conformance::{
-    ConformanceSuite, ConformanceConfig, Invariant, TestStatus,
-};
+use resonator_conformance::{ConformanceConfig, ConformanceSuite, Invariant, TestStatus};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -20,14 +18,29 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("═══════════════════════════════════════════════════════\n");
 
     let invariants = [
-        (Invariant::PresencePrecedesCoupling, "Presence precedes Coupling"),
-        (Invariant::CouplingPrecedesMeaning, "Coupling precedes Meaning"),
+        (
+            Invariant::PresencePrecedesCoupling,
+            "Presence precedes Coupling",
+        ),
+        (
+            Invariant::CouplingPrecedesMeaning,
+            "Coupling precedes Meaning",
+        ),
         (Invariant::MeaningPrecedesIntent, "Meaning precedes Intent"),
-        (Invariant::CommitmentPrecedesConsequence, "Commitment precedes Consequence"),
+        (
+            Invariant::CommitmentPrecedesConsequence,
+            "Commitment precedes Consequence",
+        ),
         (Invariant::ReceiptsImmutable, "Receipts are Immutable"),
         (Invariant::AuditAppendOnly, "Audit trail is Append-Only"),
-        (Invariant::CapabilitiesGateActions, "Capabilities gate Actions"),
-        (Invariant::TimeAnchorsMonotonic, "Time anchors are Monotonic"),
+        (
+            Invariant::CapabilitiesGateActions,
+            "Capabilities gate Actions",
+        ),
+        (
+            Invariant::TimeAnchorsMonotonic,
+            "Time anchors are Monotonic",
+        ),
     ];
 
     for (i, (_, desc)) in invariants.iter().enumerate() {

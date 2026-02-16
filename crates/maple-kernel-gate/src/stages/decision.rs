@@ -48,14 +48,11 @@ impl GateStage for FinalDecisionStage {
                 decision_id: uuid::Uuid::new_v4().to_string(),
                 decision: AdjudicationDecision::Deny,
                 rationale: reason.message.clone(),
-                risk: context
-                    .risk_assessment
-                    .clone()
-                    .unwrap_or(RiskLevel {
-                        class: RiskClass::Low,
-                        score: None,
-                        factors: vec![],
-                    }),
+                risk: context.risk_assessment.clone().unwrap_or(RiskLevel {
+                    class: RiskClass::Low,
+                    score: None,
+                    factors: vec![],
+                }),
                 conditions: vec![],
                 policy_refs: reason.policy_refs.clone(),
                 decided_at: TemporalAnchor::now(0),
@@ -101,14 +98,11 @@ impl GateStage for FinalDecisionStage {
                 decision_id: uuid::Uuid::new_v4().to_string(),
                 decision: AdjudicationDecision::Approve,
                 rationale: "All 7 stages passed".into(),
-                risk: context
-                    .risk_assessment
-                    .clone()
-                    .unwrap_or(RiskLevel {
-                        class: RiskClass::Low,
-                        score: Some(0.0),
-                        factors: vec![],
-                    }),
+                risk: context.risk_assessment.clone().unwrap_or(RiskLevel {
+                    class: RiskClass::Low,
+                    score: Some(0.0),
+                    factors: vec![],
+                }),
                 conditions: vec![],
                 policy_refs: vec![],
                 decided_at: TemporalAnchor::now(0),
@@ -126,7 +120,9 @@ mod tests {
     use super::*;
     use crate::context::GateContext;
     use crate::declaration::CommitmentDeclaration;
-    use maple_mwl_types::{CommitmentScope, DenialReason, EffectDomain, IdentityMaterial, WorldlineId};
+    use maple_mwl_types::{
+        CommitmentScope, DenialReason, EffectDomain, IdentityMaterial, WorldlineId,
+    };
 
     fn test_worldline() -> WorldlineId {
         WorldlineId::derive(&IdentityMaterial::GenesisHash([1u8; 32]))

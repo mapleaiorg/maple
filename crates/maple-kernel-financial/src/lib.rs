@@ -29,16 +29,16 @@
 //! `BalanceRecord` → `ProjectedBalance`, and `RiskPolicyConfig` → `RegulatoryEngine`.
 
 pub mod ares;
-pub mod erx;
 pub mod error;
+pub mod erx;
 pub mod evos;
 pub mod ibank;
 pub mod regulatory;
 pub mod types;
 
 pub use ares::FinancialGateExtension;
-pub use erx::{LiquidityConfig, LiquidityFieldOperator};
 pub use error::{FinancialCheckResult, FinancialError};
+pub use erx::{LiquidityConfig, LiquidityFieldOperator};
 pub use evos::BalanceProjection;
 pub use ibank::IBankBridge;
 pub use regulatory::{
@@ -46,6 +46,6 @@ pub use regulatory::{
 };
 pub use types::{
     AssetId, AtomicSettlement, ChannelLiquidity, CollateralRecord, FinancialCommitment,
-    LiquidityField, ProjectedBalance, SettlementChannel, SettlementEvent, SettlementLeg,
-    SettlementNetwork, SettlementType, SettledLeg, StressLevel,
+    LiquidityField, ProjectedBalance, SettledLeg, SettlementChannel, SettlementEvent,
+    SettlementLeg, SettlementNetwork, SettlementType, StressLevel,
 };

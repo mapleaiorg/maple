@@ -5,10 +5,10 @@
 
 use chrono::{DateTime, Utc};
 
-use maple_kernel_gate::CommitmentDeclaration;
-use maple_mwl_types::CommitmentId;
 use maple_worldline_intent::intent::SelfRegenerationIntent;
 use maple_worldline_intent::types::{IntentId, SubstrateTier};
+use worldline_core::types::CommitmentId;
+use worldline_runtime::gate::CommitmentDeclaration;
 
 use crate::bridge::IntentCommitmentBridge;
 use crate::error::{CommitmentError, CommitmentResult};
@@ -229,10 +229,7 @@ impl IntentCommitmentBridge for SelfCommitmentEngine {
     }
 
     fn committed(&self) -> Vec<&CommitmentRecord> {
-        self.lifecycle
-            .all_records()
-            .iter()
-            .collect()
+        self.lifecycle.all_records().iter().collect()
     }
 }
 
@@ -240,21 +237,13 @@ impl IntentCommitmentBridge for SelfCommitmentEngine {
 mod tests {
     use super::*;
     use chrono::Duration;
-    use maple_mwl_types::IdentityMaterial;
-    use maple_worldline_intent::intent::{
-        ImpactAssessment, ImprovementEstimate, IntentStatus,
-    };
-    use maple_worldline_intent::proposal::{
-        RegenerationProposal, RollbackPlan, RollbackStrategy,
-    };
-    use maple_worldline_intent::types::{
-        ChangeType, MeaningId, ProposalId, ReversibilityLevel,
-    };
+    use maple_worldline_intent::intent::{ImpactAssessment, ImprovementEstimate, IntentStatus};
+    use maple_worldline_intent::proposal::{RegenerationProposal, RollbackPlan, RollbackStrategy};
+    use maple_worldline_intent::types::{ChangeType, MeaningId, ProposalId, ReversibilityLevel};
+    use worldline_core::types::IdentityMaterial;
 
-    fn test_worldline() -> maple_mwl_types::WorldlineId {
-        maple_mwl_types::WorldlineId::derive(
-            &IdentityMaterial::GenesisHash([1u8; 32]),
-        )
+    fn test_worldline() -> worldline_core::types::WorldlineId {
+        worldline_core::types::WorldlineId::derive(&IdentityMaterial::GenesisHash([1u8; 32]))
     }
 
     fn make_intent(tier: SubstrateTier, confidence: f64) -> SelfRegenerationIntent {
@@ -392,11 +381,8 @@ mod tests {
         engine.start_observation(intent);
 
         // Submit
-        let self_cmt_id = engine.record_submission(
-            &intent_id,
-            CommitmentId::new(),
-            SubstrateTier::Tier0,
-        );
+        let self_cmt_id =
+            engine.record_submission(&intent_id, CommitmentId::new(), SubstrateTier::Tier0);
         assert_eq!(engine.ready_count(), 0); // removed from ready
 
         // Approve

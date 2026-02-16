@@ -212,12 +212,9 @@ mod tests {
             .review_requirements
             .iter()
             .any(|r| matches!(r, ReviewRequirement::HumanReview)));
-        assert!(decision
-            .review_requirements
-            .iter()
-            .any(|r| matches!(
-                r,
-                ReviewRequirement::MultiPartyGovernance { min_approvers: 2 }
-            )));
+        assert!(decision.review_requirements.iter().any(|r| matches!(
+            r,
+            ReviewRequirement::MultiPartyGovernance { min_approvers: 2 }
+        )));
     }
 }

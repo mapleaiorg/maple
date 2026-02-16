@@ -53,7 +53,10 @@ impl HealthReport {
 
     /// How many subsystems are healthy.
     pub fn healthy_count(&self) -> usize {
-        self.entries.iter().filter(|e| e.status.is_healthy()).count()
+        self.entries
+            .iter()
+            .filter(|e| e.status.is_healthy())
+            .count()
     }
 
     /// How many subsystems are degraded.
@@ -248,7 +251,10 @@ mod tests {
             ),
         ]);
         let report = checker.check_all().unwrap();
-        assert!(matches!(report.overall_status(), SubsystemStatus::Failed(_)));
+        assert!(matches!(
+            report.overall_status(),
+            SubsystemStatus::Failed(_)
+        ));
     }
 
     #[test]

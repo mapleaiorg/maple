@@ -237,10 +237,7 @@ mod tests {
         let cfg = BaselineConfig::default();
         assert!((cfg.learning_rate - 0.01).abs() < f64::EPSILON);
         assert_eq!(cfg.min_establishment_samples, 1000);
-        assert_eq!(
-            cfg.min_establishment_duration,
-            Duration::from_secs(86_400)
-        );
+        assert_eq!(cfg.min_establishment_duration, Duration::from_secs(86_400));
         assert_eq!(cfg.percentile_buffer_size, 10_000);
         assert_eq!(cfg.max_metrics, 256);
     }

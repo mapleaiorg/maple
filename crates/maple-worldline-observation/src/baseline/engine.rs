@@ -61,12 +61,7 @@ impl BaselineEngine {
     /// 3. Appends to the percentile buffer
     /// 4. Updates seasonal hourly buckets
     /// 5. Checks establishment criteria
-    pub fn observe(
-        &mut self,
-        metric_id: &MetricId,
-        value: f64,
-        timestamp: DateTime<Utc>,
-    ) {
+    pub fn observe(&mut self, metric_id: &MetricId, value: f64, timestamp: DateTime<Utc>) {
         // Enforce max metrics bound
         if !self.baselines.contains_key(metric_id)
             && self.baselines.len() >= self.config.max_metrics
@@ -171,11 +166,7 @@ impl BaselineEngine {
                 summary.events_observed as f64,
                 ts,
             );
-            self.observe(
-                &MetricId::new(name, "error_rate"),
-                summary.error_rate,
-                ts,
-            );
+            self.observe(&MetricId::new(name, "error_rate"), summary.error_rate, ts);
             self.observe(
                 &MetricId::new(name, "error_count"),
                 summary.error_count as f64,
@@ -532,9 +523,7 @@ mod tests {
 
         // Simulate different values at different hours
         for hour in 0..24u32 {
-            let ts = Utc::now()
-                .with_hour(hour)
-                .unwrap_or_else(|| Utc::now());
+            let ts = Utc::now().with_hour(hour).unwrap_or_else(|| Utc::now());
             let value = 100.0 + hour as f64 * 10.0;
             for _ in 0..10 {
                 engine.observe(&mid, value, ts);
@@ -583,8 +572,12 @@ mod tests {
         // Should have created baselines for system.memory_bytes, system.sampling_rate,
         // system.total_events, event-fabric.event_count, event-fabric.error_rate, etc.
         assert!(engine.metric_count() >= 5);
-        assert!(engine.get_baseline(&MetricId::new("system", "memory_bytes")).is_some());
-        assert!(engine.get_baseline(&MetricId::new("event-fabric", "latency_ns")).is_some());
+        assert!(engine
+            .get_baseline(&MetricId::new("system", "memory_bytes"))
+            .is_some());
+        assert!(engine
+            .get_baseline(&MetricId::new("event-fabric", "latency_ns"))
+            .is_some());
     }
 
     #[test]

@@ -22,15 +22,9 @@ pub enum RouteDecision {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum RejectionReason {
     /// I.MRP-1 violation: attempted implicit type escalation
-    EscalationViolation {
-        from: String,
-        to: String,
-    },
+    EscalationViolation { from: String, to: String },
     /// Header/payload type mismatch
-    TypeMismatch {
-        declared: String,
-        actual: String,
-    },
+    TypeMismatch { declared: String, actual: String },
     /// Integrity verification failed (tampered envelope)
     IntegrityFailure,
     /// TTL expired

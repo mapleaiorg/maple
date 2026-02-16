@@ -415,7 +415,10 @@ impl ConsequenceValidator {
         let mut issues = Vec::new();
 
         // Check contract status
-        if !matches!(contract.status, ContractStatus::Active | ContractStatus::Executing) {
+        if !matches!(
+            contract.status,
+            ContractStatus::Active | ContractStatus::Executing
+        ) {
             issues.push(ValidationIssue {
                 severity: IssueSeverity::Error,
                 code: "CONTRACT_NOT_ACTIVE".to_string(),
@@ -514,7 +517,10 @@ pub enum IssueSeverity {
 /// Storage abstraction for consequences.
 pub trait ConsequenceStore: Send + Sync {
     fn store(&self, consequence: RecordedConsequence) -> Result<(), ConsequenceTrackerError>;
-    fn get(&self, id: &ConsequenceId) -> Result<Option<RecordedConsequence>, ConsequenceTrackerError>;
+    fn get(
+        &self,
+        id: &ConsequenceId,
+    ) -> Result<Option<RecordedConsequence>, ConsequenceTrackerError>;
     fn update(&self, consequence: RecordedConsequence) -> Result<(), ConsequenceTrackerError>;
     fn list_by_commitment(
         &self,
@@ -562,15 +568,15 @@ impl ConsequenceStore for InMemoryConsequenceStore {
         }
 
         consequences.insert(id.clone(), consequence);
-        by_commitment
-            .entry(commitment_id)
-            .or_default()
-            .push(id);
+        by_commitment.entry(commitment_id).or_default().push(id);
 
         Ok(())
     }
 
-    fn get(&self, id: &ConsequenceId) -> Result<Option<RecordedConsequence>, ConsequenceTrackerError> {
+    fn get(
+        &self,
+        id: &ConsequenceId,
+    ) -> Result<Option<RecordedConsequence>, ConsequenceTrackerError> {
         let consequences = self
             .consequences
             .read()
@@ -607,7 +613,10 @@ impl ConsequenceStore for InMemoryConsequenceStore {
             .read()
             .map_err(|_| ConsequenceTrackerError::StoreLockError)?;
 
-        let ids = by_commitment.get(commitment_id).cloned().unwrap_or_default();
+        let ids = by_commitment
+            .get(commitment_id)
+            .cloned()
+            .unwrap_or_default();
         Ok(ids
             .iter()
             .filter_map(|id| consequences.get(id).cloned())
@@ -634,10 +643,7 @@ impl ConsequenceStore for InMemoryConsequenceStore {
         commitment_id: &CommitmentId,
     ) -> Result<Vec<ConsequenceReceipt>, ConsequenceTrackerError> {
         let consequences = self.list_by_commitment(commitment_id)?;
-        Ok(consequences
-            .into_iter()
-            .filter_map(|c| c.receipt)
-            .collect())
+        Ok(consequences.into_iter().filter_map(|c| c.receipt).collect())
     }
 }
 
@@ -703,10 +709,7 @@ pub enum ConsequenceEventType {
 
 impl ConsequenceTracker {
     /// Create a new consequence tracker.
-    pub fn new(
-        contract_engine: Arc<dyn ContractEngine>,
-        store: Arc<dyn ConsequenceStore>,
-    ) -> Self {
+    pub fn new(contract_engine: Arc<dyn ContractEngine>, store: Arc<dyn ConsequenceStore>) -> Self {
         Self {
             contract_engine,
             store,
@@ -800,10 +803,9 @@ impl ConsequenceTracker {
         &self,
         consequence_id: &ConsequenceId,
     ) -> Result<RecordedConsequence, ConsequenceTrackerError> {
-        let mut consequence = self
-            .store
-            .get(consequence_id)?
-            .ok_or_else(|| ConsequenceTrackerError::ConsequenceNotFound(consequence_id.0.clone()))?;
+        let mut consequence = self.store.get(consequence_id)?.ok_or_else(|| {
+            ConsequenceTrackerError::ConsequenceNotFound(consequence_id.0.clone())
+        })?;
 
         if !matches!(consequence.status, ConsequenceStatus::Pending) {
             return Err(ConsequenceTrackerError::InvalidStateTransition {
@@ -833,10 +835,9 @@ impl ConsequenceTracker {
         result: serde_json::Value,
         summary: impl Into<String>,
     ) -> Result<ConsequenceReceipt, ConsequenceTrackerError> {
-        let mut consequence = self
-            .store
-            .get(consequence_id)?
-            .ok_or_else(|| ConsequenceTrackerError::ConsequenceNotFound(consequence_id.0.clone()))?;
+        let mut consequence = self.store.get(consequence_id)?.ok_or_else(|| {
+            ConsequenceTrackerError::ConsequenceNotFound(consequence_id.0.clone())
+        })?;
 
         if !matches!(consequence.status, ConsequenceStatus::Executing) {
             return Err(ConsequenceTrackerError::InvalidStateTransition {
@@ -888,10 +889,9 @@ impl ConsequenceTracker {
         consequence_id: &ConsequenceId,
         error: ConsequenceError,
     ) -> Result<RecordedConsequence, ConsequenceTrackerError> {
-        let mut consequence = self
-            .store
-            .get(consequence_id)?
-            .ok_or_else(|| ConsequenceTrackerError::ConsequenceNotFound(consequence_id.0.clone()))?;
+        let mut consequence = self.store.get(consequence_id)?.ok_or_else(|| {
+            ConsequenceTrackerError::ConsequenceNotFound(consequence_id.0.clone())
+        })?;
 
         if !matches!(
             consequence.status,
@@ -1049,11 +1049,8 @@ mod tests {
         engine.register_contract(contract).unwrap();
 
         // Create consequence
-        let request = ConsequenceRequest::new(
-            commitment_id,
-            "test_capability",
-            serde_json::json!({}),
-        );
+        let request =
+            ConsequenceRequest::new(commitment_id, "test_capability", serde_json::json!({}));
         let consequence = tracker.request_consequence(request).unwrap();
         let id = consequence.id.clone();
 
@@ -1070,7 +1067,10 @@ mod tests {
 
         // Verify final state
         let final_consequence = tracker.get_consequence(&id).unwrap().unwrap();
-        assert!(matches!(final_consequence.status, ConsequenceStatus::Succeeded));
+        assert!(matches!(
+            final_consequence.status,
+            ConsequenceStatus::Succeeded
+        ));
         assert!(final_consequence.receipt.is_some());
         assert!(final_consequence.result.is_some());
     }
@@ -1087,11 +1087,8 @@ mod tests {
         engine.register_contract(contract).unwrap();
 
         // Create consequence
-        let request = ConsequenceRequest::new(
-            commitment_id,
-            "test_capability",
-            serde_json::json!({}),
-        );
+        let request =
+            ConsequenceRequest::new(commitment_id, "test_capability", serde_json::json!({}));
         let consequence = tracker.request_consequence(request).unwrap();
         let id = consequence.id.clone();
 
@@ -1105,7 +1102,10 @@ mod tests {
         };
         let consequence = tracker.record_failure(&id, error).unwrap();
 
-        assert!(matches!(consequence.status, ConsequenceStatus::Failed { .. }));
+        assert!(matches!(
+            consequence.status,
+            ConsequenceStatus::Failed { .. }
+        ));
         assert!(consequence.error.is_some());
     }
 
@@ -1188,11 +1188,8 @@ mod tests {
         engine.register_contract(contract).unwrap();
 
         // Create consequence
-        let request = ConsequenceRequest::new(
-            commitment_id,
-            "test_capability",
-            serde_json::json!({}),
-        );
+        let request =
+            ConsequenceRequest::new(commitment_id, "test_capability", serde_json::json!({}));
         let consequence = tracker.request_consequence(request).unwrap();
         let id = consequence.id.clone();
 

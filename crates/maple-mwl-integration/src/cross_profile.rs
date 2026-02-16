@@ -4,11 +4,9 @@
 //! with different profiles interact, the most restrictive constraint
 //! from each dimension applies.
 
-use maple_kernel_profiles::{
-    agent_profile, financial_profile, human_profile, world_profile, coordination_profile,
-    merged_constraints,
-    ConsentLevel,
-    ProfileEnforcer, CouplingProposal,
+use worldline_runtime::profiles::{
+    agent_profile, coordination_profile, financial_profile, human_profile, merged_constraints,
+    world_profile, ConsentLevel, CouplingProposal, ProfileEnforcer,
 };
 
 /// Human + Financial interaction uses strictest constraints from both.
@@ -23,7 +21,8 @@ fn test_human_financial_uses_strictest() {
     // Maximum restriction → the stricter consent level
     assert!(
         merged.coupling_limits.consent_required >= human.coupling_limits.consent_required
-            || merged.coupling_limits.consent_required >= financial.coupling_limits.consent_required,
+            || merged.coupling_limits.consent_required
+                >= financial.coupling_limits.consent_required,
         "Merged profile should use the stricter consent level"
     );
 
@@ -31,7 +30,8 @@ fn test_human_financial_uses_strictest() {
     // Maximum restriction → FullOversight
     assert!(
         merged.human_involvement.oversight_level >= human.human_involvement.oversight_level
-            || merged.human_involvement.oversight_level >= financial.human_involvement.oversight_level,
+            || merged.human_involvement.oversight_level
+                >= financial.human_involvement.oversight_level,
         "Merged profile should use the stricter oversight level"
     );
 }
@@ -47,12 +47,17 @@ fn test_agent_world_interaction() {
     // Merged should use the more restrictive attention budget capacity (minimum)
     assert!(
         merged.attention_budget.default_capacity
-            <= agent.attention_budget.default_capacity.min(world.attention_budget.default_capacity),
+            <= agent
+                .attention_budget
+                .default_capacity
+                .min(world.attention_budget.default_capacity),
         "Merged attention budget should be the minimum of both"
     );
 
     // Merged coupling strength should be the minimum
-    let min_strength = agent.coupling_limits.max_initial_strength
+    let min_strength = agent
+        .coupling_limits
+        .max_initial_strength
         .min(world.coupling_limits.max_initial_strength);
     assert!(
         (merged.coupling_limits.max_initial_strength - min_strength).abs() < f64::EPSILON,
@@ -93,8 +98,7 @@ fn test_self_merge_identity() {
     let merged = merged_constraints(&agent, &agent);
 
     assert!(
-        (merged.coupling_limits.max_initial_strength
-            - agent.coupling_limits.max_initial_strength)
+        (merged.coupling_limits.max_initial_strength - agent.coupling_limits.max_initial_strength)
             .abs()
             < f64::EPSILON,
     );
@@ -118,7 +122,10 @@ fn test_profile_enforcer_coupling() {
         attention_fraction: 0.1,
     };
     let result = ProfileEnforcer::check_coupling(&profile, &proposal);
-    assert!(result.is_permitted(), "Coupling within limits should be allowed");
+    assert!(
+        result.is_permitted(),
+        "Coupling within limits should be allowed"
+    );
 
     // Coupling exceeding limits
     let bad_proposal = CouplingProposal {
@@ -129,7 +136,10 @@ fn test_profile_enforcer_coupling() {
         attention_fraction: 0.1,
     };
     let result = ProfileEnforcer::check_coupling(&profile, &bad_proposal);
-    assert!(result.is_denied(), "Coupling exceeding limits should be denied");
+    assert!(
+        result.is_denied(),
+        "Coupling exceeding limits should be denied"
+    );
 }
 
 /// All 5 canonical profiles have distinct characteristics.

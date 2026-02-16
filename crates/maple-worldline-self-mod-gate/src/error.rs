@@ -60,7 +60,10 @@ mod tests {
     #[test]
     fn error_display_safety_violation() {
         let err = SelfModGateError::SafetyViolation("I.REGEN-3: gate integrity".into());
-        assert_eq!(err.to_string(), "safety violation: I.REGEN-3: gate integrity");
+        assert_eq!(
+            err.to_string(),
+            "safety violation: I.REGEN-3: gate integrity"
+        );
     }
 
     #[test]

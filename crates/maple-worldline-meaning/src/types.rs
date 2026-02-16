@@ -541,15 +541,13 @@ mod tests {
                 severity: 0.5,
                 root_causes: vec![],
             },
-            evidence: vec![
-                Evidence {
-                    source: "test".into(),
-                    strength: 0.8,
-                    timestamp: Utc::now(),
-                    description: "desc".into(),
-                    category: EvidenceCategory::Anomaly,
-                },
-            ],
+            evidence: vec![Evidence {
+                source: "test".into(),
+                strength: 0.8,
+                timestamp: Utc::now(),
+                description: "desc".into(),
+                category: EvidenceCategory::Anomaly,
+            }],
             confidence: 0.5,
             ambiguity: 0.5,
             formed_at: Utc::now(),

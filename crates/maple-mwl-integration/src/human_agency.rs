@@ -4,13 +4,12 @@
 //! always possible. Tests the safety suite's human consent protocol
 //! and coercion detection.
 
-use maple_kernel_safety::{
-    AttentionBudget, CoercionConfig, CoercionDetector, CoercionType,
+use worldline_core::types::{IdentityMaterial, TemporalAnchor, WorldlineId};
+use worldline_runtime::profiles::canonical::human_profile;
+use worldline_runtime::safety::{
+    AttentionBudget, CoercionConfig, CoercionDetector, CoercionType, CouplingMetrics,
     HumanConsentProtocol,
-    CouplingMetrics,
 };
-use maple_kernel_profiles::canonical::human_profile;
-use maple_mwl_types::{IdentityMaterial, TemporalAnchor, WorldlineId};
 
 /// Silence must never be interpreted as consent (I.S-1).
 #[test]
@@ -45,10 +44,7 @@ fn test_explicit_consent_works() {
 
     // With explicit consent, validation passes
     let result = protocol.validate_consent(true, None);
-    assert!(
-        result.is_ok(),
-        "Explicit consent should be recognized"
-    );
+    assert!(result.is_ok(), "Explicit consent should be recognized");
 }
 
 /// Emotional signals must never constitute commitment.
@@ -76,10 +72,7 @@ fn test_disengagement_always_possible() {
 
     // Process disengagement — should always succeed
     let result = protocol.process_disengagement();
-    assert!(
-        result.success,
-        "Disengagement must always succeed"
-    );
+    assert!(result.success, "Disengagement must always succeed");
     assert!(
         !result.penalty_applied,
         "I.S-1: No penalty for disengagement"
@@ -168,7 +161,7 @@ fn test_human_profile_strictest() {
     // Human profile has full oversight
     assert_eq!(
         profile.human_involvement.oversight_level,
-        maple_kernel_profiles::OversightLevel::FullOversight,
+        worldline_runtime::profiles::OversightLevel::FullOversight,
         "Human profile must have full oversight"
     );
 

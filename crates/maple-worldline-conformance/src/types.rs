@@ -146,7 +146,11 @@ impl InvariantResult {
 impl fmt::Display for InvariantResult {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let status = if self.passed { "PASS" } else { "FAIL" };
-        write!(f, "[{}] {} - {}: {}", status, self.id, self.name, self.description)?;
+        write!(
+            f,
+            "[{}] {} - {}: {}",
+            status, self.id, self.name, self.description
+        )?;
         if let Some(ref details) = self.details {
             write!(f, " ({})", details)?;
         }
@@ -255,13 +259,21 @@ mod tests {
     #[test]
     fn test_category_labels() {
         assert_eq!(InvariantCategory::Observation.label(), "Observation");
-        assert_eq!(InvariantCategory::SelfModGate.label(), "Self-Modification Gate");
+        assert_eq!(
+            InvariantCategory::SelfModGate.label(),
+            "Self-Modification Gate"
+        );
         assert_eq!(InvariantCategory::Evos.label(), "EVOS Orchestrator");
     }
 
     #[test]
     fn test_invariant_result_pass() {
-        let r = InvariantResult::pass("I.OBS-1", InvariantCategory::Observation, "Overhead", "< 1%");
+        let r = InvariantResult::pass(
+            "I.OBS-1",
+            InvariantCategory::Observation,
+            "Overhead",
+            "< 1%",
+        );
         assert!(r.passed);
         assert!(r.details.is_none());
         assert_eq!(r.id.as_str(), "I.OBS-1");
@@ -282,7 +294,12 @@ mod tests {
 
     #[test]
     fn test_invariant_result_display() {
-        let r = InvariantResult::pass("I.OBS-1", InvariantCategory::Observation, "Overhead", "< 1%");
+        let r = InvariantResult::pass(
+            "I.OBS-1",
+            InvariantCategory::Observation,
+            "Overhead",
+            "< 1%",
+        );
         let s = r.to_string();
         assert!(s.contains("[PASS]"));
         assert!(s.contains("I.OBS-1"));

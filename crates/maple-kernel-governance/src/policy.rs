@@ -175,10 +175,7 @@ impl PolicyEngine {
     /// Returns a PolicyDecisionCard with the result. Policies are evaluated
     /// in priority order. The first policy whose condition matches determines
     /// the decision.
-    pub fn evaluate_declaration(
-        &self,
-        declaration: &CommitmentDeclaration,
-    ) -> PolicyDecisionCard {
+    pub fn evaluate_declaration(&self, declaration: &CommitmentDeclaration) -> PolicyDecisionCard {
         let mut matching_policies = Vec::new();
         let mut decision = AdjudicationDecision::Approve;
         let mut rationale = "All policies passed".to_string();
@@ -573,12 +570,10 @@ mod tests {
         );
 
         // Financial AND irreversible: denied
-        let fin_irrev = CommitmentDeclaration::builder(
-            test_worldline(),
-            test_scope(EffectDomain::Financial),
-        )
-        .reversibility(Reversibility::Irreversible)
-        .build();
+        let fin_irrev =
+            CommitmentDeclaration::builder(test_worldline(), test_scope(EffectDomain::Financial))
+                .reversibility(Reversibility::Irreversible)
+                .build();
         assert_eq!(
             engine.evaluate_declaration(&fin_irrev).decision,
             AdjudicationDecision::Deny

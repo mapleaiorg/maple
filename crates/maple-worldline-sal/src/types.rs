@@ -155,8 +155,8 @@ impl Default for ResourceLimits {
     fn default() -> Self {
         Self {
             max_memory_bytes: 512 * 1024 * 1024, // 512 MiB
-            max_execution_time_ms: 30_000,         // 30 seconds
-            max_instructions: 10_000_000,          // 10M instructions
+            max_execution_time_ms: 30_000,       // 30 seconds
+            max_instructions: 10_000_000,        // 10M instructions
         }
     }
 }
@@ -294,7 +294,10 @@ mod tests {
         assert_eq!(SubstrateKind::Gpu.to_string(), "gpu");
         assert_eq!(SubstrateKind::Fpga.to_string(), "fpga");
         assert_eq!(SubstrateKind::Hybrid.to_string(), "hybrid");
-        assert_eq!(SubstrateKind::Custom("tpu".into()).to_string(), "custom:tpu");
+        assert_eq!(
+            SubstrateKind::Custom("tpu".into()).to_string(),
+            "custom:tpu"
+        );
     }
 
     #[test]

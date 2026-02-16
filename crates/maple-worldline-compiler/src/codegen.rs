@@ -302,7 +302,12 @@ mod tests {
         let gen = NativeCodeGen::new(TargetArch::X86_64);
         let module = make_module();
         let code = gen.generate(&module).unwrap();
-        assert_eq!(code.target, CompilationTarget::Native { arch: TargetArch::X86_64 });
+        assert_eq!(
+            code.target,
+            CompilationTarget::Native {
+                arch: TargetArch::X86_64
+            }
+        );
         assert!(code.content.contains("push rbp"));
         assert!(code.content.contains("test-module"));
     }
@@ -320,7 +325,12 @@ mod tests {
         let gen = WasmCodeGen::new(WasmEnvironment::Browser);
         let module = make_module();
         let code = gen.generate(&module).unwrap();
-        assert_eq!(code.target, CompilationTarget::Wasm { env: WasmEnvironment::Browser });
+        assert_eq!(
+            code.target,
+            CompilationTarget::Wasm {
+                env: WasmEnvironment::Browser
+            }
+        );
         assert!(code.content.contains("(module"));
         assert!(code.content.contains("(func $main"));
     }
@@ -394,8 +404,14 @@ mod tests {
 
     #[test]
     fn generator_names() {
-        assert_eq!(NativeCodeGen::new(TargetArch::X86_64).name(), "native-codegen");
-        assert_eq!(WasmCodeGen::new(WasmEnvironment::Browser).name(), "wasm-codegen");
+        assert_eq!(
+            NativeCodeGen::new(TargetArch::X86_64).name(),
+            "native-codegen"
+        );
+        assert_eq!(
+            WasmCodeGen::new(WasmEnvironment::Browser).name(),
+            "wasm-codegen"
+        );
         assert_eq!(OperatorCallCodeGen::new().name(), "operator-call-codegen");
         assert_eq!(WlirInterpreterCodeGen::new().name(), "wlir-interpreter");
     }

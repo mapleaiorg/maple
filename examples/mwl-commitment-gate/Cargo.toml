@@ -9,11 +9,8 @@ name = "mwl-commitment-gate"
 path = "src/main.rs"
 
 [dependencies]
-maple-mwl-types = { path = "../../crates/maple-mwl-types" }
-maple-mwl-identity = { path = "../../crates/maple-mwl-identity" }
-maple-kernel-gate = { path = "../../crates/maple-kernel-gate" }
-maple-kernel-governance = { path = "../../crates/maple-kernel-governance" }
-maple-kernel-fabric = { path = "../../crates/maple-kernel-fabric" }
+worldline-core = { workspace = true }
+worldline-runtime = { workspace = true }
 
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 tracing = "0.1"

@@ -207,7 +207,12 @@ mod tests {
         let mut prev = hlc.now();
         for _ in 0..1000 {
             let ts = hlc.now();
-            assert!(ts > prev, "HLC must be monotonically increasing: {:?} should be > {:?}", ts, prev);
+            assert!(
+                ts > prev,
+                "HLC must be monotonically increasing: {:?} should be > {:?}",
+                ts,
+                prev
+            );
             prev = ts;
         }
     }
@@ -238,7 +243,11 @@ mod tests {
         let count = all_timestamps.len();
         all_timestamps.sort();
         all_timestamps.dedup();
-        assert_eq!(all_timestamps.len(), count, "All timestamps should be unique");
+        assert_eq!(
+            all_timestamps.len(),
+            count,
+            "All timestamps should be unique"
+        );
     }
 
     #[test]
@@ -255,7 +264,10 @@ mod tests {
 
         let after = hlc.receive(remote.clone()).unwrap();
         assert!(after > remote, "After receive, local must be > remote");
-        assert!(after > local, "After receive, local must be > previous local");
+        assert!(
+            after > local,
+            "After receive, local must be > previous local"
+        );
     }
 
     #[test]
@@ -292,10 +304,26 @@ mod tests {
 
     #[test]
     fn total_ordering() {
-        let ts1 = HlcTimestamp { physical: 100, logical: 0, node_id: NodeId(1) };
-        let ts2 = HlcTimestamp { physical: 100, logical: 1, node_id: NodeId(1) };
-        let ts3 = HlcTimestamp { physical: 100, logical: 1, node_id: NodeId(2) };
-        let ts4 = HlcTimestamp { physical: 101, logical: 0, node_id: NodeId(0) };
+        let ts1 = HlcTimestamp {
+            physical: 100,
+            logical: 0,
+            node_id: NodeId(1),
+        };
+        let ts2 = HlcTimestamp {
+            physical: 100,
+            logical: 1,
+            node_id: NodeId(1),
+        };
+        let ts3 = HlcTimestamp {
+            physical: 100,
+            logical: 1,
+            node_id: NodeId(2),
+        };
+        let ts4 = HlcTimestamp {
+            physical: 101,
+            logical: 0,
+            node_id: NodeId(0),
+        };
 
         assert!(ts1 < ts2);
         assert!(ts2 < ts3);

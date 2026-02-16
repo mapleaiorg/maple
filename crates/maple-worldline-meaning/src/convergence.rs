@@ -143,8 +143,12 @@ impl ConvergenceTracker {
         state.trend = detect_trend(&state.confidence_history);
 
         // Check convergence
-        state.converged =
-            check_converged(state, variance_threshold, min_evidence_count, min_observation_secs);
+        state.converged = check_converged(
+            state,
+            variance_threshold,
+            min_evidence_count,
+            min_observation_secs,
+        );
     }
 
     /// Check if a meaning has converged.
@@ -169,7 +173,6 @@ impl ConvergenceTracker {
     pub fn tracked_count(&self) -> usize {
         self.states.len()
     }
-
 }
 
 /// Compute rolling variance of confidence values.
@@ -201,18 +204,16 @@ fn detect_trend(history: &VecDeque<(DateTime<Utc>, f64)>) -> ConfidenceTrend {
     if diff.abs() < 0.02 {
         ConfidenceTrend::Stable
     } else if diff > 0.0 {
-        let second_half_var = compute_variance(
-            &history.iter().skip(mid).cloned().collect::<VecDeque<_>>(),
-        );
+        let second_half_var =
+            compute_variance(&history.iter().skip(mid).cloned().collect::<VecDeque<_>>());
         if second_half_var > 0.01 {
             ConfidenceTrend::Oscillating
         } else {
             ConfidenceTrend::Rising
         }
     } else {
-        let second_half_var = compute_variance(
-            &history.iter().skip(mid).cloned().collect::<VecDeque<_>>(),
-        );
+        let second_half_var =
+            compute_variance(&history.iter().skip(mid).cloned().collect::<VecDeque<_>>());
         if second_half_var > 0.01 {
             ConfidenceTrend::Oscillating
         } else {

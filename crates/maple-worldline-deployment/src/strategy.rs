@@ -164,11 +164,11 @@ mod tests {
     fn make_artifact() -> CodegenArtifact {
         use chrono::Utc;
         use maple_worldline_codegen::types::GeneratedCode;
+        use maple_worldline_codegen::CodegenId;
         use maple_worldline_intent::proposal::{RollbackPlan, RollbackStrategy};
+        use maple_worldline_intent::types::{IntentId, MeaningId};
         use maple_worldline_self_mod_gate::commitment::IntentChain;
         use maple_worldline_self_mod_gate::types::DeploymentStrategy;
-        use maple_worldline_codegen::CodegenId;
-        use maple_worldline_intent::types::{IntentId, MeaningId};
 
         CodegenArtifact {
             codegen_id: CodegenId::new(),
@@ -219,7 +219,9 @@ mod tests {
     fn plan_canary_strategy() {
         let config = make_config();
         let plan = plan_strategy(
-            &DeploymentStrategy::Canary { traffic_fraction: 0.05 },
+            &DeploymentStrategy::Canary {
+                traffic_fraction: 0.05,
+            },
             &config,
         );
         assert_eq!(plan.phases, vec![0.05, 1.0]);
@@ -266,7 +268,9 @@ mod tests {
         let executor = SimulatedDeploymentExecutor::healthy();
         let config = make_config();
         let artifact = make_artifact();
-        let strategy = DeploymentStrategy::Canary { traffic_fraction: 0.05 };
+        let strategy = DeploymentStrategy::Canary {
+            traffic_fraction: 0.05,
+        };
         let plan = plan_strategy(&strategy, &config);
         let mut record = DeploymentRecord::new(
             "codegen-1".into(),
@@ -287,7 +291,9 @@ mod tests {
         let executor = SimulatedDeploymentExecutor::failing_at_fraction(1.0);
         let config = make_config();
         let artifact = make_artifact();
-        let strategy = DeploymentStrategy::Canary { traffic_fraction: 0.05 };
+        let strategy = DeploymentStrategy::Canary {
+            traffic_fraction: 0.05,
+        };
         let plan = plan_strategy(&strategy, &config);
         let mut record = DeploymentRecord::new(
             "codegen-1".into(),

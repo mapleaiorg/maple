@@ -81,8 +81,7 @@ pub use feedback::ObservationFeedback;
 pub use receipt::ExecutionReceipt;
 pub use rollback::{RollbackExecutor, RollbackResult, SimulatedRollbackExecutor};
 pub use types::{
-    ConsequenceConfig, ConsequenceRecord, ConsequenceStatus, ConsequenceSummary,
-    SelfConsequenceId,
+    ConsequenceConfig, ConsequenceRecord, ConsequenceStatus, ConsequenceSummary, SelfConsequenceId,
 };
 
 #[cfg(test)]
@@ -93,8 +92,8 @@ mod tests {
     };
     use maple_worldline_intent::intent::ImprovementEstimate;
     use maple_worldline_intent::proposal::*;
-    use maple_worldline_intent::types::{CodeChangeType, IntentId, ProposalId, SubstrateTier};
     use maple_worldline_intent::types::MeaningId;
+    use maple_worldline_intent::types::{CodeChangeType, IntentId, ProposalId, SubstrateTier};
     use maple_worldline_observation::SelfObservationEvent;
 
     fn make_approved_commitment(tier: SubstrateTier) -> CmtRecord {
@@ -241,15 +240,16 @@ mod tests {
         );
 
         // Execute 3 successful modifications at different tiers
-        for (i, tier) in [SubstrateTier::Tier0, SubstrateTier::Tier1, SubstrateTier::Tier2]
-            .iter()
-            .enumerate()
+        for (i, tier) in [
+            SubstrateTier::Tier0,
+            SubstrateTier::Tier1,
+            SubstrateTier::Tier2,
+        ]
+        .iter()
+        .enumerate()
         {
             let commitment = make_approved_commitment(tier.clone());
-            let proposal = make_proposal(
-                &format!("Optimization #{}", i + 1),
-                i + 2,
-            );
+            let proposal = make_proposal(&format!("Optimization #{}", i + 1), i + 2);
             engine.execute_approved(&commitment, &proposal).unwrap();
         }
 

@@ -56,8 +56,8 @@
 //!
 //! // Record manually
 //! let event = SelfObservationEvent::FabricEventEmitted {
-//!     event_id: maple_mwl_types::EventId::new(),
-//!     stage: maple_kernel_fabric::ResonanceStage::Meaning,
+//!     event_id: worldline_core::types::EventId::new(),
+//!     stage: worldline_runtime::fabric::ResonanceStage::Meaning,
 //!     latency: Duration::from_millis(5),
 //!     payload_bytes: 128,
 //! };
@@ -86,34 +86,28 @@ pub mod usage;
 
 pub use bridge::{ObservationBridge, ObservationHandle};
 pub use collector::{
-    CollectorConfig, ObservationCollector, ObservedEvent, RingBuffer, SamplingConfig,
-    TimeWindow, WindowAggregate,
+    CollectorConfig, ObservationCollector, ObservedEvent, RingBuffer, SamplingConfig, TimeWindow,
+    WindowAggregate,
 };
 pub use error::{ObservationError, ObservationResult};
-pub use events::{
-    MemoryOperationType, ObservationMetadata, SelfObservationEvent, SubsystemId,
-};
+pub use events::{MemoryOperationType, ObservationMetadata, SelfObservationEvent, SubsystemId};
 pub use invariants::{
     InvariantChecker, DEFAULT_RING_BUFFER_CAPACITY, MAX_OBSERVATION_MEMORY_BYTES,
     MAX_OVERHEAD_FRACTION, MIN_SAMPLING_RATE,
 };
-pub use profiler::{
-    PerformanceProfiler, ProfilingSample, ProfilingSession, SubsystemProfile,
-};
+pub use profiler::{PerformanceProfiler, ProfilingSample, ProfilingSession, SubsystemProfile};
 pub use snapshot::{ObservationSnapshot, SubsystemSummary};
-pub use usage::{
-    CountMinSketch, HyperLogLog, UsageAnalytics, UsageAnalyticsSnapshot,
-};
+pub use usage::{CountMinSketch, HyperLogLog, UsageAnalytics, UsageAnalyticsSnapshot};
 
 // ── Baseline & Anomaly Detection (Prompt 12) ────────────────────────────
 
-pub use baseline::{
-    BaselineConfig, BaselineEngine, BaselinePersistence, DistributionModel,
-    InMemoryBaseline, JsonFileBaseline, MetricBaseline, MetricId, PercentileEstimates,
-};
 pub use anomaly::{
-    AnomalyAlgorithm, AnomalyCategory, AnomalyDetector, AnomalyDetectorConfig,
-    AnomalyId, AnomalySeverity, ComponentId, PerformanceAnomaly,
+    AnomalyAlgorithm, AnomalyCategory, AnomalyDetector, AnomalyDetectorConfig, AnomalyId,
+    AnomalySeverity, ComponentId, PerformanceAnomaly,
+};
+pub use baseline::{
+    BaselineConfig, BaselineEngine, BaselinePersistence, DistributionModel, InMemoryBaseline,
+    JsonFileBaseline, MetricBaseline, MetricId, PercentileEstimates,
 };
 
 #[cfg(test)]
@@ -130,8 +124,8 @@ mod tests {
         let events = vec![
             (
                 SelfObservationEvent::FabricEventEmitted {
-                    event_id: maple_mwl_types::EventId::new(),
-                    stage: maple_kernel_fabric::ResonanceStage::Meaning,
+                    event_id: worldline_core::types::EventId::new(),
+                    stage: worldline_runtime::fabric::ResonanceStage::Meaning,
                     latency: Duration::from_millis(5),
                     payload_bytes: 128,
                 },
@@ -139,7 +133,7 @@ mod tests {
             ),
             (
                 SelfObservationEvent::GateSubmission {
-                    commitment_id: maple_mwl_types::CommitmentId::new(),
+                    commitment_id: worldline_core::types::CommitmentId::new(),
                     stages_evaluated: 7,
                     total_latency: Duration::from_millis(50),
                     approved: true,
@@ -249,9 +243,7 @@ mod tests {
 
         // Memory should always be within budget
         let mem = collector.estimated_memory_bytes();
-        assert!(
-            InvariantChecker::check_memory_usage(mem, MAX_OBSERVATION_MEMORY_BYTES).is_ok()
-        );
+        assert!(InvariantChecker::check_memory_usage(mem, MAX_OBSERVATION_MEMORY_BYTES).is_ok());
 
         // Sampling rate must be valid
         assert!(
@@ -261,8 +253,8 @@ mod tests {
         // Record many events
         for _ in 0..1000 {
             let event = SelfObservationEvent::FabricEventEmitted {
-                event_id: maple_mwl_types::EventId::new(),
-                stage: maple_kernel_fabric::ResonanceStage::Meaning,
+                event_id: worldline_core::types::EventId::new(),
+                stage: worldline_runtime::fabric::ResonanceStage::Meaning,
                 latency: Duration::from_millis(1),
                 payload_bytes: 64,
             };
@@ -289,8 +281,8 @@ mod tests {
         // Record normal events
         for _ in 0..50 {
             let event = SelfObservationEvent::FabricEventEmitted {
-                event_id: maple_mwl_types::EventId::new(),
-                stage: maple_kernel_fabric::ResonanceStage::Meaning,
+                event_id: worldline_core::types::EventId::new(),
+                stage: worldline_runtime::fabric::ResonanceStage::Meaning,
                 latency: Duration::from_millis(5),
                 payload_bytes: 128,
             };

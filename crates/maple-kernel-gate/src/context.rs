@@ -1,9 +1,9 @@
 use std::time::Duration;
 
+use maple_mwl_identity::ContinuityContext;
 use maple_mwl_types::{
     DenialReason, EventId, PolicyDecisionCard, RiskLevel, TemporalAnchor, WorldlineId,
 };
-use maple_mwl_identity::ContinuityContext;
 use serde::{Deserialize, Serialize};
 
 use crate::declaration::CommitmentDeclaration;
@@ -181,10 +181,7 @@ mod tests {
     fn context_tracks_cosign_requirements() {
         let mut ctx = test_context();
         let signer = WorldlineId::derive(&IdentityMaterial::GenesisHash([2u8; 32]));
-        ctx.record_stage(
-            "stage_6",
-            StageResult::RequireCoSign(vec![signer.clone()]),
-        );
+        ctx.record_stage("stage_6", StageResult::RequireCoSign(vec![signer.clone()]));
 
         assert!(ctx.requires_cosign());
         assert_eq!(ctx.required_cosigners().len(), 1);

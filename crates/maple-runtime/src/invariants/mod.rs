@@ -1,4 +1,4 @@
-//! Invariant enforcement - The 8 Canonical Invariants
+//! Invariant enforcement - The 9 Canonical WorldLine Invariants
 //!
 //! These invariants MUST hold in ALL conformant implementations.
 //! Violation of ANY invariant constitutes non-conformance.
@@ -6,13 +6,13 @@
 use crate::config::InvariantConfig;
 use crate::types::*;
 
-/// Enforces the Resonance Architecture's 8 canonical invariants
+/// Enforces the WorldLine architecture's 9 canonical invariants.
 pub struct InvariantGuard {
     invariants: Vec<ArchitecturalInvariant>,
     config: InvariantConfig,
 }
 
-/// The 8 canonical invariants from Resonance Architecture
+/// The 9 canonical invariants from the WorldLine architecture.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ArchitecturalInvariant {
     /// 1. Presence precedes meaning
@@ -46,6 +46,10 @@ pub enum ArchitecturalInvariant {
     /// 8. Failure must be explicit, never silent
     /// All failures must be surfaced, never hidden.
     FailureMustBeExplicit,
+
+    /// 9. Implementation provenance and constitutional evolution.
+    /// Operator evolution must be replay-verified and evidence-anchored.
+    ImplementationProvenanceAndEvolution,
 }
 
 impl InvariantGuard {
@@ -59,6 +63,7 @@ impl InvariantGuard {
             ArchitecturalInvariant::SafetyOverridesOptimization,
             ArchitecturalInvariant::HumanAgencyCannotBeBypassed,
             ArchitecturalInvariant::FailureMustBeExplicit,
+            ArchitecturalInvariant::ImplementationProvenanceAndEvolution,
         ];
 
         Self {
@@ -174,6 +179,24 @@ impl InvariantGuard {
             ArchitecturalInvariant::FailureMustBeExplicit => {
                 // This is enforced by result types, not runtime checks
             }
+
+            ArchitecturalInvariant::ImplementationProvenanceAndEvolution => {
+                if let Operation::ApplyEvolutionUpgrade {
+                    evidence_bundle_anchored,
+                    replay_verified,
+                } = operation
+                {
+                    if !state.upgrade_provenance_verified()
+                        || !*evidence_bundle_anchored
+                        || !*replay_verified
+                    {
+                        tracing::error!(
+                            "Invariant violation: Evolution upgrade provenance requirements not satisfied"
+                        );
+                        return Err(InvariantViolation::ImplementationProvenanceViolation);
+                    }
+                }
+            }
         }
 
         Ok(())
@@ -212,6 +235,10 @@ pub enum Operation {
         target: ResonatorId,
     },
     Optimization,
+    ApplyEvolutionUpgrade {
+        evidence_bundle_anchored: bool,
+        replay_verified: bool,
+    },
 }
 
 impl Operation {
@@ -229,6 +256,7 @@ pub struct SystemState {
     external_commitments: std::collections::HashSet<String>,
     attention_budgets: std::collections::HashMap<ResonatorId, u64>,
     safety_concerns: bool,
+    upgrade_provenance_verified: bool,
 }
 
 impl SystemState {
@@ -240,6 +268,7 @@ impl SystemState {
             external_commitments: std::collections::HashSet::new(),
             attention_budgets: std::collections::HashMap::new(),
             safety_concerns: false,
+            upgrade_provenance_verified: false,
         }
     }
 
@@ -289,6 +318,14 @@ impl SystemState {
 
     pub fn set_safety_concern(&mut self, active: bool) {
         self.safety_concerns = active;
+    }
+
+    pub fn set_upgrade_provenance_verified(&mut self, verified: bool) {
+        self.upgrade_provenance_verified = verified;
+    }
+
+    pub fn upgrade_provenance_verified(&self) -> bool {
+        self.upgrade_provenance_verified
     }
 }
 

@@ -507,9 +507,7 @@ impl McpAdapter {
                 r.content
                     .first()
                     .map(|c| match c {
-                        McpContent::Text { text } => {
-                            text.chars().take(100).collect::<String>()
-                        }
+                        McpContent::Text { text } => text.chars().take(100).collect::<String>(),
                         McpContent::Image { .. } => "[image]".to_string(),
                         McpContent::Resource { uri, .. } => format!("[resource: {}]", uri),
                     })

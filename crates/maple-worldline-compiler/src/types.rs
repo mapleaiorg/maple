@@ -258,23 +258,35 @@ mod tests {
 
     #[test]
     fn compilation_target_native_x86() {
-        let target = CompilationTarget::Native { arch: TargetArch::X86_64 };
+        let target = CompilationTarget::Native {
+            arch: TargetArch::X86_64,
+        };
         assert_eq!(target.to_string(), "native-x86-64");
     }
 
     #[test]
     fn compilation_target_wasm_browser() {
-        let target = CompilationTarget::Wasm { env: WasmEnvironment::Browser };
+        let target = CompilationTarget::Wasm {
+            env: WasmEnvironment::Browser,
+        };
         assert_eq!(target.to_string(), "wasm-browser");
     }
 
     #[test]
     fn compilation_target_all_variants() {
         let targets = vec![
-            CompilationTarget::Native { arch: TargetArch::X86_64 },
-            CompilationTarget::Native { arch: TargetArch::Aarch64 },
-            CompilationTarget::Wasm { env: WasmEnvironment::Browser },
-            CompilationTarget::Wasm { env: WasmEnvironment::Edge },
+            CompilationTarget::Native {
+                arch: TargetArch::X86_64,
+            },
+            CompilationTarget::Native {
+                arch: TargetArch::Aarch64,
+            },
+            CompilationTarget::Wasm {
+                env: WasmEnvironment::Browser,
+            },
+            CompilationTarget::Wasm {
+                env: WasmEnvironment::Edge,
+            },
             CompilationTarget::OperatorCall,
             CompilationTarget::Interpreted,
         ];
@@ -295,7 +307,9 @@ mod tests {
     fn compilation_status_display() {
         assert_eq!(CompilationStatus::Started.to_string(), "started");
         assert_eq!(CompilationStatus::Complete.to_string(), "complete");
-        assert!(CompilationStatus::Failed("oops".into()).to_string().contains("oops"));
+        assert!(CompilationStatus::Failed("oops".into())
+            .to_string()
+            .contains("oops"));
     }
 
     #[test]

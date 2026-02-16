@@ -45,7 +45,11 @@ impl InvariantResult {
 impl fmt::Display for InvariantResult {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let status = if self.passed { "PASS" } else { "FAIL" };
-        write!(f, "[{}] {} — {}: {}", status, self.id, self.name, self.description)?;
+        write!(
+            f,
+            "[{}] {} — {}: {}",
+            status, self.id, self.name, self.description
+        )?;
         if let Some(ref details) = self.details {
             write!(f, " ({})", details)?;
         }
@@ -55,9 +59,30 @@ impl fmt::Display for InvariantResult {
 
 /// All 26 constitutional invariant IDs.
 pub const ALL_INVARIANT_IDS: &[&str] = &[
-    "I.1", "I.2", "I.3", "I.4", "I.5", "I.6", "I.7", "I.8",
-    "I.MRP-1", "I.CG-1", "I.AAS-3", "I.PVP-1", "I.GCP-2", "I.PROF-1",
-    "I.S-1", "I.S-2", "I.S-3", "I.S-4", "I.S-5", "I.S-BOUND",
-    "I.WLP-1", "I.EF-1", "I.ME-FIN-1", "I.CEP-FIN-1",
-    "I.PROF-2", "I.PROF-3",
+    "I.1",
+    "I.2",
+    "I.3",
+    "I.4",
+    "I.5",
+    "I.6",
+    "I.7",
+    "I.8",
+    "I.MRP-1",
+    "I.CG-1",
+    "I.AAS-3",
+    "I.PVP-1",
+    "I.GCP-2",
+    "I.PROF-1",
+    "I.S-1",
+    "I.S-2",
+    "I.S-3",
+    "I.S-4",
+    "I.S-5",
+    "I.S-BOUND",
+    "I.WLP-1",
+    "I.EF-1",
+    "I.ME-FIN-1",
+    "I.CEP-FIN-1",
+    "I.PROF-2",
+    "I.PROF-3",
 ];

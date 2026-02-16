@@ -9,10 +9,8 @@ name = "mwl-human-agency"
 path = "src/main.rs"
 
 [dependencies]
-maple-mwl-types = { path = "../../crates/maple-mwl-types" }
-maple-mwl-identity = { path = "../../crates/maple-mwl-identity" }
-maple-kernel-safety = { path = "../../crates/maple-kernel-safety" }
-maple-kernel-profiles = { path = "../../crates/maple-kernel-profiles" }
+worldline-core = { workspace = true }
+worldline-runtime = { workspace = true }
 
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 tracing = "0.1"

@@ -62,7 +62,11 @@ pub struct VerificationResult {
 
 impl VerificationResult {
     /// Create a passing result.
-    pub fn pass(aspect: VerificationAspect, items_checked: usize, details: impl Into<String>) -> Self {
+    pub fn pass(
+        aspect: VerificationAspect,
+        items_checked: usize,
+        details: impl Into<String>,
+    ) -> Self {
         Self {
             aspect,
             passed: true,
@@ -262,12 +266,18 @@ impl SimulatedVerifier {
             VerificationAspect::CommitmentBoundaryIntegrity => {
                 // Actually check commitment boundary balance if passing
                 if should_pass {
-                    let balanced = module.functions.iter().all(|f| f.commitment_boundaries_balanced());
+                    let balanced = module
+                        .functions
+                        .iter()
+                        .all(|f| f.commitment_boundaries_balanced());
                     if balanced {
                         VerificationResult::pass(
                             aspect.clone(),
                             func_count,
-                            format!("{} functions have balanced commitment boundaries", func_count),
+                            format!(
+                                "{} functions have balanced commitment boundaries",
+                                func_count
+                            ),
                         )
                     } else {
                         VerificationResult::fail(
@@ -287,9 +297,11 @@ impl SimulatedVerifier {
                 }
             }
             VerificationAspect::ProvenanceCompleteness => {
-                let items = module.functions.iter().filter(|f| {
-                    f.instructions.iter().any(|i| i.has_side_effects())
-                }).count();
+                let items = module
+                    .functions
+                    .iter()
+                    .filter(|f| f.instructions.iter().any(|i| i.has_side_effects()))
+                    .count();
                 if should_pass || !config.enforce_provenance {
                     VerificationResult::pass(
                         aspect.clone(),
@@ -306,7 +318,11 @@ impl SimulatedVerifier {
                 }
             }
             VerificationAspect::SafetyFenceOrdering => {
-                let safety_funcs = module.functions.iter().filter(|f| f.has_safety_instructions()).count();
+                let safety_funcs = module
+                    .functions
+                    .iter()
+                    .filter(|f| f.has_safety_instructions())
+                    .count();
                 if should_pass || !config.enforce_safety_fences {
                     VerificationResult::pass(
                         aspect.clone(),
@@ -453,8 +469,11 @@ mod tests {
             SimulatedVerifier::failing_aspect(VerificationAspect::CommitmentBoundaryIntegrity);
         let module = make_module();
         let config = make_config();
-        let result =
-            verifier.verify_aspect(&module, &VerificationAspect::CommitmentBoundaryIntegrity, &config);
+        let result = verifier.verify_aspect(
+            &module,
+            &VerificationAspect::CommitmentBoundaryIntegrity,
+            &config,
+        );
         assert!(result.is_err());
     }
 
@@ -523,8 +542,12 @@ mod tests {
             VerificationResult::pass(VerificationAspect::ControlFlowIntegrity, 5, "ok"),
         ];
         let report = VerificationReport::from_results(results);
-        assert!(report.result_for(&VerificationAspect::TypeCorrectness).is_some());
-        assert!(report.result_for(&VerificationAspect::ProvenanceCompleteness).is_none());
+        assert!(report
+            .result_for(&VerificationAspect::TypeCorrectness)
+            .is_some());
+        assert!(report
+            .result_for(&VerificationAspect::ProvenanceCompleteness)
+            .is_none());
     }
 
     #[test]
@@ -535,13 +558,18 @@ mod tests {
 
     #[test]
     fn provenance_respects_config() {
-        let verifier = SimulatedVerifier::failing_aspect(VerificationAspect::ProvenanceCompleteness);
+        let verifier =
+            SimulatedVerifier::failing_aspect(VerificationAspect::ProvenanceCompleteness);
         let module = make_module();
         let mut config = make_config();
         // When provenance enforcement is disabled, the aspect should pass even if configured to fail
         config.enforce_provenance = false;
         let result = verifier
-            .verify_aspect(&module, &VerificationAspect::ProvenanceCompleteness, &config)
+            .verify_aspect(
+                &module,
+                &VerificationAspect::ProvenanceCompleteness,
+                &config,
+            )
             .unwrap();
         assert!(result.passed);
     }

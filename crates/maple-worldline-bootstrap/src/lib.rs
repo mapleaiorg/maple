@@ -110,10 +110,7 @@ mod tests {
         let mut pm = PhaseManager::new();
 
         // Cannot skip from Phase 0 to Phase 2
-        let result = pm.transition(
-            BootstrapPhase::Phase2OperatorSelfGeneration,
-            "test",
-        );
+        let result = pm.transition(BootstrapPhase::Phase2OperatorSelfGeneration, "test");
         assert!(result.is_err());
         let err = result.unwrap_err().to_string();
         assert!(err.contains("cannot skip"));
@@ -123,10 +120,7 @@ mod tests {
             .unwrap();
 
         // Cannot skip from Phase 1 to Phase 3
-        let result = pm.transition(
-            BootstrapPhase::Phase3ModuleSelfRegeneration,
-            "test",
-        );
+        let result = pm.transition(BootstrapPhase::Phase3ModuleSelfRegeneration, "test");
         assert!(result.is_err());
     }
 
@@ -139,10 +133,7 @@ mod tests {
             .unwrap();
 
         // Cannot rollback from Phase 2 to Phase 0 (skip)
-        let result = pm.transition(
-            BootstrapPhase::Phase0ExternalSubstrate,
-            "test",
-        );
+        let result = pm.transition(BootstrapPhase::Phase0ExternalSubstrate, "test");
         assert!(result.is_err());
         let err = result.unwrap_err().to_string();
         assert!(err.contains("cannot rollback multiple"));

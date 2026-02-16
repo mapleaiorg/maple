@@ -146,7 +146,8 @@ impl SimulatedDomainAnalyzer {
                     name: "same_currency".into(),
                     constraint_type: ConstraintType::Invariant("same_currency".into()),
                     applies_to: "Transfer".into(),
-                    description: "Source and destination accounts must share the same currency".into(),
+                    description: "Source and destination accounts must share the same currency"
+                        .into(),
                 },
             ],
             recommended_style: GrammarStyle::Declarative,
@@ -221,7 +222,9 @@ mod tests {
     #[test]
     fn analysis_with_domain_hint() {
         let analyzer = SimulatedDomainAnalyzer::new();
-        let domain = analyzer.analyze(&sample_patterns(), Some("finance")).unwrap();
+        let domain = analyzer
+            .analyze(&sample_patterns(), Some("finance"))
+            .unwrap();
         assert_eq!(domain.name, "financial-settlement");
     }
 
@@ -230,7 +233,10 @@ mod tests {
         let analyzer = SimulatedDomainAnalyzer::new();
         let result = analyzer.analyze(&[], None);
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("no usage patterns"));
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("no usage patterns"));
     }
 
     #[test]
@@ -238,7 +244,10 @@ mod tests {
         let analyzer = SimulatedDomainAnalyzer::failing();
         let result = analyzer.analyze(&sample_patterns(), None);
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("simulated failure"));
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("simulated failure"));
     }
 
     #[test]
@@ -253,8 +262,16 @@ mod tests {
     fn account_has_amount_property() {
         let analyzer = SimulatedDomainAnalyzer::new();
         let domain = analyzer.analyze(&sample_patterns(), None).unwrap();
-        let account = domain.concepts.iter().find(|c| c.name == "Account").unwrap();
-        let balance = account.properties.iter().find(|p| p.name == "balance").unwrap();
+        let account = domain
+            .concepts
+            .iter()
+            .find(|c| c.name == "Account")
+            .unwrap();
+        let balance = account
+            .properties
+            .iter()
+            .find(|p| p.name == "balance")
+            .unwrap();
         assert_eq!(balance.property_type, PropertyType::Amount);
         assert!(balance.required);
     }

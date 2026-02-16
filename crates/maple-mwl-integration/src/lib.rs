@@ -9,16 +9,16 @@
 pub mod helpers;
 
 #[cfg(test)]
-mod resonance_lifecycle;
-#[cfg(test)]
 mod commitment_denial;
-#[cfg(test)]
-mod human_agency;
-#[cfg(test)]
-mod financial_settlement;
 #[cfg(test)]
 mod cross_profile;
 #[cfg(test)]
 mod failure_recovery;
 #[cfg(test)]
+mod financial_settlement;
+#[cfg(test)]
+mod human_agency;
+#[cfg(test)]
 mod mrp_enforcement;
+#[cfg(test)]
+mod resonance_lifecycle;

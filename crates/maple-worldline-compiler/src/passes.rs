@@ -113,7 +113,10 @@ impl OptimizationPass for DeadCodeEliminationPass {
             let mut after_terminal = false;
             for inst in &func.instructions {
                 if after_terminal
-                    && !matches!(inst, WlirInstruction::Nop | WlirInstruction::SetSourceLocation { .. })
+                    && !matches!(
+                        inst,
+                        WlirInstruction::Nop | WlirInstruction::SetSourceLocation { .. }
+                    )
                 {
                     dead += 1;
                 }
@@ -191,7 +194,9 @@ impl OptimizationPass for TailCallOptimizationPass {
         // Count functions where last meaningful instruction before Return is a Call
         let mut tail_calls = 0u32;
         for func in &module.functions {
-            let non_meta: Vec<_> = func.instructions.iter()
+            let non_meta: Vec<_> = func
+                .instructions
+                .iter()
                 .filter(|i| i.category() != InstructionCategory::Metadata)
                 .collect();
             if non_meta.len() >= 2 {
@@ -233,11 +238,14 @@ impl OptimizationPass for CommitmentBatchingPass {
         let mut different_scopes = 0u32;
 
         for func in &module.functions {
-            let boundaries: Vec<_> = func.instructions.iter()
+            let boundaries: Vec<_> = func
+                .instructions
+                .iter()
                 .filter_map(|i| match i {
-                    WlirInstruction::CrossCommitmentBoundary { commitment_id, direction } => {
-                        Some((commitment_id.clone(), direction.clone()))
-                    }
+                    WlirInstruction::CrossCommitmentBoundary {
+                        commitment_id,
+                        direction,
+                    } => Some((commitment_id.clone(), direction.clone())),
                     _ => None,
                 })
                 .collect();
@@ -292,7 +300,9 @@ impl OptimizationPass for ProvenanceCoalescingPass {
     fn apply(&self, module: &WlirModule) -> CompilerResult<PassResult> {
         let mut coalesceable = 0u32;
         for func in &module.functions {
-            let provenance_count = func.instructions.iter()
+            let provenance_count = func
+                .instructions
+                .iter()
                 .filter(|i| matches!(i, WlirInstruction::RecordProvenance { .. }))
                 .count();
             if provenance_count > 1 {
@@ -320,7 +330,9 @@ impl OptimizationPass for EventDeduplicationPass {
     fn apply(&self, module: &WlirModule) -> CompilerResult<PassResult> {
         let mut duplicates = 0u32;
         for func in &module.functions {
-            let events: Vec<_> = func.instructions.iter()
+            let events: Vec<_> = func
+                .instructions
+                .iter()
                 .filter_map(|i| match i {
                     WlirInstruction::EmitEvent { event_type, .. } => Some(event_type.clone()),
                     _ => None,
@@ -350,7 +362,9 @@ impl OptimizationPass for OperatorDispatchSpecializationPass {
     }
 
     fn apply(&self, module: &WlirModule) -> CompilerResult<PassResult> {
-        let operator_calls = module.functions.iter()
+        let operator_calls = module
+            .functions
+            .iter()
             .flat_map(|f| f.instructions.iter())
             .filter(|i| matches!(i, WlirInstruction::InvokeOperator { .. }))
             .count() as u32;
@@ -373,9 +387,16 @@ impl OptimizationPass for MemoryTierPromotionPass {
     }
 
     fn apply(&self, module: &WlirModule) -> CompilerResult<PassResult> {
-        let memory_ops = module.functions.iter()
+        let memory_ops = module
+            .functions
+            .iter()
             .flat_map(|f| f.instructions.iter())
-            .filter(|i| matches!(i, WlirInstruction::MemoryQuery { .. } | WlirInstruction::MemoryStore { .. }))
+            .filter(|i| {
+                matches!(
+                    i,
+                    WlirInstruction::MemoryQuery { .. } | WlirInstruction::MemoryStore { .. }
+                )
+            })
             .count() as u32;
 
         let promotable = memory_ops / 2; // ~50% can be promoted (simulated)
@@ -410,7 +431,9 @@ impl OptimizationPass for SafetyFenceMinimizationPass {
                 if let WlirInstruction::SafetyFence { .. } = inst {
                     // Check if next instruction is an AssertInvariant —
                     // if so, this fence guards an invariant and MUST NOT be removed
-                    let guards_invariant = func.instructions.get(i + 1)
+                    let guards_invariant = func
+                        .instructions
+                        .get(i + 1)
                         .map(|next| matches!(next, WlirInstruction::AssertInvariant { .. }))
                         .unwrap_or(false);
 
@@ -418,8 +441,14 @@ impl OptimizationPass for SafetyFenceMinimizationPass {
                         preserved += 1;
                     } else {
                         // Check if there's another SafetyFence nearby (redundant)
-                        let nearby_fence = func.instructions.get(i.saturating_sub(2)..i)
-                            .map(|window| window.iter().any(|w| matches!(w, WlirInstruction::SafetyFence { .. })))
+                        let nearby_fence = func
+                            .instructions
+                            .get(i.saturating_sub(2)..i)
+                            .map(|window| {
+                                window
+                                    .iter()
+                                    .any(|w| matches!(w, WlirInstruction::SafetyFence { .. }))
+                            })
                             .unwrap_or(false);
                         if nearby_fence {
                             removable += 1;
@@ -469,13 +498,17 @@ impl OptimizationPipeline {
             let pass: Box<dyn OptimizationPass> = match pass_id {
                 PassId::ConstantFolding => Box::new(ConstantFoldingPass),
                 PassId::DeadCodeElimination => Box::new(DeadCodeEliminationPass),
-                PassId::CommonSubexpressionElimination => Box::new(CommonSubexpressionEliminationPass),
+                PassId::CommonSubexpressionElimination => {
+                    Box::new(CommonSubexpressionEliminationPass)
+                }
                 PassId::InliningPass => Box::new(InliningPass),
                 PassId::TailCallOptimization => Box::new(TailCallOptimizationPass),
                 PassId::CommitmentBatching => Box::new(CommitmentBatchingPass),
                 PassId::ProvenanceCoalescing => Box::new(ProvenanceCoalescingPass),
                 PassId::EventDeduplication => Box::new(EventDeduplicationPass),
-                PassId::OperatorDispatchSpecialization => Box::new(OperatorDispatchSpecializationPass),
+                PassId::OperatorDispatchSpecialization => {
+                    Box::new(OperatorDispatchSpecializationPass)
+                }
                 PassId::MemoryTierPromotion => Box::new(MemoryTierPromotionPass),
                 PassId::SafetyFenceMinimization => Box::new(SafetyFenceMinimizationPass),
             };
@@ -532,9 +565,19 @@ mod tests {
     fn make_module_with_constants() -> WlirModule {
         let mut module = WlirModule::new("const-test", "1.0");
         let mut f = WlirFunction::new("compute", vec![], WlirType::I32);
-        f.push_instruction(WlirInstruction::LoadConst { result: 0, constant_index: 0 });
-        f.push_instruction(WlirInstruction::LoadConst { result: 1, constant_index: 1 });
-        f.push_instruction(WlirInstruction::Add { result: 2, a: 0, b: 1 });
+        f.push_instruction(WlirInstruction::LoadConst {
+            result: 0,
+            constant_index: 0,
+        });
+        f.push_instruction(WlirInstruction::LoadConst {
+            result: 1,
+            constant_index: 1,
+        });
+        f.push_instruction(WlirInstruction::Add {
+            result: 2,
+            a: 0,
+            b: 1,
+        });
         f.push_instruction(WlirInstruction::Return { value: Some(2) });
         module.add_function(f);
         module
@@ -605,7 +648,11 @@ mod tests {
         let mut module = WlirModule::new("dead-test", "1.0");
         let mut f = WlirFunction::new("main", vec![], WlirType::Void);
         f.push_instruction(WlirInstruction::Return { value: None });
-        f.push_instruction(WlirInstruction::Add { result: 0, a: 1, b: 2 }); // dead
+        f.push_instruction(WlirInstruction::Add {
+            result: 0,
+            a: 1,
+            b: 2,
+        }); // dead
         module.add_function(f);
 
         let pass = DeadCodeEliminationPass;
@@ -635,7 +682,10 @@ mod tests {
     fn tail_call_optimization() {
         let mut module = WlirModule::new("tco-test", "1.0");
         let mut f = WlirFunction::new("recursive", vec![], WlirType::I32);
-        f.push_instruction(WlirInstruction::LoadConst { result: 0, constant_index: 0 });
+        f.push_instruction(WlirInstruction::LoadConst {
+            result: 0,
+            constant_index: 0,
+        });
         f.push_instruction(WlirInstruction::Call {
             result: 1,
             function: maple_worldline_ir::types::FunctionId::from_name("recursive"),
@@ -695,10 +745,14 @@ mod tests {
         let mut module = WlirModule::new("prov-test", "1.0");
         let mut f = WlirFunction::new("traced", vec![], WlirType::Void);
         f.push_instruction(WlirInstruction::RecordProvenance {
-            operation: "op1".into(), inputs: vec![0], output: 1,
+            operation: "op1".into(),
+            inputs: vec![0],
+            output: 1,
         });
         f.push_instruction(WlirInstruction::RecordProvenance {
-            operation: "op2".into(), inputs: vec![1], output: 2,
+            operation: "op2".into(),
+            inputs: vec![1],
+            output: 2,
         });
         f.push_instruction(WlirInstruction::Return { value: None });
         module.add_function(f);
@@ -714,10 +768,14 @@ mod tests {
         let mut module = WlirModule::new("event-test", "1.0");
         let mut f = WlirFunction::new("emit", vec![], WlirType::Void);
         f.push_instruction(WlirInstruction::EmitEvent {
-            event_type: "click".into(), payload_registers: vec![0], result_event_id: 1,
+            event_type: "click".into(),
+            payload_registers: vec![0],
+            result_event_id: 1,
         });
         f.push_instruction(WlirInstruction::EmitEvent {
-            event_type: "click".into(), payload_registers: vec![0], result_event_id: 2,
+            event_type: "click".into(),
+            payload_registers: vec![0],
+            result_event_id: 2,
         });
         f.push_instruction(WlirInstruction::Return { value: None });
         module.add_function(f);
@@ -733,7 +791,9 @@ mod tests {
         let mut module = WlirModule::new("op-test", "1.0");
         let mut f = WlirFunction::new("dispatch", vec![], WlirType::Void);
         f.push_instruction(WlirInstruction::InvokeOperator {
-            operator_name: "transfer".into(), args: vec![0, 1], result: 2,
+            operator_name: "transfer".into(),
+            args: vec![0, 1],
+            result: 2,
         });
         f.push_instruction(WlirInstruction::Return { value: None });
         module.add_function(f);
@@ -749,10 +809,14 @@ mod tests {
         let mut module = WlirModule::new("mem-test", "1.0");
         let mut f = WlirFunction::new("mem_op", vec![], WlirType::Void);
         f.push_instruction(WlirInstruction::MemoryQuery {
-            tier: maple_worldline_ir::MemoryTier::Episodic, key: 0, result: 1,
+            tier: maple_worldline_ir::MemoryTier::Episodic,
+            key: 0,
+            result: 1,
         });
         f.push_instruction(WlirInstruction::MemoryStore {
-            tier: maple_worldline_ir::MemoryTier::Episodic, key: 0, value: 1,
+            tier: maple_worldline_ir::MemoryTier::Episodic,
+            key: 0,
+            value: 1,
         });
         f.push_instruction(WlirInstruction::Return { value: None });
         module.add_function(f);
@@ -768,16 +832,29 @@ mod tests {
         let pass = SafetyFenceMinimizationPass;
         let result = pass.apply(&module).unwrap();
         // The fence before AssertInvariant MUST be preserved
-        assert!(result.description.contains("invariant-guarding fences preserved"));
+        assert!(result
+            .description
+            .contains("invariant-guarding fences preserved"));
         // The number preserved must be at least 1 (the invariant guard)
-        let preserved_str = result.description.split("invariant-guarding").next().unwrap();
-        let last_num: String = preserved_str.chars().rev()
+        let preserved_str = result
+            .description
+            .split("invariant-guarding")
+            .next()
+            .unwrap();
+        let last_num: String = preserved_str
+            .chars()
+            .rev()
             .skip_while(|c| !c.is_ascii_digit())
             .take_while(|c| c.is_ascii_digit())
             .collect::<String>()
-            .chars().rev().collect();
+            .chars()
+            .rev()
+            .collect();
         let preserved: u32 = last_num.parse().unwrap_or(0);
-        assert!(preserved >= 1, "At least 1 invariant fence must be preserved");
+        assert!(
+            preserved >= 1,
+            "At least 1 invariant fence must be preserved"
+        );
     }
 
     #[test]
@@ -786,10 +863,12 @@ mod tests {
         let mut module = WlirModule::new("fence-test", "1.0");
         let mut f = WlirFunction::new("fenced", vec![], WlirType::Void);
         f.push_instruction(WlirInstruction::SafetyFence {
-            fence_name: "fence1".into(), preceding_ops: vec![0],
+            fence_name: "fence1".into(),
+            preceding_ops: vec![0],
         });
         f.push_instruction(WlirInstruction::SafetyFence {
-            fence_name: "fence2".into(), preceding_ops: vec![0],
+            fence_name: "fence2".into(),
+            preceding_ops: vec![0],
         });
         f.push_instruction(WlirInstruction::Nop);
         f.push_instruction(WlirInstruction::Return { value: None });
@@ -817,7 +896,9 @@ mod tests {
     fn pipeline_from_strategy() {
         let strategy = CompilationStrategy::new(
             "basic",
-            CompilationTarget::Native { arch: TargetArch::X86_64 },
+            CompilationTarget::Native {
+                arch: TargetArch::X86_64,
+            },
             crate::types::OptimizationLevel::Basic,
         );
         let pipeline = OptimizationPipeline::from_strategy(&strategy);

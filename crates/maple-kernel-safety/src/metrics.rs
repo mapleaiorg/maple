@@ -32,7 +32,9 @@ pub struct CouplingMetrics {
 impl CouplingMetrics {
     /// Is the coupling one-sided (asymmetric)?
     pub fn is_asymmetric(&self, threshold: f64) -> bool {
-        self.escalation_count > 3 && self.deescalation_count == 0 && self.coupling_strength > threshold
+        self.escalation_count > 3
+            && self.deescalation_count == 0
+            && self.coupling_strength > threshold
     }
 
     /// Is the coupling escalating rapidly?

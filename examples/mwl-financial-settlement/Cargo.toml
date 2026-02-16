@@ -9,9 +9,8 @@ name = "mwl-financial-settlement"
 path = "src/main.rs"
 
 [dependencies]
-maple-mwl-types = { path = "../../crates/maple-mwl-types" }
-maple-mwl-identity = { path = "../../crates/maple-mwl-identity" }
-maple-kernel-financial = { path = "../../crates/maple-kernel-financial" }
+worldline-core = { workspace = true }
+worldline-runtime = { workspace = true }
 
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 tracing = "0.1"

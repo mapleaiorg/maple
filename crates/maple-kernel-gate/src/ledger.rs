@@ -207,8 +207,7 @@ mod tests {
     use super::*;
     use crate::declaration::CommitmentDeclaration;
     use maple_mwl_types::{
-        AdjudicationDecision, CommitmentScope, EffectDomain, IdentityMaterial,
-        RiskClass, RiskLevel,
+        AdjudicationDecision, CommitmentScope, EffectDomain, IdentityMaterial, RiskClass, RiskLevel,
     };
 
     fn test_worldline() -> WorldlineId {
@@ -308,7 +307,10 @@ mod tests {
 
         let before = ledger.history(&cid).unwrap().lifecycle.len();
         ledger
-            .record_lifecycle(&cid, LifecycleEvent::ExecutionStarted(TemporalAnchor::now(0)))
+            .record_lifecycle(
+                &cid,
+                LifecycleEvent::ExecutionStarted(TemporalAnchor::now(0)),
+            )
             .unwrap();
         let after = ledger.history(&cid).unwrap().lifecycle.len();
         assert_eq!(after, before + 1);

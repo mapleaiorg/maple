@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use maple_worldline_intent::types::{IntentId, SubstrateTier};
 
 // Re-export for convenience
-pub use maple_mwl_types::CommitmentId;
+pub use worldline_core::types::CommitmentId;
 
 // ── Identifier Types ────────────────────────────────────────────────────
 
@@ -62,20 +62,14 @@ pub enum CommitmentLifecycleStatus {
 impl CommitmentLifecycleStatus {
     /// Whether this status is terminal (no further transitions).
     pub fn is_terminal(&self) -> bool {
-        matches!(
-            self,
-            Self::Denied(_) | Self::Fulfilled | Self::Failed(_)
-        )
+        matches!(self, Self::Denied(_) | Self::Fulfilled | Self::Failed(_))
     }
 
     /// Whether this commitment is active (not terminal, not deferred).
     pub fn is_active(&self) -> bool {
         matches!(
             self,
-            Self::PendingObservation
-                | Self::ObservationComplete
-                | Self::Submitted
-                | Self::Approved
+            Self::PendingObservation | Self::ObservationComplete | Self::Submitted | Self::Approved
         )
     }
 }

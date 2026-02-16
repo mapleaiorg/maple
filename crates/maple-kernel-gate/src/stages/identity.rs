@@ -69,11 +69,9 @@ impl GateStage for IdentityBindingStage {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::declaration::CommitmentDeclaration;
     use crate::context::GateContext;
-    use maple_mwl_types::{
-        CommitmentScope, EffectDomain, EventId, IdentityMaterial, WorldlineId,
-    };
+    use crate::declaration::CommitmentDeclaration;
+    use maple_mwl_types::{CommitmentScope, EffectDomain, EventId, IdentityMaterial, WorldlineId};
 
     fn test_scope() -> CommitmentScope {
         CommitmentScope {

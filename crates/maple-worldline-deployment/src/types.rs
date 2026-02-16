@@ -313,11 +313,7 @@ impl std::fmt::Display for DeploymentSummary {
         write!(
             f,
             "DeploymentSummary(total={}, succeeded={}, failed={}, rolled_back={}, files={})",
-            self.total,
-            self.succeeded,
-            self.failed,
-            self.rolled_back,
-            self.total_files_deployed,
+            self.total, self.succeeded, self.failed, self.rolled_back, self.total_files_deployed,
         )
     }
 }
@@ -343,7 +339,10 @@ mod tests {
     fn deployment_phase_display() {
         assert_eq!(DeploymentPhase::Validating.to_string(), "validating");
         assert_eq!(
-            DeploymentPhase::Deploying { traffic_fraction: 0.1 }.to_string(),
+            DeploymentPhase::Deploying {
+                traffic_fraction: 0.1
+            }
+            .to_string(),
             "deploying(10%)"
         );
         assert_eq!(
@@ -355,7 +354,11 @@ mod tests {
             "monitoring(25%, 60s)"
         );
         assert_eq!(
-            DeploymentPhase::Promoting { from: 0.25, to: 0.50 }.to_string(),
+            DeploymentPhase::Promoting {
+                from: 0.25,
+                to: 0.50
+            }
+            .to_string(),
             "promoting(25%→50%)"
         );
         assert_eq!(DeploymentPhase::Complete.to_string(), "complete");
@@ -405,7 +408,9 @@ mod tests {
         record.mark_in_progress();
         assert!(matches!(record.status, DeploymentStatus::InProgress));
 
-        record.advance_phase(DeploymentPhase::Deploying { traffic_fraction: 1.0 });
+        record.advance_phase(DeploymentPhase::Deploying {
+            traffic_fraction: 1.0,
+        });
         assert_eq!(record.phase_count(), 1);
 
         record.mark_succeeded();
@@ -420,7 +425,9 @@ mod tests {
             "codegen-2".into(),
             "commit-2".into(),
             SelfModTier::Tier1OperatorInternal,
-            DeploymentStrategy::Canary { traffic_fraction: 0.05 },
+            DeploymentStrategy::Canary {
+                traffic_fraction: 0.05,
+            },
             vec!["src/handler.rs".into()],
         );
 
@@ -441,12 +448,17 @@ mod tests {
         );
 
         record.mark_in_progress();
-        record.advance_phase(DeploymentPhase::Deploying { traffic_fraction: 0.1 });
+        record.advance_phase(DeploymentPhase::Deploying {
+            traffic_fraction: 0.1,
+        });
         record.advance_phase(DeploymentPhase::RollingBack);
         record.mark_rolled_back("regression detected".into());
 
         assert!(record.rollback_triggered);
-        assert_eq!(record.rollback_reason.as_deref(), Some("regression detected"));
+        assert_eq!(
+            record.rollback_reason.as_deref(),
+            Some("regression detected")
+        );
         assert!(matches!(record.status, DeploymentStatus::RolledBack(_)));
     }
 

@@ -94,10 +94,7 @@ impl SandboxCompiler for SimulatedSandbox {
             Ok(CompilationResult {
                 file_path: code.file_path.clone(),
                 success: false,
-                diagnostics: vec![format!(
-                    "simulated compilation error in {}",
-                    code.file_path,
-                )],
+                diagnostics: vec![format!("simulated compilation error in {}", code.file_path,)],
                 duration_ms: 30,
             })
         }
@@ -159,9 +156,15 @@ impl SandboxCompiler for SimulatedSandbox {
                     threshold: gate.threshold,
                     passed,
                     description: if passed {
-                        format!("{}: {:.2} {} {:.2} ✓", gate.metric, measured_value, gate.comparison, gate.threshold)
+                        format!(
+                            "{}: {:.2} {} {:.2} ✓",
+                            gate.metric, measured_value, gate.comparison, gate.threshold
+                        )
                     } else {
-                        format!("{}: {:.2} {} {:.2} ✗", gate.metric, measured_value, gate.comparison, gate.threshold)
+                        format!(
+                            "{}: {:.2} {} {:.2} ✗",
+                            gate.metric, measured_value, gate.comparison, gate.threshold
+                        )
                     },
                 }
             })

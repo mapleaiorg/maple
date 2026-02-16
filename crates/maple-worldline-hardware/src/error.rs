@@ -87,8 +87,7 @@ mod tests {
         let ok: HardwareResult<i32> = Ok(42);
         assert_eq!(ok.unwrap(), 42);
 
-        let err: HardwareResult<i32> =
-            Err(HardwareError::ConfigurationError("bad".into()));
+        let err: HardwareResult<i32> = Err(HardwareError::ConfigurationError("bad".into()));
         assert!(err.is_err());
     }
 

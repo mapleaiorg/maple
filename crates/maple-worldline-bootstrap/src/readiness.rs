@@ -249,8 +249,7 @@ impl ReadinessChecker for SimulatedReadinessChecker {
         });
 
         // Governance check
-        let governance_passed =
-            !criteria.governance_approval_required || self.governance_approved;
+        let governance_passed = !criteria.governance_approval_required || self.governance_approved;
         results.push(CriterionResult {
             name: "governance".into(),
             passed: governance_passed,
@@ -263,8 +262,8 @@ impl ReadinessChecker for SimulatedReadinessChecker {
         });
 
         let all_passed = results.iter().all(|r| r.passed);
-        let passed_fraction = results.iter().filter(|r| r.passed).count() as f64
-            / results.len() as f64;
+        let passed_fraction =
+            results.iter().filter(|r| r.passed).count() as f64 / results.len() as f64;
 
         Ok(ReadinessReport {
             target_phase: target_phase.clone(),
@@ -334,11 +333,7 @@ mod tests {
             .unwrap();
         assert!(!report.all_passed);
         assert_eq!(report.failed_count(), 1);
-        let failed = report
-            .criteria_results
-            .iter()
-            .find(|c| !c.passed)
-            .unwrap();
+        let failed = report.criteria_results.iter().find(|c| !c.passed).unwrap();
         assert_eq!(failed.name, "stability");
     }
 

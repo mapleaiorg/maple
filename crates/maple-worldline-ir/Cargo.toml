@@ -9,7 +9,7 @@ rust-version.workspace = true
 description = "WorldLine Intermediate Representation — EVOS-native instruction set with first-class events, commitments, provenance, and safety fences"
 
 [dependencies]
-maple-mwl-types = { workspace = true }
+worldline-core = { workspace = true }
 maple-worldline-self-mod-gate = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }

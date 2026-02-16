@@ -18,7 +18,7 @@ use crate::artifact::ArtifactBuilder;
 use crate::error::{CodegenError, CodegenResult};
 use crate::generator::{CodeGenerator, GenerationContext};
 use crate::sandbox::SandboxCompiler;
-use crate::types::{CodegenConfig, CodegenId, CodegenSummary, CodegenStatus, GenerationRecord};
+use crate::types::{CodegenConfig, CodegenId, CodegenStatus, CodegenSummary, GenerationRecord};
 use crate::validator::{PerformanceValidator, SafetyValidator, TestValidator};
 
 /// The code generation engine.
@@ -38,10 +38,7 @@ pub struct CodegenEngine {
 
 impl CodegenEngine {
     /// Create a new codegen engine.
-    pub fn new(
-        generator: Box<dyn CodeGenerator>,
-        sandbox: Box<dyn SandboxCompiler>,
-    ) -> Self {
+    pub fn new(generator: Box<dyn CodeGenerator>, sandbox: Box<dyn SandboxCompiler>) -> Self {
         Self {
             generator,
             sandbox,
@@ -88,10 +85,7 @@ impl CodegenEngine {
         }
 
         // 3. Create generation record
-        let mut record = GenerationRecord::new(
-            commitment.id.clone(),
-            commitment.tier.clone(),
-        );
+        let mut record = GenerationRecord::new(commitment.id.clone(), commitment.tier.clone());
         let codegen_id = record.id.clone();
 
         // 4. Generate code per CodeChangeSpec
@@ -153,7 +147,8 @@ impl CodegenEngine {
             &test_results,
             &proposal.required_tests,
             self.config.require_all_tests_pass,
-        ).map_err(|e| {
+        )
+        .map_err(|e| {
             record.test_results = test_results.clone();
             record.mark_failed(e.to_string());
             self.store_record(record.clone());
@@ -169,7 +164,8 @@ impl CodegenEngine {
             &perf_results,
             &proposal.performance_gates,
             self.config.require_performance_gates,
-        ).map_err(|e| {
+        )
+        .map_err(|e| {
             record.performance_results = perf_results.clone();
             record.mark_failed(e.to_string());
             self.store_record(record.clone());
@@ -179,15 +175,12 @@ impl CodegenEngine {
 
         // 8. Safety validation
         if self.config.enforce_safety_checks {
-            SafetyValidator::validate(
-                &generated_files,
-                &proposal.safety_checks,
-                &self.config,
-            ).map_err(|e| {
-                record.mark_failed(e.to_string());
-                self.store_record(record.clone());
-                e
-            })?;
+            SafetyValidator::validate(&generated_files, &proposal.safety_checks, &self.config)
+                .map_err(|e| {
+                    record.mark_failed(e.to_string());
+                    self.store_record(record.clone());
+                    e
+                })?;
         }
 
         // 9. Mark validated
@@ -321,9 +314,12 @@ mod tests {
 
     fn make_simple_commitment() -> SelfModificationCommitment {
         make_commitment_with(
-            vec![("src/config.rs", CodeChangeType::ModifyFunction {
-                function_name: "load".into(),
-            })],
+            vec![(
+                "src/config.rs",
+                CodeChangeType::ModifyFunction {
+                    function_name: "load".into(),
+                },
+            )],
             SelfModTier::Tier0Configuration,
             DeploymentStrategy::Immediate,
         )
@@ -379,7 +375,9 @@ mod tests {
         // Create commitment with empty provenance
         let changes = vec![CodeChangeSpec {
             file_path: "src/config.rs".into(),
-            change_type: CodeChangeType::ModifyFunction { function_name: "load".into() },
+            change_type: CodeChangeType::ModifyFunction {
+                function_name: "load".into(),
+            },
             description: "test".into(),
             affected_regions: vec![],
             provenance: vec![MeaningId::new()],
@@ -392,21 +390,47 @@ mod tests {
                 rationale: "Testing".into(),
                 affected_components: vec!["module".into()],
                 code_changes: changes,
-                required_tests: vec![TestSpec { name: "t".into(), description: "t".into(), test_type: TestType::Unit }],
+                required_tests: vec![TestSpec {
+                    name: "t".into(),
+                    description: "t".into(),
+                    test_type: TestType::Unit,
+                }],
                 performance_gates: vec![],
                 safety_checks: vec![],
-                estimated_improvement: ImprovementEstimate { metric: "speed".into(), current_value: 10.0, projected_value: 8.0, confidence: 0.9, unit: "ms".into() },
+                estimated_improvement: ImprovementEstimate {
+                    metric: "speed".into(),
+                    current_value: 10.0,
+                    projected_value: 8.0,
+                    confidence: 0.9,
+                    unit: "ms".into(),
+                },
                 risk_score: 0.1,
-                rollback_plan: RollbackPlan { strategy: RollbackStrategy::GitRevert, steps: vec!["revert".into()], estimated_duration_secs: 60 },
+                rollback_plan: RollbackPlan {
+                    strategy: RollbackStrategy::GitRevert,
+                    steps: vec!["revert".into()],
+                    estimated_duration_secs: 60,
+                },
             },
             SelfModTier::Tier0Configuration,
             DeploymentStrategy::Immediate,
-            RollbackPlan { strategy: RollbackStrategy::GitRevert, steps: vec!["git revert HEAD".into()], estimated_duration_secs: 60 },
-            IntentChain { observation_ids: vec![], meaning_ids: vec![], intent_id: IntentId::new() },
-        ).unwrap();
+            RollbackPlan {
+                strategy: RollbackStrategy::GitRevert,
+                steps: vec!["git revert HEAD".into()],
+                estimated_duration_secs: 60,
+            },
+            IntentChain {
+                observation_ids: vec![],
+                meaning_ids: vec![],
+                intent_id: IntentId::new(),
+            },
+        )
+        .unwrap();
 
         let result = engine.generate(&commitment, &approved_decision());
-        assert!(matches!(result, Err(CodegenError::CommitmentValidationFailed(_))));
+        assert!(matches!(
+            result,
+            Err(CodegenError::CommitmentValidationFailed(_))
+        ));
     }
 
     #[test]
@@ -461,8 +485,18 @@ mod tests {
 
         let commitment = make_commitment_with(
             vec![
-                ("src/config.rs", CodeChangeType::ModifyFunction { function_name: "load".into() }),
-                ("src/handler.rs", CodeChangeType::ModifyStruct { struct_name: "Handler".into() }),
+                (
+                    "src/config.rs",
+                    CodeChangeType::ModifyFunction {
+                        function_name: "load".into(),
+                    },
+                ),
+                (
+                    "src/handler.rs",
+                    CodeChangeType::ModifyStruct {
+                        struct_name: "Handler".into(),
+                    },
+                ),
                 ("src/new_mod.rs", CodeChangeType::CreateFile),
             ],
             SelfModTier::Tier0Configuration,

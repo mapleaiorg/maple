@@ -279,10 +279,7 @@ mod tests {
         let record = runner.run_cycle(&report, &default_config()).unwrap();
         assert!(!record.success);
         assert_eq!(record.total_steps(), 4); // 0,1,2,3 then abort
-        assert_eq!(
-            record.last_phase().unwrap(),
-            &CyclePhase::Committing
-        );
+        assert_eq!(record.last_phase().unwrap(), &CyclePhase::Committing);
     }
 
     #[test]
@@ -366,10 +363,7 @@ mod tests {
         let record = runner.run_cycle(&report, &default_config()).unwrap();
         assert!(!record.success);
         assert_eq!(record.total_steps(), 1);
-        assert_eq!(
-            record.last_phase().unwrap(),
-            &CyclePhase::Observing
-        );
+        assert_eq!(record.last_phase().unwrap(), &CyclePhase::Observing);
     }
 
     #[test]

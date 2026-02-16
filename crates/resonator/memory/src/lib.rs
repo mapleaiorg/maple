@@ -253,9 +253,7 @@ impl MemoryItem {
 
     /// Check if the memory has expired.
     pub fn is_expired(&self) -> bool {
-        self.expires_at
-            .map(|exp| Utc::now() > exp)
-            .unwrap_or(false)
+        self.expires_at.map(|exp| Utc::now() > exp).unwrap_or(false)
     }
 
     /// Record an access (updates last_accessed and access_count).
@@ -404,10 +402,7 @@ impl ShortTermMemory {
 
     /// Store a memory item.
     pub fn store(&self, item: MemoryItem) -> Result<MemoryId, MemoryError> {
-        let mut guard = self
-            .items
-            .write()
-            .map_err(|_| MemoryError::LockError)?;
+        let mut guard = self.items.write().map_err(|_| MemoryError::LockError)?;
 
         // Enforce capacity limit (FIFO eviction)
         while guard.len() >= self.capacity {
@@ -421,10 +416,7 @@ impl ShortTermMemory {
 
     /// Retrieve a memory by ID.
     pub fn get(&self, id: &MemoryId) -> Result<Option<MemoryItem>, MemoryError> {
-        let mut guard = self
-            .items
-            .write()
-            .map_err(|_| MemoryError::LockError)?;
+        let mut guard = self.items.write().map_err(|_| MemoryError::LockError)?;
 
         if let Some(item) = guard.iter_mut().find(|i| &i.id == id) {
             item.record_access();
@@ -436,10 +428,7 @@ impl ShortTermMemory {
 
     /// Query memories.
     pub fn query(&self, query: &MemoryQuery) -> Result<Vec<MemoryQueryResult>, MemoryError> {
-        let mut guard = self
-            .items
-            .write()
-            .map_err(|_| MemoryError::LockError)?;
+        let mut guard = self.items.write().map_err(|_| MemoryError::LockError)?;
 
         let now = Utc::now();
         let mut results: Vec<MemoryQueryResult> = guard
@@ -462,9 +451,7 @@ impl ShortTermMemory {
                     }
                 }
                 // Filter by tags
-                if !query.tags.is_empty()
-                    && !query.tags.iter().any(|t| item.tags.contains(t))
-                {
+                if !query.tags.is_empty() && !query.tags.iter().any(|t| item.tags.contains(t)) {
                     return false;
                 }
                 // Filter by importance
@@ -514,10 +501,7 @@ impl ShortTermMemory {
 
     /// Clear expired memories.
     pub fn clear_expired(&self) -> Result<usize, MemoryError> {
-        let mut guard = self
-            .items
-            .write()
-            .map_err(|_| MemoryError::LockError)?;
+        let mut guard = self.items.write().map_err(|_| MemoryError::LockError)?;
 
         let before = guard.len();
         guard.retain(|item| !item.is_expired());
@@ -526,19 +510,13 @@ impl ShortTermMemory {
 
     /// Get all items (for consolidation).
     pub fn all(&self) -> Result<Vec<MemoryItem>, MemoryError> {
-        let guard = self
-            .items
-            .read()
-            .map_err(|_| MemoryError::LockError)?;
+        let guard = self.items.read().map_err(|_| MemoryError::LockError)?;
         Ok(guard.iter().cloned().collect())
     }
 
     /// Remove a specific memory.
     pub fn remove(&self, id: &MemoryId) -> Result<Option<MemoryItem>, MemoryError> {
-        let mut guard = self
-            .items
-            .write()
-            .map_err(|_| MemoryError::LockError)?;
+        let mut guard = self.items.write().map_err(|_| MemoryError::LockError)?;
 
         if let Some(pos) = guard.iter().position(|i| &i.id == id) {
             return Ok(guard.remove(pos));
@@ -574,15 +552,8 @@ impl WorkingMemory {
     }
 
     /// Store a memory item, optionally associated with a task.
-    pub fn store(
-        &self,
-        item: MemoryItem,
-        task_id: Option<&str>,
-    ) -> Result<MemoryId, MemoryError> {
-        let mut items = self
-            .items
-            .write()
-            .map_err(|_| MemoryError::LockError)?;
+    pub fn store(&self, item: MemoryItem, task_id: Option<&str>) -> Result<MemoryId, MemoryError> {
+        let mut items = self.items.write().map_err(|_| MemoryError::LockError)?;
 
         // Enforce capacity
         if items.len() >= self.capacity {
@@ -601,10 +572,7 @@ impl WorkingMemory {
 
         // Associate with task if provided
         if let Some(task_id) = task_id {
-            let mut by_task = self
-                .by_task
-                .write()
-                .map_err(|_| MemoryError::LockError)?;
+            let mut by_task = self.by_task.write().map_err(|_| MemoryError::LockError)?;
             by_task
                 .entry(task_id.to_string())
                 .or_default()
@@ -616,10 +584,7 @@ impl WorkingMemory {
 
     /// Get memory by ID.
     pub fn get(&self, id: &MemoryId) -> Result<Option<MemoryItem>, MemoryError> {
-        let mut items = self
-            .items
-            .write()
-            .map_err(|_| MemoryError::LockError)?;
+        let mut items = self.items.write().map_err(|_| MemoryError::LockError)?;
 
         if let Some(item) = items.get_mut(id) {
             item.record_access();
@@ -631,32 +596,17 @@ impl WorkingMemory {
 
     /// Get all memories for a task.
     pub fn get_for_task(&self, task_id: &str) -> Result<Vec<MemoryItem>, MemoryError> {
-        let by_task = self
-            .by_task
-            .read()
-            .map_err(|_| MemoryError::LockError)?;
-        let items = self
-            .items
-            .read()
-            .map_err(|_| MemoryError::LockError)?;
+        let by_task = self.by_task.read().map_err(|_| MemoryError::LockError)?;
+        let items = self.items.read().map_err(|_| MemoryError::LockError)?;
 
         let ids = by_task.get(task_id).cloned().unwrap_or_default();
-        Ok(ids
-            .iter()
-            .filter_map(|id| items.get(id).cloned())
-            .collect())
+        Ok(ids.iter().filter_map(|id| items.get(id).cloned()).collect())
     }
 
     /// Clear all memories for a task.
     pub fn clear_task(&self, task_id: &str) -> Result<usize, MemoryError> {
-        let mut by_task = self
-            .by_task
-            .write()
-            .map_err(|_| MemoryError::LockError)?;
-        let mut items = self
-            .items
-            .write()
-            .map_err(|_| MemoryError::LockError)?;
+        let mut by_task = self.by_task.write().map_err(|_| MemoryError::LockError)?;
+        let mut items = self.items.write().map_err(|_| MemoryError::LockError)?;
 
         if let Some(ids) = by_task.remove(task_id) {
             let count = ids.len();
@@ -671,10 +621,7 @@ impl WorkingMemory {
 
     /// Query working memories.
     pub fn query(&self, query: &MemoryQuery) -> Result<Vec<MemoryQueryResult>, MemoryError> {
-        let mut items = self
-            .items
-            .write()
-            .map_err(|_| MemoryError::LockError)?;
+        let mut items = self.items.write().map_err(|_| MemoryError::LockError)?;
 
         let now = Utc::now();
         let mut results: Vec<MemoryQueryResult> = items
@@ -693,9 +640,7 @@ impl WorkingMemory {
                         return false;
                     }
                 }
-                if !query.tags.is_empty()
-                    && !query.tags.iter().any(|t| item.tags.contains(t))
-                {
+                if !query.tags.is_empty() && !query.tags.iter().any(|t| item.tags.contains(t)) {
                     return false;
                 }
                 if let Some(min) = query.min_importance {
@@ -740,19 +685,13 @@ impl WorkingMemory {
 
     /// Get all items for consolidation.
     pub fn all(&self) -> Result<Vec<MemoryItem>, MemoryError> {
-        let items = self
-            .items
-            .read()
-            .map_err(|_| MemoryError::LockError)?;
+        let items = self.items.read().map_err(|_| MemoryError::LockError)?;
         Ok(items.values().cloned().collect())
     }
 
     /// Remove a specific memory.
     pub fn remove(&self, id: &MemoryId) -> Result<Option<MemoryItem>, MemoryError> {
-        let mut items = self
-            .items
-            .write()
-            .map_err(|_| MemoryError::LockError)?;
+        let mut items = self.items.write().map_err(|_| MemoryError::LockError)?;
         Ok(items.remove(id))
     }
 }
@@ -780,20 +719,14 @@ impl LongTermMemory {
 
     /// Store a memory item.
     pub fn store(&self, item: MemoryItem) -> Result<MemoryId, MemoryError> {
-        let mut items = self
-            .items
-            .write()
-            .map_err(|_| MemoryError::LockError)?;
+        let mut items = self.items.write().map_err(|_| MemoryError::LockError)?;
 
         let id = item.id.clone();
         let memory_type = item.memory_type.clone();
 
         items.insert(id.clone(), item);
 
-        let mut by_type = self
-            .by_type
-            .write()
-            .map_err(|_| MemoryError::LockError)?;
+        let mut by_type = self.by_type.write().map_err(|_| MemoryError::LockError)?;
         by_type.entry(memory_type).or_default().push(id.clone());
 
         Ok(id)
@@ -801,10 +734,7 @@ impl LongTermMemory {
 
     /// Get memory by ID.
     pub fn get(&self, id: &MemoryId) -> Result<Option<MemoryItem>, MemoryError> {
-        let mut items = self
-            .items
-            .write()
-            .map_err(|_| MemoryError::LockError)?;
+        let mut items = self.items.write().map_err(|_| MemoryError::LockError)?;
 
         if let Some(item) = items.get_mut(id) {
             item.record_access();
@@ -821,10 +751,7 @@ impl LongTermMemory {
         limit: usize,
         min_similarity: f32,
     ) -> Result<Vec<MemoryQueryResult>, MemoryError> {
-        let items = self
-            .items
-            .read()
-            .map_err(|_| MemoryError::LockError)?;
+        let items = self.items.read().map_err(|_| MemoryError::LockError)?;
 
         let now = Utc::now();
         let mut results: Vec<MemoryQueryResult> = items
@@ -844,11 +771,7 @@ impl LongTermMemory {
             })
             .collect();
 
-        results.sort_by(|a, b| {
-            b.similarity_score
-                .partial_cmp(&a.similarity_score)
-                .unwrap()
-        });
+        results.sort_by(|a, b| b.similarity_score.partial_cmp(&a.similarity_score).unwrap());
         results.truncate(limit);
 
         Ok(results)
@@ -856,10 +779,7 @@ impl LongTermMemory {
 
     /// Query long-term memories.
     pub fn query(&self, query: &MemoryQuery) -> Result<Vec<MemoryQueryResult>, MemoryError> {
-        let mut items = self
-            .items
-            .write()
-            .map_err(|_| MemoryError::LockError)?;
+        let mut items = self.items.write().map_err(|_| MemoryError::LockError)?;
 
         let now = Utc::now();
         let mut results: Vec<MemoryQueryResult> = items
@@ -878,9 +798,7 @@ impl LongTermMemory {
                         return false;
                     }
                 }
-                if !query.tags.is_empty()
-                    && !query.tags.iter().any(|t| item.tags.contains(t))
-                {
+                if !query.tags.is_empty() && !query.tags.iter().any(|t| item.tags.contains(t)) {
                     return false;
                 }
                 if let Some(min) = query.min_importance {
@@ -925,19 +843,13 @@ impl LongTermMemory {
 
     /// Get all items.
     pub fn all(&self) -> Result<Vec<MemoryItem>, MemoryError> {
-        let items = self
-            .items
-            .read()
-            .map_err(|_| MemoryError::LockError)?;
+        let items = self.items.read().map_err(|_| MemoryError::LockError)?;
         Ok(items.values().cloned().collect())
     }
 
     /// Remove a memory.
     pub fn remove(&self, id: &MemoryId) -> Result<Option<MemoryItem>, MemoryError> {
-        let mut items = self
-            .items
-            .write()
-            .map_err(|_| MemoryError::LockError)?;
+        let mut items = self.items.write().map_err(|_| MemoryError::LockError)?;
         Ok(items.remove(id))
     }
 }
@@ -994,10 +906,7 @@ impl EpisodicMemory {
         summary: impl Into<String>,
         participants: Vec<String>,
     ) -> Result<String, MemoryError> {
-        let mut episodes = self
-            .episodes
-            .write()
-            .map_err(|_| MemoryError::LockError)?;
+        let mut episodes = self.episodes.write().map_err(|_| MemoryError::LockError)?;
 
         let id = format!("ep-{}", uuid::Uuid::new_v4());
         let episode = Episode {
@@ -1021,10 +930,7 @@ impl EpisodicMemory {
         episode_id: &str,
         outcome: EpisodeOutcome,
     ) -> Result<(), MemoryError> {
-        let mut episodes = self
-            .episodes
-            .write()
-            .map_err(|_| MemoryError::LockError)?;
+        let mut episodes = self.episodes.write().map_err(|_| MemoryError::LockError)?;
 
         let episode = episodes
             .get_mut(episode_id)
@@ -1042,10 +948,7 @@ impl EpisodicMemory {
         episode_id: &str,
         memory_id: MemoryId,
     ) -> Result<(), MemoryError> {
-        let mut episodes = self
-            .episodes
-            .write()
-            .map_err(|_| MemoryError::LockError)?;
+        let mut episodes = self.episodes.write().map_err(|_| MemoryError::LockError)?;
 
         let episode = episodes
             .get_mut(episode_id)
@@ -1058,19 +961,13 @@ impl EpisodicMemory {
 
     /// Get an episode.
     pub fn get(&self, episode_id: &str) -> Result<Option<Episode>, MemoryError> {
-        let episodes = self
-            .episodes
-            .read()
-            .map_err(|_| MemoryError::LockError)?;
+        let episodes = self.episodes.read().map_err(|_| MemoryError::LockError)?;
         Ok(episodes.get(episode_id).cloned())
     }
 
     /// Get recent episodes.
     pub fn recent(&self, limit: usize) -> Result<Vec<Episode>, MemoryError> {
-        let episodes = self
-            .episodes
-            .read()
-            .map_err(|_| MemoryError::LockError)?;
+        let episodes = self.episodes.read().map_err(|_| MemoryError::LockError)?;
 
         let mut vec: Vec<Episode> = episodes.values().cloned().collect();
         vec.sort_by(|a, b| b.started_at.cmp(&a.started_at));
@@ -1098,8 +995,8 @@ pub struct ConsolidationConfig {
 impl Default for ConsolidationConfig {
     fn default() -> Self {
         Self {
-            short_term_decay_rate: 0.5,      // Fast decay
-            working_memory_decay_rate: 0.1,  // Slower decay
+            short_term_decay_rate: 0.5,     // Fast decay
+            working_memory_decay_rate: 0.1, // Slower decay
             promote_to_working_threshold: 0.7,
             promote_to_long_term_threshold: 0.8,
             min_access_for_long_term: 3,
@@ -1141,9 +1038,7 @@ impl ConsolidationEngine {
             decayed += 1;
 
             // Check for promotion to working
-            if item.strength >= self.config.promote_to_working_threshold
-                && item.importance >= 0.5
-            {
+            if item.strength >= self.config.promote_to_working_threshold && item.importance >= 0.5 {
                 item.tier = MemoryTier::Working;
                 item.expires_at = Some(Utc::now() + Duration::hours(4));
                 working.store(item.clone(), None)?;
@@ -1403,9 +1298,7 @@ mod tests {
         ltm.store(item2).unwrap();
 
         // Search with embedding close to "dogs"
-        let results = ltm
-            .semantic_search(&[0.9, 0.1, 0.0], 1, 0.0)
-            .unwrap();
+        let results = ltm.semantic_search(&[0.9, 0.1, 0.0], 1, 0.0).unwrap();
 
         assert_eq!(results.len(), 1);
         assert_eq!(results[0].item.summary, "About dogs");
@@ -1413,11 +1306,8 @@ mod tests {
 
     #[test]
     fn test_memory_decay() {
-        let mut item = MemoryItem::short_term(
-            serde_json::json!({}),
-            "Decaying memory",
-            MemoryType::Fact,
-        );
+        let mut item =
+            MemoryItem::short_term(serde_json::json!({}), "Decaying memory", MemoryType::Fact);
 
         assert_eq!(item.strength, 1.0);
 
@@ -1433,7 +1323,10 @@ mod tests {
         let em = EpisodicMemory::new();
 
         let ep_id = em
-            .start_episode("Test interaction", vec!["user".to_string(), "agent".to_string()])
+            .start_episode(
+                "Test interaction",
+                vec!["user".to_string(), "agent".to_string()],
+            )
             .unwrap();
 
         let mem_id = MemoryId::generate();

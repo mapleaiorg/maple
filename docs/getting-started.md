@@ -394,7 +394,7 @@ cargo run -p resonator-cli -- consequence list
 
 ## Part 7: Conformance Testing
 
-Verify your implementation enforces all 8 invariants:
+Verify your implementation enforces all 9 invariants:
 
 ```rust
 use resonator_conformance::{ConformanceSuite, ConformanceConfig, Invariant};
@@ -416,7 +416,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("  Duration: {}ms\n", report.duration_ms);
 
     if report.all_passed() {
-        println!("🎉 MAPLE COMPLIANT - All 8 invariants verified!");
+        println!("🎉 MAPLE COMPLIANT - All 9 invariants verified!");
     } else {
         println!("⚠️ Some invariants failed:");
         for test in &report.tests {
@@ -430,7 +430,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-### The 8 Invariants
+### The 9 Invariants
 
 | # | Invariant | Test |
 |---|-----------|------|
@@ -442,6 +442,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 | 6 | Audit trail is Append-Only | Attempt deletion (fail) |
 | 7 | Capabilities gate Actions | Attempt unauthorized action |
 | 8 | Time anchors are Monotonic | Verify ordering |
+| 9 | Implementation Provenance & Evolution | Verify replay-verified, evidence-anchored upgrades |
 
 ---
 

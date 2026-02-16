@@ -22,16 +22,16 @@
 use std::sync::Arc;
 
 use colored::Colorize;
-use maple_kernel_fabric::{EventFabric, FabricConfig};
-use maple_kernel_gate::{
-    AdjudicationResult, CommitmentDeclaration, CommitmentGate, CommitmentOutcome,
-    GateConfig, LedgerFilter, MockCapabilityProvider, MockPolicyProvider,
-    CapabilityCheckStage, CoSignatureStage, DeclarationStage, FinalDecisionStage,
-    IdentityBindingStage, PolicyEvaluationStage, RiskAssessmentStage, RiskConfig,
+use worldline_core::identity::IdentityManager;
+use worldline_core::types::{
+    CapabilityId, CommitmentScope, EffectDomain, EventId, IdentityMaterial, WorldlineId,
 };
-use maple_mwl_identity::IdentityManager;
-use maple_mwl_types::{
-    CapabilityId, CommitmentScope, EffectDomain, EventId, IdentityMaterial,
+use worldline_runtime::fabric::{EventFabric, FabricConfig};
+use worldline_runtime::gate::{
+    AdjudicationResult, CapabilityCheckStage, CoSignatureStage, CommitmentDeclaration,
+    CommitmentGate, CommitmentOutcome, DeclarationStage, FinalDecisionStage, GateConfig,
+    IdentityBindingStage, LedgerFilter, MockCapabilityProvider, MockPolicyProvider,
+    PolicyEvaluationStage, PolicyProvider, RiskAssessmentStage, RiskConfig,
 };
 
 fn header(title: &str) {
@@ -44,10 +44,12 @@ fn header(title: &str) {
 /// Build a fully wired Commitment Gate with all 7 stages.
 async fn build_gate(
     approve_policy: bool,
-) -> (CommitmentGate, maple_mwl_types::WorldlineId, Arc<std::sync::RwLock<IdentityManager>>) {
-    let fabric = Arc::new(
-        EventFabric::init(FabricConfig::default()).await.unwrap(),
-    );
+) -> (
+    CommitmentGate,
+    WorldlineId,
+    Arc<std::sync::RwLock<IdentityManager>>,
+) {
+    let fabric = Arc::new(EventFabric::init(FabricConfig::default()).await.unwrap());
 
     let mut identity_mgr = IdentityManager::new();
     let material = IdentityMaterial::GenesisHash([1u8; 32]);
@@ -59,7 +61,7 @@ async fn build_gate(
     cap_provider.grant(wid.clone(), "CAP-FIN", EffectDomain::Financial);
     let cap_provider = Arc::new(cap_provider);
 
-    let policy_provider: Arc<dyn maple_kernel_gate::PolicyProvider> = if approve_policy {
+    let policy_provider: Arc<dyn PolicyProvider> = if approve_policy {
         Arc::new(MockPolicyProvider::approve_all())
     } else {
         Arc::new(MockPolicyProvider::deny_all())
@@ -90,22 +92,54 @@ async fn build_gate(
 fn print_result(result: &AdjudicationResult) {
     match result {
         AdjudicationResult::Approved { decision } => {
-            println!("  {}   result:     {}", "│".dimmed(), "APPROVED".green().bold());
-            println!("  {}   decision:   {}", "│".dimmed(), decision.decision_id.dimmed());
+            println!(
+                "  {}   result:     {}",
+                "│".dimmed(),
+                "APPROVED".green().bold()
+            );
+            println!(
+                "  {}   decision:   {}",
+                "│".dimmed(),
+                decision.decision_id.dimmed()
+            );
             println!("  {}   risk:       {:?}", "│".dimmed(), decision.risk.class);
-            println!("  {}   rationale:  {}", "│".dimmed(), decision.rationale.green());
+            println!(
+                "  {}   rationale:  {}",
+                "│".dimmed(),
+                decision.rationale.green()
+            );
         }
         AdjudicationResult::Denied { decision } => {
             println!("  {}   result:     {}", "│".dimmed(), "DENIED".red().bold());
-            println!("  {}   decision:   {}", "│".dimmed(), decision.decision_id.dimmed());
-            println!("  {}   rationale:  {}", "│".dimmed(), decision.rationale.red());
+            println!(
+                "  {}   decision:   {}",
+                "│".dimmed(),
+                decision.decision_id.dimmed()
+            );
+            println!(
+                "  {}   rationale:  {}",
+                "│".dimmed(),
+                decision.rationale.red()
+            );
         }
         AdjudicationResult::PendingCoSign { required } => {
-            println!("  {}   result:     {}", "│".dimmed(), "PENDING CO-SIGN".yellow().bold());
-            println!("  {}   required:   {} signers", "│".dimmed(), required.len());
+            println!(
+                "  {}   result:     {}",
+                "│".dimmed(),
+                "PENDING CO-SIGN".yellow().bold()
+            );
+            println!(
+                "  {}   required:   {} signers",
+                "│".dimmed(),
+                required.len()
+            );
         }
         AdjudicationResult::PendingHumanApproval { approver } => {
-            println!("  {}   result:     {}", "│".dimmed(), "PENDING HUMAN APPROVAL".yellow().bold());
+            println!(
+                "  {}   result:     {}",
+                "│".dimmed(),
+                "PENDING HUMAN APPROVAL".yellow().bold()
+            );
             println!("  {}   approver:   {}", "│".dimmed(), approver);
         }
     }
@@ -119,18 +153,27 @@ async fn main() {
         .init();
 
     println!();
-    println!("{}", "╔══════════════════════════════════════════════════════════════╗".cyan());
-    println!("{}", "║    MWL Example 12: Commitment Gate Demo                     ║".cyan().bold());
-    println!("{}", "╚══════════════════════════════════════════════════════════════╝".cyan());
+    println!(
+        "{}",
+        "╔══════════════════════════════════════════════════════════════╗".cyan()
+    );
+    println!(
+        "{}",
+        "║    MWL Example 12: Commitment Gate Demo                     ║"
+            .cyan()
+            .bold()
+    );
+    println!(
+        "{}",
+        "╚══════════════════════════════════════════════════════════════╝".cyan()
+    );
 
     // ── Scenario 1: Valid commitment → Approved ─────────────────────
     header("Scenario 1: Valid Commitment (all stages pass)");
 
     let (mut gate, wid, _identity_mgr) = build_gate(true).await;
 
-    let target = maple_mwl_types::WorldlineId::derive(
-        &IdentityMaterial::GenesisHash([2u8; 32]),
-    );
+    let target = WorldlineId::derive(&IdentityMaterial::GenesisHash([2u8; 32]));
 
     let decl = CommitmentDeclaration::builder(
         wid.clone(),
@@ -148,7 +191,11 @@ async fn main() {
 
     let cid = decl.id.clone();
     println!("  {} Submitting: Communication commitment", "├".dimmed());
-    println!("  {}   domain:      {}", "│".dimmed(), "Communication".blue());
+    println!(
+        "  {}   domain:      {}",
+        "│".dimmed(),
+        "Communication".blue()
+    );
     println!("  {}   capability:  {}", "│".dimmed(), "CAP-COMM".blue());
 
     let result = gate.submit(decl).await.unwrap();
@@ -176,21 +223,25 @@ async fn main() {
     // NO .derived_from_intent() — violates I.3
     .build();
 
-    println!("  {} Submitting: Commitment WITHOUT intent reference", "├".dimmed());
+    println!(
+        "  {} Submitting: Commitment WITHOUT intent reference",
+        "├".dimmed()
+    );
     println!("  {}   intent ref: {}", "│".dimmed(), "NONE".red());
 
     let result = gate.submit(decl_no_intent).await.unwrap();
     print_result(&result);
-    println!("  {} I.3 enforced: Intent required before commitment", "└".dimmed());
+    println!(
+        "  {} I.3 enforced: Intent required before commitment",
+        "└".dimmed()
+    );
 
     // ── Scenario 3: Unknown identity → Denied at Stage 2 ───────────
     header("Scenario 3: Unknown Identity (Stage 2 rejects)");
 
     let (mut gate, _, _) = build_gate(true).await;
 
-    let unknown = maple_mwl_types::WorldlineId::derive(
-        &IdentityMaterial::GenesisHash([99u8; 32]),
-    );
+    let unknown = WorldlineId::derive(&IdentityMaterial::GenesisHash([99u8; 32]));
 
     let decl_unknown = CommitmentDeclaration::builder(
         unknown.clone(),
@@ -203,12 +254,22 @@ async fn main() {
     .derived_from_intent(EventId::new())
     .build();
 
-    println!("  {} Submitting: Commitment from unknown identity", "├".dimmed());
-    println!("  {}   identity: {}", "│".dimmed(), format!("{}", unknown).red());
+    println!(
+        "  {} Submitting: Commitment from unknown identity",
+        "├".dimmed()
+    );
+    println!(
+        "  {}   identity: {}",
+        "│".dimmed(),
+        format!("{}", unknown).red()
+    );
 
     let result = gate.submit(decl_unknown).await.unwrap();
     print_result(&result);
-    println!("  {} I.5 enforced: Identity must be verified before execution", "└".dimmed());
+    println!(
+        "  {} I.5 enforced: Identity must be verified before execution",
+        "└".dimmed()
+    );
 
     // ── Scenario 4: Policy denial ───────────────────────────────────
     header("Scenario 4: Policy Denial (Stage 4 rejects)");
@@ -227,7 +288,10 @@ async fn main() {
     .capability(CapabilityId("CAP-COMM".into()))
     .build();
 
-    println!("  {} Submitting: Commitment against deny-all policy", "├".dimmed());
+    println!(
+        "  {} Submitting: Commitment against deny-all policy",
+        "├".dimmed()
+    );
 
     let result = gate.submit(decl_policy_fail).await.unwrap();
     print_result(&result);
@@ -257,11 +321,18 @@ async fn main() {
 
     let filter = LedgerFilter::new().with_worldline(wid.clone());
     let entries = gate.query_ledger(&filter);
-    println!("  {} Ledger entries for Alice: {}", "├".dimmed(),
-        format!("{}", entries.len()).yellow());
+    println!(
+        "  {} Ledger entries for Alice: {}",
+        "├".dimmed(),
+        format!("{}", entries.len()).yellow()
+    );
 
     for (i, entry) in entries.iter().enumerate() {
-        let prefix = if i < entries.len() - 1 { "│  ├" } else { "│  └" };
+        let prefix = if i < entries.len() - 1 {
+            "│  ├"
+        } else {
+            "│  └"
+        };
         println!(
             "  {}  {} → {:?}",
             prefix.dimmed(),
@@ -274,12 +345,40 @@ async fn main() {
 
     // ── Summary ─────────────────────────────────────────────────────
     header("Summary");
-    println!("  {} 7-stage pipeline:          {}", "├".dimmed(), "Declaration → Identity → Capability → Policy → Risk → CoSign → Final".green());
-    println!("  {} Stage 1 (Declaration):     {}", "├".dimmed(), "validates intent reference (I.3)".green());
-    println!("  {} Stage 2 (Identity):        {}", "├".dimmed(), "verifies WorldlineId exists".green());
-    println!("  {} Stage 3 (Capability):      {}", "├".dimmed(), "checks bounded authority grants".green());
-    println!("  {} Stage 4 (Policy):          {}", "├".dimmed(), "governance policies are authoritative".green());
-    println!("  {} Denied commitments:        {}", "├".dimmed(), "first-class records in the ledger".green());
-    println!("  {} Constitutional invariants: {}", "└".dimmed(), "I.3, I.5, I.CG-1, I.AAS-3 demonstrated".green());
+    println!(
+        "  {} 7-stage pipeline:          {}",
+        "├".dimmed(),
+        "Declaration → Identity → Capability → Policy → Risk → CoSign → Final".green()
+    );
+    println!(
+        "  {} Stage 1 (Declaration):     {}",
+        "├".dimmed(),
+        "validates intent reference (I.3)".green()
+    );
+    println!(
+        "  {} Stage 2 (Identity):        {}",
+        "├".dimmed(),
+        "verifies WorldlineId exists".green()
+    );
+    println!(
+        "  {} Stage 3 (Capability):      {}",
+        "├".dimmed(),
+        "checks bounded authority grants".green()
+    );
+    println!(
+        "  {} Stage 4 (Policy):          {}",
+        "├".dimmed(),
+        "governance policies are authoritative".green()
+    );
+    println!(
+        "  {} Denied commitments:        {}",
+        "├".dimmed(),
+        "first-class records in the ledger".green()
+    );
+    println!(
+        "  {} Constitutional invariants: {}",
+        "└".dimmed(),
+        "I.3, I.5, I.CG-1, I.AAS-3 demonstrated".green()
+    );
     println!();
 }

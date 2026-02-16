@@ -59,7 +59,10 @@ impl SimulatedParserGenerator {
             "// Auto-generated {} parser for {} grammar\n",
             parser_type, grammar.style
         ));
-        source.push_str(&format!("// Total productions: {}\n\n", grammar.productions.len()));
+        source.push_str(&format!(
+            "// Total productions: {}\n\n",
+            grammar.productions.len()
+        ));
 
         // Entry point
         let entry = if grammar.productions.is_empty() {
@@ -68,7 +71,10 @@ impl SimulatedParserGenerator {
             grammar.productions[0].name.clone()
         };
 
-        source.push_str(&format!("fn parse_{}(input: &str) -> Result<AST, ParseError> {{\n", entry));
+        source.push_str(&format!(
+            "fn parse_{}(input: &str) -> Result<AST, ParseError> {{\n",
+            entry
+        ));
         source.push_str("    // Parser skeleton — production rules:\n");
 
         for prod in &grammar.productions {

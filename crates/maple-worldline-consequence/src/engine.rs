@@ -9,7 +9,9 @@
 
 use std::collections::VecDeque;
 
-use maple_worldline_commitment::types::{CommitmentLifecycleStatus, CommitmentRecord, SelfCommitmentId};
+use maple_worldline_commitment::types::{
+    CommitmentLifecycleStatus, CommitmentRecord, SelfCommitmentId,
+};
 use maple_worldline_intent::proposal::RegenerationProposal;
 use maple_worldline_intent::types::{IntentId, SubstrateTier};
 use maple_worldline_observation::events::ObservationMetadata;
@@ -22,8 +24,7 @@ use crate::feedback::ObservationFeedback;
 use crate::receipt::ExecutionReceipt;
 use crate::rollback::RollbackExecutor;
 use crate::types::{
-    ConsequenceConfig, ConsequenceRecord, ConsequenceStatus, ConsequenceSummary,
-    SelfConsequenceId,
+    ConsequenceConfig, ConsequenceRecord, ConsequenceStatus, ConsequenceSummary, SelfConsequenceId,
 };
 
 /// The self-consequence engine.
@@ -79,7 +80,10 @@ impl SelfConsequenceEngine {
         proposal: &RegenerationProposal,
     ) -> ConsequenceResult<SelfConsequenceId> {
         // 1. Validate that commitment is approved
-        if !matches!(commitment_record.status, CommitmentLifecycleStatus::Approved) {
+        if !matches!(
+            commitment_record.status,
+            CommitmentLifecycleStatus::Approved
+        ) {
             return Err(ConsequenceError::CommitmentNotApproved(format!(
                 "commitment {} is in state '{}', expected 'approved'",
                 commitment_record.id, commitment_record.status
@@ -148,11 +152,8 @@ impl SelfConsequenceEngine {
         succeeded: bool,
         reason: Option<String>,
     ) -> SelfConsequenceId {
-        let mut record = ConsequenceRecord::new(
-            commitment_id.clone(),
-            intent_id.clone(),
-            tier.clone(),
-        );
+        let mut record =
+            ConsequenceRecord::new(commitment_id.clone(), intent_id.clone(), tier.clone());
         let consequence_id = record.id.clone();
 
         record.mark_executing();
@@ -194,9 +195,7 @@ impl SelfConsequenceEngine {
 
     /// Find a consequence record by its commitment ID.
     pub fn find_by_commitment(&self, id: &SelfCommitmentId) -> Option<&ConsequenceRecord> {
-        self.records
-            .iter()
-            .find(|r| r.self_commitment_id == *id)
+        self.records.iter().find(|r| r.self_commitment_id == *id)
     }
 
     /// Get summary statistics for all tracked consequences.
@@ -221,11 +220,7 @@ impl SelfConsequenceEngine {
     }
 
     /// Attempt rollback if configured for auto-rollback.
-    fn attempt_rollback(
-        &self,
-        record: &mut ConsequenceRecord,
-        proposal: &RegenerationProposal,
-    ) {
+    fn attempt_rollback(&self, record: &mut ConsequenceRecord, proposal: &RegenerationProposal) {
         if !self.config.auto_rollback_on_failure {
             return;
         }
@@ -238,17 +233,12 @@ impl SelfConsequenceEngine {
             Ok(result) if result.success => {
                 record.mark_rolled_back(format!(
                     "Rolled back via {}: {}/{} steps",
-                    proposal.rollback_plan.strategy,
-                    result.steps_executed,
-                    result.total_steps,
+                    proposal.rollback_plan.strategy, result.steps_executed, result.total_steps,
                 ));
             }
             Ok(result) => {
                 record.rollback_attempted = true;
-                tracing::warn!(
-                    "Rollback completed but not successful: {}",
-                    result.output
-                );
+                tracing::warn!("Rollback completed but not successful: {}", result.output);
             }
             Err(e) => {
                 record.rollback_attempted = true;
@@ -298,8 +288,8 @@ mod tests {
     };
     use maple_worldline_intent::intent::ImprovementEstimate;
     use maple_worldline_intent::proposal::*;
-    use maple_worldline_intent::types::{CodeChangeType, IntentId, ProposalId, SubstrateTier};
     use maple_worldline_intent::types::MeaningId;
+    use maple_worldline_intent::types::{CodeChangeType, IntentId, ProposalId, SubstrateTier};
 
     fn make_approved_commitment() -> CmtRecord {
         let now = chrono::Utc::now();
@@ -407,7 +397,10 @@ mod tests {
         let proposal = make_test_proposal();
 
         let result = engine.execute_approved(&commitment, &proposal);
-        assert!(matches!(result, Err(ConsequenceError::CommitmentNotApproved(_))));
+        assert!(matches!(
+            result,
+            Err(ConsequenceError::CommitmentNotApproved(_))
+        ));
     }
 
     #[test]

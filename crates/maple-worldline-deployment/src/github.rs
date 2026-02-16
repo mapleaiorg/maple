@@ -105,7 +105,11 @@ impl SimulatedGitHub {
 }
 
 impl GitHubIntegration for SimulatedGitHub {
-    fn create_branch(&self, branch_name: &str, _base: &str) -> DeploymentResult<GitOperationResult> {
+    fn create_branch(
+        &self,
+        branch_name: &str,
+        _base: &str,
+    ) -> DeploymentResult<GitOperationResult> {
         let mut result = self.make_result("create_branch");
         result.output = format!("Created branch: {}", branch_name);
         Ok(result)
@@ -184,7 +188,9 @@ mod tests {
     fn simulated_github_commit_files() {
         let gh = SimulatedGitHub::succeeding();
         let files = vec!["src/config.rs".into()];
-        let result = gh.commit_files("deploy/test", &files, "deploy changes").unwrap();
+        let result = gh
+            .commit_files("deploy/test", &files, "deploy changes")
+            .unwrap();
         assert!(result.success);
         assert!(result.commit_sha.is_some());
     }
@@ -192,7 +198,9 @@ mod tests {
     #[test]
     fn simulated_github_create_pr() {
         let gh = SimulatedGitHub::succeeding();
-        let result = gh.create_pr("deploy/test", "Deploy changes", "body").unwrap();
+        let result = gh
+            .create_pr("deploy/test", "Deploy changes", "body")
+            .unwrap();
         assert!(result.success);
         assert!(result.pr_url.is_some());
         assert!(result.pr_url.unwrap().contains("github.com"));

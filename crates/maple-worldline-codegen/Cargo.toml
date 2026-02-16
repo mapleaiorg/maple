@@ -9,7 +9,7 @@ rust-version.workspace = true
 description = "Code generation engine — LLM-backed codegen with sandbox compilation for the MWL self-producing substrate"
 
 [dependencies]
-maple-mwl-types = { workspace = true }
+worldline-core = { workspace = true }
 maple-worldline-intent = { workspace = true }
 maple-worldline-self-mod-gate = { workspace = true }
 serde = { workspace = true, features = ["derive"] }

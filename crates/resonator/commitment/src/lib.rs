@@ -567,7 +567,10 @@ pub trait ContractEngine: Send + Sync {
     fn list_contracts(&self) -> Result<Vec<StoredContract>, ContractEngineError>;
 
     /// Get contracts by status.
-    fn get_by_status(&self, status: &ContractStatus) -> Result<Vec<StoredContract>, ContractEngineError>;
+    fn get_by_status(
+        &self,
+        status: &ContractStatus,
+    ) -> Result<Vec<StoredContract>, ContractEngineError>;
 }
 
 /// The main contract lifecycle manager.
@@ -597,7 +600,10 @@ impl ContractLifecycleManager {
     }
 
     /// Create a new contract in Draft state.
-    pub fn create_draft(&self, contract: RcfCommitment) -> Result<CommitmentId, ContractEngineError> {
+    pub fn create_draft(
+        &self,
+        contract: RcfCommitment,
+    ) -> Result<CommitmentId, ContractEngineError> {
         let id = contract.commitment_id.clone();
         self.engine.register_contract(contract)?;
         Ok(id)
@@ -808,7 +814,9 @@ impl ContractLifecycleManager {
         let contracts = self.engine.list_contracts()?;
         Ok(contracts
             .into_iter()
-            .filter(|c| !c.status.is_terminal() && self.expiry_tracker.is_expiring_soon(&c.contract))
+            .filter(|c| {
+                !c.status.is_terminal() && self.expiry_tracker.is_expiring_soon(&c.contract)
+            })
             .collect())
     }
 
@@ -934,7 +942,10 @@ impl ContractEngine for InMemoryContractEngine {
         Ok(guard.values().cloned().collect())
     }
 
-    fn get_by_status(&self, status: &ContractStatus) -> Result<Vec<StoredContract>, ContractEngineError> {
+    fn get_by_status(
+        &self,
+        status: &ContractStatus,
+    ) -> Result<Vec<StoredContract>, ContractEngineError> {
         let guard = self
             .contracts
             .read()

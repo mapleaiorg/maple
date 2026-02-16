@@ -47,7 +47,8 @@ impl ConformanceRunner {
 
         let skipped = total_expected - results.len();
         let completed_at = Utc::now();
-        let mut report = ConformanceReport::from_results(results, skipped, started_at, completed_at);
+        let mut report =
+            ConformanceReport::from_results(results, skipped, started_at, completed_at);
 
         if self.config.include_benchmarks {
             let benchmark_runner = SimulatedBenchmarkRunner::new();
@@ -59,7 +60,10 @@ impl ConformanceRunner {
     }
 
     /// Run all invariants in a specific category.
-    pub fn run_category(&self, category: InvariantCategory) -> ConformanceResult<ConformanceReport> {
+    pub fn run_category(
+        &self,
+        category: InvariantCategory,
+    ) -> ConformanceResult<ConformanceReport> {
         let started_at = Utc::now();
         let ids = invariants::ids_for_category(category);
 
@@ -84,7 +88,12 @@ impl ConformanceRunner {
 
         let skipped = total_expected - results.len();
         let completed_at = Utc::now();
-        Ok(ConformanceReport::from_results(results, skipped, started_at, completed_at))
+        Ok(ConformanceReport::from_results(
+            results,
+            skipped,
+            started_at,
+            completed_at,
+        ))
     }
 
     /// Run a single invariant by ID.
@@ -189,10 +198,7 @@ mod tests {
     #[test]
     fn test_filtered_by_ids() {
         let config = ConformanceConfig {
-            invariant_ids: vec![
-                InvariantId::new("I.OBS-1"),
-                InvariantId::new("I.EVOS-2"),
-            ],
+            invariant_ids: vec![InvariantId::new("I.OBS-1"), InvariantId::new("I.EVOS-2")],
             ..Default::default()
         };
         let runner = ConformanceRunner::with_config(config);

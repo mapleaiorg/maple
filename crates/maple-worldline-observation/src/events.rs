@@ -6,9 +6,9 @@
 use std::time::Duration;
 
 use chrono::{DateTime, Utc};
-use maple_kernel_fabric::ResonanceStage;
-use maple_mwl_types::{CommitmentId, EventId, WorldlineId};
 use serde::{Deserialize, Serialize};
+use worldline_core::types::{CommitmentId, EventId, WorldlineId};
+use worldline_runtime::fabric::ResonanceStage;
 
 /// Identifies which kernel subsystem produced an observation.
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -234,7 +234,10 @@ mod tests {
     #[test]
     fn subsystem_id_display() {
         assert_eq!(SubsystemId::EventFabric.to_string(), "event-fabric");
-        assert_eq!(SubsystemId::Custom("test".into()).to_string(), "custom:test");
+        assert_eq!(
+            SubsystemId::Custom("test".into()).to_string(),
+            "custom:test"
+        );
     }
 
     #[test]
@@ -247,8 +250,8 @@ mod tests {
 
     #[test]
     fn metadata_with_sampling_weight() {
-        let wid = maple_mwl_types::WorldlineId::derive(
-            &maple_mwl_types::IdentityMaterial::GenesisHash([1u8; 32]),
+        let wid = worldline_core::types::WorldlineId::derive(
+            &worldline_core::types::IdentityMaterial::GenesisHash([1u8; 32]),
         );
         let meta = ObservationMetadata::with_worldline(SubsystemId::CommitmentGate, wid, 0.1);
         assert!((meta.sampling_weight - 10.0).abs() < f64::EPSILON);
@@ -257,7 +260,7 @@ mod tests {
     #[test]
     fn event_latency_extraction() {
         let event = SelfObservationEvent::FabricEventEmitted {
-            event_id: maple_mwl_types::EventId::new(),
+            event_id: worldline_core::types::EventId::new(),
             stage: ResonanceStage::Meaning,
             latency: Duration::from_millis(5),
             payload_bytes: 256,
@@ -276,7 +279,7 @@ mod tests {
     #[test]
     fn event_error_detection() {
         let denied = SelfObservationEvent::GateSubmission {
-            commitment_id: maple_mwl_types::CommitmentId::new(),
+            commitment_id: worldline_core::types::CommitmentId::new(),
             stages_evaluated: 3,
             total_latency: Duration::from_millis(10),
             approved: false,
@@ -284,7 +287,7 @@ mod tests {
         assert!(denied.is_error());
 
         let approved = SelfObservationEvent::GateSubmission {
-            commitment_id: maple_mwl_types::CommitmentId::new(),
+            commitment_id: worldline_core::types::CommitmentId::new(),
             stages_evaluated: 7,
             total_latency: Duration::from_millis(15),
             approved: true,
@@ -296,13 +299,13 @@ mod tests {
     fn all_events_serialize() {
         let events = vec![
             SelfObservationEvent::FabricEventEmitted {
-                event_id: maple_mwl_types::EventId::new(),
+                event_id: worldline_core::types::EventId::new(),
                 stage: ResonanceStage::System,
                 latency: Duration::from_millis(1),
                 payload_bytes: 64,
             },
             SelfObservationEvent::GateSubmission {
-                commitment_id: maple_mwl_types::CommitmentId::new(),
+                commitment_id: worldline_core::types::CommitmentId::new(),
                 stages_evaluated: 7,
                 total_latency: Duration::from_millis(50),
                 approved: true,

@@ -141,8 +141,7 @@ impl PhaseManager {
         if is_advance {
             self.phase_statuses[current_ord].1 = PhaseStatus::Complete;
         } else {
-            self.phase_statuses[current_ord].1 =
-                PhaseStatus::Failed("rolled back".into());
+            self.phase_statuses[current_ord].1 = PhaseStatus::Failed("rolled back".into());
         }
 
         let transition = PhaseTransition {
@@ -210,10 +209,7 @@ mod tests {
             .transition(BootstrapPhase::Phase0ExternalSubstrate, "approver")
             .unwrap();
         assert!(!t.is_advance);
-        assert_eq!(
-            *pm.current_phase(),
-            BootstrapPhase::Phase0ExternalSubstrate
-        );
+        assert_eq!(*pm.current_phase(), BootstrapPhase::Phase0ExternalSubstrate);
         // Highest reached stays at 1
         assert_eq!(pm.highest_reached(), 1);
     }
@@ -221,8 +217,7 @@ mod tests {
     #[test]
     fn cannot_skip_phases() {
         let mut pm = PhaseManager::new();
-        let result =
-            pm.transition(BootstrapPhase::Phase2OperatorSelfGeneration, "approver");
+        let result = pm.transition(BootstrapPhase::Phase2OperatorSelfGeneration, "approver");
         assert!(result.is_err());
         let err = result.unwrap_err().to_string();
         assert!(err.contains("cannot skip"));
@@ -233,8 +228,7 @@ mod tests {
         let pm = PhaseManager::new();
         // We need a mutable reference
         let mut pm = pm;
-        let result =
-            pm.transition(BootstrapPhase::Phase0ExternalSubstrate, "approver");
+        let result = pm.transition(BootstrapPhase::Phase0ExternalSubstrate, "approver");
         assert!(result.is_err());
         let err = result.unwrap_err().to_string();
         assert!(err.contains("already at"));

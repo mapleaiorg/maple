@@ -6,8 +6,8 @@ use tracing::{debug, error, info};
 /// Each invariant inspects the relevant portions of this state.
 /// The state is constructed by AAS before invariant checks.
 pub struct SystemState {
-    /// Are all 8 resonance stages distinct and non-collapsed?
-    pub resonance_stages_distinct: bool,
+    /// Are worldline trajectories treated as primary identity units?
+    pub worldline_primacy_enforced: bool,
     /// Is the memory engine using two-plane architecture?
     pub two_plane_memory_active: bool,
     /// Does every memory entry have provenance binding?
@@ -16,36 +16,42 @@ pub struct SystemState {
     pub commitment_boundary_enforced: bool,
     /// Does every non-genesis event have causal parents?
     pub all_events_have_lineage: bool,
-    /// Is accountability established before execution?
-    pub pre_execution_accountability: bool,
-    /// Are commitment terms immutable after declaration?
-    pub commitment_terms_immutable: bool,
-    /// Are capabilities properly bounded to obligations?
-    pub capabilities_bounded: bool,
+    /// Is coupling bounded by available attention and safety limits?
+    pub resonance_bounded_coupling: bool,
+    /// Are evolution operators pluggable only through gated commitment flow?
+    pub pluggable_evolution_gated: bool,
+    /// Do safety and agency constraints override optimization pressure?
+    pub safety_overrides_optimization: bool,
     /// Are semantics independent of transport/substrate?
     pub substrate_independent: bool,
+    /// Are operator upgrades replay-verified against causal history?
+    pub upgrade_replay_verified: bool,
+    /// Are operator upgrades anchored with evidence bundles?
+    pub upgrade_evidence_anchored: bool,
 }
 
 impl SystemState {
     /// Create a state representing a healthy system (all invariants hold).
     pub fn healthy() -> Self {
         Self {
-            resonance_stages_distinct: true,
+            worldline_primacy_enforced: true,
             two_plane_memory_active: true,
             all_memory_has_provenance: true,
             commitment_boundary_enforced: true,
             all_events_have_lineage: true,
-            pre_execution_accountability: true,
-            commitment_terms_immutable: true,
-            capabilities_bounded: true,
+            resonance_bounded_coupling: true,
+            pluggable_evolution_gated: true,
+            safety_overrides_optimization: true,
             substrate_independent: true,
+            upgrade_replay_verified: true,
+            upgrade_evidence_anchored: true,
         }
     }
 }
 
 /// Invariant trait — each constitutional invariant implements this.
 ///
-/// Per I.GCP-2 (Constitutional Immutability): Invariants I.1-I.8 cannot
+/// Per I.GCP-2 (Constitutional Immutability): Invariants I.1-I.9 cannot
 /// be weakened by any policy or operator.
 pub trait Invariant: Send + Sync {
     /// Unique invariant identifier (e.g., "I.1").
@@ -63,14 +69,13 @@ pub trait Invariant: Send + Sync {
 }
 
 // =========================================================================
-// THE 8 CONSTITUTIONAL INVARIANTS
+// THE 9 CONSTITUTIONAL INVARIANTS
 // =========================================================================
 
-/// I.1: Non-Collapse — Resonance stages remain distinct.
+/// I.1: WorldLine Primacy.
 ///
-/// "The 8 resonance stages represent structurally distinct phases of meaning
-/// processing. Collapsing stages (e.g., treating Intent as Commitment) destroys
-/// the accountability guarantees."
+/// "Everything important is a trajectory object; identity is continuity of
+/// commitments and provenance."
 pub struct NonCollapseInvariant;
 
 impl Invariant for NonCollapseInvariant {
@@ -78,17 +83,18 @@ impl Invariant for NonCollapseInvariant {
         "I.1"
     }
     fn name(&self) -> &str {
-        "Non-Collapse (Worldline Primacy)"
+        "WorldLine Primacy"
     }
     fn is_constitutional(&self) -> bool {
         true
     }
     fn check(&self, state: &SystemState) -> Result<(), InvariantViolation> {
-        if !state.resonance_stages_distinct {
+        if !state.worldline_primacy_enforced {
             return Err(InvariantViolation {
                 invariant_id: self.id().into(),
-                message: "Resonance stages have collapsed — distinct phases must be maintained"
-                    .into(),
+                message:
+                    "Session-centric identity detected — worldline continuity must remain primary"
+                        .into(),
                 severity: ViolationSeverity::Constitutional,
             });
         }
@@ -152,7 +158,9 @@ impl Invariant for CommitmentBoundaryInvariant {
         if !state.commitment_boundary_enforced {
             return Err(InvariantViolation {
                 invariant_id: self.id().into(),
-                message: "Commitment boundary not enforced — unapproved actions may cross into execution".into(),
+                message:
+                    "Commitment boundary not enforced — unapproved actions may cross into execution"
+                        .into(),
                 severity: ViolationSeverity::Constitutional,
             });
         }
@@ -180,7 +188,9 @@ impl Invariant for CausalProvenanceInvariant {
         if !state.all_events_have_lineage {
             return Err(InvariantViolation {
                 invariant_id: self.id().into(),
-                message: "Events without causal lineage detected — all events must reference parents".into(),
+                message:
+                    "Events without causal lineage detected — all events must reference parents"
+                        .into(),
                 severity: ViolationSeverity::Constitutional,
             });
         }
@@ -188,10 +198,9 @@ impl Invariant for CausalProvenanceInvariant {
     }
 }
 
-/// I.5: Pre-Execution Accountability — Accountability before execution.
+/// I.5: Resonance-Bounded Coupling.
 ///
-/// "Accountability must be established BEFORE execution begins. Post-hoc
-/// attribution is forbidden."
+/// "Coupling between worldlines must remain bounded by attention."
 pub struct PreExecutionInvariant;
 
 impl Invariant for PreExecutionInvariant {
@@ -199,16 +208,18 @@ impl Invariant for PreExecutionInvariant {
         "I.5"
     }
     fn name(&self) -> &str {
-        "Pre-Execution Accountability"
+        "Resonance-Bounded Coupling"
     }
     fn is_constitutional(&self) -> bool {
         true
     }
     fn check(&self, state: &SystemState) -> Result<(), InvariantViolation> {
-        if !state.pre_execution_accountability {
+        if !state.resonance_bounded_coupling {
             return Err(InvariantViolation {
                 invariant_id: self.id().into(),
-                message: "Execution without prior accountability detected — post-hoc attribution is forbidden".into(),
+                message:
+                    "Unbounded coupling detected — attention limits and agency bounds must hold"
+                        .into(),
                 severity: ViolationSeverity::Constitutional,
             });
         }
@@ -216,10 +227,9 @@ impl Invariant for PreExecutionInvariant {
     }
 }
 
-/// I.6: Immutability — Commitment terms cannot change.
+/// I.6: Pluggable Evolution Laws.
 ///
-/// "Once declared, commitment terms are immutable. PolicyDecisionCards
-/// are immutable once recorded (I.CG-1)."
+/// "Evolution operators are pluggable, but swaps must be commitment-gated."
 pub struct ImmutabilityInvariant;
 
 impl Invariant for ImmutabilityInvariant {
@@ -227,16 +237,16 @@ impl Invariant for ImmutabilityInvariant {
         "I.6"
     }
     fn name(&self) -> &str {
-        "Decision Immutability"
+        "Pluggable Evolution Laws"
     }
     fn is_constitutional(&self) -> bool {
         true
     }
     fn check(&self, state: &SystemState) -> Result<(), InvariantViolation> {
-        if !state.commitment_terms_immutable {
+        if !state.pluggable_evolution_gated {
             return Err(InvariantViolation {
                 invariant_id: self.id().into(),
-                message: "Commitment terms mutated after declaration — immutability violated".into(),
+                message: "Evolution law changed outside gated commitment flow".into(),
                 severity: ViolationSeverity::Constitutional,
             });
         }
@@ -244,10 +254,9 @@ impl Invariant for ImmutabilityInvariant {
     }
 }
 
-/// I.7: Bounded Authority — Capabilities bound obligations.
+/// I.7: Safety Overrides Optimization.
 ///
-/// "Every commitment must be backed by sufficient capabilities.
-/// No commitment may exceed its capability scope."
+/// "Safety and agency constraints override optimization objectives."
 pub struct BoundedAuthorityInvariant;
 
 impl Invariant for BoundedAuthorityInvariant {
@@ -255,16 +264,16 @@ impl Invariant for BoundedAuthorityInvariant {
         "I.7"
     }
     fn name(&self) -> &str {
-        "Bounded Authority"
+        "Safety Overrides Optimization"
     }
     fn is_constitutional(&self) -> bool {
         true
     }
     fn check(&self, state: &SystemState) -> Result<(), InvariantViolation> {
-        if !state.capabilities_bounded {
+        if !state.safety_overrides_optimization {
             return Err(InvariantViolation {
                 invariant_id: self.id().into(),
-                message: "Commitment exceeds capability scope — bounded authority violated".into(),
+                message: "Optimization attempted to bypass safety/agency constraints".into(),
                 severity: ViolationSeverity::Constitutional,
             });
         }
@@ -292,13 +301,56 @@ impl Invariant for SubstrateIndependenceInvariant {
         if !state.substrate_independent {
             return Err(InvariantViolation {
                 invariant_id: self.id().into(),
-                message: "Substrate-dependent semantics detected — meaning must be transport-independent".into(),
+                message:
+                    "Substrate-dependent semantics detected — meaning must be transport-independent"
+                        .into(),
                 severity: ViolationSeverity::Constitutional,
             });
         }
         Ok(())
     }
 }
+
+/// I.9: Implementation Provenance & Constitutional Evolution.
+///
+/// "Evolution operator upgrades may occur only via commitments that preserve
+/// invariants, are replay-verified, and are evidence-anchored."
+pub struct ImplementationProvenanceInvariant;
+
+impl Invariant for ImplementationProvenanceInvariant {
+    fn id(&self) -> &str {
+        "I.9"
+    }
+    fn name(&self) -> &str {
+        "Implementation Provenance & Constitutional Evolution"
+    }
+    fn is_constitutional(&self) -> bool {
+        true
+    }
+    fn check(&self, state: &SystemState) -> Result<(), InvariantViolation> {
+        if !state.upgrade_replay_verified {
+            return Err(InvariantViolation {
+                invariant_id: self.id().into(),
+                message: "Operator upgrade was not replay-verified against causal history".into(),
+                severity: ViolationSeverity::Constitutional,
+            });
+        }
+        if !state.upgrade_evidence_anchored {
+            return Err(InvariantViolation {
+                invariant_id: self.id().into(),
+                message: "Operator upgrade is missing an evidence bundle anchor".into(),
+                severity: ViolationSeverity::Constitutional,
+            });
+        }
+        Ok(())
+    }
+}
+
+// Canonical names (latest WorldLine docs) mapped to existing public types.
+pub type WorldlinePrimacyInvariant = NonCollapseInvariant;
+pub type ResonanceBoundedCouplingInvariant = PreExecutionInvariant;
+pub type PluggableEvolutionLawsInvariant = ImmutabilityInvariant;
+pub type SafetyOverridesOptimizationInvariant = BoundedAuthorityInvariant;
 
 // =========================================================================
 // INVARIANT ENFORCER
@@ -321,7 +373,7 @@ impl InvariantEnforcer {
         }
     }
 
-    /// Create an enforcer with all 8 constitutional invariants.
+    /// Create an enforcer with all 9 constitutional invariants.
     pub fn with_constitutional_invariants() -> Self {
         let mut enforcer = Self::new();
 
@@ -333,6 +385,7 @@ impl InvariantEnforcer {
         enforcer.register(Box::new(ImmutabilityInvariant));
         enforcer.register(Box::new(BoundedAuthorityInvariant));
         enforcer.register(Box::new(SubstrateIndependenceInvariant));
+        enforcer.register(Box::new(ImplementationProvenanceInvariant));
 
         info!(
             count = enforcer.invariants.len(),
@@ -429,17 +482,17 @@ mod tests {
     }
 
     #[test]
-    fn enforcer_has_8_constitutional_invariants() {
+    fn enforcer_has_9_constitutional_invariants() {
         let enforcer = InvariantEnforcer::with_constitutional_invariants();
-        assert_eq!(enforcer.count(), 8);
-        assert_eq!(enforcer.constitutional_count(), 8);
+        assert_eq!(enforcer.count(), 9);
+        assert_eq!(enforcer.constitutional_count(), 9);
     }
 
     #[test]
-    fn i1_non_collapse_violation() {
+    fn i1_worldline_primacy_violation() {
         let enforcer = InvariantEnforcer::with_constitutional_invariants();
         let mut state = SystemState::healthy();
-        state.resonance_stages_distinct = false;
+        state.worldline_primacy_enforced = false;
 
         let violations = enforcer.check_all(&state);
         assert!(!violations.is_empty());
@@ -484,30 +537,30 @@ mod tests {
     }
 
     #[test]
-    fn i5_pre_execution_violation() {
+    fn i5_resonance_bounded_coupling_violation() {
         let enforcer = InvariantEnforcer::with_constitutional_invariants();
         let mut state = SystemState::healthy();
-        state.pre_execution_accountability = false;
+        state.resonance_bounded_coupling = false;
 
         let violations = enforcer.check_all(&state);
         assert!(violations.iter().any(|v| v.invariant_id == "I.5"));
     }
 
     #[test]
-    fn i6_immutability_violation() {
+    fn i6_pluggable_evolution_violation() {
         let enforcer = InvariantEnforcer::with_constitutional_invariants();
         let mut state = SystemState::healthy();
-        state.commitment_terms_immutable = false;
+        state.pluggable_evolution_gated = false;
 
         let violations = enforcer.check_all(&state);
         assert!(violations.iter().any(|v| v.invariant_id == "I.6"));
     }
 
     #[test]
-    fn i7_bounded_authority_violation() {
+    fn i7_safety_overrides_optimization_violation() {
         let enforcer = InvariantEnforcer::with_constitutional_invariants();
         let mut state = SystemState::healthy();
-        state.capabilities_bounded = false;
+        state.safety_overrides_optimization = false;
 
         let violations = enforcer.check_all(&state);
         assert!(violations.iter().any(|v| v.invariant_id == "I.7"));
@@ -524,12 +577,22 @@ mod tests {
     }
 
     #[test]
+    fn i9_implementation_provenance_violation() {
+        let enforcer = InvariantEnforcer::with_constitutional_invariants();
+        let mut state = SystemState::healthy();
+        state.upgrade_replay_verified = false;
+
+        let violations = enforcer.check_all(&state);
+        assert!(violations.iter().any(|v| v.invariant_id == "I.9"));
+    }
+
+    #[test]
     fn multiple_violations_detected() {
         let enforcer = InvariantEnforcer::with_constitutional_invariants();
         let mut state = SystemState::healthy();
-        state.resonance_stages_distinct = false;
+        state.worldline_primacy_enforced = false;
         state.commitment_boundary_enforced = false;
-        state.capabilities_bounded = false;
+        state.safety_overrides_optimization = false;
 
         let violations = enforcer.check_all(&state);
         assert_eq!(violations.len(), 3);
@@ -547,7 +610,7 @@ mod tests {
         let enforcer = InvariantEnforcer::with_constitutional_invariants();
         let mut state = SystemState::healthy();
         state.all_events_have_lineage = false;
-        state.pre_execution_accountability = false;
+        state.resonance_bounded_coupling = false;
 
         let result = enforcer.enforce(&state);
         assert!(result.is_err());
@@ -563,20 +626,22 @@ mod tests {
         let enforcer = InvariantEnforcer::with_constitutional_invariants();
         // Break everything
         let state = SystemState {
-            resonance_stages_distinct: false,
+            worldline_primacy_enforced: false,
             two_plane_memory_active: false,
             all_memory_has_provenance: false,
             commitment_boundary_enforced: false,
             all_events_have_lineage: false,
-            pre_execution_accountability: false,
-            commitment_terms_immutable: false,
-            capabilities_bounded: false,
+            resonance_bounded_coupling: false,
+            pluggable_evolution_gated: false,
+            safety_overrides_optimization: false,
             substrate_independent: false,
+            upgrade_replay_verified: false,
+            upgrade_evidence_anchored: false,
         };
 
         let violations = enforcer.check_all(&state);
-        // I.2 checks two things, so we get 9 violations (I.2 can short-circuit to 1)
-        assert!(violations.len() >= 8);
+        // I.2 and I.9 can each fail on more than one condition.
+        assert!(violations.len() >= 9);
         assert!(violations
             .iter()
             .all(|v| v.severity == ViolationSeverity::Constitutional));

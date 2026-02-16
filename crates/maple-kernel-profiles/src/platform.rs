@@ -4,9 +4,7 @@ use maple_mwl_types::RiskClass;
 use crate::canonical::{
     agent_profile, coordination_profile, financial_profile, human_profile, world_profile,
 };
-use crate::dimensions::{
-    OversightLevel, ProfileType, ReversibilityPreference, WorldlineProfile,
-};
+use crate::dimensions::{OversightLevel, ProfileType, ReversibilityPreference, WorldlineProfile};
 
 /// Platform configuration — maps to existing platform runtime configs.
 ///
@@ -86,10 +84,8 @@ pub fn ibank_platform() -> PlatformProfileConfig {
 
     // iBank also has a limited agent profile for automation
     let mut agent = agent_profile();
-    agent.commitment_authority.allowed_domains = vec![
-        EffectDomain::Financial,
-        EffectDomain::DataMutation,
-    ];
+    agent.commitment_authority.allowed_domains =
+        vec![EffectDomain::Financial, EffectDomain::DataMutation];
     agent.commitment_authority.max_risk_class = RiskClass::Low;
     agent.commitment_authority.require_audit_trail = true;
     agent.human_involvement.oversight_level = OversightLevel::ApprovalForHighRisk;
@@ -232,9 +228,18 @@ mod tests {
         let agent = platform_profile(&platform, &ProfileType::Agent).unwrap();
 
         // Agent on iBank can only do Financial and DataMutation
-        assert!(agent.commitment_authority.allowed_domains.contains(&EffectDomain::Financial));
-        assert!(agent.commitment_authority.allowed_domains.contains(&EffectDomain::DataMutation));
-        assert!(!agent.commitment_authority.allowed_domains.contains(&EffectDomain::Infrastructure));
+        assert!(agent
+            .commitment_authority
+            .allowed_domains
+            .contains(&EffectDomain::Financial));
+        assert!(agent
+            .commitment_authority
+            .allowed_domains
+            .contains(&EffectDomain::DataMutation));
+        assert!(!agent
+            .commitment_authority
+            .allowed_domains
+            .contains(&EffectDomain::Infrastructure));
     }
 
     #[test]

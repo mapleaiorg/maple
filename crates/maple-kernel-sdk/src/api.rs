@@ -915,7 +915,7 @@ async fn kernel_status(Extension(state): Extension<SharedState>) -> impl IntoRes
         worldline_count: guard.worldlines.len(),
         commitment_count: guard.commitments.len(),
         profile_types,
-        invariants_active: 8,
+        invariants_active: 9,
         components: vec![
             ComponentStatus {
                 name: "fabric".into(),
@@ -1032,7 +1032,7 @@ mod tests {
             .await
             .unwrap();
         let json: KernelStatusBody = serde_json::from_slice(&body).unwrap();
-        assert_eq!(json.invariants_active, 8);
+        assert_eq!(json.invariants_active, 9);
         assert_eq!(json.profile_types.len(), 5);
         assert_eq!(json.components.len(), 7);
     }

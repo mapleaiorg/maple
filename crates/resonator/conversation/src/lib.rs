@@ -272,7 +272,11 @@ impl ToolCall {
 
     pub fn token_estimate(&self) -> usize {
         let args_str = self.arguments.to_string();
-        let result_tokens = self.result.as_ref().map(|r| estimate_tokens(r)).unwrap_or(0);
+        let result_tokens = self
+            .result
+            .as_ref()
+            .map(|r| estimate_tokens(r))
+            .unwrap_or(0);
         estimate_tokens(&self.tool_name) + estimate_tokens(&args_str) + result_tokens
     }
 }
@@ -404,9 +408,7 @@ impl ConversationSession {
 
     /// Check if session is expired.
     pub fn is_expired(&self) -> bool {
-        self.expires_at
-            .map(|exp| Utc::now() > exp)
-            .unwrap_or(false)
+        self.expires_at.map(|exp| Utc::now() > exp).unwrap_or(false)
     }
 
     /// Check if session is active.
@@ -464,7 +466,7 @@ impl ContextWindow {
         Self {
             max_tokens,
             response_reserve: max_tokens / 4, // Reserve 25% for response
-            summarize_threshold: 0.8, // Summarize when 80% full
+            summarize_threshold: 0.8,         // Summarize when 80% full
         }
     }
 
@@ -610,10 +612,7 @@ impl SessionManager {
     }
 
     /// Update a session.
-    pub fn update_session(
-        &self,
-        session: ConversationSession,
-    ) -> Result<(), ConversationError> {
+    pub fn update_session(&self, session: ConversationSession) -> Result<(), ConversationError> {
         let mut sessions = self
             .sessions
             .write()
@@ -679,10 +678,7 @@ impl SessionManager {
             .read()
             .map_err(|_| ConversationError::LockError)?;
 
-        Ok(by_resonator
-            .get(resonator_id)
-            .cloned()
-            .unwrap_or_default())
+        Ok(by_resonator.get(resonator_id).cloned().unwrap_or_default())
     }
 
     /// Get sessions for a user.
@@ -861,8 +857,7 @@ mod tests {
     #[test]
     fn test_session_expiry() {
         let resonator_id = ResonatorId::new("test-resonator");
-        let session = ConversationSession::new(resonator_id)
-            .with_expiry(Duration::seconds(-1)); // Already expired
+        let session = ConversationSession::new(resonator_id).with_expiry(Duration::seconds(-1)); // Already expired
 
         assert!(session.is_expired());
         assert!(!session.is_active());

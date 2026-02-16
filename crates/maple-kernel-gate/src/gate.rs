@@ -36,21 +36,15 @@ impl Default for GateConfig {
 #[derive(Clone, Debug)]
 pub enum AdjudicationResult {
     /// Commitment approved — ready for execution
-    Approved {
-        decision: PolicyDecisionCard,
-    },
+    Approved { decision: PolicyDecisionCard },
     /// Commitment denied — recorded as first-class entry
-    Denied {
-        decision: PolicyDecisionCard,
-    },
+    Denied { decision: PolicyDecisionCard },
     /// Commitment pending — requires co-signatures
     PendingCoSign {
         required: Vec<maple_mwl_types::WorldlineId>,
     },
     /// Commitment pending — requires human approval
-    PendingHumanApproval {
-        approver: String,
-    },
+    PendingHumanApproval { approver: String },
 }
 
 /// Outcome of a committed action (for recording after execution).
@@ -402,15 +396,13 @@ impl CommitmentGate {
 mod tests {
     use super::*;
     use crate::mocks::{MockCapabilityProvider, MockPolicyProvider};
+    use crate::stages::risk::RiskConfig;
     use crate::stages::{
         CapabilityCheckStage, CoSignatureStage, DeclarationStage, FinalDecisionStage,
         IdentityBindingStage, PolicyEvaluationStage, RiskAssessmentStage,
     };
-    use crate::stages::risk::RiskConfig;
     use maple_mwl_identity::IdentityManager;
-    use maple_mwl_types::{
-        CapabilityId, CommitmentScope, EffectDomain, EventId, IdentityMaterial,
-    };
+    use maple_mwl_types::{CapabilityId, CommitmentScope, EffectDomain, EventId, IdentityMaterial};
 
     async fn setup_gate(
         approve_policy: bool,
@@ -491,10 +483,7 @@ mod tests {
 
         // Verify ledger entry
         let entry = gate.ledger().history(&cid).unwrap();
-        assert_eq!(
-            entry.decision.decision,
-            AdjudicationDecision::Approve
-        );
+        assert_eq!(entry.decision.decision, AdjudicationDecision::Approve);
     }
 
     #[tokio::test]
@@ -542,9 +531,8 @@ mod tests {
     async fn stage_2_rejects_unknown_identity() {
         let (mut gate, _, _) = setup_gate(true).await;
 
-        let unknown_wid = maple_mwl_types::WorldlineId::derive(
-            &IdentityMaterial::GenesisHash([99u8; 32]),
-        );
+        let unknown_wid =
+            maple_mwl_types::WorldlineId::derive(&IdentityMaterial::GenesisHash([99u8; 32]));
         let decl = CommitmentDeclaration::builder(
             unknown_wid,
             CommitmentScope {

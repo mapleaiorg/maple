@@ -5,7 +5,7 @@
 //! All consequential capability calls flow through this kernel so the
 //! commitment boundary cannot be bypassed.
 //!
-//! The implementation maps directly to the 8 architectural invariants:
+//! The implementation maps directly to the 9 architectural invariants:
 //! - #1 Presence precedes meaning: `assert_presence_precedes_meaning`.
 //! - #2 Meaning precedes intent: `assert_meaning_precedes_intent`.
 //! - #3 Intent precedes commitment: `assert_intent_precedes_commitment`.
@@ -18,6 +18,8 @@
 //! - #7 Human agency cannot be bypassed: profile + policy gates must pass
 //!   before execution.
 //! - #8 Failure must be explicit: typed errors + explicit journal/audit writes.
+//! - #9 Implementation provenance & constitutional evolution: operator upgrades
+//!   must be replay-verified and evidence-anchored.
 
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;

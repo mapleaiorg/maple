@@ -98,16 +98,22 @@ pub enum WlirType {
     /// Reference to an operator.
     OperatorRef,
     /// Financial amount with currency.
-    Amount { currency: std::string::String },
+    Amount {
+        currency: std::string::String,
+    },
     /// Named record type.
     Record {
         name: std::string::String,
         fields: Vec<(std::string::String, WlirType)>,
     },
     /// Array of elements.
-    Array { element: Box<WlirType> },
+    Array {
+        element: Box<WlirType>,
+    },
     /// Optional value.
-    Option { inner: Box<WlirType> },
+    Option {
+        inner: Box<WlirType>,
+    },
     /// No value (unit type).
     Void,
 }
@@ -338,11 +344,17 @@ mod tests {
         assert_eq!(WlirType::EventRef.to_string(), "event-ref");
         assert_eq!(WlirType::CommitmentRef.to_string(), "commitment-ref");
         assert_eq!(
-            WlirType::Amount { currency: "USD".into() }.to_string(),
+            WlirType::Amount {
+                currency: "USD".into()
+            }
+            .to_string(),
             "amount<USD>"
         );
         assert_eq!(
-            WlirType::Array { element: Box::new(WlirType::I32) }.to_string(),
+            WlirType::Array {
+                element: Box::new(WlirType::I32)
+            }
+            .to_string(),
             "array<i32>"
         );
         assert_eq!(WlirType::Void.to_string(), "void");

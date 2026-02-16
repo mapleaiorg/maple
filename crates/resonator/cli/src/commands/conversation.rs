@@ -104,11 +104,7 @@ fn list_sessions(
 fn inspect_session(id: &str, format: OutputFormat) -> CliResult<()> {
     match format {
         OutputFormat::Table => {
-            println!(
-                "{}: Session '{}' not found",
-                "Error".red().bold(),
-                id
-            );
+            println!("{}: Session '{}' not found", "Error".red().bold(), id);
             println!();
             println!(
                 "{}: Connect to a running Resonator service to inspect sessions",

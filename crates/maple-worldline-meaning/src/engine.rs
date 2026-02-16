@@ -21,8 +21,7 @@ use crate::hypothesis::{
     ObservationSummary, ResourcePressureGenerator,
 };
 use crate::types::{
-    Evidence, EvidenceCategory, MeaningConfig, MeaningId, SelfMeaning,
-    SelfMeaningCategory,
+    Evidence, EvidenceCategory, MeaningConfig, MeaningId, SelfMeaning, SelfMeaningCategory,
 };
 
 // ── Meaning History ─────────────────────────────────────────────────────
@@ -153,8 +152,7 @@ impl SelfMeaningEngine {
         }
 
         // Collect history as owned Vec for generators
-        let history_vec: Vec<SelfMeaning> =
-            self.history.meanings.iter().cloned().collect();
+        let history_vec: Vec<SelfMeaning> = self.history.meanings.iter().cloned().collect();
 
         // Step 1: Generate hypotheses
         let mut all_hypotheses = Vec::new();
@@ -201,10 +199,9 @@ impl SelfMeaningEngine {
         // Step 3: Update confidence via evidence evaluator
         for meaning in &mut self.active_meanings {
             if !meaning.evidence.is_empty() {
-                let new_confidence = self.evaluator.evaluate_evidence_set(
-                    meaning.confidence,
-                    &meaning.evidence,
-                );
+                let new_confidence = self
+                    .evaluator
+                    .evaluate_evidence_set(meaning.confidence, &meaning.evidence);
                 meaning.confidence = new_confidence;
                 meaning.ambiguity = 1.0 - new_confidence;
             }
@@ -318,8 +315,7 @@ impl SelfMeaningEngine {
         let target_component = category.primary_component();
 
         self.active_meanings.iter_mut().find(|m| {
-            m.category.label() == target_label
-                && m.category.primary_component() == target_component
+            m.category.label() == target_label && m.category.primary_component() == target_component
         })
     }
 
@@ -344,9 +340,7 @@ impl SelfMeaningEngine {
 
             meaning.competing_with = ids_and_components
                 .iter()
-                .filter(|(id, comp)| {
-                    id != &meaning.id && *comp == my_component
-                })
+                .filter(|(id, comp)| id != &meaning.id && *comp == my_component)
                 .map(|(id, _)| id.clone())
                 .collect();
         }
@@ -430,14 +424,12 @@ mod tests {
     fn engine_processes_anomalies_creates_meanings() {
         let mut engine = SelfMeaningEngine::new(MeaningConfig::default());
 
-        let anomalies = vec![
-            make_anomaly(
-                "event-fabric",
-                AnomalyCategory::LatencyRegression,
-                AnomalySeverity::Warning,
-                0.8,
-            ),
-        ];
+        let anomalies = vec![make_anomaly(
+            "event-fabric",
+            AnomalyCategory::LatencyRegression,
+            AnomalySeverity::Warning,
+            0.8,
+        )];
 
         engine.process_anomalies(&anomalies, &empty_summary());
 

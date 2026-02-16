@@ -184,10 +184,7 @@ impl CoercionDetector {
     ///
     /// Looks for patterns of urgency, emotional pressure, and guilt
     /// that may be used to bypass deliberation.
-    pub fn detect_urgency_manipulation(
-        &self,
-        signals: &[Signal],
-    ) -> Option<CoercionIndicator> {
+    pub fn detect_urgency_manipulation(&self, signals: &[Signal]) -> Option<CoercionIndicator> {
         let urgency_count = signals
             .iter()
             .filter(|s| s.signal_type == SignalType::UrgencyPressure)
@@ -229,7 +226,10 @@ impl CoercionDetector {
 
         // Emotional pressure / guilt
         if emotional_count >= self.config.emotional_signal_threshold {
-            let coercion_type = if signals.iter().any(|s| s.signal_type == SignalType::GuiltInduction) {
+            let coercion_type = if signals
+                .iter()
+                .any(|s| s.signal_type == SignalType::GuiltInduction)
+            {
                 CoercionType::GuiltInduction
             } else {
                 CoercionType::EmotionalDependency
@@ -238,10 +238,7 @@ impl CoercionDetector {
             return Some(CoercionIndicator {
                 coercion_type,
                 confidence: (emotional_count as f64 / signals.len() as f64).min(1.0),
-                description: format!(
-                    "{} emotional pressure signals detected",
-                    emotional_count
-                ),
+                description: format!("{} emotional pressure signals detected", emotional_count),
                 recommendation: CoercionResponse::WarnHuman,
             });
         }
@@ -376,7 +373,10 @@ mod tests {
         assert!(indicator.is_some());
         let indicator = indicator.unwrap();
         assert_eq!(indicator.coercion_type, CoercionType::EmotionalDependency);
-        assert_eq!(indicator.recommendation, CoercionResponse::EmergencyDecouple);
+        assert_eq!(
+            indicator.recommendation,
+            CoercionResponse::EmergencyDecouple
+        );
     }
 
     #[test]
@@ -462,7 +462,10 @@ mod tests {
 
         let indicator = detector.detect_urgency_manipulation(&signals);
         assert!(indicator.is_some());
-        assert_eq!(indicator.unwrap().coercion_type, CoercionType::GuiltInduction);
+        assert_eq!(
+            indicator.unwrap().coercion_type,
+            CoercionType::GuiltInduction
+        );
     }
 
     #[test]

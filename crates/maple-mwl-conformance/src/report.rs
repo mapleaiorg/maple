@@ -48,8 +48,11 @@ impl fmt::Display for ConformanceReport {
         writeln!(f, "╔══════════════════════════════════════════════════╗")?;
         writeln!(f, "║     MWL Constitutional Conformance Report       ║")?;
         writeln!(f, "╠══════════════════════════════════════════════════╣")?;
-        writeln!(f, "║ Total: {:3}  Passed: {:3}  Failed: {:3}            ║",
-            self.total, self.passed, self.failed)?;
+        writeln!(
+            f,
+            "║ Total: {:3}  Passed: {:3}  Failed: {:3}            ║",
+            self.total, self.passed, self.failed
+        )?;
         writeln!(f, "╚══════════════════════════════════════════════════╝")?;
         writeln!(f)?;
 

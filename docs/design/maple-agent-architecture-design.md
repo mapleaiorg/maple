@@ -195,7 +195,7 @@ if decision.allows_execution() {
 
 #### 2. Architectural Invariants (Not Policy)
 
-The 8 invariants are enforced at runtime - they cannot be bypassed:
+The 9 invariants are enforced at runtime - they cannot be bypassed:
 
 1. **Presence precedes meaning** - No cognition without presence
 2. **Meaning precedes intent** - No goals without understanding
@@ -205,6 +205,7 @@ The 8 invariants are enforced at runtime - they cannot be bypassed:
 6. **Safety overrides optimization** - Never bypass safety for performance
 7. **Human agency cannot be bypassed** - Architectural protection
 8. **Failure must be explicit** - Never hide errors
+9. **Implementation provenance & evolution** - Operator upgrades require replay verification and evidence anchors
 
 #### 3. Resonance Relationships
 
@@ -315,7 +316,7 @@ for backend in [Llama, OpenAi, Anthropic, Gemini, Grok] {
 |-----------|---------------|-------|
 | **AgentKernel** | Agent lifecycle, request handling | `maple-runtime` |
 | **CommitmentGateway** | Authorization, execution, receipts | `maple-runtime` |
-| **InvariantGuard** | Enforce 8 architectural invariants | `maple-runtime` |
+| **InvariantGuard** | Enforce 9 architectural invariants | `maple-runtime` |
 | **ModelAdapter** | LLM cognition abstraction | `maple-runtime/cognition` |
 | **AAS** | Authority, capability, policy, ledger | `aas-*` |
 | **RCF** | Commitment format, validation, audit | `rcf-*` |

@@ -54,10 +54,7 @@ impl SalEngine {
     }
 
     /// Create with a specific substrate and configuration.
-    pub fn with_config(
-        substrate: Box<dyn SubstrateAbstractionLayer>,
-        config: &SalConfig,
-    ) -> Self {
+    pub fn with_config(substrate: Box<dyn SubstrateAbstractionLayer>, config: &SalConfig) -> Self {
         Self {
             substrate,
             records: VecDeque::new(),
@@ -113,7 +110,9 @@ impl SalEngine {
         entry_function: &str,
         args: Vec<String>,
     ) -> SalResult<ExecutionResult> {
-        let result = self.substrate.execute_wlir(module_name, entry_function, args);
+        let result = self
+            .substrate
+            .execute_wlir(module_name, entry_function, args);
 
         match &result {
             Ok(exec_result) => {
@@ -235,9 +234,7 @@ mod tests {
     #[test]
     fn engine_execute_operator_stores_record() {
         let mut engine = make_engine();
-        let _output = engine
-            .execute_operator(&sample_input("transfer"))
-            .unwrap();
+        let _output = engine.execute_operator(&sample_input("transfer")).unwrap();
         assert_eq!(engine.record_count(), 1);
         let record = &engine.all_records()[0];
         assert!(record.success);
@@ -247,9 +244,7 @@ mod tests {
     #[test]
     fn engine_execute_wlir_stores_record() {
         let mut engine = make_engine();
-        let _result = engine
-            .execute_wlir("test-mod", "main", vec![])
-            .unwrap();
+        let _result = engine.execute_wlir("test-mod", "main", vec![]).unwrap();
         assert_eq!(engine.record_count(), 1);
         let record = &engine.all_records()[0];
         assert!(record.operation.contains("wlir:test-mod::main"));
@@ -261,8 +256,7 @@ mod tests {
             max_tracked_records: 3,
             ..SalConfig::default()
         };
-        let mut engine =
-            SalEngine::with_config(Box::new(CpuSubstrate::new()), &config);
+        let mut engine = SalEngine::with_config(Box::new(CpuSubstrate::new()), &config);
 
         for i in 0..5 {
             let _ = engine.execute_operator(&sample_input(&format!("op-{}", i)));
@@ -305,8 +299,7 @@ mod tests {
             record_provenance: false,
             ..SalConfig::default()
         };
-        let mut engine =
-            SalEngine::with_config(Box::new(CpuSubstrate::new()), &config);
+        let mut engine = SalEngine::with_config(Box::new(CpuSubstrate::new()), &config);
         let _ = engine.execute_operator(&sample_input("op"));
         let summary = engine.summary();
         assert_eq!(summary.total_provenance_records, 0);
@@ -321,9 +314,7 @@ mod tests {
     #[test]
     fn engine_with_gpu_substrate() {
         let mut engine = SalEngine::new(Box::new(GpuSubstrate::new()));
-        let result = engine
-            .execute_wlir("mod", "main", vec![])
-            .unwrap();
+        let result = engine.execute_wlir("mod", "main", vec![]).unwrap();
         assert!(result.output_values[0].contains("gpu:"));
         assert_eq!(engine.record_count(), 1);
     }
