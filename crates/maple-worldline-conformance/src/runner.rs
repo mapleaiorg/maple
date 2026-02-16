@@ -3,6 +3,7 @@
 //! Orchestrates running invariant checks according to a configuration,
 //! producing a full conformance report.
 
+use crate::benchmarks::{BenchmarkRunner, SimulatedBenchmarkRunner};
 use crate::error::{ConformanceError, ConformanceResult};
 use crate::invariants::{self, check_invariant, ALL_WORLDLINE_INVARIANT_IDS};
 use crate::report::ConformanceReport;
@@ -31,6 +32,7 @@ impl ConformanceRunner {
     pub fn run_all(&self) -> ConformanceResult<ConformanceReport> {
         let started_at = Utc::now();
         let ids = self.resolve_ids()?;
+        let total_expected = ids.len();
         let mut results = Vec::new();
 
         for id in &ids {
@@ -43,8 +45,17 @@ impl ConformanceRunner {
             }
         }
 
+        let skipped = total_expected - results.len();
         let completed_at = Utc::now();
-        Ok(ConformanceReport::from_results(results, started_at, completed_at))
+        let mut report = ConformanceReport::from_results(results, skipped, started_at, completed_at);
+
+        if self.config.include_benchmarks {
+            let benchmark_runner = SimulatedBenchmarkRunner::new();
+            let benchmark_results = benchmark_runner.benchmark_all();
+            report = report.with_benchmarks(benchmark_results);
+        }
+
+        Ok(report)
     }
 
     /// Run all invariants in a specific category.
@@ -59,6 +70,7 @@ impl ConformanceRunner {
             )));
         }
 
+        let total_expected = ids.len();
         let mut results = Vec::new();
         for id in &ids {
             let result = check_invariant(id);
@@ -70,8 +82,9 @@ impl ConformanceRunner {
             }
         }
 
+        let skipped = total_expected - results.len();
         let completed_at = Utc::now();
-        Ok(ConformanceReport::from_results(results, started_at, completed_at))
+        Ok(ConformanceReport::from_results(results, skipped, started_at, completed_at))
     }
 
     /// Run a single invariant by ID.
@@ -196,5 +209,36 @@ mod tests {
         let runner = ConformanceRunner::with_config(config);
         let report = runner.run_all().unwrap();
         assert_eq!(report.summary.total, 2);
+    }
+
+    #[test]
+    fn test_run_all_fail_fast_no_failures_skipped_zero() {
+        let config = ConformanceConfig {
+            fail_fast: true,
+            ..Default::default()
+        };
+        let runner = ConformanceRunner::with_config(config);
+        let report = runner.run_all().unwrap();
+        assert_eq!(report.summary.skipped, 0);
+        assert_eq!(report.summary.total, 22);
+    }
+
+    #[test]
+    fn test_run_all_with_benchmarks() {
+        let config = ConformanceConfig {
+            include_benchmarks: true,
+            ..Default::default()
+        };
+        let runner = ConformanceRunner::with_config(config);
+        let report = runner.run_all().unwrap();
+        assert!(report.benchmarks.is_some());
+        assert_eq!(report.benchmarks.unwrap().len(), 22);
+    }
+
+    #[test]
+    fn test_run_all_without_benchmarks() {
+        let runner = ConformanceRunner::new();
+        let report = runner.run_all().unwrap();
+        assert!(report.benchmarks.is_none());
     }
 }

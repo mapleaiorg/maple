@@ -126,7 +126,9 @@ mod tests {
     fn test_report_json_serialization() {
         let runner = ConformanceRunner::new();
         let report = runner.run_all().unwrap();
-        let json = serde_json::to_string_pretty(&report.summary).unwrap();
+        let json = serde_json::to_string_pretty(&report).unwrap();
         assert!(json.contains("\"total\": 22"));
+        let deserialized: ConformanceReport = serde_json::from_str(&json).unwrap();
+        assert_eq!(deserialized.summary.total, 22);
     }
 }

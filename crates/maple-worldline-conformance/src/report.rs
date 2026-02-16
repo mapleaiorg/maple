@@ -3,12 +3,14 @@
 //! Produces structured reports of invariant check results with
 //! box-drawing display and category breakdowns.
 
+use crate::benchmarks::BenchmarkResult;
 use crate::types::{ConformanceSummary, InvariantCategory, InvariantResult};
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use std::fmt;
 
 /// Per-category report.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CategoryReport {
     /// Which category.
     pub category: InvariantCategory,
@@ -59,7 +61,7 @@ impl fmt::Display for CategoryReport {
 }
 
 /// A complete conformance report for WorldLine safety invariants.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConformanceReport {
     /// All individual invariant results.
     pub results: Vec<InvariantResult>,
@@ -67,12 +69,15 @@ pub struct ConformanceReport {
     pub categories: Vec<CategoryReport>,
     /// Summary statistics.
     pub summary: ConformanceSummary,
+    /// Optional benchmark measurements (populated when include_benchmarks is true).
+    pub benchmarks: Option<Vec<BenchmarkResult>>,
 }
 
 impl ConformanceReport {
     /// Create a report from a list of invariant results.
     pub fn from_results(
         results: Vec<InvariantResult>,
+        skipped: usize,
         started_at: DateTime<Utc>,
         completed_at: DateTime<Utc>,
     ) -> Self {
@@ -97,7 +102,7 @@ impl ConformanceReport {
             total,
             passed,
             failed,
-            skipped: 0,
+            skipped,
             started_at,
             completed_at,
         };
@@ -106,7 +111,14 @@ impl ConformanceReport {
             results,
             categories,
             summary,
+            benchmarks: None,
         }
+    }
+
+    /// Attach benchmark results to this report.
+    pub fn with_benchmarks(mut self, benchmarks: Vec<BenchmarkResult>) -> Self {
+        self.benchmarks = Some(benchmarks);
+        self
     }
 
     /// Whether all invariants passed.
@@ -135,6 +147,15 @@ impl fmt::Display for ConformanceReport {
 
         for cat in &self.categories {
             write!(f, "{}", cat)?;
+        }
+
+        if let Some(ref benchmarks) = self.benchmarks {
+            writeln!(f)?;
+            writeln!(f, "  Benchmarks ({} measured):", benchmarks.len())?;
+            for b in benchmarks {
+                let mark = if b.passed { "+" } else { "x" };
+                writeln!(f, "      [{}] {} — {}us", mark, b.invariant_id, b.elapsed_us)?;
+            }
         }
 
         writeln!(f)?;
@@ -182,7 +203,7 @@ mod tests {
     #[test]
     fn test_report_all_passed() {
         let now = Utc::now();
-        let report = ConformanceReport::from_results(make_results(5, 0), now, now);
+        let report = ConformanceReport::from_results(make_results(5, 0), 0, now, now);
         assert!(report.all_passed());
         assert_eq!(report.summary.total, 5);
         assert_eq!(report.summary.passed, 5);
@@ -192,7 +213,7 @@ mod tests {
     #[test]
     fn test_report_with_failures() {
         let now = Utc::now();
-        let report = ConformanceReport::from_results(make_results(3, 2), now, now);
+        let report = ConformanceReport::from_results(make_results(3, 2), 0, now, now);
         assert!(!report.all_passed());
         assert_eq!(report.summary.failed, 2);
         assert_eq!(report.failures().len(), 2);
@@ -209,7 +230,7 @@ mod tests {
     #[test]
     fn test_report_display_all_passed() {
         let now = Utc::now();
-        let report = ConformanceReport::from_results(make_results(5, 0), now, now);
+        let report = ConformanceReport::from_results(make_results(5, 0), 0, now, now);
         let output = format!("{}", report);
         assert!(output.contains("SATISFIED"));
     }
@@ -217,7 +238,7 @@ mod tests {
     #[test]
     fn test_report_display_with_failures() {
         let now = Utc::now();
-        let report = ConformanceReport::from_results(make_results(3, 2), now, now);
+        let report = ConformanceReport::from_results(make_results(3, 2), 0, now, now);
         let output = format!("{}", report);
         assert!(output.contains("VIOLATED"));
     }
@@ -225,7 +246,7 @@ mod tests {
     #[test]
     fn test_report_categories_populated() {
         let now = Utc::now();
-        let report = ConformanceReport::from_results(make_results(3, 2), now, now);
+        let report = ConformanceReport::from_results(make_results(3, 2), 0, now, now);
         assert_eq!(report.categories.len(), 2); // Observation + SelfModGate
     }
 
@@ -241,8 +262,46 @@ mod tests {
     #[test]
     fn test_empty_report() {
         let now = Utc::now();
-        let report = ConformanceReport::from_results(vec![], now, now);
+        let report = ConformanceReport::from_results(vec![], 0, now, now);
         assert!(report.all_passed());
         assert_eq!(report.summary.total, 0);
+    }
+
+    #[test]
+    fn test_full_report_serialization() {
+        let now = Utc::now();
+        let report = ConformanceReport::from_results(make_results(3, 1), 0, now, now);
+        let json = serde_json::to_string(&report).unwrap();
+        assert!(json.contains("\"total\":4"));
+        let deserialized: ConformanceReport = serde_json::from_str(&json).unwrap();
+        assert_eq!(deserialized.summary.total, 4);
+        assert_eq!(deserialized.summary.failed, 1);
+    }
+
+    #[test]
+    fn test_report_with_skipped() {
+        let now = Utc::now();
+        let report = ConformanceReport::from_results(make_results(2, 1), 5, now, now);
+        assert_eq!(report.summary.skipped, 5);
+        assert_eq!(report.summary.total, 3);
+        assert_eq!(report.summary.failed, 1);
+    }
+
+    #[test]
+    fn test_report_display_with_benchmarks() {
+        let now = Utc::now();
+        let mut report = ConformanceReport::from_results(make_results(2, 0), 0, now, now);
+        report.benchmarks = Some(vec![
+            crate::benchmarks::BenchmarkResult {
+                invariant_id: "I.OBS-1".into(),
+                category: InvariantCategory::Observation,
+                elapsed_us: 42,
+                passed: true,
+                measured_at: now,
+            },
+        ]);
+        let output = format!("{}", report);
+        assert!(output.contains("Benchmarks"));
+        assert!(output.contains("42us"));
     }
 }
