@@ -1,11 +1,7 @@
-//! Phase A compatibility facade for WorldLine runtime and kernel subsystems.
+//! WorldLine runtime orchestration and kernel subsystem entrypoints.
 //!
-//! This crate re-exports existing runtime and kernel crates as stable module
-//! aliases so adopters can migrate naming without API breakage.
-//!
-//! Backward compatibility:
-//! - Existing `maple-runtime` and `maple-kernel-*` crates remain canonical.
-//! - This facade is additive and non-breaking.
+//! This crate exposes runtime orchestration and core kernel services through a
+//! consistent WorldLine namespace.
 
 pub use maple_kernel_fabric as fabric;
 pub use maple_kernel_financial as financial;

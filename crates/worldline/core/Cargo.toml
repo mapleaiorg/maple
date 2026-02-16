@@ -1,0 +1,13 @@
+[package]
+name = "worldline-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Core WorldLine APIs and shared domain model"
+
+[dependencies]
+worldline-types = { workspace = true }
+worldline-identity = { workspace = true }

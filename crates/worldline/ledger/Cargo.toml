@@ -6,7 +6,7 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-description = "Phase A facade crate for WorldLine ledger and provenance services"
+description = "WorldLine ledger, provenance, and replay service entrypoints"
 
 [dependencies]
 maple-kernel-provenance = { workspace = true }

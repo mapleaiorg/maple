@@ -1,4 +1,4 @@
-# WorldLine Rename and Migration Plan (Phase A-D)
+# WorldLine Rename and Migration Plan
 
 This plan replaces control-plane naming centered on PALM with WorldLine-governance naming,
 while keeping compatibility for one release cycle.
@@ -15,7 +15,7 @@ while keeping compatibility for one release cycle.
   - `worldline-promptkit`
 - Preserve existing `palm-*` crate/API compatibility during transition.
 
-## Phase A - Facade crates, no breakage
+## Stage 1 - Canonical facades with no breakage
 
 Scope:
 - Introduce facade crates (`worldline-core`, `worldline-runtime`, `worldline-ledger`)
@@ -34,7 +34,7 @@ Prompt skeleton:
 4. Update docs index with old->new mapping table.
 5. Run workspace tests.
 
-## Phase B - Commitment boundary hardening
+## Stage 2 - Commitment boundary hardening
 
 Scope:
 - Ensure all irreversible side-effect paths require commitment receipts.
@@ -51,7 +51,7 @@ Prompt skeleton:
 3. Add regression tests for bypass attempts.
 4. Update boundary docs and operational runbooks.
 
-## Phase C - Ledger module extraction
+## Stage 3 - Ledger module extraction
 
 Scope:
 - Formalize WLL writer/reader traits and implementation boundary.
@@ -68,7 +68,7 @@ Prompt skeleton:
 3. Implement projection builders and replay checks.
 4. Add invariants and load tests.
 
-## Phase D - Governance rename and agentic ops
+## Stage 4 - Governance naming and agentic operations
 
 Scope:
 - Introduce `worldline-governance` naming across docs and new API aliases.

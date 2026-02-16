@@ -14,7 +14,7 @@ name = "mwl_integration"
 path = "src/lib.rs"
 
 [dependencies]
-# WorldLine facade crates (Phase A)
+# WorldLine facade crates
 worldline-core = { workspace = true }
 worldline-runtime = { workspace = true }
 worldline-ledger = { workspace = true }

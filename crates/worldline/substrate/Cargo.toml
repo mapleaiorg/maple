@@ -1,0 +1,27 @@
+[package]
+name = "worldline-substrate"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "WorldLine self-producing substrate components"
+
+[dependencies]
+maple-worldline-observation = { workspace = true }
+maple-worldline-meaning = { workspace = true }
+maple-worldline-intent = { workspace = true }
+maple-worldline-commitment = { workspace = true }
+maple-worldline-consequence = { workspace = true }
+maple-worldline-self-mod-gate = { workspace = true }
+maple-worldline-codegen = { workspace = true }
+maple-worldline-deployment = { workspace = true }
+maple-worldline-ir = { workspace = true }
+maple-worldline-langgen = { workspace = true }
+maple-worldline-compiler = { workspace = true }
+maple-worldline-sal = { workspace = true }
+maple-worldline-hardware = { workspace = true }
+maple-worldline-bootstrap = { workspace = true }
+maple-worldline-evos = { workspace = true }
+maple-worldline-conformance = { workspace = true }

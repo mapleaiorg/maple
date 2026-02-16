@@ -5910,8 +5910,26 @@ dependencies = [
 name = "worldline-core"
 version = "0.1.2"
 dependencies = [
+ "worldline-identity",
+ "worldline-types",
+]
+
+[[package]]
+name = "worldline-governance"
+version = "0.1.2"
+dependencies = [
+ "maple-kernel-gate",
+ "maple-kernel-governance",
+ "maple-kernel-profiles",
+ "maple-kernel-safety",
+]
+
+[[package]]
+name = "worldline-identity"
+version = "0.1.2"
+dependencies = [
  "maple-mwl-identity",
- "maple-mwl-types",
+ "worldline-types",
 ]
 
 [[package]]
@@ -5937,6 +5955,35 @@ dependencies = [
  "maple-kernel-provenance",
  "maple-kernel-safety",
  "maple-runtime",
+]
+
+[[package]]
+name = "worldline-substrate"
+version = "0.1.2"
+dependencies = [
+ "maple-worldline-bootstrap",
+ "maple-worldline-codegen",
+ "maple-worldline-commitment",
+ "maple-worldline-compiler",
+ "maple-worldline-conformance",
+ "maple-worldline-consequence",
+ "maple-worldline-deployment",
+ "maple-worldline-evos",
+ "maple-worldline-hardware",
+ "maple-worldline-intent",
+ "maple-worldline-ir",
+ "maple-worldline-langgen",
+ "maple-worldline-meaning",
+ "maple-worldline-observation",
+ "maple-worldline-sal",
+ "maple-worldline-self-mod-gate",
+]
+
+[[package]]
+name = "worldline-types"
+version = "0.1.2"
+dependencies = [
+ "maple-mwl-types",
 ]
 
 [[package]]

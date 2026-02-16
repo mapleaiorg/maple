@@ -1,4 +1,4 @@
-# WorldLine Framework Guide (v1.2.1)
+# WorldLine Framework Guide
 
 This repository now ships the full Maple WorldLine prompt stack (Prompts 1-28) as concrete crates, tests, and runnable demos.
 
@@ -21,34 +21,34 @@ Control-plane functions can be executed by humans or bots, but enforcement remai
 
 | Prompt | Design Area | Primary Crates |
 |---|---|---|
-| 1 | Foundation types | `maple-mwl-types` |
-| 2 | WorldLine identity | `maple-mwl-identity` |
-| 3 | Event fabric | `maple-kernel-fabric` |
-| 4 | Commitment gate | `maple-kernel-gate` |
-| 5 | WorldLine ledger | `maple-kernel-provenance`, `maple-kernel-gate` |
-| 6 | Provenance index | `maple-kernel-provenance` |
-| 7 | Memory engine | `maple-kernel-memory` |
-| 8 | Operator bus | `maple-kernel-mrp` |
-| 9 | Governance engine | `maple-kernel-governance` |
+| 1 | Foundation types | `worldline-types` (compat: `maple-mwl-types`) |
+| 2 | WorldLine identity | `worldline-identity` (compat: `maple-mwl-identity`) |
+| 3 | Event fabric | `worldline-runtime::fabric` (compat: `maple-kernel-fabric`) |
+| 4 | Commitment gate | `worldline-runtime::gate` (compat: `maple-kernel-gate`) |
+| 5 | WorldLine ledger | `worldline-ledger` |
+| 6 | Provenance index | `worldline-ledger::provenance` (compat: `maple-kernel-provenance`) |
+| 7 | Memory engine | `worldline-runtime::memory` (compat: `maple-kernel-memory`) |
+| 8 | Operator bus | `worldline-runtime::mrp` (compat: `maple-kernel-mrp`) |
+| 9 | Governance engine | `worldline-governance` (compat: `maple-kernel-governance`) |
 | 10 | Network adapters | `maple-kernel-sdk` |
-| 11 | Protocol suite | `maple-kernel-mrp` |
-| 12 | Safety and human agency | `maple-kernel-safety` |
-| 13 | Profile system | `maple-kernel-profiles` |
-| 14 | Financial extensions | `maple-kernel-financial` |
+| 11 | Protocol suite | `worldline-runtime::mrp` |
+| 12 | Safety and human agency | `worldline-governance::safety` (compat: `maple-kernel-safety`) |
+| 13 | Profile system | `worldline-governance::profiles` (compat: `maple-kernel-profiles`) |
+| 14 | Financial extensions | `worldline-runtime::financial` (compat: `maple-kernel-financial`) |
 | 15 | SDK, CLI, REST API | `maple-kernel-sdk`, `maple-cli`, `palm-daemon` |
-| 16 | Kernel composition/bootstrap | `maple-runtime`, `maple-kernel-*` |
-| 17 | Self-observation | `maple-worldline-observation` |
-| 18 | Meaning formation | `maple-worldline-meaning` |
-| 19 | Intent stabilization | `maple-worldline-intent` |
-| 20 | Self-modification gate | `maple-worldline-self-mod-gate` |
-| 21 | Code generation + sandbox | `maple-worldline-codegen` |
-| 22 | Deployment + rollback | `maple-worldline-deployment` |
-| 23 | Language generation operator | `maple-worldline-langgen` |
-| 24 | WLIR | `maple-worldline-ir` |
-| 25 | Adaptive compiler | `maple-worldline-compiler` |
-| 26 | SAL | `maple-worldline-sal` |
-| 27 | Hardware + bootstrap protocol | `maple-worldline-hardware`, `maple-worldline-bootstrap` |
-| 28 | EVOS integration + conformance | `maple-worldline-evos`, `maple-worldline-conformance`, `maple-mwl-conformance` |
+| 16 | Kernel composition/bootstrap | `worldline-core`, `worldline-runtime`, `worldline-ledger` |
+| 17 | Self-observation | `worldline-substrate::observation` (compat: `maple-worldline-observation`) |
+| 18 | Meaning formation | `worldline-substrate::meaning` (compat: `maple-worldline-meaning`) |
+| 19 | Intent stabilization | `worldline-substrate::intent` (compat: `maple-worldline-intent`) |
+| 20 | Self-modification gate | `worldline-substrate::self_mod_gate` (compat: `maple-worldline-self-mod-gate`) |
+| 21 | Code generation + sandbox | `worldline-substrate::codegen` (compat: `maple-worldline-codegen`) |
+| 22 | Deployment + rollback | `worldline-substrate::deployment` (compat: `maple-worldline-deployment`) |
+| 23 | Language generation operator | `worldline-substrate::langgen` (compat: `maple-worldline-langgen`) |
+| 24 | WLIR | `worldline-substrate::ir` (compat: `maple-worldline-ir`) |
+| 25 | Adaptive compiler | `worldline-substrate::compiler` (compat: `maple-worldline-compiler`) |
+| 26 | SAL | `worldline-substrate::sal` (compat: `maple-worldline-sal`) |
+| 27 | Hardware + bootstrap protocol | `worldline-substrate::hardware`, `worldline-substrate::bootstrap` |
+| 28 | EVOS integration + conformance | `worldline-substrate::evos`, `worldline-substrate::conformance`, `maple-mwl-conformance` |
 
 ## User-Facing Interfaces
 
@@ -62,20 +62,23 @@ Control-plane functions can be executed by humans or bots, but enforcement remai
 
 Compatibility:
 - Existing `palm-*` and `maple-*` names remain in use in the current repository.
-- See migration phases in [Architecture Migration Plan](architecture/phase-plan.md).
+- See [Architecture Migration Plan](architecture/migration-plan.md).
 
-### Phase A compatibility mapping (old -> facade)
+### Compatibility Mapping (Legacy -> Canonical)
 
-| Existing | Facade (Phase A) |
+| Existing | Canonical |
 |---|---|
-| `maple-mwl-types` + `maple-mwl-identity` | `worldline-core` |
+| `maple-mwl-types` | `worldline-types` |
+| `maple-mwl-identity` | `worldline-identity` |
+| `worldline-types` + `worldline-identity` | `worldline-core` |
 | `maple-runtime` + `maple-kernel-*` runtime subsystems | `worldline-runtime` |
 | `maple-kernel-provenance` (+ fabric/types for lineage) | `worldline-ledger` |
+| `maple-kernel-governance` (+ gate/safety/profiles) | `worldline-governance` |
+| `maple-worldline-*` substrate crates | `worldline-substrate` |
 
 Implementation note:
-- `maple-mwl-types` and `maple-mwl-identity` remain foundational in Phase A.
-- Higher-level crates (`maple-worldline-*`, `maple-mwl-conformance`, `maple-mwl-integration`)
-  now consume `worldline-*` facades directly.
+- Legacy crates stay available for compatibility.
+- New integrations should import canonical `worldline-*` crates.
 
 ### CLI (maple)
 
@@ -105,13 +108,13 @@ WorldLine routes are merged into PALM daemon under `/api/v1`:
 
 The following suites pass in this repository:
 
-- `cargo test -p worldline-core -p worldline-runtime -p worldline-ledger`
+- `cargo test -p worldline-types -p worldline-identity -p worldline-core -p worldline-runtime -p worldline-ledger -p worldline-governance -p worldline-substrate`
 - `cargo test -p maple-mwl-conformance -p maple-mwl-integration -p maple-worldline-conformance`
 - `cargo test -p maple-worldline-observation -p maple-worldline-meaning -p maple-worldline-intent -p maple-worldline-commitment -p maple-worldline-consequence -p maple-worldline-self-mod-gate -p maple-worldline-codegen -p maple-worldline-deployment -p maple-worldline-langgen -p maple-worldline-ir -p maple-worldline-compiler -p maple-worldline-sal -p maple-worldline-hardware -p maple-worldline-bootstrap -p maple-worldline-evos`
 - `cargo test -p maple-kernel-sdk -p maple-cli -p palm-daemon`
 
-The `examples/mwl-*` demos are wired to the facade crates so users can adopt
-Phase A naming without changing runtime behavior.
+The `examples/mwl-*` demos are wired to the WorldLine crates so users can adopt
+canonical naming without changing runtime behavior.
 
 ## Next Step
 

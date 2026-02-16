@@ -60,12 +60,15 @@ commitments; the kernel decides and executes.
 ## 0.3 Naming (target model)
 
 Kernel:
+- `worldline-types`
+- `worldline-identity`
 - `worldline-core`
 - `worldline-runtime`
 - `worldline-ledger`
 
 Governance / Ops:
 - `worldline-governance`
+- `worldline-substrate`
 - `worldline-operator-bot` (optional)
 - `worldline-promptkit` (optional)
 
@@ -74,7 +77,7 @@ Umbrella:
 
 Compatibility note:
 - In the current repository, PALM crates continue to provide control-plane behavior.
-- This naming model can be adopted as a phased migration while keeping `palm-*`
+- This naming model can be adopted incrementally while keeping `palm-*`
   compatibility for one release cycle.
 
 ## 0.4 Runtime invariants (non-negotiable)
@@ -119,5 +122,6 @@ I.9 - Implementation Provenance & Constitutional Evolution
 ## 0.6 Read next
 
 - [01 - WorldLine Model](01-worldline.md)
+- [02 - Crate and Component Layout](02-crate-layout.md)
 - [03 - Commitment Boundary](03-commitment-boundary.md)
 - [04 - WorldLine Ledger (WLL)](04-ledger-wll.md)

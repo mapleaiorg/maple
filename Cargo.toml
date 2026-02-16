@@ -75,10 +75,14 @@ members = [
     "crates/maple/model-grok",
     "crates/maple/protocol-mcp",
     "crates/maple/protocol-a2a",
-    # Phase A: WorldLine facade crates (non-breaking compatibility layer)
-    "crates/worldline-core",
-    "crates/worldline-runtime",
-    "crates/worldline-ledger",
+    # WorldLine canonical entrypoints
+    "crates/worldline/types",
+    "crates/worldline/identity",
+    "crates/worldline/core",
+    "crates/worldline/runtime",
+    "crates/worldline/ledger",
+    "crates/worldline/governance",
+    "crates/worldline/substrate",
 
     # PALM - Fleet Orchestration Layer
     "crates/palm/types",
@@ -245,9 +249,13 @@ resonator-cli = { version = "0.1.2", path = "crates/resonator/cli" }
 resonator-observability = { version = "0.1.2", path = "crates/resonator/observability" }
 resonator-conformance = { version = "0.1.2", path = "crates/resonator/conformance" }
 maple-runtime = { version = "0.1.2", path = "crates/maple-runtime" }
-worldline-core = { version = "0.1.2", path = "crates/worldline-core" }
-worldline-runtime = { version = "0.1.2", path = "crates/worldline-runtime" }
-worldline-ledger = { version = "0.1.2", path = "crates/worldline-ledger" }
+worldline-types = { version = "0.1.2", path = "crates/worldline/types" }
+worldline-identity = { version = "0.1.2", path = "crates/worldline/identity" }
+worldline-core = { version = "0.1.2", path = "crates/worldline/core" }
+worldline-runtime = { version = "0.1.2", path = "crates/worldline/runtime" }
+worldline-ledger = { version = "0.1.2", path = "crates/worldline/ledger" }
+worldline-governance = { version = "0.1.2", path = "crates/worldline/governance" }
+worldline-substrate = { version = "0.1.2", path = "crates/worldline/substrate" }
 maple-storage = { version = "0.1.2", path = "crates/maple/storage" }
 maple-model-openai = { version = "0.1.0", path = "crates/maple/model-openai" }
 maple-model-anthropic = { version = "0.1.0", path = "crates/maple/model-anthropic" }

@@ -1,0 +1,15 @@
+[package]
+name = "worldline-governance"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "WorldLine governance policies and decision services"
+
+[dependencies]
+maple-kernel-governance = { workspace = true }
+maple-kernel-gate = { workspace = true }
+maple-kernel-safety = { workspace = true }
+maple-kernel-profiles = { workspace = true }

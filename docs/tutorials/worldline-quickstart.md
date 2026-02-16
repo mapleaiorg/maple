@@ -10,10 +10,10 @@ cd maple
 cargo build
 ```
 
-## 2. Validate Phase A Facades
+## 2. Validate WorldLine Crates
 
 ```bash
-cargo test -p worldline-core -p worldline-runtime -p worldline-ledger
+cargo test -p worldline-types -p worldline-identity -p worldline-core -p worldline-runtime -p worldline-ledger -p worldline-governance -p worldline-substrate
 ```
 
 ## 3. Run Core WorldLine Verification
@@ -125,10 +125,10 @@ cargo run --manifest-path examples/mwl-human-agency/Cargo.toml
 cargo run --manifest-path examples/mwl-financial-settlement/Cargo.toml
 ```
 
-All five demos are now wired to `worldline-core`, `worldline-runtime`, and
-`worldline-ledger` (Phase A facade crates).
+All five demos are wired to canonical `worldline-*` crates while preserving
+backward compatibility for legacy `maple-*` crates.
 
-## 10. Use Facade Crates in Your Own App
+## 10. Use WorldLine Crates in Your Own App
 
 ```toml
 [dependencies]

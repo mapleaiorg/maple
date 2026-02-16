@@ -6,13 +6,14 @@ Welcome to the MAPLE AI Framework documentation.
 
 | Document | Description |
 |----------|-------------|
-| [WorldLine Framework Guide](worldline-framework.md) | Prompt 1-28 map plus Phase A old->new facade crate mapping |
+| [WorldLine Framework Guide](worldline-framework.md) | Prompt 1-28 map plus canonical-to-legacy crate mapping |
 | [WorldLine Quickstart](tutorials/worldline-quickstart.md) | End-to-end CLI/API/demo walkthrough for WorldLine |
 | [Architecture 00: Overview](architecture/00-overview.md) | EVOS system map, data plane vs control plane split, invariants |
+| [Architecture 02: Crate Layout](architecture/02-crate-layout.md) | Canonical crate layout and text dependency graph |
 | [Architecture 01: WorldLine](architecture/01-worldline.md) | Canonical WorldLine model and lifecycle |
 | [Architecture 03: Commitment Boundary](architecture/03-commitment-boundary.md) | Non-bypassable gating and policy/capability enforcement |
 | [Architecture 04: Ledger WLL](architecture/04-ledger-wll.md) | Append-only ledger model, replay, and proof invariants |
-| [Architecture Migration Plan](architecture/phase-plan.md) | Phase A-D migration from PALM naming to WorldLine-governance naming |
+| [Architecture Migration Plan](architecture/migration-plan.md) | Staged migration from PALM naming to WorldLine-governance naming |
 | [Architecture Guide](architecture.md) | Deep dive into MAPLE architecture |
 | [Repository Structure](repo-structure.md) | Layered crate organization (`palm/*`, `resonator/*`, `mapleverse/*`) |
 | [Getting Started](getting-started.md) | Build your first MAPLE app |

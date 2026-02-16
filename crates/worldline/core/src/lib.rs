@@ -1,16 +1,10 @@
-//! Phase A compatibility facade for WorldLine core primitives.
+//! Core WorldLine APIs and shared domain model.
 //!
-//! This crate intentionally re-exports existing MAPLE crates without introducing
-//! behavioral changes:
-//!
-//! - `maple-mwl-types` for canonical WorldLine type system
-//! - `maple-mwl-identity` for identity/continuity management
-//!
-//! During the migration window, existing `maple-*` imports remain fully supported.
-//! New code can adopt `worldline-core` as a stable facade.
+//! This crate is the canonical import surface for identity and core type
+//! primitives.
 
-pub use maple_mwl_identity as identity;
-pub use maple_mwl_types as types;
+pub use worldline_identity as identity;
+pub use worldline_types as types;
 
 pub use identity::*;
 pub use types::*;
