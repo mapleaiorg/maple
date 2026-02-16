@@ -11,6 +11,7 @@
 | `palm-state` | State and checkpoint management |
 | `palm-control` | Unified control plane |
 | `palm-policy` | Policy gate system |
+| `maple-kernel-sdk` | WorldLine SDK (CLI + REST router + Python bindings) |
 | `maple-cli` | Umbrella CLI (developer tools + `maple palm ...` operations) |
 | `palm` | Direct operations CLI (backwards compatible) |
 | `palm-daemon` | Background service |
@@ -116,6 +117,26 @@ All endpoints are under `/api/v1`.
 | `GET` | `/agent-kernel/status` | Daemon-managed AgentKernel host status |
 | `POST` | `/agent-kernel/handle` | Execute one AgentKernel step with runtime gating |
 | `GET` | `/agent-kernel/audit` | List recent AgentKernel audit events (`limit` query) |
+
+### WorldLine Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/worldlines` | Create worldline (`profile`, optional `label`) |
+| `GET` | `/worldlines` | List worldlines |
+| `GET` | `/worldlines/:id` | Get worldline status |
+| `POST` | `/commitments` | Submit commitment declaration |
+| `GET` | `/commitments/:id` | Get commitment status |
+| `GET` | `/commitments/:id/audit-trail` | Get gate-stage audit trail |
+| `GET` | `/provenance/:event_id/ancestors` | Traverse event ancestry (`depth` query) |
+| `GET` | `/provenance/worldline/:id/history` | Worldline event history (`from`, `to`) |
+| `POST` | `/governance/policies` | Add governance policy |
+| `GET` | `/governance/policies` | List governance policies |
+| `POST` | `/governance/simulate` | Simulate policy decision for a payload |
+| `POST` | `/financial/settle` | Submit settlement legs |
+| `GET` | `/financial/:worldline_id/balance/:asset` | Balance projection |
+| `GET` | `/kernel/status` | WorldLine kernel status |
+| `GET` | `/kernel/metrics` | WorldLine kernel metrics |
 
 Supported backend kinds: `local_llama`, `open_ai`, `anthropic`, `grok`, `gemini`.
 

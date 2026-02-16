@@ -169,7 +169,34 @@ List recent commitments in a table:
 maple agent commitments --limit 20
 ```
 
-## 4. Real-Time Monitoring from the CLI
+## 4. WorldLine CLI Operations
+
+The umbrella CLI now exposes WorldLine command groups directly:
+
+```bash
+# Worldline lifecycle
+maple worldline create --profile agent --label demo-agent
+maple worldline list
+maple worldline status <worldline_id>
+
+# Kernel state
+maple kernel status
+maple kernel metrics
+
+# Commitment and provenance
+maple commit submit --file /tmp/commitment.json
+maple commit audit-trail <commitment_id>
+maple provenance worldline-history <worldline_id>
+maple provenance ancestors <event_id> --depth 5
+
+# Financial projection and settlement
+maple financial settle --file /tmp/settlement.json
+maple financial projection <worldline_id> USD
+```
+
+All commands support `--endpoint` and `PALM_ENDPOINT`.
+
+## 5. Real-Time Monitoring from the CLI
 
 Real-time agent status and monitoring can be done entirely from the terminal:
 
@@ -198,7 +225,7 @@ Direct operations CLI (optional):
 cargo run -p palm -- events watch
 ```
 
-## 5. Playground UI (Optional)
+## 6. Playground UI (Optional)
 
 The Playground is a live, game-like view for human/web observation and replay. It is optional and does not affect runtime behavior.
 
@@ -208,7 +235,7 @@ open http://localhost:8080/playground
 
 Use the **Agent Kernel** tab to run gated handle requests, draft commitment-backed executions, inspect audit trail events live, and copy an equivalent `maple agent handle ...` command for terminal replay.
 
-## 6. AI Backend Selection
+## 7. AI Backend Selection
 
 Local Llama is the default AI backend for the Playground. You can switch backends via the umbrella CLI:
 
@@ -244,7 +271,7 @@ CLI alternative:
 cargo run -p maple-cli -- playground set-simulation --auto-inference-enabled true --inference-interval-ticks 4 --inferences-per-tick 2
 ```
 
-## 7. Headless Runtime
+## 8. Headless Runtime
 
 You can run MAPLE without PALM or the Playground when you want embedded, headless agents. For example:
 

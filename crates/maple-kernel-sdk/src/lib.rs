@@ -21,6 +21,9 @@
 //! Commands::Mwl { command } => handle_mwl_command(command, &endpoint, &client).await,
 //! ```
 //!
+//! In this repository, `maple-cli` exposes these as direct groups:
+//! `maple worldline|commit|provenance|financial|policy|kernel`.
+//!
 //! ## API Integration
 //!
 //! ```ignore

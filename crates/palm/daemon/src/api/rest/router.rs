@@ -6,6 +6,7 @@ use axum::{
     routing::{delete, get, post, put},
     Router,
 };
+use maple_kernel_sdk::mwl_router;
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::TraceLayer;
 
@@ -107,7 +108,9 @@ pub fn create_router(state: AppState) -> Router {
         .route("/health/summary", get(handlers::health_summary))
         // Events
         .route("/events", get(handlers::get_events))
-        .route("/events/stream", get(handlers::stream_events));
+        .route("/events/stream", get(handlers::stream_events))
+        // Maple WorldLine API surface
+        .merge(mwl_router::<AppState>());
 
     // Build router with middleware
     Router::new()

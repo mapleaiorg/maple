@@ -214,8 +214,28 @@ cargo test -p my-platform-pack --test conformance
 4. **Version Pin**: Pin to specific MAPLE versions for stability
 5. **Test All Profiles**: If supporting multiple profiles, test each
 
+## WorldLine Conformance Suites
+
+In addition to PALM platform-pack conformance, run WorldLine suites:
+
+```bash
+# Constitutional + cross-profile + lifecycle integration
+cargo test -p maple-mwl-conformance -p maple-mwl-integration
+
+# Prompt 17-28 self-producing substrate invariants
+cargo test -p maple-worldline-conformance
+```
+
+For deeper subsystem validation, run:
+
+```bash
+cargo test -p maple-worldline-observation -p maple-worldline-meaning -p maple-worldline-intent -p maple-worldline-commitment -p maple-worldline-consequence -p maple-worldline-self-mod-gate -p maple-worldline-codegen -p maple-worldline-deployment -p maple-worldline-langgen -p maple-worldline-ir -p maple-worldline-compiler -p maple-worldline-sal -p maple-worldline-hardware -p maple-worldline-bootstrap -p maple-worldline-evos
+```
+
 ## Next Steps
 
+- [WorldLine Framework Guide](worldline-framework.md)
+- [WorldLine Quickstart](tutorials/worldline-quickstart.md)
 - [Platform Packs Tutorial](tutorials/platform-packs.md)
 - [Architecture Guide](architecture.md)
 - [API Reference](api/README.md)

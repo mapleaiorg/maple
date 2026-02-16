@@ -16,12 +16,23 @@ git clone https://github.com/mapleaiorg/maple.git
 cd maple
 cargo build --release
 
-# Run your first example
+# Run a WorldLine example
+cargo run --manifest-path examples/mwl-worldline-lifecycle/Cargo.toml
+
+# Run your first resonator example
 cargo run -p maple-runtime --example 01_basic_resonator
 
 # Start the control plane (optional)
 cargo run -p maple-cli -- daemon start
+
+# Run core WorldLine conformance checks
+cargo test -p maple-mwl-conformance -p maple-worldline-conformance
 ```
+
+For full WorldLine onboarding, use:
+- [`docs/worldline-framework.md`](docs/worldline-framework.md)
+- [`docs/tutorials/worldline-quickstart.md`](docs/tutorials/worldline-quickstart.md)
+- [`examples/README.md`](examples/README.md)
 
 ### Your First Resonator
 
@@ -113,8 +124,12 @@ maple/
 │   ├── aas-*/                  # Authority & Accountability Service
 │   ├── mrp-*/                  # MAPLE Routing Protocol
 │   ├── eve-*/                  # Evidence & Verification Engine
+│   ├── maple-mwl-*/            # WorldLine foundational types + identity
+│   ├── maple-kernel-*/         # WorldLine kernel subsystems (fabric/gate/governance/etc.)
+│   ├── maple-worldline-*/      # Self-producing substrate (observation→EVOS)
 │   └── mapleverse/             # Mapleverse platform components
 │
+├── examples/                   # Runnable WorldLine and boundary demos
 └── docs/                       # Documentation
 ```
 
@@ -235,18 +250,25 @@ maple daemon stop               # Graceful shutdown
 # System health
 maple doctor                    # Run diagnostic checks
 
-# Resonator management
-maple resonator list            # List active resonators
-maple resonator inspect <id>    # View resonator details
+# AgentKernel operations
+maple agent status              # AgentKernel status from daemon
+maple agent audit --limit 20    # Recent agent audit events
 
-# Monitoring
-maple events watch              # Real-time event stream
-maple playground activities     # View recent activities
+# WorldLine management
+maple worldline create --profile agent --label demo
+maple worldline list
+maple worldline status <worldline_id>
 
-# Commitment management (via resonator CLI)
-resonator commitment list       # List active commitments
-resonator commitment lifecycle  # Show state machine
-resonator consequence list      # View tracked consequences
+# Commitment / provenance / financial
+maple commit submit --file /tmp/commitment.json
+maple commit audit-trail <commitment_id>
+maple provenance worldline-history <worldline_id>
+maple financial settle --file /tmp/settlement.json
+maple financial projection <worldline_id> USD
+
+# WorldLine kernel state
+maple kernel status
+maple kernel metrics
 ```
 
 ### Starting the Daemon
@@ -406,6 +428,10 @@ cargo test -p resonator-conformance
 
 ## 📖 Documentation
 
+- **[WorldLine Framework Guide](docs/worldline-framework.md)** - Prompt 1-28 implementation map
+- **[WorldLine Quickstart](docs/tutorials/worldline-quickstart.md)** - End-to-end CLI/API/demo workflow
+- **[WorldLine Architecture Set](docs/architecture/00-overview.md)** - Kernel/governance split, boundary, and WLL docs
+- **[Examples and Demos](examples/README.md)** - Runnable WorldLine demo catalog
 - **[Getting Started Guide](docs/getting-started.md)** - First steps with MAPLE
 - **[Architecture Overview](docs/architecture.md)** - Deep dive into Resonance Architecture
 - **[Resonator Layer](crates/resonator/README.md)** - Cognitive pipeline documentation

@@ -21,6 +21,7 @@ palm-control = { path = "../control" }
 palm-shared-state = { path = "../shared-state" }
 maple-runtime = { version = "0.1.2", workspace = true }
 maple-storage = { workspace = true, features = ["postgres"] }
+maple-kernel-sdk = { workspace = true, features = ["api"] }
 rcf-commitment = { workspace = true }
 
 # Async runtime

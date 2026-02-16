@@ -2,6 +2,8 @@
 
 Welcome to MAPLE (Multi-Agent Platform for Learning and Evolution) - a production-ready multi-agent AI framework built on Resonance Architecture principles.
 
+> If you are onboarding to the WorldLine Framework (Prompt 1-28 implementation), start with [WorldLine Quickstart](tutorials/worldline-quickstart.md).
+
 ## What You'll Learn
 
 This guide covers:

@@ -1,4 +1,8 @@
 use clap::{Args, Parser, Subcommand, ValueEnum};
+use maple_kernel_sdk::cli::{
+    handle_mwl_command, CommitCommands, FinancialCommands, KernelCommands, MwlCommands,
+    PolicyCommands, ProvenanceCommands, WorldlineCommands,
+};
 use maple_runtime::{
     config::RuntimeConfig, AgentHandleRequest, AgentKernel, AgentRegistration, MapleRuntime,
     ModelBackend,
@@ -54,6 +58,54 @@ enum Commands {
         command: AgentCommands,
     },
 
+    /// WorldLine lifecycle management
+    Worldline {
+        #[command(flatten)]
+        endpoint: MwlEndpointArgs,
+        #[command(subcommand)]
+        command: WorldlineCommands,
+    },
+
+    /// Commitment Gate operations
+    Commit {
+        #[command(flatten)]
+        endpoint: MwlEndpointArgs,
+        #[command(subcommand)]
+        command: CommitCommands,
+    },
+
+    /// Causal provenance queries
+    Provenance {
+        #[command(flatten)]
+        endpoint: MwlEndpointArgs,
+        #[command(subcommand)]
+        command: ProvenanceCommands,
+    },
+
+    /// Financial operations (EVOS/ARES)
+    Financial {
+        #[command(flatten)]
+        endpoint: MwlEndpointArgs,
+        #[command(subcommand)]
+        command: FinancialCommands,
+    },
+
+    /// Governance policy management
+    Policy {
+        #[command(flatten)]
+        endpoint: MwlEndpointArgs,
+        #[command(subcommand)]
+        command: PolicyCommands,
+    },
+
+    /// WorldLine kernel status and metrics
+    Kernel {
+        #[command(flatten)]
+        endpoint: MwlEndpointArgs,
+        #[command(subcommand)]
+        command: KernelCommands,
+    },
+
     /// PALM operations (forwarded to palm)
     #[command(alias = "ops")]
     Palm {
@@ -98,6 +150,13 @@ struct DoctorArgs {
     /// Expected local model name (defaults to active playground model if available)
     #[arg(long)]
     model: Option<String>,
+}
+
+#[derive(Args, Clone)]
+struct MwlEndpointArgs {
+    /// PALM daemon endpoint
+    #[arg(long, env = "PALM_ENDPOINT", default_value = "http://localhost:8080")]
+    endpoint: String,
 }
 
 #[derive(Subcommand)]
@@ -446,6 +505,48 @@ async fn main() {
                 std::process::exit(1);
             }
         }
+        Commands::Worldline { endpoint, command } => {
+            if let Err(err) =
+                handle_mwl(endpoint.endpoint, MwlCommands::Worldline { command }).await
+            {
+                eprintln!("{err}");
+                std::process::exit(1);
+            }
+        }
+        Commands::Commit { endpoint, command } => {
+            if let Err(err) = handle_mwl(endpoint.endpoint, MwlCommands::Commit { command }).await {
+                eprintln!("{err}");
+                std::process::exit(1);
+            }
+        }
+        Commands::Provenance { endpoint, command } => {
+            if let Err(err) =
+                handle_mwl(endpoint.endpoint, MwlCommands::Provenance { command }).await
+            {
+                eprintln!("{err}");
+                std::process::exit(1);
+            }
+        }
+        Commands::Financial { endpoint, command } => {
+            if let Err(err) =
+                handle_mwl(endpoint.endpoint, MwlCommands::Financial { command }).await
+            {
+                eprintln!("{err}");
+                std::process::exit(1);
+            }
+        }
+        Commands::Policy { endpoint, command } => {
+            if let Err(err) = handle_mwl(endpoint.endpoint, MwlCommands::Policy { command }).await {
+                eprintln!("{err}");
+                std::process::exit(1);
+            }
+        }
+        Commands::Kernel { endpoint, command } => {
+            if let Err(err) = handle_mwl(endpoint.endpoint, MwlCommands::Kernel { command }).await {
+                eprintln!("{err}");
+                std::process::exit(1);
+            }
+        }
         Commands::Palm { args } => {
             let mut forwarded = Vec::with_capacity(args.len() + 1);
             forwarded.push(OsString::from("palm"));
@@ -467,6 +568,15 @@ async fn main() {
             }
         }
     }
+}
+
+async fn handle_mwl(
+    endpoint: String,
+    command: MwlCommands,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let client = build_http_client()?;
+    handle_mwl_command(command, &endpoint, &client).await;
+    Ok(())
 }
 
 async fn handle_doctor(args: DoctorArgs) -> Result<(), Box<dyn std::error::Error>> {

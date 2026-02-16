@@ -1789,6 +1789,7 @@ version = "0.1.2"
 dependencies = [
  "clap",
  "maple-integration",
+ "maple-kernel-sdk",
  "maple-runtime",
  "palm",
  "rcf-validator",
@@ -3103,6 +3104,7 @@ dependencies = [
  "clap",
  "config",
  "futures-util",
+ "maple-kernel-sdk",
  "maple-runtime",
  "maple-storage",
  "palm-control",

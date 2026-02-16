@@ -1,5 +1,11 @@
 # 🏗️ MAPLE Architecture Overview
 
+> For the WorldLine-first architecture set, see:
+> [`docs/architecture/00-overview.md`](architecture/00-overview.md),
+> [`docs/architecture/01-worldline.md`](architecture/01-worldline.md),
+> [`docs/architecture/03-commitment-boundary.md`](architecture/03-commitment-boundary.md),
+> [`docs/architecture/04-ledger-wll.md`](architecture/04-ledger-wll.md).
+
 ## The Resonance Paradigm Shift
 
 MAPLE represents a **fundamental rethinking** of how multi-agent AI systems should work. Rather than treating agents as isolated processes that exchange messages, MAPLE treats every entity as a **Resonator** participating in continuous, stateful **resonance**.

@@ -1,20 +1,9 @@
 //! MWL CLI command definitions and handlers.
 //!
-//! These commands can be integrated into the existing `maple` CLI by adding
-//! `MwlCommands` to the top-level `Commands` enum and dispatching to
-//! `handle_mwl_command()`.
+//! These commands are exposed by the umbrella `maple` CLI as direct groups:
+//! `worldline`, `commit`, `provenance`, `financial`, `policy`, and `kernel`.
 //!
-//! ## Usage in maple-cli main.rs:
-//!
-//! ```ignore
-//! use maple_kernel_sdk::cli::{MwlCommands, handle_mwl_command};
-//!
-//! // In the Commands enum:
-//! Mwl { #[command(subcommand)] command: MwlCommands },
-//!
-//! // In the dispatch:
-//! Commands::Mwl { command } => handle_mwl_command(command, &client).await,
-//! ```
+//! They can also be embedded under a wrapper command with `MwlCommands`.
 
 use clap::{Subcommand, ValueEnum};
 use reqwest::Client;
