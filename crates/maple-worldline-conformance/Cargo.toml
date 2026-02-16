@@ -1,0 +1,42 @@
+[package]
+name = "maple-worldline-conformance"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "WorldLine conformance testing — verifies 22 safety invariants across 15 subsystems"
+
+[lib]
+name = "worldline_conformance"
+path = "src/lib.rs"
+
+[dependencies]
+# All 15 WorldLine subsystem crates
+maple-worldline-observation = { path = "../maple-worldline-observation" }
+maple-worldline-meaning = { path = "../maple-worldline-meaning" }
+maple-worldline-intent = { path = "../maple-worldline-intent" }
+maple-worldline-commitment = { path = "../maple-worldline-commitment" }
+maple-worldline-consequence = { path = "../maple-worldline-consequence" }
+maple-worldline-self-mod-gate = { path = "../maple-worldline-self-mod-gate" }
+maple-worldline-codegen = { path = "../maple-worldline-codegen" }
+maple-worldline-deployment = { path = "../maple-worldline-deployment" }
+maple-worldline-ir = { path = "../maple-worldline-ir" }
+maple-worldline-langgen = { path = "../maple-worldline-langgen" }
+maple-worldline-compiler = { path = "../maple-worldline-compiler" }
+maple-worldline-sal = { path = "../maple-worldline-sal" }
+maple-worldline-hardware = { path = "../maple-worldline-hardware" }
+maple-worldline-bootstrap = { path = "../maple-worldline-bootstrap" }
+maple-worldline-evos = { path = "../maple-worldline-evos" }
+
+# MWL core types
+maple-mwl-types = { path = "../maple-mwl-types" }
+
+# Runtime and utilities
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }

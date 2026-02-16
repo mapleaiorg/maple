@@ -127,6 +127,7 @@ members = [
     "crates/maple-worldline-hardware",
     "crates/maple-worldline-bootstrap",
     "crates/maple-worldline-evos",
+    "crates/maple-worldline-conformance",
 
     # MWL Integration Tests & Conformance
     "crates/maple-mwl-integration",
@@ -293,6 +294,7 @@ maple-worldline-sal = { path = "crates/maple-worldline-sal" }
 maple-worldline-hardware = { path = "crates/maple-worldline-hardware" }
 maple-worldline-bootstrap = { path = "crates/maple-worldline-bootstrap" }
 maple-worldline-evos = { path = "crates/maple-worldline-evos" }
+maple-worldline-conformance = { path = "crates/maple-worldline-conformance" }
 maple-mwl-integration = { path = "crates/maple-mwl-integration" }
 maple-mwl-conformance = { path = "crates/maple-mwl-conformance" }
 

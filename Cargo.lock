@@ -2260,6 +2260,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "maple-worldline-conformance"
+version = "0.1.2"
+dependencies = [
+ "chrono",
+ "maple-mwl-types",
+ "maple-worldline-bootstrap",
+ "maple-worldline-codegen",
+ "maple-worldline-commitment",
+ "maple-worldline-compiler",
+ "maple-worldline-consequence",
+ "maple-worldline-deployment",
+ "maple-worldline-evos",
+ "maple-worldline-hardware",
+ "maple-worldline-intent",
+ "maple-worldline-ir",
+ "maple-worldline-langgen",
+ "maple-worldline-meaning",
+ "maple-worldline-observation",
+ "maple-worldline-sal",
+ "maple-worldline-self-mod-gate",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "maple-worldline-consequence"
 version = "0.1.2"
 dependencies = [
