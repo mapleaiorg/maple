@@ -1,0 +1,16 @@
+[package]
+name = "worldline-operator-bot"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Reference operator bot for WorldLine governance loops"
+
+[dependencies]
+worldline-governance = { workspace = true }
+worldline-ledger = { workspace = true }
+worldline-types = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }

@@ -144,7 +144,6 @@ pub struct EventBusStats {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mapleverse_types::entity::EntityId;
     use mapleverse_types::event::WorldEventData;
 
     #[test]

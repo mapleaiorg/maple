@@ -2,7 +2,7 @@
 //! WAF demo binary showcasing worldline framework capabilities.
 //!
 //! Runs a self-contained demonstration of:
-//! 1. 4-phase genesis boot
+//! 1. Multi-stage genesis boot
 //! 2. Autopoietic kernel evolution (healthy + stressed workloads)
 //! 3. WLIR module creation and verification
 //! 4. Evidence bundle construction
@@ -83,14 +83,14 @@ async fn main() {
 
     println!();
     println!(" ════════════════════════════════════════════════════════════════");
-    println!("  Demo complete.  All phases succeeded.");
+    println!("  Demo complete.  All stages succeeded.");
     println!(" ════════════════════════════════════════════════════════════════");
     println!();
 }
 
 async fn run_demo() -> Result<(), Box<dyn std::error::Error>> {
-    // ── Phase A: Genesis Boot ───────────────────────────────────────
-    section("Phase A: Genesis Boot");
+    // ── Genesis Boot ────────────────────────────────────────────────
+    section("Genesis Boot");
 
     let config = SeedConfig::demo();
     info(&format!(
@@ -101,8 +101,8 @@ async fn run_demo() -> Result<(), Box<dyn std::error::Error>> {
     let result: GenesisResult = genesis_boot(config.clone()).await?;
     print_genesis_result(&result);
 
-    // ── Phase B: Kernel Creation ────────────────────────────────────
-    section("Phase B: Kernel Initialisation");
+    // ── Kernel Creation ─────────────────────────────────────────────
+    section("Kernel Initialisation");
 
     let worldline = create_worldline(config).await?;
     ok(&format!("Worldline created  id={}", worldline.id));
@@ -110,8 +110,8 @@ async fn run_demo() -> Result<(), Box<dyn std::error::Error>> {
     let mut kernel = AutopoieticKernel::from_worldline(worldline)?;
     ok("AutopoieticKernel online");
 
-    // ── Phase C: Evolution Loop ─────────────────────────────────────
-    section("Phase C: Evolution Loop  (5 steps)");
+    // ── Evolution Loop ──────────────────────────────────────────────
+    section("Evolution Loop  (5 steps)");
 
     let total_steps = 5;
 
@@ -131,8 +131,8 @@ async fn run_demo() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    // ── Phase D: Kernel Metrics Summary ─────────────────────────────
-    section("Phase D: Kernel Metrics");
+    // ── Kernel Metrics Summary ──────────────────────────────────────
+    section("Kernel Metrics");
 
     let km = kernel.metrics();
     info(&format!("Steps attempted  : {}", km.steps_attempted));
@@ -146,13 +146,13 @@ async fn run_demo() -> Result<(), Box<dyn std::error::Error>> {
         km.success_rate() * 100.0
     ));
 
-    // ── Phase E: WLIR Module ────────────────────────────────────────
-    section("Phase E: WLIR Module Creation + Verification");
+    // ── WLIR Module ─────────────────────────────────────────────────
+    section("WLIR Module Creation + Verification");
 
     demonstrate_wlir()?;
 
-    // ── Phase F: Evidence Bundle ────────────────────────────────────
-    section("Phase F: Evidence Bundle");
+    // ── Evidence Bundle ─────────────────────────────────────────────
+    section("Evidence Bundle");
 
     demonstrate_evidence().await?;
 

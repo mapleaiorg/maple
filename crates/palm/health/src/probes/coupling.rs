@@ -4,6 +4,7 @@
 //! resonance field. Coupling is the mechanism by which agents
 //! coordinate and share state.
 
+use std::sync::Arc;
 use std::time::Instant;
 
 use async_trait::async_trait;
@@ -28,7 +29,12 @@ pub struct CouplingProbe {
 
     /// Number of test couplings to attempt.
     test_coupling_count: u32,
+
+    /// Optional external metric reader for real runtime integrations.
+    metric_reader: Option<Arc<CouplingMetricReader>>,
 }
+
+type CouplingMetricReader = dyn Fn(&InstanceId, u32) -> HealthResult<f64> + Send + Sync;
 
 impl CouplingProbe {
     /// Create a new coupling probe with default settings.
@@ -37,6 +43,7 @@ impl CouplingProbe {
             min_capacity: 0.2,
             timeout_ms: 5000,
             test_coupling_count: 3,
+            metric_reader: None,
         }
     }
 
@@ -46,29 +53,32 @@ impl CouplingProbe {
             min_capacity: min_capacity.clamp(0.0, 1.0),
             timeout_ms,
             test_coupling_count: test_coupling_count.max(1),
+            metric_reader: None,
         }
+    }
+
+    /// Attach an external metric reader for production/runtime integrations.
+    pub fn with_metric_reader<F>(mut self, reader: F) -> Self
+    where
+        F: Fn(&InstanceId, u32) -> HealthResult<f64> + Send + Sync + 'static,
+    {
+        self.metric_reader = Some(Arc::new(reader));
+        self
     }
 
     /// Measure the coupling capacity for an instance.
     ///
-    /// In a real implementation, this would:
-    /// 1. Attempt test couplings with synthetic or known-good agents
-    /// 2. Measure coupling latency and success rate
-    /// 3. Calculate overall coupling capacity
+    /// Uses an injected metric reader when available; otherwise falls back to
+    /// a lightweight synthetic probe suitable for local development.
     async fn measure_capacity(&self, instance_id: &InstanceId) -> HealthResult<f64> {
-        // TODO: Integration point with resonator-runtime
-        // This would attempt actual couplings to measure capacity
-        //
-        // For now, simulate a measurement. In production:
-        // 1. Create test coupling requests
-        // 2. Measure time to establish coupling
-        // 3. Verify coupling stability
-        // 4. Calculate capacity based on success rate and latency
+        if let Some(reader) = &self.metric_reader {
+            return reader(instance_id, self.test_coupling_count);
+        }
 
         debug!(
             instance_id = %instance_id,
             test_count = self.test_coupling_count,
-            "Measuring coupling capacity"
+            "Measuring coupling capacity (synthetic fallback)"
         );
 
         // Simulate coupling capacity measurement
@@ -153,5 +163,14 @@ mod tests {
         assert!(result.success);
         assert_eq!(result.probe_type, ProbeType::Coupling);
         assert!(result.value.unwrap() > 0.0);
+    }
+
+    #[tokio::test]
+    async fn test_coupling_probe_custom_reader_failure() {
+        let probe = CouplingProbe::with_settings(0.8, 1000, 2).with_metric_reader(|_, _| Ok(0.3));
+        let instance_id = InstanceId::generate();
+
+        let result = probe.execute(instance_id).await.unwrap();
+        assert!(!result.success);
     }
 }

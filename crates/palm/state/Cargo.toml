@@ -39,7 +39,7 @@ base64 = "0.21"
 dashmap = "5.5"
 
 # Optional storage backends
-sqlx = { version = "0.7", features = ["runtime-tokio", "postgres", "chrono", "uuid"], optional = true }
+sqlx = { workspace = true, optional = true }
 
 [features]
 default = []

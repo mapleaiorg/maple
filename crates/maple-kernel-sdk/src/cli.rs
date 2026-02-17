@@ -1,7 +1,7 @@
 //! MWL CLI command definitions and handlers.
 //!
 //! These commands are exposed by the umbrella `maple` CLI as direct groups:
-//! `worldline`, `commit`, `provenance`, `financial`, `policy`, and `kernel`.
+//! `worldline`, `commit`, `provenance`, `financial`, `gov`/`policy`, and `kernel`.
 //!
 //! They can also be embedded under a wrapper command with `MwlCommands`.
 
@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 /// - `maple commit` — Commitment Gate operations
 /// - `maple provenance` — Causal provenance queries
 /// - `maple financial` — Financial operations (EVOS/ARES)
-/// - `maple policy` — Governance policy management
+/// - `maple gov` (alias: `maple policy`) — Governance policy management
 /// - `maple kernel` — Kernel status and metrics
 #[derive(Subcommand)]
 pub enum MwlCommands {
@@ -40,7 +40,8 @@ pub enum MwlCommands {
         #[command(subcommand)]
         command: FinancialCommands,
     },
-    /// Governance policy management
+    /// Gov policy management
+    #[command(name = "gov", visible_alias = "policy", alias = "governance")]
     Policy {
         #[command(subcommand)]
         command: PolicyCommands,

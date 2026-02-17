@@ -284,8 +284,6 @@ mod tests {
 
     #[test]
     fn test_human_entity_rejected() {
-        let mut registry = EntityRegistry::new(test_config());
-
         // Try to sneak a human entity through direct registration
         let result = MapleVerseEntity::new_human("SneakyHuman", "human-1");
         assert!(result.is_err());
@@ -296,7 +294,6 @@ mod tests {
         let mut registry = EntityRegistry::new(test_config());
 
         let entity = MapleVerseEntity::new_individual("Agent", RegionId::new("region-1"), None);
-        let entity_id = entity.id.clone();
 
         registry.register(entity.clone()).unwrap();
 

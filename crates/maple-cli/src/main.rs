@@ -90,7 +90,8 @@ enum Commands {
         command: FinancialCommands,
     },
 
-    /// Governance policy management
+    /// Gov policy management
+    #[command(name = "gov", visible_alias = "policy", alias = "governance")]
     Policy {
         #[command(flatten)]
         endpoint: MwlEndpointArgs,
@@ -1484,6 +1485,53 @@ fn handle_ual(command: UalCommands) -> Result<(), Box<dyn std::error::Error>> {
             }
             println!("UAL validation succeeded.");
             Ok(())
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parses_gov_alias() {
+        let cli = Cli::parse_from(["maple", "gov", "list"]);
+        match cli.command {
+            Commands::Policy { command, .. } => match command {
+                PolicyCommands::List => {}
+                _ => panic!("expected `gov list` to map to policy list"),
+            },
+            _ => panic!("expected `gov` to map to policy command group"),
+        }
+    }
+
+    #[test]
+    fn parses_governance_alias() {
+        let cli = Cli::parse_from([
+            "maple",
+            "governance",
+            "simulate",
+            "--file",
+            "/tmp/policy.json",
+        ]);
+        match cli.command {
+            Commands::Policy { command, .. } => match command {
+                PolicyCommands::Simulate { file } => assert_eq!(file, "/tmp/policy.json"),
+                _ => panic!("expected `governance simulate` to map to policy simulate"),
+            },
+            _ => panic!("expected `governance` to map to policy command group"),
+        }
+    }
+
+    #[test]
+    fn parses_policy_command_unchanged() {
+        let cli = Cli::parse_from(["maple", "policy", "list"]);
+        match cli.command {
+            Commands::Policy {
+                command: PolicyCommands::List,
+                ..
+            } => {}
+            _ => panic!("expected legacy `policy list` to remain available"),
         }
     }
 }

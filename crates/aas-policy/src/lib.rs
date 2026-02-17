@@ -304,7 +304,7 @@ impl PolicyEngine {
         &self,
         rule: &Rule,
         commitment: &RcfCommitment,
-        _context: &EvaluationContext,
+        context: &EvaluationContext,
     ) -> Result<RuleResult, PolicyError> {
         let triggered = match &rule.condition {
             RuleCondition::Always => true,
@@ -312,7 +312,7 @@ impl PolicyEngine {
             RuleCondition::DomainIsCritical => commitment.effect_domain.is_critical(),
             RuleCondition::ScopeIsGlobal => commitment.scope.is_global(),
             RuleCondition::IsIrreversible => commitment.reversibility.is_irreversible(),
-            RuleCondition::Custom(_expr) => false, // TODO: Implement custom expression evaluation
+            RuleCondition::Custom(expr) => evaluate_custom_condition(expr, commitment, context)?,
         };
 
         Ok(RuleResult {
@@ -415,6 +415,135 @@ pub enum PolicyError {
 
     #[error("Lock error")]
     LockError,
+}
+
+fn evaluate_custom_condition(
+    expression: &str,
+    commitment: &RcfCommitment,
+    context: &EvaluationContext,
+) -> Result<bool, PolicyError> {
+    let expr = expression.trim();
+    if expr.is_empty() {
+        return Err(PolicyError::InvalidExpression(
+            "custom expression cannot be empty".to_string(),
+        ));
+    }
+
+    if expr.contains("||") {
+        for part in expr.split("||") {
+            if evaluate_custom_condition(part, commitment, context)? {
+                return Ok(true);
+            }
+        }
+        return Ok(false);
+    }
+
+    if expr.contains("&&") {
+        for part in expr.split("&&") {
+            if !evaluate_custom_condition(part, commitment, context)? {
+                return Ok(false);
+            }
+        }
+        return Ok(true);
+    }
+
+    if let Some(capability) = parse_has_capability(expr) {
+        return Ok(context.capabilities.iter().any(|cap| cap == &capability));
+    }
+
+    if let Some((lhs, rhs, equals)) = parse_comparison(expr) {
+        let lhs_value = resolve_custom_lhs(lhs, commitment, context).ok_or_else(|| {
+            PolicyError::InvalidExpression(format!("unsupported expression field '{}'", lhs))
+        })?;
+        let rhs_value = strip_quotes(rhs.trim());
+
+        let matches = lhs_value == rhs_value;
+        return Ok(if equals { matches } else { !matches });
+    }
+
+    if let Some(metadata_key) = expr.strip_prefix("metadata.") {
+        if metadata_key.is_empty() {
+            return Err(PolicyError::InvalidExpression(
+                "metadata key cannot be empty".to_string(),
+            ));
+        }
+        return Ok(context
+            .metadata
+            .get(metadata_key)
+            .map(|value| is_truthy(value))
+            .unwrap_or(false));
+    }
+
+    match expr {
+        "true" => Ok(true),
+        "false" => Ok(false),
+        _ => Err(PolicyError::InvalidExpression(format!(
+            "unsupported custom expression '{}'",
+            expr
+        ))),
+    }
+}
+
+fn parse_comparison(expr: &str) -> Option<(&str, &str, bool)> {
+    if let Some((lhs, rhs)) = expr.split_once("==") {
+        return Some((lhs.trim(), rhs.trim(), true));
+    }
+    if let Some((lhs, rhs)) = expr.split_once("!=") {
+        return Some((lhs.trim(), rhs.trim(), false));
+    }
+    None
+}
+
+fn parse_has_capability(expr: &str) -> Option<String> {
+    if let Some(rest) = expr.strip_prefix("capability:") {
+        return Some(strip_quotes(rest.trim()));
+    }
+
+    let call = expr.strip_prefix("has_capability")?;
+    let args = call.trim();
+    let args = args.strip_prefix('(')?.strip_suffix(')')?;
+    Some(strip_quotes(args.trim()))
+}
+
+fn resolve_custom_lhs(
+    lhs: &str,
+    commitment: &RcfCommitment,
+    context: &EvaluationContext,
+) -> Option<String> {
+    match lhs {
+        "agent_id" => Some(context.agent_id.to_string()),
+        "effect_domain" => Some(commitment.effect_domain.name().to_string()),
+        "reversibility" => Some(match commitment.reversibility {
+            rcf_commitment::Reversibility::Reversible => "reversible".to_string(),
+            rcf_commitment::Reversibility::PartiallyReversible(_) => {
+                "partially_reversible".to_string()
+            }
+            rcf_commitment::Reversibility::Irreversible => "irreversible".to_string(),
+        }),
+        "scope.global" => Some(commitment.scope.is_global().to_string()),
+        _ => lhs
+            .strip_prefix("metadata.")
+            .and_then(|key| context.metadata.get(key).cloned()),
+    }
+}
+
+fn strip_quotes(value: &str) -> String {
+    let trimmed = value.trim();
+    if trimmed.len() >= 2 {
+        let double = trimmed.starts_with('"') && trimmed.ends_with('"');
+        let single = trimmed.starts_with('\'') && trimmed.ends_with('\'');
+        if double || single {
+            return trimmed[1..trimmed.len() - 1].to_string();
+        }
+    }
+    trimmed.to_string()
+}
+
+fn is_truthy(value: &str) -> bool {
+    !matches!(
+        value.trim().to_ascii_lowercase().as_str(),
+        "" | "0" | "false" | "no" | "off"
+    )
 }
 
 fn parse_u64_meta(metadata: &HashMap<String, String>, key: &str) -> Option<u64> {
@@ -564,5 +693,118 @@ mod tests {
 
         let result = engine.evaluate(&commitment, &context).unwrap();
         assert_eq!(result.decision, Decision::PendingHumanReview);
+    }
+
+    #[test]
+    fn custom_metadata_rule_can_trigger() {
+        let engine = PolicyEngine::with_defaults();
+        engine
+            .add_policy(Policy {
+                policy_id: "custom-meta".to_string(),
+                name: "Custom metadata rule".to_string(),
+                description: "deny on production env".to_string(),
+                priority: 200,
+                rules: vec![Rule {
+                    rule_id: "custom-meta-env".to_string(),
+                    description: "check metadata env".to_string(),
+                    condition: RuleCondition::Custom("metadata.env == production".to_string()),
+                    action: RuleAction::Deny,
+                }],
+                enabled: true,
+            })
+            .unwrap();
+
+        let commitment =
+            CommitmentBuilder::new(IdentityRef::new("test-agent"), EffectDomain::Computation)
+                .with_scope(ScopeConstraint::default())
+                .build()
+                .unwrap();
+
+        let mut metadata = HashMap::new();
+        metadata.insert("env".to_string(), "production".to_string());
+        let context = EvaluationContext {
+            agent_id: AgentId::new("test-agent"),
+            capabilities: vec![],
+            metadata,
+        };
+
+        let result = engine.evaluate(&commitment, &context).unwrap();
+        assert_eq!(result.decision, Decision::Denied);
+        assert!(result
+            .rule_results
+            .iter()
+            .any(|rule| rule.rule_id == "custom-meta-env" && rule.triggered));
+    }
+
+    #[test]
+    fn custom_capability_rule_can_trigger() {
+        let engine = PolicyEngine::new();
+        engine
+            .add_policy(Policy {
+                policy_id: "custom-cap".to_string(),
+                name: "Custom capability rule".to_string(),
+                description: "require review when privileged capability exists".to_string(),
+                priority: 200,
+                rules: vec![Rule {
+                    rule_id: "custom-capability".to_string(),
+                    description: "checks capability expression".to_string(),
+                    condition: RuleCondition::Custom(
+                        "has_capability(\"cap-financial-settle\")".to_string(),
+                    ),
+                    action: RuleAction::RequireHumanApproval,
+                }],
+                enabled: true,
+            })
+            .unwrap();
+
+        let commitment =
+            CommitmentBuilder::new(IdentityRef::new("test-agent"), EffectDomain::Computation)
+                .with_scope(ScopeConstraint::default())
+                .build()
+                .unwrap();
+
+        let context = EvaluationContext {
+            agent_id: AgentId::new("test-agent"),
+            capabilities: vec!["cap-financial-settle".to_string()],
+            metadata: HashMap::new(),
+        };
+
+        let result = engine.evaluate(&commitment, &context).unwrap();
+        assert_eq!(result.decision, Decision::PendingHumanReview);
+    }
+
+    #[test]
+    fn invalid_custom_expression_returns_error() {
+        let engine = PolicyEngine::new();
+        engine
+            .add_policy(Policy {
+                policy_id: "custom-invalid".to_string(),
+                name: "Invalid custom rule".to_string(),
+                description: "invalid expression should fail evaluation".to_string(),
+                priority: 200,
+                rules: vec![Rule {
+                    rule_id: "invalid-expr".to_string(),
+                    description: "invalid lhs".to_string(),
+                    condition: RuleCondition::Custom("unknown_field == 1".to_string()),
+                    action: RuleAction::Deny,
+                }],
+                enabled: true,
+            })
+            .unwrap();
+
+        let commitment =
+            CommitmentBuilder::new(IdentityRef::new("test-agent"), EffectDomain::Computation)
+                .with_scope(ScopeConstraint::default())
+                .build()
+                .unwrap();
+
+        let context = EvaluationContext {
+            agent_id: AgentId::new("test-agent"),
+            capabilities: vec![],
+            metadata: HashMap::new(),
+        };
+
+        let result = engine.evaluate(&commitment, &context);
+        assert!(matches!(result, Err(PolicyError::InvalidExpression(_))));
     }
 }

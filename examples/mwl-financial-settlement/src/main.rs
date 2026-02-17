@@ -263,6 +263,7 @@ async fn main() {
         settlement_type: SettlementType::DvP,
         counterparty: bob.clone(),
         declaring_identity: alice.clone(),
+        decision_receipt_id: "dec-rcpt-example-001".into(),
         created_at: TemporalAnchor::now(0),
     };
 
@@ -283,6 +284,7 @@ async fn main() {
         settlement_type: SettlementType::DvP,
         counterparty: bob.clone(),
         declaring_identity: alice.clone(),
+        decision_receipt_id: "dec-rcpt-example-002".into(),
         created_at: TemporalAnchor::now(0),
     };
 

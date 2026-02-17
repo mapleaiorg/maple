@@ -5,6 +5,7 @@
 //! presence gradient, which indicates how strongly the agent is
 //! manifesting in the shared reality.
 
+use std::sync::Arc;
 use std::time::Instant;
 
 use async_trait::async_trait;
@@ -25,7 +26,12 @@ pub struct PresenceProbe {
 
     /// Timeout for probe execution in milliseconds.
     timeout_ms: u64,
+
+    /// Optional external metric reader for real runtime integrations.
+    metric_reader: Option<Arc<PresenceMetricReader>>,
 }
+
+type PresenceMetricReader = dyn Fn(&InstanceId) -> HealthResult<f64> + Send + Sync;
 
 impl PresenceProbe {
     /// Create a new presence probe with default settings.
@@ -33,6 +39,7 @@ impl PresenceProbe {
         Self {
             min_gradient: 0.1,
             timeout_ms: 5000,
+            metric_reader: None,
         }
     }
 
@@ -41,25 +48,31 @@ impl PresenceProbe {
         Self {
             min_gradient: min_gradient.clamp(0.0, 1.0),
             timeout_ms,
+            metric_reader: None,
         }
+    }
+
+    /// Attach an external metric reader for production/runtime integrations.
+    pub fn with_metric_reader<F>(mut self, reader: F) -> Self
+    where
+        F: Fn(&InstanceId) -> HealthResult<f64> + Send + Sync + 'static,
+    {
+        self.metric_reader = Some(Arc::new(reader));
+        self
     }
 
     /// Measure the presence gradient for an instance.
     ///
-    /// In a real implementation, this would query the resonator-runtime
-    /// to get the actual presence gradient from the resonance field.
+    /// Uses an injected metric reader when available; otherwise falls back to
+    /// a lightweight synthetic probe suitable for local development.
     async fn measure_gradient(&self, instance_id: &InstanceId) -> HealthResult<f64> {
-        // TODO: Integration point with resonator-runtime
-        // This would call into the resonance field to measure actual presence
-        //
-        // For now, simulate a measurement. In production:
-        // 1. Query the instance's presence in the resonance field
-        // 2. Measure signal strength and coherence
-        // 3. Return normalized gradient (0.0-1.0)
+        if let Some(reader) = &self.metric_reader {
+            return reader(instance_id);
+        }
 
         debug!(
             instance_id = %instance_id,
-            "Measuring presence gradient"
+            "Measuring presence gradient (synthetic fallback)"
         );
 
         // Simulate presence measurement
@@ -145,5 +158,14 @@ mod tests {
         assert!(result.success);
         assert_eq!(result.probe_type, ProbeType::Presence);
         assert!(result.value.unwrap() > 0.0);
+    }
+
+    #[tokio::test]
+    async fn test_presence_probe_custom_reader_failure() {
+        let probe = PresenceProbe::with_settings(0.9, 1000).with_metric_reader(|_| Ok(0.4));
+        let instance_id = InstanceId::generate();
+
+        let result = probe.execute(instance_id).await.unwrap();
+        assert!(!result.success);
     }
 }

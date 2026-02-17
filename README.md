@@ -67,12 +67,12 @@ MAPLE implements the **Resonance Pipeline** - a strict ordering of cognitive sta
 │   Presence ──→ Coupling ──→ Meaning ──→ Intent ──→ Commitment ──→ Consequence│
 │      │            │            │           │            │              │     │
 │      ▼            ▼            ▼           ▼            ▼              ▼     │
-│   Identity    Relation-    Semantic    Stabilized   Auditable      Tracked  │
-│   verified    ships        under-      goals        promises       outcomes │
+│   Identity    Relation-    Semantic    Stabilized   Auditable      Tracked   │
+│   verified    ships        under-      goals        promises       outcomes  │
 │               formed       standing                                          │
 │                                                                              │
 ├──────────────────────────────────────────────────────────────────────────────┤
-│   Memory System │ Observability │ Conformance Testing │ Protocol Adapters   │
+│   Memory System │ Observability │ Conformance Testing │ Protocol Adapters    │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 

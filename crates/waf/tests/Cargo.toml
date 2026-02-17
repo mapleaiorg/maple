@@ -25,3 +25,4 @@ worldline-types.workspace = true
 tokio = { workspace = true, features = ["full"] }
 proptest.workspace = true
 serde_json.workspace = true
+ed25519-dalek.workspace = true

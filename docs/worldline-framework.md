@@ -60,6 +60,10 @@ Control-plane functions can be executed by humans or bots, but enforcement remai
 - `worldline-operator-bot` (agentic operations)
 - `worldline-promptkit` (prompt + tool contract bundles)
 
+Current repository status:
+- `worldline-governance` is the canonical governance namespace (with PALM compatibility).
+- `worldline-operator-bot` and `worldline-promptkit` are available as operator-plane reference crates.
+
 Compatibility:
 - Existing `palm-*` and `maple-*` names remain in use in the current repository.
 - See [Architecture Migration Plan](architecture/migration-plan.md).
@@ -74,6 +78,7 @@ Compatibility:
 | `maple-runtime` + `maple-kernel-*` runtime subsystems | `worldline-runtime` |
 | `maple-kernel-provenance` (+ fabric/types for lineage) | `worldline-ledger` |
 | `maple-kernel-governance` (+ gate/safety/profiles) | `worldline-governance` |
+| `palm-control` + `palm-policy` | `worldline-governance` + `worldline-operator-bot` |
 | `maple-worldline-*` substrate crates | `worldline-substrate` |
 | `maple-worldline-conformance-suite` | `worldline-conformance` |
 | `maple-worldline-integration-suite` | `worldline-integration` |
@@ -92,7 +97,7 @@ The umbrella `maple` CLI exposes WorldLine commands directly:
 - `maple commit ...`
 - `maple provenance ...`
 - `maple financial ...`
-- `maple policy ...`
+- `maple gov ...` (alias: `maple policy ...`)
 - `maple kernel ...`
 
 All commands use `--endpoint` (default `http://localhost:8080`) and support `PALM_ENDPOINT`.
@@ -105,6 +110,7 @@ WorldLine routes are merged into PALM daemon under `/api/v1`:
 - `POST /commitments` (returns `commitment_id` + `decision_receipt_id`; financial domain requires target scope + `cap-financial-settle`), `GET /commitments/:id`, `GET /commitments/:id/audit-trail`
 - `GET /provenance/:event_id/ancestors`, `GET /provenance/worldline/:id/history`
 - `POST /governance/policies`, `GET /governance/policies`, `POST /governance/simulate`
+- `POST /worldline-governance/policies`, `GET /worldline-governance/policies`, `POST /worldline-governance/simulate` (alias endpoints)
 - `POST /financial/settle` (requires `commitment_id` and `decision_receipt_id`), `GET /financial/:worldline_id/balance/:asset`
 - `GET /kernel/status`, `GET /kernel/metrics`
 
@@ -113,6 +119,7 @@ WorldLine routes are merged into PALM daemon under `/api/v1`:
 The following suites pass in this repository:
 
 - `cargo test -p worldline-types -p worldline-identity -p worldline-core -p worldline-runtime -p worldline-ledger -p worldline-governance -p worldline-substrate`
+- `cargo test -p worldline-operator-bot -p worldline-promptkit`
 - `cargo test -p worldline-conformance -p worldline-integration -p maple-worldline-conformance-suite -p maple-worldline-conformance`
 - `cargo test -p maple-worldline-observation -p maple-worldline-meaning -p maple-worldline-intent -p maple-worldline-commitment -p maple-worldline-consequence -p maple-worldline-self-mod-gate -p maple-worldline-codegen -p maple-worldline-deployment -p maple-worldline-langgen -p maple-worldline-ir -p maple-worldline-compiler -p maple-worldline-sal -p maple-worldline-hardware -p maple-worldline-bootstrap -p maple-worldline-evos`
 - `cargo test -p maple-kernel-sdk -p maple-cli -p palm-daemon`

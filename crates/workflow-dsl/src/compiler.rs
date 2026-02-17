@@ -82,7 +82,11 @@ fn compile_node(node: &ParsedNode) -> DslResult<WorkflowNode> {
         "fork" => NodeType::ParallelFork,
         "join" => NodeType::ParallelJoin,
         "subworkflow" => NodeType::SubWorkflow {
-            definition_id: WorkflowDefinitionId::new("TODO"),
+            // For sub-workflows, COMMITMENT can carry an explicit workflow definition id.
+            // When omitted we default to the node id so the compiled graph is deterministic.
+            definition_id: WorkflowDefinitionId::new(
+                node.commitment.as_deref().unwrap_or(node.id.as_str()),
+            ),
         },
         other => return Err(DslError::UnknownNodeType(other.into())),
     };
@@ -455,6 +459,58 @@ mod tests {
             .iter()
             .find(|e| matches!(e.gate, TransitionGate::Timeout { .. }));
         assert!(timeout_edge.is_some());
+    }
+
+    #[test]
+    fn test_compile_subworkflow_uses_explicit_definition_id() {
+        let input = r#"
+        WORKFLOW "Subflow" {
+            NODE start TYPE start
+            NODE call_kyc TYPE subworkflow {
+                COMMITMENT "kyc-v2"
+            }
+            NODE end TYPE end
+
+            EDGES {
+                start -> call_kyc
+                call_kyc -> end
+            }
+        }
+        "#;
+
+        let def = compile(input, c(), a()).unwrap();
+        let call = def.get_node(&NodeId::new("call_kyc")).unwrap();
+        match &call.node_type {
+            NodeType::SubWorkflow { definition_id } => {
+                assert_eq!(definition_id, &WorkflowDefinitionId::new("kyc-v2"));
+            }
+            other => panic!("Expected subworkflow node, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_compile_subworkflow_defaults_definition_id_to_node_id() {
+        let input = r#"
+        WORKFLOW "SubflowDefault" {
+            NODE start TYPE start
+            NODE child_flow TYPE subworkflow
+            NODE end TYPE end
+
+            EDGES {
+                start -> child_flow
+                child_flow -> end
+            }
+        }
+        "#;
+
+        let def = compile(input, c(), a()).unwrap();
+        let call = def.get_node(&NodeId::new("child_flow")).unwrap();
+        match &call.node_type {
+            NodeType::SubWorkflow { definition_id } => {
+                assert_eq!(definition_id, &WorkflowDefinitionId::new("child_flow"));
+            }
+            other => panic!("Expected subworkflow node, got {:?}", other),
+        }
     }
 
     #[test]

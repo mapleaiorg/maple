@@ -26,11 +26,6 @@ fn arb_governance_tier() -> impl Strategy<Value = GovernanceTier> {
     ]
 }
 
-/// Generate a random intent description.
-fn arb_description() -> impl Strategy<Value = String> {
-    "[a-z]{3,20}".prop_map(|s| format!("intent: {}", s))
-}
-
 // ---------------------------------------------------------------------------
 // Property Tests
 // ---------------------------------------------------------------------------

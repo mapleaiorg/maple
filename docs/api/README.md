@@ -4,12 +4,16 @@
 
 | Crate | Description |
 |-------|-------------|
+| `worldline-governance` | Canonical governance API namespace (policy, safety, profiles) |
+| `worldline-operator-bot` | Reference operator bot for governance loops |
+| `worldline-promptkit` | Prompt/tool contracts for operator agents |
+| `worldline-ledger` | Canonical ledger traits, projections, and replay |
 | `palm-types` | Core type definitions |
 | `palm-registry` | Agent specification registry |
 | `palm-deployment` | Deployment management |
 | `palm-health` | Health monitoring |
 | `palm-state` | State and checkpoint management |
-| `palm-control` | Unified control plane |
+| `palm-control` | Compatibility control-plane facade |
 | `palm-policy` | Policy gate system |
 | `maple-kernel-sdk` | WorldLine SDK (CLI + REST router + Python bindings) |
 | `maple-cli` | Umbrella CLI (developer tools + `maple palm ...` operations) |
@@ -133,6 +137,9 @@ All endpoints are under `/api/v1`.
 | `POST` | `/governance/policies` | Add governance policy |
 | `GET` | `/governance/policies` | List governance policies |
 | `POST` | `/governance/simulate` | Simulate policy decision for a payload |
+| `POST` | `/worldline-governance/policies` | Add governance policy (alias path) |
+| `GET` | `/worldline-governance/policies` | List governance policies (alias path) |
+| `POST` | `/worldline-governance/simulate` | Simulate policy decision (alias path) |
 | `POST` | `/financial/settle` | Submit settlement legs (`commitment_id` + `decision_receipt_id` required) |
 | `GET` | `/financial/:worldline_id/balance/:asset` | Balance projection |
 | `GET` | `/kernel/status` | WorldLine kernel status |

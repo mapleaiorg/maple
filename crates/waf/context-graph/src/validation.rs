@@ -243,8 +243,7 @@ mod tests {
         let storage = InMemoryGraphStorage::new();
         let wl = WorldlineId::ephemeral();
         let mut node = make_intent_node(&wl, 100, vec![]);
-        // Tamper with the hash (we have to store the original, then modify for the check).
-        let original_id = node.id.clone();
+        // Tamper with the hash before validation.
         node.id = crate::types::ContentHash::hash(b"tampered");
         // We can't put this in storage (different ID), so validate against storage directly.
         // We store the node under its tampered ID.

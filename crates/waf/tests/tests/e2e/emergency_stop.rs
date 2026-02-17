@@ -4,7 +4,7 @@
 //! the stop flag propagates correctly across shared handles.
 
 use maple_waf_genesis::{create_worldline, SeedConfig};
-use maple_waf_kernel::{AutopoieticKernel, EvolutionStepResult};
+use maple_waf_kernel::AutopoieticKernel;
 use maple_waf_resonance_monitor::{DissonanceThresholds, MonitorOrchestrator, SystemMetrics};
 use std::sync::atomic::Ordering;
 

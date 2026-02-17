@@ -56,7 +56,7 @@ async fn build_gate(
     let wid = identity_mgr.create_worldline(material).unwrap();
     let identity_mgr = Arc::new(std::sync::RwLock::new(identity_mgr));
 
-    let mut cap_provider = MockCapabilityProvider::new();
+    let cap_provider = MockCapabilityProvider::new();
     cap_provider.grant(wid.clone(), "CAP-COMM", EffectDomain::Communication);
     cap_provider.grant(wid.clone(), "CAP-FIN", EffectDomain::Financial);
     let cap_provider = Arc::new(cap_provider);

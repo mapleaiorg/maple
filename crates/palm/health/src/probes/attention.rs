@@ -4,6 +4,7 @@
 //! a finite resource in the MAPLE framework that governs how much
 //! cognitive work an agent can perform.
 
+use std::sync::Arc;
 use std::time::Instant;
 
 use async_trait::async_trait;
@@ -24,7 +25,12 @@ pub struct AttentionProbe {
 
     /// Timeout for probe execution in milliseconds.
     timeout_ms: u64,
+
+    /// Optional external metric reader for real runtime integrations.
+    metric_reader: Option<Arc<AttentionMetricReader>>,
 }
+
+type AttentionMetricReader = dyn Fn(&InstanceId) -> HealthResult<f64> + Send + Sync;
 
 impl AttentionProbe {
     /// Create a new attention probe with default settings.
@@ -32,6 +38,7 @@ impl AttentionProbe {
         Self {
             min_budget: 0.1,
             timeout_ms: 5000,
+            metric_reader: None,
         }
     }
 
@@ -40,25 +47,31 @@ impl AttentionProbe {
         Self {
             min_budget: min_budget.clamp(0.0, 1.0),
             timeout_ms,
+            metric_reader: None,
         }
+    }
+
+    /// Attach an external metric reader for production/runtime integrations.
+    pub fn with_metric_reader<F>(mut self, reader: F) -> Self
+    where
+        F: Fn(&InstanceId) -> HealthResult<f64> + Send + Sync + 'static,
+    {
+        self.metric_reader = Some(Arc::new(reader));
+        self
     }
 
     /// Measure the attention budget for an instance.
     ///
-    /// In a real implementation, this would query the agent's
-    /// attention economics state to get current budget.
+    /// Uses an injected metric reader when available; otherwise falls back to
+    /// a lightweight synthetic probe suitable for local development.
     async fn measure_budget(&self, instance_id: &InstanceId) -> HealthResult<f64> {
-        // TODO: Integration point with resonator-runtime
-        // This would query actual attention budget from the agent
-        //
-        // For now, simulate a measurement. In production:
-        // 1. Query the agent's attention economics module
-        // 2. Get current budget as fraction of maximum
-        // 3. Consider replenishment rate and burn rate
+        if let Some(reader) = &self.metric_reader {
+            return reader(instance_id);
+        }
 
         debug!(
             instance_id = %instance_id,
-            "Measuring attention budget"
+            "Measuring attention budget (synthetic fallback)"
         );
 
         // Simulate attention budget measurement
@@ -143,5 +156,14 @@ mod tests {
         assert!(result.success);
         assert_eq!(result.probe_type, ProbeType::Attention);
         assert!(result.value.unwrap() > 0.0);
+    }
+
+    #[tokio::test]
+    async fn test_attention_probe_custom_reader_failure() {
+        let probe = AttentionProbe::with_settings(0.9, 1000).with_metric_reader(|_| Ok(0.2));
+        let instance_id = InstanceId::generate();
+
+        let result = probe.execute(instance_id).await.unwrap();
+        assert!(!result.success);
     }
 }

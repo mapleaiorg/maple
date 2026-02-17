@@ -13,7 +13,7 @@ maple-integration = { workspace = true }
 tokio = { workspace = true }
 clap = { version = "4.4", features = ["derive"] }
 palm = { workspace = true }
-maple-runtime = { version = "0.1.2", workspace = true }
+maple-runtime = { workspace = true }
 maple-kernel-sdk = { workspace = true, features = ["cli"] }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }

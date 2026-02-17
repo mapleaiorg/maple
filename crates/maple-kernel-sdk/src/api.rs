@@ -64,6 +64,10 @@ where
         .route("/governance/policies", post(add_policy))
         .route("/governance/policies", get(list_policies))
         .route("/governance/simulate", post(simulate_policy))
+        // Governance naming aliases (primary WorldLine namespace)
+        .route("/worldline-governance/policies", post(add_policy))
+        .route("/worldline-governance/policies", get(list_policies))
+        .route("/worldline-governance/simulate", post(simulate_policy))
         // Financial endpoints
         .route(
             "/financial/:worldline_id/balance/:asset",
@@ -1580,6 +1584,75 @@ mod tests {
             .unwrap();
         let payload: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
         assert_eq!(payload["total"], 1);
+    }
+
+    #[tokio::test]
+    async fn governance_alias_policy_routes_are_available() {
+        let app = test_router();
+        let body = serde_json::json!({
+            "name": "alias-policy",
+            "conditions": ["domain == governance"],
+            "action": "allow"
+        });
+
+        let create_resp = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/worldline-governance/policies")
+                    .header("content-type", "application/json")
+                    .body(Body::from(serde_json::to_string(&body).unwrap()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(create_resp.status(), StatusCode::CREATED);
+
+        let list_resp = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/worldline-governance/policies")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(list_resp.status(), StatusCode::OK);
+    }
+
+    #[tokio::test]
+    async fn governance_alias_simulate_route_is_available() {
+        let app = test_router();
+        let body = serde_json::json!({
+            "effect_domain": "financial",
+            "capabilities": ["cap-financial-settle"],
+            "targets": ["wl-counterparty"]
+        });
+
+        let resp = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/worldline-governance/simulate")
+                    .header("content-type", "application/json")
+                    .body(Body::from(serde_json::to_string(&body).unwrap()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(resp.status(), StatusCode::OK);
+        let bytes = axum::body::to_bytes(resp.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        let simulated: SimulateResult = serde_json::from_slice(&bytes).unwrap();
+        assert!(matches!(
+            simulated.decision.as_str(),
+            "approve" | "deny" | "pending_human_review"
+        ));
     }
 
     #[tokio::test]

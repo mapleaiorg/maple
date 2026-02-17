@@ -8,8 +8,7 @@
 use maple_waf_context_graph::{ContentHash, GovernanceTier};
 use maple_waf_evidence::*;
 use maple_waf_governance::{
-    ApprovalDecision, ApprovalManager, ApprovalRequest, GovernanceTierEngine,
-    SimulatedApprovalManager,
+    ApprovalManager, ApprovalRequest, GovernanceTierEngine, SimulatedApprovalManager,
 };
 use maple_waf_swap_gate::{UpgradeProposal, WafSwapGate};
 

@@ -94,7 +94,9 @@ impl SimulatedCompilerGenerator {
             source.push_str(&format!("    // Rule {}: {}\n", i, prod.name));
         }
 
-        source.push_str("    todo!(\"compiler implementation\")\n");
+        source.push_str(
+            "    Err(CompileError::from(\"compiler skeleton generated; implement lowering rules\"))\n",
+        );
         source.push_str("}\n");
 
         source

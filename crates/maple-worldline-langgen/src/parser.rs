@@ -81,7 +81,9 @@ impl SimulatedParserGenerator {
             source.push_str(&format!("    //   {} -> {}\n", prod.name, prod.pattern));
         }
 
-        source.push_str("    todo!(\"parser implementation\")\n");
+        source.push_str(
+            "    Err(ParseError::from(\"parser skeleton generated; implement production rules\"))\n",
+        );
         source.push_str("}\n");
 
         source

@@ -249,7 +249,6 @@ mod tests {
 
     #[tokio::test]
     async fn content_addressing_deterministic() {
-        let mgr = InMemoryContextGraphManager::new();
         let wl = test_worldline();
         let intent = IntentNode::new(
             worldline_types::EventId::new(),

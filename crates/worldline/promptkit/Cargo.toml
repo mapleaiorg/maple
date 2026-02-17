@@ -1,0 +1,14 @@
+[package]
+name = "worldline-promptkit"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Prompt contracts and runbooks for WorldLine operator agents"
+
+[dependencies]
+worldline-operator-bot = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }

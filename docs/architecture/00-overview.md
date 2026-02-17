@@ -69,14 +69,16 @@ Kernel:
 Governance / Ops:
 - `worldline-governance`
 - `worldline-substrate`
-- `worldline-operator-bot` (optional)
-- `worldline-promptkit` (optional)
+- `worldline-operator-bot`
+- `worldline-promptkit`
 
 Umbrella:
 - `maple-runtime` (compatibility re-export; stable public face)
 
 Compatibility note:
-- In the current repository, PALM crates continue to provide control-plane behavior.
+- In the current repository, PALM crates continue to provide production control-plane behavior.
+- `worldline-operator-bot` and `worldline-promptkit` provide canonical operator-facing
+  contracts and can be adopted incrementally.
 - This naming model can be adopted incrementally while keeping `palm-*`
   compatibility for one release cycle.
 

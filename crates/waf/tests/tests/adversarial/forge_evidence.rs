@@ -89,7 +89,6 @@ async fn tampered_test_results_rejected() {
 #[tokio::test]
 async fn flipped_test_result_rejected() {
     let gate = WafSwapGate::new();
-    let mut evidence = legitimate_evidence();
 
     // Flip a test from failing to passing after hash computation.
     // First create evidence with a failing test.

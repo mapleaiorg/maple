@@ -1,13 +1,13 @@
-# Operations Tutorial: CLI, Daemon, Playground
+# Operations Tutorial: Governance Ops, CLI, Daemon, Playground
 
-This tutorial shows how to run the PALM control plane, monitor agents in real time from the terminal, and optionally use the Playground UI for live visualization and replay.
+This tutorial shows how to run WorldLine governance operations, monitor agents in real time from the terminal, and optionally use the Playground UI for live visualization and replay.
 
 ## 1. Choose Your CLI
 
-MAPLE uses a single umbrella CLI (`maple`). PALM operations can run either directly (`maple ...`) or via explicit namespace (`maple palm ...`).
+MAPLE uses a single umbrella CLI (`maple`). Governance operations can run either directly (`maple ...`) or via explicit compatibility namespace (`maple palm ...`).
 
 - **`maple`** is the primary entrypoint and includes developer utilities.
-- **`maple ...`** (for PALM verbs like `spec`, `deployment`, `instance`, `events`, `playground`) forwards directly to PALM.
+- **`maple ...`** (for governance/ops verbs like `spec`, `deployment`, `instance`, `events`, `playground`) forwards directly to the runtime ops layer.
 - **`maple palm ...`** remains fully supported as explicit namespace.
 - **`palm`** remains available as a direct operations CLI (backwards compatible).
 
@@ -28,7 +28,7 @@ cargo install --path crates/maple-cli --bin maple && cargo install --path crates
 ## 2. Start the Daemon
 
 ```bash
-# Start PALM daemon (API + control plane)
+# Start daemon (API + governance control plane)
 cargo run -p palm-daemon
 
 # Or use maple lifecycle commands
@@ -188,6 +188,7 @@ maple commit submit --file /tmp/commitment.json
 maple commit audit-trail <commitment_id>
 maple provenance worldline-history <worldline_id>
 maple provenance ancestors <event_id> --depth 5
+maple gov list
 
 # Financial projection and settlement
 maple financial settle --file /tmp/settlement.json
@@ -195,6 +196,7 @@ maple financial projection <worldline_id> USD
 ```
 
 All commands support `--endpoint` and `PALM_ENDPOINT`.
+Governance REST aliases are also available at `/api/v1/worldline-governance/*`.
 
 ## 5. Real-Time Monitoring from the CLI
 

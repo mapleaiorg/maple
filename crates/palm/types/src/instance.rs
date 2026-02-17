@@ -120,9 +120,10 @@ pub enum TerminationReason {
 }
 
 /// Health status (multi-dimensional, not binary)
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub enum HealthStatus {
     /// Health unknown (not yet probed)
+    #[default]
     Unknown,
 
     /// Instance is healthy
@@ -148,12 +149,6 @@ impl HealthStatus {
 
     pub fn is_operational(&self) -> bool {
         matches!(self, HealthStatus::Healthy | HealthStatus::Degraded { .. })
-    }
-}
-
-impl Default for HealthStatus {
-    fn default() -> Self {
-        HealthStatus::Unknown
     }
 }
 

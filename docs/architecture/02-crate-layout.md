@@ -14,6 +14,8 @@ crates/
     runtime/      (crate: worldline-runtime)
     ledger/       (crate: worldline-ledger)
     governance/   (crate: worldline-governance)
+    operator-bot/ (crate: worldline-operator-bot)
+    promptkit/    (crate: worldline-promptkit)
     substrate/    (crate: worldline-substrate)
     conformance/  (crate: worldline-conformance)
     integration/  (crate: worldline-integration)
@@ -49,6 +51,9 @@ worldline-governance -> maple-kernel-governance
                       -> maple-kernel-safety
                       -> maple-kernel-profiles
 
+worldline-operator-bot -> worldline-governance + worldline-ledger + worldline-types
+worldline-promptkit    -> prompt contracts and tool schemas for worldline-operator-bot
+
 worldline-substrate -> maple-worldline-{observation,meaning,intent,commitment,
                                         consequence,self-mod-gate,codegen,
                                         deployment,ir,langgen,compiler,sal,
@@ -73,6 +78,8 @@ flowchart TB
     WR["worldline-runtime"]
     WL["worldline-ledger"]
     WG["worldline-governance"]
+    WOB["worldline-operator-bot"]
+    WPK["worldline-promptkit"]
     WS["worldline-substrate"]
   end
 
@@ -103,6 +110,9 @@ flowchart TB
   WL --> WT
   WL --> MK
   WG --> MK
+  WOB --> WG
+  WOB --> WL
+  WPK --> WOB
   WS --> MWS
 
   MC --> WC
@@ -127,6 +137,8 @@ classDiagram
   class worldline_runtime
   class worldline_ledger
   class worldline_governance
+  class worldline_operator_bot
+  class worldline_promptkit
   class worldline_substrate
   class worldline_conformance
   class worldline_integration
@@ -151,6 +163,9 @@ classDiagram
   worldline_ledger --> worldline_types
   worldline_ledger --> maple_kernel_family
   worldline_governance --> maple_kernel_family
+  worldline_operator_bot --> worldline_governance
+  worldline_operator_bot --> worldline_ledger
+  worldline_promptkit --> worldline_operator_bot
   worldline_substrate --> maple_worldline_family
   maple_worldline_conformance_suite --> worldline_conformance
   maple_mwl_conformance --> maple_worldline_conformance_suite
@@ -181,6 +196,8 @@ classDiagram
 - `worldline-types` and `worldline-identity` now hold the canonical implementations.
 - `maple-mwl-types` and `maple-mwl-identity` are compatibility wrappers.
 - `worldline-core` composes `worldline-types` and `worldline-identity`.
+- `worldline-operator-bot` and `worldline-promptkit` provide canonical
+  governance automation contracts.
 - `worldline-conformance` and `worldline-integration` are canonical suite crates.
 - `maple-worldline-conformance-suite` and `maple-worldline-integration-suite`
   are Maple-level suite wrappers.

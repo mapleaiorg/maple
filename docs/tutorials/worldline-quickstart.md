@@ -14,6 +14,7 @@ cargo build
 
 ```bash
 cargo test -p worldline-types -p worldline-identity -p worldline-core -p worldline-runtime -p worldline-ledger -p worldline-governance -p worldline-substrate
+cargo test -p worldline-operator-bot -p worldline-promptkit
 ```
 
 ## 3. Run Core WorldLine Verification
@@ -97,7 +98,7 @@ cargo run -p maple-cli -- financial projection REPLACE_WL_B USD
 ## 8. Query Provenance and Policies
 
 ```bash
-cargo run -p maple-cli -- policy list
+cargo run -p maple-cli -- gov list
 ```
 
 ```bash
@@ -109,7 +110,7 @@ JSON
 ```
 
 ```bash
-cargo run -p maple-cli -- policy simulate --file /tmp/worldline-policy.json
+cargo run -p maple-cli -- gov simulate --file /tmp/worldline-policy.json
 ```
 
 If you have an event ID from commitment/settlement activity:

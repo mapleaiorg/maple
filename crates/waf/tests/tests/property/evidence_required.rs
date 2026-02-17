@@ -242,7 +242,8 @@ proptest! {
         let json = serde_json::to_string(&bundle).unwrap();
         let restored: EvidenceBundle = serde_json::from_str(&json).unwrap();
 
-        prop_assert_eq!(restored.hash, bundle.hash);
+        let restored_hash = restored.hash.clone();
+        prop_assert_eq!(restored_hash, bundle.hash);
         prop_assert!(restored.verify_hash());
     }
 }

@@ -580,8 +580,6 @@ pub trait ContractEngine: Send + Sync {
 pub struct ContractLifecycleManager {
     /// Underlying engine.
     engine: Arc<dyn ContractEngine>,
-    /// State machine for transitions.
-    state_machine: ContractStateMachine,
     /// Dispute handler.
     dispute_handler: Arc<RwLock<DisputeHandler>>,
     /// Expiry tracker.
@@ -593,7 +591,6 @@ impl ContractLifecycleManager {
     pub fn new(engine: Arc<dyn ContractEngine>) -> Self {
         Self {
             engine,
-            state_machine: ContractStateMachine,
             dispute_handler: Arc::new(RwLock::new(DisputeHandler::new())),
             expiry_tracker: ExpiryTracker::default(),
         }
@@ -1011,7 +1008,6 @@ mod tests {
     #[test]
     fn test_full_lifecycle_happy_path() {
         let engine = Arc::new(InMemoryContractEngine::new());
-        let manager = ContractLifecycleManager::new(engine.clone());
 
         let contract = make_contract();
         let id = contract.commitment_id.clone();

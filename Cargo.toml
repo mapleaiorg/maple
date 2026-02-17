@@ -82,6 +82,8 @@ members = [
     "crates/worldline/runtime",
     "crates/worldline/ledger",
     "crates/worldline/governance",
+    "crates/worldline/operator-bot",
+    "crates/worldline/promptkit",
     "crates/worldline/substrate",
     "crates/worldline/conformance",
     "crates/worldline/integration",
@@ -209,7 +211,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # Database
-sqlx = { version = "0.7", features = ["runtime-tokio", "postgres", "sqlite", "chrono", "uuid", "json"] }
+sqlx = { version = "0.8", features = ["runtime-tokio", "postgres", "sqlite", "chrono", "uuid", "json"] }
 
 # Networking
 axum = "0.7"
@@ -274,6 +276,8 @@ worldline-core = { version = "0.1.2", path = "crates/worldline/core" }
 worldline-runtime = { version = "0.1.2", path = "crates/worldline/runtime" }
 worldline-ledger = { version = "0.1.2", path = "crates/worldline/ledger" }
 worldline-governance = { version = "0.1.2", path = "crates/worldline/governance" }
+worldline-operator-bot = { version = "0.1.2", path = "crates/worldline/operator-bot" }
+worldline-promptkit = { version = "0.1.2", path = "crates/worldline/promptkit" }
 worldline-substrate = { version = "0.1.2", path = "crates/worldline/substrate" }
 worldline-conformance = { version = "0.1.2", path = "crates/worldline/conformance" }
 worldline-integration = { version = "0.1.2", path = "crates/worldline/integration" }

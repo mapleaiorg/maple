@@ -192,7 +192,8 @@ async fn wrong_signing_key_detected() {
     assert!(node.verify_signature().is_ok());
 
     // Replace signer public key with key B's public key — signature won't match.
-    let pk_b_bytes = key_b.verifying_key().as_bytes();
+    let vk_b = key_b.verifying_key();
+    let pk_b_bytes = vk_b.as_bytes();
     let pk_b_hex: String = pk_b_bytes.iter().map(|b| format!("{:02x}", b)).collect();
     node.signer_public_key = Some(pk_b_hex);
     assert!(node.verify_signature().is_err());
