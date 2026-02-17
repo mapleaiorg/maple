@@ -57,7 +57,7 @@ impl fmt::Display for InvariantResult {
     }
 }
 
-/// All 26 constitutional invariant IDs.
+/// Constitutional invariant IDs covered by this suite.
 pub const ALL_INVARIANT_IDS: &[&str] = &[
     "I.1",
     "I.2",
@@ -67,6 +67,7 @@ pub const ALL_INVARIANT_IDS: &[&str] = &[
     "I.6",
     "I.7",
     "I.8",
+    "I.9",
     "I.MRP-1",
     "I.CG-1",
     "I.AAS-3",

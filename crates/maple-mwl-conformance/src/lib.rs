@@ -1,12 +1,13 @@
-//! MWL Constitutional Conformance Suite
+//! Compatibility wrapper for legacy `maple-mwl-conformance` imports.
 //!
-//! Verifies all 26 constitutional invariants of the Maple WorldLine Framework.
-//! Each invariant is tested as an independent, self-contained assertion.
-//!
-//! Run with: `cargo test -p maple-mwl-conformance`
+//! New code should depend on `worldline-conformance`.
 
-pub mod invariants;
-pub mod report;
+pub use worldline_conformance::*;
 
 #[cfg(test)]
-mod tests;
+mod tests {
+    #[test]
+    fn wrapper_exports_invariants() {
+        assert_eq!(crate::invariants::ALL_INVARIANT_IDS.len(), 26);
+    }
+}

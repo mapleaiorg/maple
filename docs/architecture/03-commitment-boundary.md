@@ -168,6 +168,18 @@ CB4 - Proofs are referenced
 CB5 - Rejection is first-class
 - Rejections must be explainable and optionally ledgered.
 
+CB6 - Lifecycle transitions are explicit and monotonic
+- Outcomes can only be recorded from executable states.
+- Denied, revoked, expired, fulfilled, and failed commitments are terminal.
+
+CB7 - Pipeline completeness is mandatory
+- The gate must run all 7 stages in canonical order.
+- Incomplete or out-of-order stage configuration must fail closed.
+
+CB8 - Pending decisions are ledgered
+- Commitments awaiting co-sign or human review must still be recorded.
+- Pending commitments remain non-executable until explicitly advanced.
+
 ## 3.7 Next
 
 - [04 - WorldLine Ledger (WLL)](04-ledger-wll.md)

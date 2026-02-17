@@ -6,21 +6,11 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-description = "MWL constitutional conformance suite"
+description = "Compatibility wrapper for worldline-conformance"
 
 [lib]
 name = "mwl_conformance"
 path = "src/lib.rs"
 
 [dependencies]
-# WorldLine facade crates
-worldline-core = { workspace = true }
-worldline-runtime = { workspace = true }
-worldline-ledger = { workspace = true }
-
-# Runtime and utilities
-tokio = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
-uuid = { workspace = true }
-tracing = { workspace = true }
+worldline-conformance = { workspace = true }

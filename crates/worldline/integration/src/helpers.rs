@@ -112,19 +112,7 @@ impl TestKernel {
 
     /// Grant a capability to a worldline.
     pub fn grant_capability(&self, wid: &WorldlineId, cap_id: &str, domain: EffectDomain) {
-        // We need mutable access through Arc — use interior mutability pattern
-        // Since MockCapabilityProvider uses RwLock internally for grants
-        // Actually, we keep a clone and rebuild. For tests, re-create with grants.
-        // The Arc<MockCapabilityProvider> was created before adding grants.
-        // Instead, grant before building the gate. Use a helper pattern.
-        //
-        // NOTE: The mock provider stores grants in a HashMap behind no lock.
-        // For integration tests, we grant capabilities BEFORE gate submission.
-        // This is safe because we control the sequence.
-        unsafe {
-            let provider = Arc::as_ptr(&self.cap_provider) as *mut MockCapabilityProvider;
-            (*provider).grant(wid.clone(), cap_id, domain);
-        }
+        self.cap_provider.grant(wid.clone(), cap_id, domain);
     }
 
     /// Emit a genesis (System/WorldlineCreated) event for a worldline.

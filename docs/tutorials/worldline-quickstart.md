@@ -19,7 +19,7 @@ cargo test -p worldline-types -p worldline-identity -p worldline-core -p worldli
 ## 3. Run Core WorldLine Verification
 
 ```bash
-cargo test -p maple-mwl-conformance -p maple-mwl-integration -p maple-worldline-conformance
+cargo test -p worldline-conformance -p worldline-integration -p maple-worldline-conformance
 ```
 
 ## 4. Start the Daemon (Terminal A)

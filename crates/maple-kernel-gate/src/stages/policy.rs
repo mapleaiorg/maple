@@ -42,8 +42,20 @@ impl GateStage for PolicyEvaluationStage {
                 policy_refs: decision_card.policy_refs.clone(),
             }),
             AdjudicationDecision::RequireCoSignature => {
-                // Policy requires co-signatures — defer to Stage 6
-                StageResult::RequireCoSign(context.declaration.affected_parties.clone())
+                // Policy requires co-signatures — defer to Stage 6.
+                // If no affected parties are declared, this policy cannot be satisfied.
+                let required = context.declaration.affected_parties.clone();
+                if required.is_empty() {
+                    StageResult::Deny(DenialReason {
+                        code: "COSIGN_REQUIRED_BUT_UNSPECIFIED".into(),
+                        message:
+                            "Policy requires co-signature but declaration has no affected parties"
+                                .into(),
+                        policy_refs: decision_card.policy_refs.clone(),
+                    })
+                } else {
+                    StageResult::RequireCoSign(required)
+                }
             }
             AdjudicationDecision::RequireHumanReview => {
                 StageResult::RequireHumanApproval(decision_card.rationale.clone())
@@ -110,9 +122,27 @@ mod tests {
         );
         let stage = PolicyEvaluationStage::new(Arc::new(provider));
 
-        let decl = CommitmentDeclaration::builder(test_worldline(), test_scope()).build();
+        let decl = CommitmentDeclaration::builder(test_worldline(), test_scope())
+            .affected_party(WorldlineId::derive(&IdentityMaterial::GenesisHash(
+                [9u8; 32],
+            )))
+            .build();
         let mut ctx = GateContext::new(decl);
         let result = stage.evaluate(&mut ctx).await.unwrap();
         assert!(matches!(result, StageResult::RequireCoSign(_)));
+    }
+
+    #[tokio::test]
+    async fn require_cosign_without_parties_is_denied() {
+        let provider = MockPolicyProvider::with_decision(
+            AdjudicationDecision::RequireCoSignature,
+            "Multi-party approval required",
+        );
+        let stage = PolicyEvaluationStage::new(Arc::new(provider));
+
+        let decl = CommitmentDeclaration::builder(test_worldline(), test_scope()).build();
+        let mut ctx = GateContext::new(decl);
+        let result = stage.evaluate(&mut ctx).await.unwrap();
+        assert!(matches!(result, StageResult::Deny(_)));
     }
 }

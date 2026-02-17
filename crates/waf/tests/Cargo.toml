@@ -1,0 +1,27 @@
+[package]
+name = "maple-waf-tests"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[dev-dependencies]
+maple-waf-context-graph.workspace = true
+maple-waf-evidence.workspace = true
+maple-waf-resonance-monitor.workspace = true
+maple-waf-evolution-engine.workspace = true
+maple-waf-compiler.workspace = true
+maple-waf-wlir.workspace = true
+maple-waf-swap-gate.workspace = true
+maple-waf-governance.workspace = true
+maple-waf-genesis.workspace = true
+maple-waf-kernel.workspace = true
+worldline-types.workspace = true
+tokio = { workspace = true, features = ["full"] }
+proptest.workspace = true
+serde_json.workspace = true

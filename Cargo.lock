@@ -2036,56 +2036,28 @@ dependencies = [
 name = "maple-mwl-conformance"
 version = "0.1.2"
 dependencies = [
- "serde",
- "serde_json",
- "tokio",
- "tracing",
- "uuid",
- "worldline-core",
- "worldline-ledger",
- "worldline-runtime",
+ "worldline-conformance",
 ]
 
 [[package]]
 name = "maple-mwl-identity"
 version = "0.1.2"
 dependencies = [
- "blake3",
- "ed25519-dalek",
- "maple-mwl-types",
- "rand 0.8.5",
- "serde",
- "serde_json",
- "thiserror",
- "tracing",
+ "worldline-identity",
 ]
 
 [[package]]
 name = "maple-mwl-integration"
 version = "0.1.2"
 dependencies = [
- "async-trait",
- "serde",
- "serde_json",
- "tempfile",
- "tokio",
- "tracing",
- "uuid",
- "worldline-core",
- "worldline-ledger",
- "worldline-runtime",
+ "worldline-integration",
 ]
 
 [[package]]
 name = "maple-mwl-types"
 version = "0.1.2"
 dependencies = [
- "blake3",
- "chrono",
- "serde",
- "serde_json",
- "thiserror",
- "uuid",
+ "worldline-types",
 ]
 
 [[package]]
@@ -2181,6 +2153,210 @@ dependencies = [
  "thiserror",
  "tokio",
  "uuid",
+]
+
+[[package]]
+name = "maple-waf-compiler"
+version = "0.1.2"
+dependencies = [
+ "async-trait",
+ "blake3",
+ "maple-waf-context-graph",
+ "maple-waf-evolution-engine",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "worldline-types",
+]
+
+[[package]]
+name = "maple-waf-context-graph"
+version = "0.1.2"
+dependencies = [
+ "async-trait",
+ "blake3",
+ "chrono",
+ "ed25519-dalek",
+ "rand 0.8.5",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "uuid",
+ "worldline-types",
+]
+
+[[package]]
+name = "maple-waf-demo"
+version = "0.1.2"
+dependencies = [
+ "maple-waf-compiler",
+ "maple-waf-context-graph",
+ "maple-waf-evidence",
+ "maple-waf-evolution-engine",
+ "maple-waf-genesis",
+ "maple-waf-governance",
+ "maple-waf-kernel",
+ "maple-waf-resonance-monitor",
+ "maple-waf-swap-gate",
+ "maple-waf-wlir",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "worldline-types",
+]
+
+[[package]]
+name = "maple-waf-evidence"
+version = "0.1.2"
+dependencies = [
+ "async-trait",
+ "blake3",
+ "ed25519-dalek",
+ "maple-waf-context-graph",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "worldline-types",
+]
+
+[[package]]
+name = "maple-waf-evolution-engine"
+version = "0.1.2"
+dependencies = [
+ "async-trait",
+ "maple-waf-context-graph",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "worldline-types",
+]
+
+[[package]]
+name = "maple-waf-genesis"
+version = "0.1.2"
+dependencies = [
+ "async-trait",
+ "blake3",
+ "ed25519-dalek",
+ "maple-waf-compiler",
+ "maple-waf-context-graph",
+ "maple-waf-evidence",
+ "maple-waf-evolution-engine",
+ "maple-waf-governance",
+ "maple-waf-resonance-monitor",
+ "maple-waf-swap-gate",
+ "maple-waf-wlir",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "worldline-types",
+]
+
+[[package]]
+name = "maple-waf-governance"
+version = "0.1.2"
+dependencies = [
+ "async-trait",
+ "maple-waf-context-graph",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "worldline-types",
+]
+
+[[package]]
+name = "maple-waf-kernel"
+version = "0.1.2"
+dependencies = [
+ "async-trait",
+ "maple-waf-compiler",
+ "maple-waf-context-graph",
+ "maple-waf-evidence",
+ "maple-waf-evolution-engine",
+ "maple-waf-genesis",
+ "maple-waf-governance",
+ "maple-waf-resonance-monitor",
+ "maple-waf-swap-gate",
+ "maple-waf-wlir",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "worldline-types",
+]
+
+[[package]]
+name = "maple-waf-resonance-monitor"
+version = "0.1.2"
+dependencies = [
+ "async-trait",
+ "maple-waf-context-graph",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "worldline-types",
+]
+
+[[package]]
+name = "maple-waf-swap-gate"
+version = "0.1.2"
+dependencies = [
+ "async-trait",
+ "ed25519-dalek",
+ "maple-waf-compiler",
+ "maple-waf-context-graph",
+ "maple-waf-evidence",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "worldline-types",
+]
+
+[[package]]
+name = "maple-waf-tests"
+version = "0.1.2"
+dependencies = [
+ "maple-waf-compiler",
+ "maple-waf-context-graph",
+ "maple-waf-evidence",
+ "maple-waf-evolution-engine",
+ "maple-waf-genesis",
+ "maple-waf-governance",
+ "maple-waf-kernel",
+ "maple-waf-resonance-monitor",
+ "maple-waf-swap-gate",
+ "maple-waf-wlir",
+ "proptest",
+ "serde_json",
+ "tokio",
+ "worldline-types",
+]
+
+[[package]]
+name = "maple-waf-wlir"
+version = "0.1.2"
+dependencies = [
+ "blake3",
+ "maple-waf-context-graph",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "worldline-types",
 ]
 
 [[package]]
@@ -5907,6 +6083,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "worldline-conformance"
+version = "0.1.2"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "uuid",
+ "worldline-core",
+ "worldline-ledger",
+ "worldline-runtime",
+]
+
+[[package]]
 name = "worldline-core"
 version = "0.1.2"
 dependencies = [
@@ -5928,8 +6118,30 @@ dependencies = [
 name = "worldline-identity"
 version = "0.1.2"
 dependencies = [
- "maple-mwl-identity",
+ "blake3",
+ "ed25519-dalek",
+ "rand 0.8.5",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tracing",
  "worldline-types",
+]
+
+[[package]]
+name = "worldline-integration"
+version = "0.1.2"
+dependencies = [
+ "async-trait",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "tokio",
+ "tracing",
+ "uuid",
+ "worldline-core",
+ "worldline-ledger",
+ "worldline-runtime",
 ]
 
 [[package]]
@@ -5983,7 +6195,12 @@ dependencies = [
 name = "worldline-types"
 version = "0.1.2"
 dependencies = [
- "maple-mwl-types",
+ "blake3",
+ "chrono",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "uuid",
 ]
 
 [[package]]

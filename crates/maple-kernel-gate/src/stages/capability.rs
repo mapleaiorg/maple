@@ -103,7 +103,7 @@ mod tests {
 
     #[tokio::test]
     async fn pass_with_matching_capabilities() {
-        let mut provider = MockCapabilityProvider::new();
+        let provider = MockCapabilityProvider::new();
         let wid = test_worldline();
         provider.grant(wid.clone(), "CAP-COMM", EffectDomain::Communication);
 

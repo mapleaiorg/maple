@@ -6,12 +6,7 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-description = "Core type definitions for the Maple WorldLine Framework"
+description = "Compatibility wrapper for worldline-types"
 
 [dependencies]
-serde = { workspace = true, features = ["derive"] }
-serde_json = { workspace = true }
-uuid = { workspace = true, features = ["v4", "serde"] }
-chrono = { workspace = true, features = ["serde"] }
-thiserror = { workspace = true }
-blake3 = { workspace = true }
+worldline-types = { workspace = true }

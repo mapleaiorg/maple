@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use maple_mwl_types::{IdentityMaterial, TemporalAnchor, WorldlineId};
 use serde::{Deserialize, Serialize};
+use worldline_types::{IdentityMaterial, TemporalAnchor, WorldlineId};
 
 use crate::continuity::{ContinuityChain, ContinuityContext, KeyRef};
 use crate::error::IdentityError;

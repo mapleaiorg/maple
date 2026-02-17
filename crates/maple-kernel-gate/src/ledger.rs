@@ -122,6 +122,62 @@ fn derive_status(entry: &LedgerEntry) -> CommitmentStatus {
     }
 }
 
+fn status_label(status: &CommitmentStatus) -> &'static str {
+    match status {
+        CommitmentStatus::Pending => "Pending",
+        CommitmentStatus::Approved => "Approved",
+        CommitmentStatus::Active => "Active",
+        CommitmentStatus::Fulfilled => "Fulfilled",
+        CommitmentStatus::Failed(_) => "Failed",
+        CommitmentStatus::Revoked { .. } => "Revoked",
+        CommitmentStatus::Expired => "Expired",
+        CommitmentStatus::Denied(_) => "Denied",
+    }
+}
+
+fn lifecycle_event_label(event: &LifecycleEvent) -> &'static str {
+    match event {
+        LifecycleEvent::Declared(_) => "Declared",
+        LifecycleEvent::Approved(_) => "Approved",
+        LifecycleEvent::Denied { .. } => "Denied",
+        LifecycleEvent::ExecutionStarted(_) => "ExecutionStarted",
+        LifecycleEvent::Fulfilled(_) => "Fulfilled",
+        LifecycleEvent::Failed { .. } => "Failed",
+        LifecycleEvent::Expired(_) => "Expired",
+        LifecycleEvent::Revoked { .. } => "Revoked",
+    }
+}
+
+fn is_valid_transition(current: &CommitmentStatus, event: &LifecycleEvent) -> bool {
+    match current {
+        CommitmentStatus::Pending => matches!(
+            event,
+            LifecycleEvent::Approved(_)
+                | LifecycleEvent::Denied { .. }
+                | LifecycleEvent::Expired(_)
+                | LifecycleEvent::Revoked { .. }
+        ),
+        CommitmentStatus::Approved => matches!(
+            event,
+            LifecycleEvent::ExecutionStarted(_)
+                | LifecycleEvent::Expired(_)
+                | LifecycleEvent::Revoked { .. }
+        ),
+        CommitmentStatus::Active => matches!(
+            event,
+            LifecycleEvent::Fulfilled(_)
+                | LifecycleEvent::Failed { .. }
+                | LifecycleEvent::Expired(_)
+                | LifecycleEvent::Revoked { .. }
+        ),
+        CommitmentStatus::Fulfilled
+        | CommitmentStatus::Failed(_)
+        | CommitmentStatus::Revoked { .. }
+        | CommitmentStatus::Expired
+        | CommitmentStatus::Denied(_) => false,
+    }
+}
+
 /// Commitment Ledger — append-only, immutable record of ALL commitments.
 ///
 /// Per I.AAS-3 (Ledger Immutability): This ledger is append-only.
@@ -171,6 +227,15 @@ impl CommitmentLedger {
             .find(|e| e.commitment_id == *cid)
             .ok_or_else(|| LedgerError::NotFound(cid.clone()))?;
 
+        let current_status = derive_status(entry);
+        if !is_valid_transition(&current_status, &event) {
+            return Err(LedgerError::InvalidLifecycleTransition {
+                commitment_id: cid.clone(),
+                from_status: status_label(&current_status).to_string(),
+                to_event: lifecycle_event_label(&event).to_string(),
+            });
+        }
+
         entry.lifecycle.push(event);
         Ok(())
     }
@@ -183,6 +248,16 @@ impl CommitmentLedger {
     /// Get full history for a specific commitment.
     pub fn history(&self, cid: &CommitmentId) -> Option<&LedgerEntry> {
         self.entries.iter().find(|e| e.commitment_id == *cid)
+    }
+
+    /// Get the current status of a commitment.
+    pub fn status(&self, cid: &CommitmentId) -> Result<CommitmentStatus, LedgerError> {
+        let entry = self
+            .entries
+            .iter()
+            .find(|e| e.commitment_id == *cid)
+            .ok_or_else(|| LedgerError::NotFound(cid.clone()))?;
+        Ok(derive_status(entry))
     }
 
     /// Number of entries in the ledger.
@@ -317,6 +392,67 @@ mod tests {
     }
 
     #[test]
+    fn lifecycle_transition_requires_execution_started_before_outcome() {
+        let mut ledger = CommitmentLedger::new();
+        let entry = create_entry(true);
+        let cid = entry.commitment_id.clone();
+        ledger.append(entry).unwrap();
+
+        let err = ledger
+            .record_lifecycle(&cid, LifecycleEvent::Fulfilled(TemporalAnchor::now(0)))
+            .expect_err("outcome without execution start must be rejected");
+
+        assert!(matches!(
+            err,
+            LedgerError::InvalidLifecycleTransition { .. }
+        ));
+    }
+
+    #[test]
+    fn lifecycle_transition_rejects_terminal_state_mutation() {
+        let mut ledger = CommitmentLedger::new();
+        let entry = create_entry(false); // denied terminal
+        let cid = entry.commitment_id.clone();
+        ledger.append(entry).unwrap();
+
+        let err = ledger
+            .record_lifecycle(
+                &cid,
+                LifecycleEvent::ExecutionStarted(TemporalAnchor::now(0)),
+            )
+            .expect_err("terminal status must reject additional lifecycle events");
+
+        assert!(matches!(
+            err,
+            LedgerError::InvalidLifecycleTransition { .. }
+        ));
+    }
+
+    #[test]
+    fn status_reflects_latest_valid_lifecycle_event() {
+        let mut ledger = CommitmentLedger::new();
+        let entry = create_entry(true);
+        let cid = entry.commitment_id.clone();
+        ledger.append(entry).unwrap();
+
+        assert!(matches!(
+            ledger.status(&cid).unwrap(),
+            CommitmentStatus::Approved
+        ));
+
+        ledger
+            .record_lifecycle(
+                &cid,
+                LifecycleEvent::ExecutionStarted(TemporalAnchor::now(0)),
+            )
+            .unwrap();
+        assert!(matches!(
+            ledger.status(&cid).unwrap(),
+            CommitmentStatus::Active
+        ));
+    }
+
+    #[test]
     fn record_lifecycle_nonexistent_fails() {
         let mut ledger = CommitmentLedger::new();
         let fake_cid = CommitmentId::new();
@@ -380,6 +516,12 @@ mod tests {
         // record_lifecycle only appends to the lifecycle vec.
         let original_decision_id = ledger.history(&cid).unwrap().decision.decision_id.clone();
 
+        ledger
+            .record_lifecycle(
+                &cid,
+                LifecycleEvent::ExecutionStarted(TemporalAnchor::now(0)),
+            )
+            .unwrap();
         ledger
             .record_lifecycle(&cid, LifecycleEvent::Fulfilled(TemporalAnchor::now(0)))
             .unwrap();

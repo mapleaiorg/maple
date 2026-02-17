@@ -49,8 +49,19 @@ pub struct FinancialCommitment {
     pub counterparty: WorldlineId,
     /// The declaring identity (payer/sender)
     pub declaring_identity: WorldlineId,
+    /// Commitment decision receipt reference from the gate/governance boundary.
+    ///
+    /// This links settlement execution back to an explicit approved commitment.
+    pub decision_receipt_id: String,
     /// When the commitment was created
     pub created_at: TemporalAnchor,
+}
+
+impl FinancialCommitment {
+    /// Whether this commitment is linked to an explicit decision receipt.
+    pub fn has_decision_receipt_link(&self) -> bool {
+        !self.decision_receipt_id.trim().is_empty()
+    }
 }
 
 /// A settlement leg — one side of a DvP or PvP transaction.
@@ -231,12 +242,14 @@ mod tests {
             settlement_type: SettlementType::DvP,
             counterparty: WorldlineId::derive(&IdentityMaterial::GenesisHash([2u8; 32])),
             declaring_identity: test_wid(),
+            decision_receipt_id: "dec-rcpt-001".into(),
             created_at: TemporalAnchor::now(0),
         };
         let json = serde_json::to_string(&fc).unwrap();
         let restored: FinancialCommitment = serde_json::from_str(&json).unwrap();
         assert_eq!(restored.amount_minor, 100_000);
         assert_eq!(restored.asset, AssetId::new("USD"));
+        assert_eq!(restored.decision_receipt_id, "dec-rcpt-001");
     }
 
     #[test]

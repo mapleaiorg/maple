@@ -1,0 +1,20 @@
+[package]
+name = "maple-waf-swap-gate"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+maple-waf-context-graph.workspace = true
+maple-waf-compiler.workspace = true
+maple-waf-evidence.workspace = true
+worldline-types.workspace = true
+ed25519-dalek = { workspace = true, features = ["serde"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+async-trait.workspace = true

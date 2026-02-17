@@ -9,5 +9,11 @@ rust-version.workspace = true
 description = "WorldLine identity and continuity services"
 
 [dependencies]
-maple-mwl-identity = { workspace = true }
 worldline-types = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+blake3 = { workspace = true }
+ed25519-dalek = { workspace = true, features = ["serde"] }
+rand = { workspace = true }

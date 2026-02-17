@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::RwLock;
 
 use maple_mwl_types::{
     AdjudicationDecision, Capability, CapabilityId, CapabilityScope, EffectDomain,
@@ -12,18 +13,18 @@ use crate::traits::{CapabilityProvider, PolicyProvider};
 ///
 /// Stores a map of WorldlineId → Vec<Capability>.
 pub struct MockCapabilityProvider {
-    capabilities: HashMap<WorldlineId, Vec<Capability>>,
+    capabilities: RwLock<HashMap<WorldlineId, Vec<Capability>>>,
 }
 
 impl MockCapabilityProvider {
     pub fn new() -> Self {
         Self {
-            capabilities: HashMap::new(),
+            capabilities: RwLock::new(HashMap::new()),
         }
     }
 
     /// Grant a capability to a worldline.
-    pub fn grant(&mut self, wid: WorldlineId, cap_id: impl Into<String>, domain: EffectDomain) {
+    pub fn grant(&self, wid: WorldlineId, cap_id: impl Into<String>, domain: EffectDomain) {
         let cap = Capability {
             id: cap_id.into(),
             name: "mock-capability".into(),
@@ -44,7 +45,8 @@ impl MockCapabilityProvider {
             revocation_conditions: vec![],
         };
 
-        self.capabilities.entry(wid).or_default().push(cap);
+        let mut caps = self.capabilities.write().unwrap();
+        caps.entry(wid).or_default().push(cap);
     }
 }
 
@@ -57,13 +59,20 @@ impl Default for MockCapabilityProvider {
 impl CapabilityProvider for MockCapabilityProvider {
     fn has_capability(&self, wid: &WorldlineId, cap: &CapabilityId) -> bool {
         self.capabilities
+            .read()
+            .unwrap()
             .get(wid)
             .map(|caps| caps.iter().any(|c| c.id == cap.0))
             .unwrap_or(false)
     }
 
     fn get_capabilities(&self, wid: &WorldlineId) -> Vec<Capability> {
-        self.capabilities.get(wid).cloned().unwrap_or_default()
+        self.capabilities
+            .read()
+            .unwrap()
+            .get(wid)
+            .cloned()
+            .unwrap_or_default()
     }
 }
 
@@ -131,7 +140,7 @@ mod tests {
 
     #[test]
     fn mock_capability_provider_grants_and_checks() {
-        let mut provider = MockCapabilityProvider::new();
+        let provider = MockCapabilityProvider::new();
         let wid = test_worldline();
         let cap_id = CapabilityId("CAP-COMM".into());
 

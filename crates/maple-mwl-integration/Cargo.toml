@@ -6,7 +6,7 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-description = "MWL end-to-end integration tests"
+description = "Compatibility wrapper for worldline-integration"
 
 # This is a test-only crate — no library output
 [lib]
@@ -14,16 +14,4 @@ name = "mwl_integration"
 path = "src/lib.rs"
 
 [dependencies]
-# WorldLine facade crates
-worldline-core = { workspace = true }
-worldline-runtime = { workspace = true }
-worldline-ledger = { workspace = true }
-
-# Runtime and utilities
-tokio = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
-uuid = { workspace = true }
-tracing = { workspace = true }
-async-trait = { workspace = true }
-tempfile = "3"
+worldline-integration = { workspace = true }

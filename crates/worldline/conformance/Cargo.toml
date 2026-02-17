@@ -1,0 +1,23 @@
+[package]
+name = "worldline-conformance"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "WorldLine constitutional conformance test suite"
+
+[lib]
+name = "worldline_conformance"
+path = "src/lib.rs"
+
+[dependencies]
+worldline-core = { workspace = true }
+worldline-runtime = { workspace = true }
+worldline-ledger = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+tracing = { workspace = true }

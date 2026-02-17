@@ -83,6 +83,8 @@ members = [
     "crates/worldline/ledger",
     "crates/worldline/governance",
     "crates/worldline/substrate",
+    "crates/worldline/conformance",
+    "crates/worldline/integration",
 
     # PALM - Fleet Orchestration Layer
     "crates/palm/types",
@@ -140,6 +142,20 @@ members = [
     # MWL Integration Tests & Conformance
     "crates/maple-mwl-integration",
     "crates/maple-mwl-conformance",
+
+    # WAF — WorldLine Autopoietic Factory
+    "crates/waf/context-graph",
+    "crates/waf/evidence",
+    "crates/waf/resonance-monitor",
+    "crates/waf/evolution-engine",
+    "crates/waf/compiler",
+    "crates/waf/wlir",
+    "crates/waf/swap-gate",
+    "crates/waf/governance",
+    "crates/waf/genesis",
+    "crates/waf/kernel",
+    "crates/waf/tests",
+    "crates/waf/demo",
 
     # Examples
     "examples/boundary-demo",
@@ -256,6 +272,8 @@ worldline-runtime = { version = "0.1.2", path = "crates/worldline/runtime" }
 worldline-ledger = { version = "0.1.2", path = "crates/worldline/ledger" }
 worldline-governance = { version = "0.1.2", path = "crates/worldline/governance" }
 worldline-substrate = { version = "0.1.2", path = "crates/worldline/substrate" }
+worldline-conformance = { version = "0.1.2", path = "crates/worldline/conformance" }
+worldline-integration = { version = "0.1.2", path = "crates/worldline/integration" }
 maple-storage = { version = "0.1.2", path = "crates/maple/storage" }
 maple-model-openai = { version = "0.1.0", path = "crates/maple/model-openai" }
 maple-model-anthropic = { version = "0.1.0", path = "crates/maple/model-anthropic" }
@@ -312,6 +330,18 @@ maple-worldline-evos = { path = "crates/maple-worldline-evos" }
 maple-worldline-conformance = { path = "crates/maple-worldline-conformance" }
 maple-mwl-integration = { path = "crates/maple-mwl-integration" }
 maple-mwl-conformance = { path = "crates/maple-mwl-conformance" }
+
+# WAF crates
+maple-waf-context-graph = { path = "crates/waf/context-graph" }
+maple-waf-evidence = { path = "crates/waf/evidence" }
+maple-waf-resonance-monitor = { path = "crates/waf/resonance-monitor" }
+maple-waf-evolution-engine = { path = "crates/waf/evolution-engine" }
+maple-waf-compiler = { path = "crates/waf/compiler" }
+maple-waf-wlir = { path = "crates/waf/wlir" }
+maple-waf-swap-gate = { path = "crates/waf/swap-gate" }
+maple-waf-governance = { path = "crates/waf/governance" }
+maple-waf-genesis = { path = "crates/waf/genesis" }
+maple-waf-kernel = { path = "crates/waf/kernel" }
 
 [profile.release]
 lto = true

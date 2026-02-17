@@ -53,4 +53,11 @@ pub enum LedgerError {
 
     #[error("duplicate commitment ID: {0}")]
     DuplicateEntry(CommitmentId),
+
+    #[error("invalid lifecycle transition for {commitment_id}: {from_status} -> {to_event}")]
+    InvalidLifecycleTransition {
+        commitment_id: CommitmentId,
+        from_status: String,
+        to_event: String,
+    },
 }

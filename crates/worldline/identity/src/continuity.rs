@@ -1,5 +1,5 @@
-use maple_mwl_types::{TemporalAnchor, WorldlineId};
 use serde::{Deserialize, Serialize};
+use worldline_types::{TemporalAnchor, WorldlineId};
 
 use crate::error::ContinuityError;
 
@@ -233,7 +233,7 @@ impl ContinuityChain {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use maple_mwl_types::IdentityMaterial;
+    use worldline_types::IdentityMaterial;
 
     fn test_key_ref(id: &str) -> KeyRef {
         KeyRef {

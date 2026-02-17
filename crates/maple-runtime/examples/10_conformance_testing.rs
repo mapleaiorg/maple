@@ -14,7 +14,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("🍁 MAPLE - Conformance Testing Example\n");
 
     println!("═══════════════════════════════════════════════════════");
-    println!("📋 The 8 MAPLE Runtime Invariants");
+    println!("📋 Resonator Conformance Invariants (8 checks)");
     println!("═══════════════════════════════════════════════════════\n");
 
     let invariants = [

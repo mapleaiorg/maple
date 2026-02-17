@@ -14,7 +14,7 @@
 //! ## Key Features
 //!
 //! - **Resonance-Native**: Built from the ground up on presence → coupling → meaning → intent → commitment → consequence
-//! - **8 Architectural Invariants**: Compile-time and runtime enforced safety guarantees
+//! - **9 WorldLine Invariants**: Runtime-enforced continuity, safety, and governance guarantees
 //! - **Attention Economics**: Prevents runaway resource consumption and coercive patterns
 //! - **Commitment Accountability**: Every consequential action is attributable and auditable
 //! - **Human Agency Protection**: Architectural, not policy-based, safeguards
@@ -97,18 +97,20 @@
 //! # }
 //! ```
 //!
-//! ## The 8 Canonical Invariants
+//! ## The 9 WorldLine Invariants
 //!
 //! These invariants are **enforced at runtime** and violations are treated as system errors:
 //!
-//! 1. **Presence precedes meaning**: A Resonator must be present before it can form or receive meaning
-//! 2. **Meaning precedes intent**: Intent cannot be formed without sufficient meaning
-//! 3. **Intent precedes commitment**: Commitments cannot be created without stabilized intent
-//! 4. **Commitment precedes consequence**: No consequence may occur without an explicit commitment
-//! 5. **Coupling is bounded by attention**: Coupling strength cannot exceed available attention
-//! 6. **Safety overrides optimization**: Safety constraints take precedence over performance
-//! 7. **Human agency cannot be bypassed**: Human Resonators must always be able to disengage
-//! 8. **Failure must be explicit**: All failures must be surfaced, never hidden
+//! 1. **WorldLine primacy**: identity is trajectory continuity, not session identity
+//! 2. **Intrinsic typed memory**: memory planes are typed and lifecycle-bound
+//! 3. **Commitment boundary**: no external consequence without explicit commitment gating
+//! 4. **Causal provenance**: commitments and consequences are attributable via continuity chain
+//! 5. **Resonance-bounded coupling**: coupling remains bounded by available attention
+//! 6. **Pluggable evolution laws**: operator changes are commitment-gated and provable
+//! 7. **Safety overrides optimization**: safety/agency constraints dominate optimization goals
+//! 8. **Substrate independence**: semantics hold across digital, hybrid, and sovereign substrates
+//! 9. **Implementation provenance and constitutional evolution**:
+//!    operator evolution requires replay verification and evidence anchoring
 
 #![cfg_attr(feature = "strict-docs", warn(missing_docs))]
 #![cfg_attr(not(feature = "strict-docs"), allow(missing_docs))]

@@ -1,4 +1,4 @@
-//! Conformance test suite — verifies all 26 constitutional invariants.
+//! Conformance test suite for the constitutional invariant set.
 
 use crate::invariants::InvariantResult;
 use crate::report::ConformanceReport;
@@ -238,6 +238,31 @@ fn invariant_i8_determinism() {
         WorldlineId::derive(&m1),
         WorldlineId::derive(&m3),
         "I.8: Different material → different ID"
+    );
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// I.9 — Implementation Provenance & Constitutional Evolution.
+// ──────────────────────────────────────────────────────────────────────
+#[test]
+fn invariant_i9_implementation_provenance_constitutional_evolution() {
+    let enforcer =
+        worldline_runtime::governance::InvariantEnforcer::with_constitutional_invariants();
+
+    let mut state = worldline_runtime::governance::SystemState::healthy();
+    state.upgrade_replay_verified = false;
+    let violations = enforcer.check_all(&state);
+    assert!(
+        violations.iter().any(|v| v.invariant_id == "I.9"),
+        "I.9: upgrade replay verification failure must be detected"
+    );
+
+    let mut state = worldline_runtime::governance::SystemState::healthy();
+    state.upgrade_evidence_anchored = false;
+    let violations = enforcer.check_all(&state);
+    assert!(
+        violations.iter().any(|v| v.invariant_id == "I.9"),
+        "I.9: missing upgrade evidence anchoring must be detected"
     );
 }
 

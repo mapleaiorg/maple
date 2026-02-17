@@ -1,14 +1,15 @@
-//! WorldLine identity model with continuity chains.
+//! Compatibility wrapper for legacy `maple-mwl-identity` imports.
 //!
-//! Implements persistent identity without accounts or sessions (I.1: Worldline Primacy).
-//! Identity persists across restarts, migrations, and key rotations through continuity chains.
+//! New code should depend on `worldline-identity`.
 
-pub mod bridge;
-pub mod continuity;
-pub mod error;
-pub mod manager;
+pub use worldline_identity::*;
 
-pub use bridge::{resonator_id_to_worldline, ResonatorIdentity};
-pub use continuity::{ContinuityChain, ContinuityContext, ContinuitySegment, KeyRef};
-pub use error::{ContinuityError, IdentityError};
-pub use manager::{IdentityManager, IdentityRecord};
+#[cfg(test)]
+mod tests {
+    use super::IdentityManager;
+
+    #[test]
+    fn wrapper_exports_identity_manager() {
+        let _ = IdentityManager::new();
+    }
+}

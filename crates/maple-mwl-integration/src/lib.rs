@@ -1,24 +1,13 @@
-//! MWL End-to-End Integration Tests
+//! Compatibility wrapper for legacy `maple-mwl-integration` imports.
 //!
-//! Comprehensive cross-crate integration tests exercising the full
-//! Resonance Architecture lifecycle and all kernel components together.
-//!
-//! Run with: `cargo test -p maple-mwl-integration`
+//! New code should depend on `worldline-integration`.
 
-/// Shared test helpers — kernel setup, worldline creation, etc.
-pub mod helpers;
+pub use worldline_integration::*;
 
 #[cfg(test)]
-mod commitment_denial;
-#[cfg(test)]
-mod cross_profile;
-#[cfg(test)]
-mod failure_recovery;
-#[cfg(test)]
-mod financial_settlement;
-#[cfg(test)]
-mod human_agency;
-#[cfg(test)]
-mod mrp_enforcement;
-#[cfg(test)]
-mod resonance_lifecycle;
+mod tests {
+    #[test]
+    fn wrapper_exports_helpers() {
+        let _ = crate::helpers::KernelOptions::default();
+    }
+}

@@ -1,0 +1,19 @@
+[package]
+name = "maple-waf-compiler"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+maple-waf-context-graph.workspace = true
+maple-waf-evolution-engine.workspace = true
+worldline-types.workspace = true
+blake3.workspace = true
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+thiserror.workspace = true
+async-trait.workspace = true
+tokio.workspace = true

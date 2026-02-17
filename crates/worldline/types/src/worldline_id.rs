@@ -117,7 +117,7 @@ impl IdentityMaterial {
     /// Compute the blake3 hash of this material for identity derivation.
     pub fn compute_hash(&self) -> blake3::Hash {
         let mut hasher = blake3::Hasher::new();
-        // Domain separation tag
+        // Domain separation tag retained for backward-compatible identity derivation.
         hasher.update(b"maple-mwl-identity-v1:");
         self.hash_into(&mut hasher);
         hasher.finalize()

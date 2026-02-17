@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use maple_kernel_fabric::{EventFabric, EventPayload, ResonanceStage};
 use maple_mwl_types::{
-    AdjudicationDecision, DenialReason, FailureReason, PolicyDecisionCard, RiskClass, RiskLevel,
-    TemporalAnchor,
+    AdjudicationDecision, CommitmentStatus, DenialReason, FailureReason, PolicyDecisionCard,
+    RiskClass, RiskLevel, TemporalAnchor, WorldlineId,
 };
 use serde::{Deserialize, Serialize};
 use tracing::{debug, info, warn};
@@ -109,6 +109,8 @@ impl CommitmentGate {
         &mut self,
         declaration: CommitmentDeclaration,
     ) -> Result<AdjudicationResult, GateError> {
+        self.validate_pipeline_configuration()?;
+
         let commitment_id = declaration.id.clone();
         let worldline_id = declaration.declaring_identity.clone();
 
@@ -221,15 +223,46 @@ impl CommitmentGate {
         }
 
         // All stages evaluated — check final result
+        if let Some((stage_name, StageResult::Defer(duration))) = context
+            .stage_results
+            .iter()
+            .rev()
+            .find(|(_, result)| matches!(result, StageResult::Defer(_)))
+        {
+            return Err(GateError::StageFailed {
+                stage: stage_name.clone(),
+                reason: format!(
+                    "deferred adjudication ({:?}) is not supported by this gate configuration",
+                    duration
+                ),
+            });
+        }
+
         // If the last stage was a co-sign requirement
         if let Some((_, last_result)) = context.stage_results.last() {
             match last_result {
                 StageResult::RequireCoSign(signers) => {
+                    let decision = self.build_pending_cosign_card(&context, signers);
+                    self.ledger.append(LedgerEntry {
+                        commitment_id: commitment_id.clone(),
+                        declaration,
+                        decision,
+                        lifecycle: vec![LifecycleEvent::Declared(TemporalAnchor::now(0))],
+                        created_at: TemporalAnchor::now(0),
+                    })?;
                     return Ok(AdjudicationResult::PendingCoSign {
                         required: signers.clone(),
                     });
                 }
                 StageResult::RequireHumanApproval(reason) => {
+                    let decision = self.build_pending_human_review_card(&context, reason);
+                    self.ledger.append(LedgerEntry {
+                        commitment_id: commitment_id.clone(),
+                        declaration,
+                        decision,
+                        lifecycle: vec![LifecycleEvent::Declared(TemporalAnchor::now(0))],
+                        created_at: TemporalAnchor::now(0),
+                    })?;
                     return Ok(AdjudicationResult::PendingHumanApproval {
                         approver: reason.clone(),
                     });
@@ -287,15 +320,41 @@ impl CommitmentGate {
         cid: &maple_mwl_types::CommitmentId,
         outcome: CommitmentOutcome,
     ) -> Result<(), GateError> {
+        let current_status = self.ledger.status(cid)?;
+
+        match current_status {
+            CommitmentStatus::Approved => {
+                self.ledger.record_lifecycle(
+                    cid,
+                    LifecycleEvent::ExecutionStarted(TemporalAnchor::now(0)),
+                )?;
+            }
+            CommitmentStatus::Active => {}
+            other => {
+                return Err(GateError::StageFailed {
+                    stage: "consequence_recording".to_string(),
+                    reason: format!("cannot record outcome for commitment in status {:?}", other),
+                });
+            }
+        }
+
         let lifecycle_event = match &outcome {
             CommitmentOutcome::Fulfilled => LifecycleEvent::Fulfilled(TemporalAnchor::now(0)),
             CommitmentOutcome::Failed(reason) => LifecycleEvent::Failed {
                 at: TemporalAnchor::now(0),
                 reason: reason.clone(),
             },
-            CommitmentOutcome::PartiallyFulfilled { .. } => {
-                LifecycleEvent::Fulfilled(TemporalAnchor::now(0))
-            }
+            CommitmentOutcome::PartiallyFulfilled {
+                completion,
+                remaining,
+            } => LifecycleEvent::Failed {
+                at: TemporalAnchor::now(0),
+                reason: FailureReason {
+                    code: "PARTIAL_FULFILLMENT".into(),
+                    message: format!("partially fulfilled; remaining: {}", remaining.join(", ")),
+                    partial_completion: Some(*completion),
+                },
+            },
             CommitmentOutcome::Expired => LifecycleEvent::Expired(TemporalAnchor::now(0)),
         };
 
@@ -390,6 +449,87 @@ impl CommitmentGate {
             version: 1,
         }
     }
+
+    fn build_pending_cosign_card(
+        &self,
+        context: &GateContext,
+        required: &[WorldlineId],
+    ) -> PolicyDecisionCard {
+        PolicyDecisionCard {
+            decision_id: uuid::Uuid::new_v4().to_string(),
+            decision: AdjudicationDecision::RequireCoSignature,
+            rationale: format!(
+                "Awaiting {} required co-signature(s) before commitment can execute",
+                required.len()
+            ),
+            risk: context.risk_assessment.clone().unwrap_or(RiskLevel {
+                class: RiskClass::Low,
+                score: None,
+                factors: vec![],
+            }),
+            conditions: required
+                .iter()
+                .map(|wid| format!("cosign:{}", wid))
+                .collect(),
+            policy_refs: vec![],
+            decided_at: TemporalAnchor::now(0),
+            version: 1,
+        }
+    }
+
+    fn build_pending_human_review_card(
+        &self,
+        context: &GateContext,
+        approver: &str,
+    ) -> PolicyDecisionCard {
+        PolicyDecisionCard {
+            decision_id: uuid::Uuid::new_v4().to_string(),
+            decision: AdjudicationDecision::RequireHumanReview,
+            rationale: format!(
+                "Awaiting required human approval before commitment can execute: {}",
+                approver
+            ),
+            risk: context.risk_assessment.clone().unwrap_or(RiskLevel {
+                class: RiskClass::Low,
+                score: None,
+                factors: vec![],
+            }),
+            conditions: vec![format!("human_approval:{}", approver)],
+            policy_refs: vec![],
+            decided_at: TemporalAnchor::now(0),
+            version: 1,
+        }
+    }
+
+    fn validate_pipeline_configuration(&self) -> Result<(), GateError> {
+        if self.stages.len() != 7 {
+            return Err(GateError::StageFailed {
+                stage: "pipeline_configuration".to_string(),
+                reason: format!(
+                    "expected 7 stages, found {}. commitment boundary is not fully configured",
+                    self.stages.len()
+                ),
+            });
+        }
+
+        for (idx, stage) in self.stages.iter().enumerate() {
+            let expected = (idx + 1) as u8;
+            if stage.stage_number() != expected {
+                return Err(GateError::StageFailed {
+                    stage: "pipeline_configuration".to_string(),
+                    reason: format!(
+                        "stage order invalid at index {}: expected stage #{}, found #{} ({})",
+                        idx,
+                        expected,
+                        stage.stage_number(),
+                        stage.stage_name()
+                    ),
+                });
+            }
+        }
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -422,7 +562,7 @@ mod tests {
         let wid = identity_mgr.create_worldline(material).unwrap();
         let identity_mgr = Arc::new(std::sync::RwLock::new(identity_mgr));
 
-        let mut cap_provider = MockCapabilityProvider::new();
+        let cap_provider = MockCapabilityProvider::new();
         cap_provider.grant(wid.clone(), "CAP-COMM", EffectDomain::Communication);
         let cap_provider = Arc::new(cap_provider);
 
@@ -587,9 +727,243 @@ mod tests {
             .unwrap();
 
         let entry = gate.ledger().history(&cid).unwrap();
+        assert!(
+            entry
+                .lifecycle
+                .iter()
+                .any(|event| matches!(event, LifecycleEvent::ExecutionStarted(_))),
+            "execution start should be recorded before fulfillment"
+        );
         assert!(matches!(
             entry.lifecycle.last().unwrap(),
             LifecycleEvent::Fulfilled(_)
+        ));
+    }
+
+    #[tokio::test]
+    async fn record_outcome_rejects_denied_commitment() {
+        let (mut gate, wid, _) = setup_gate(false).await;
+        let decl = valid_declaration(wid);
+        let cid = decl.id.clone();
+
+        let adjudication = gate.submit(decl).await.unwrap();
+        assert!(matches!(adjudication, AdjudicationResult::Denied { .. }));
+
+        let err = gate
+            .record_outcome(&cid, CommitmentOutcome::Fulfilled)
+            .await
+            .expect_err("denied commitments must never accept outcomes");
+        assert!(matches!(err, GateError::StageFailed { .. }));
+
+        let entry = gate.ledger().history(&cid).unwrap();
+        assert!(matches!(
+            entry.lifecycle.last().unwrap(),
+            LifecycleEvent::Denied { .. }
+        ));
+    }
+
+    #[tokio::test]
+    async fn record_partial_outcome_is_explicit_failure() {
+        let (mut gate, wid, _) = setup_gate(true).await;
+        let decl = valid_declaration(wid);
+        let cid = decl.id.clone();
+
+        gate.submit(decl).await.unwrap();
+        gate.record_outcome(
+            &cid,
+            CommitmentOutcome::PartiallyFulfilled {
+                completion: 0.4,
+                remaining: vec!["notify target".into(), "persist receipt".into()],
+            },
+        )
+        .await
+        .unwrap();
+
+        let entry = gate.ledger().history(&cid).unwrap();
+        match entry.lifecycle.last().unwrap() {
+            LifecycleEvent::Failed { reason, .. } => {
+                assert_eq!(reason.code, "PARTIAL_FULFILLMENT");
+                assert_eq!(reason.partial_completion, Some(0.4));
+            }
+            other => panic!("expected explicit failure, got {:?}", other),
+        }
+    }
+
+    async fn setup_gate_with_policy_decision(
+        decision: AdjudicationDecision,
+    ) -> (CommitmentGate, maple_mwl_types::WorldlineId) {
+        let fabric = Arc::new(
+            EventFabric::init(maple_kernel_fabric::FabricConfig::default())
+                .await
+                .unwrap(),
+        );
+
+        let mut identity_mgr = IdentityManager::new();
+        let material = IdentityMaterial::GenesisHash([21u8; 32]);
+        let wid = identity_mgr.create_worldline(material).unwrap();
+        let identity_mgr = Arc::new(std::sync::RwLock::new(identity_mgr));
+
+        let cap_provider = MockCapabilityProvider::new();
+        cap_provider.grant(wid.clone(), "CAP-COMM", EffectDomain::Communication);
+        let cap_provider = Arc::new(cap_provider);
+
+        let policy_provider: Arc<dyn crate::traits::PolicyProvider> = Arc::new(
+            MockPolicyProvider::with_decision(decision, "policy gate test"),
+        );
+
+        let config = GateConfig::default();
+        let mut gate = CommitmentGate::new(fabric, config.clone());
+        gate.add_stage(Box::new(DeclarationStage::new(
+            config.require_intent_reference,
+            config.min_intent_confidence,
+        )));
+        gate.add_stage(Box::new(IdentityBindingStage::new(identity_mgr)));
+        gate.add_stage(Box::new(CapabilityCheckStage::new(cap_provider)));
+        gate.add_stage(Box::new(PolicyEvaluationStage::new(policy_provider)));
+        gate.add_stage(Box::new(RiskAssessmentStage::new(RiskConfig::default())));
+        gate.add_stage(Box::new(CoSignatureStage::new()));
+        gate.add_stage(Box::new(FinalDecisionStage::new()));
+
+        (gate, wid)
+    }
+
+    #[tokio::test]
+    async fn submit_rejects_incomplete_pipeline_configuration() {
+        let fabric = Arc::new(
+            EventFabric::init(maple_kernel_fabric::FabricConfig::default())
+                .await
+                .unwrap(),
+        );
+        let mut gate = CommitmentGate::new(fabric, GateConfig::default());
+        gate.add_stage(Box::new(DeclarationStage::new(true, 0.6))); // intentionally incomplete
+
+        let wid = maple_mwl_types::WorldlineId::derive(&IdentityMaterial::GenesisHash([5u8; 32]));
+        let decl = CommitmentDeclaration::builder(
+            wid,
+            CommitmentScope {
+                effect_domain: EffectDomain::Communication,
+                targets: vec![],
+                constraints: vec![],
+            },
+        )
+        .build();
+
+        let err = gate
+            .submit(decl)
+            .await
+            .expect_err("misconfigured gate must reject submission");
+        assert!(matches!(err, GateError::StageFailed { .. }));
+    }
+
+    #[tokio::test]
+    async fn submit_rejects_stage_order_mismatch() {
+        let fabric = Arc::new(
+            EventFabric::init(maple_kernel_fabric::FabricConfig::default())
+                .await
+                .unwrap(),
+        );
+
+        let mut identity_mgr = IdentityManager::new();
+        let wid = identity_mgr
+            .create_worldline(IdentityMaterial::GenesisHash([6u8; 32]))
+            .unwrap();
+        let identity_mgr = Arc::new(std::sync::RwLock::new(identity_mgr));
+
+        let cap_provider = MockCapabilityProvider::new();
+        cap_provider.grant(wid.clone(), "CAP-COMM", EffectDomain::Communication);
+        let cap_provider = Arc::new(cap_provider);
+        let policy_provider: Arc<dyn crate::traits::PolicyProvider> =
+            Arc::new(MockPolicyProvider::approve_all());
+
+        let config = GateConfig::default();
+        let mut gate = CommitmentGate::new(fabric, config.clone());
+
+        // Intentionally out of order: stage #2 before stage #1
+        gate.add_stage(Box::new(IdentityBindingStage::new(identity_mgr.clone())));
+        gate.add_stage(Box::new(DeclarationStage::new(
+            config.require_intent_reference,
+            config.min_intent_confidence,
+        )));
+        gate.add_stage(Box::new(CapabilityCheckStage::new(cap_provider)));
+        gate.add_stage(Box::new(PolicyEvaluationStage::new(policy_provider)));
+        gate.add_stage(Box::new(RiskAssessmentStage::new(RiskConfig::default())));
+        gate.add_stage(Box::new(CoSignatureStage::new()));
+        gate.add_stage(Box::new(FinalDecisionStage::new()));
+
+        let decl = valid_declaration(wid);
+        let err = gate
+            .submit(decl)
+            .await
+            .expect_err("out-of-order stages must be rejected");
+        assert!(matches!(err, GateError::StageFailed { .. }));
+    }
+
+    #[tokio::test]
+    async fn pending_human_review_is_ledgered() {
+        let (mut gate, wid) =
+            setup_gate_with_policy_decision(AdjudicationDecision::RequireHumanReview).await;
+        let decl = valid_declaration(wid);
+        let cid = decl.id.clone();
+
+        let result = gate.submit(decl).await.unwrap();
+        assert!(matches!(
+            result,
+            AdjudicationResult::PendingHumanApproval { .. }
+        ));
+
+        let entry = gate
+            .ledger()
+            .history(&cid)
+            .expect("pending commitment must be recorded");
+        assert_eq!(
+            entry.decision.decision,
+            AdjudicationDecision::RequireHumanReview
+        );
+        assert_eq!(entry.lifecycle.len(), 1);
+        assert!(matches!(
+            entry.lifecycle.first(),
+            Some(LifecycleEvent::Declared(_))
+        ));
+    }
+
+    #[tokio::test]
+    async fn pending_cosign_is_ledgered() {
+        let (mut gate, wid) =
+            setup_gate_with_policy_decision(AdjudicationDecision::RequireCoSignature).await;
+        let approver =
+            maple_mwl_types::WorldlineId::derive(&IdentityMaterial::GenesisHash([7u8; 32]));
+
+        let decl = CommitmentDeclaration::builder(
+            wid,
+            CommitmentScope {
+                effect_domain: EffectDomain::Communication,
+                targets: vec![maple_mwl_types::WorldlineId::derive(
+                    &IdentityMaterial::GenesisHash([8u8; 32]),
+                )],
+                constraints: vec![],
+            },
+        )
+        .derived_from_intent(EventId::new())
+        .capability(CapabilityId("CAP-COMM".into()))
+        .affected_party(approver)
+        .build();
+        let cid = decl.id.clone();
+
+        let result = gate.submit(decl).await.unwrap();
+        assert!(matches!(result, AdjudicationResult::PendingCoSign { .. }));
+
+        let entry = gate
+            .ledger()
+            .history(&cid)
+            .expect("pending commitment must be recorded");
+        assert_eq!(
+            entry.decision.decision,
+            AdjudicationDecision::RequireCoSignature
+        );
+        assert_eq!(entry.lifecycle.len(), 1);
+        assert!(matches!(
+            entry.lifecycle.first(),
+            Some(LifecycleEvent::Declared(_))
         ));
     }
 

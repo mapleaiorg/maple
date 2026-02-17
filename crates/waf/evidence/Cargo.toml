@@ -1,0 +1,19 @@
+[package]
+name = "maple-waf-evidence"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+maple-waf-context-graph.workspace = true
+worldline-types.workspace = true
+blake3.workspace = true
+ed25519-dalek = { workspace = true, features = ["serde"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+async-trait.workspace = true

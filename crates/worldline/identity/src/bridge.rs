@@ -1,7 +1,7 @@
 //! Bridge between existing ResonatorId and new WorldlineId.
 //! This ensures backward compatibility with existing examples.
 
-use maple_mwl_types::{IdentityMaterial, WorldlineId};
+use worldline_types::{IdentityMaterial, WorldlineId};
 
 /// Convert existing resonator identifiers to WorldlineId.
 /// Hashes the string to create a GenesisHash material, then derives through the standard path.

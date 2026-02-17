@@ -172,105 +172,53 @@ Every consequential action:
 
 ---
 
-## The 8 Architectural Invariants
+## The 9 WorldLine Invariants
 
-These invariants are **enforced at runtime**. Violations = system errors.
+This document follows the canonical WorldLine invariant set. The authoritative
+definition is maintained in `docs/architecture/00-overview.md`.
 
-### Invariant 1: Presence Precedes Meaning
+### Invariant 1: WorldLine Primacy
 
-```
-✓ ALLOWED:  Present → Form/Receive Meaning
-✗ FORBIDDEN: Form/Receive Meaning without Presence
-```
+Everything important is modeled as a trajectory object (WorldLine), not a session.
+Identity is continuity of commitments plus provenance.
 
-**Why?** You cannot participate in resonance without being present.
+### Invariant 2: Intrinsic Typed Memory
 
-**Example violation:**
-```rust
-// Resonator has NOT signaled presence
-let meaning = resonator.form_meaning(...).await?;  // ❌ BLOCKED
-```
+Memory is typed and lifecycle-aware: working, episodic, semantic, parametric.
+It is not treated as an unstructured blob.
 
-### Invariant 2: Meaning Precedes Intent
+### Invariant 3: Commitment Boundary
 
-```
-✓ ALLOWED:  Sufficient Meaning → Form Intent
-✗ FORBIDDEN: Form Intent without Sufficient Meaning
-```
+No external consequence happens without an explicit commitment that is policy-checked,
+invariant-checked, and provenance-recorded.
 
-**Why?** Intent without understanding is dangerous.
+### Invariant 4: Causal Provenance
 
-**Threshold:** Meaning convergence ≥ 0.5 required.
+Every commitment and consequence must be attributable to persistent identity and continuity.
+Provenance forms a verifiable DAG.
 
-### Invariant 3: Intent Precedes Commitment
+### Invariant 5: Resonance-Bounded Coupling
 
-```
-✓ ALLOWED:  Stabilized Intent → Make Commitment
-✗ FORBIDDEN: Make Commitment without Stabilized Intent
-```
+Coupling is bounded by available attention. Unbounded resonance is disallowed.
 
-**Why?** Commitments must be based on clear goals.
+### Invariant 6: Pluggable Evolution Laws
 
-**Requirement:** Intent must be temporally stable (not fleeting).
+Evolution operators are pluggable but constrained by commitments and invariants.
+Operator changes are gated, ledgered, and replayable.
 
-### Invariant 4: Commitment Precedes Consequence
+### Invariant 7: Safety Overrides Optimization
 
-```
-✓ ALLOWED:  Explicit Commitment → Produce Consequence
-✗ FORBIDDEN: Produce Consequence without Explicit Commitment
-```
+When safety/agency conflicts with optimization or performance, safety wins.
+Human agency cannot be bypassed.
 
-**Why?** Every consequential action must be attributable.
+### Invariant 8: Substrate Independence
 
-**This enables:** Full accountability and audit trails.
+The architecture remains valid across digital, hybrid, distributed, and sovereign substrates.
 
-### Invariant 5: Coupling Bounded by Attention
+### Invariant 9: Implementation Provenance and Constitutional Evolution
 
-```
-✓ ALLOWED:  Coupling Strength ≤ Available Attention
-✗ FORBIDDEN: Coupling that exceeds attention budget
-```
-
-**Why?** Prevents runaway resource consumption.
-
-**Formula:** `total_allocated_attention ≤ total_capacity`
-
-### Invariant 6: Safety Overrides Optimization
-
-```
-✓ ALLOWED:  Sacrifice Performance for Safety
-✗ FORBIDDEN: Bypass Safety for Performance
-```
-
-**Why?** Safety is non-negotiable.
-
-**Example:** Rate limiting presence signals even if it slows throughput.
-
-### Invariant 7: Human Agency Cannot Be Bypassed
-
-```
-✓ ALLOWED:  Humans Can Always Disengage
-✗ FORBIDDEN: Forced Coupling with Human
-```
-
-**Why?** Architectural protection of human autonomy.
-
-**Mechanisms:**
-- Presence does NOT imply willingness
-- Humans can always reduce coupling
-- Coercion detection
-- Emotional exploitation prevention
-
-### Invariant 8: Failure Must Be Explicit
-
-```
-✓ ALLOWED:  Surface All Failures
-✗ FORBIDDEN: Silent Failures or Hidden Errors
-```
-
-**Why?** Reliability requires transparency.
-
-**Enforcement:** All operations return Result types, no panics in production.
+Operator evolution must happen via upgrade commitments that preserve invariants,
+pass replay checks, and carry evidence linking change to observed resonance pressure.
 
 ---
 

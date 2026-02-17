@@ -12,6 +12,10 @@
 //!   execution begins. Post-hoc attribution is forbidden.
 //! - **I.CG-1 (Decision Immutability)**: PolicyDecisionCards are immutable once recorded.
 //! - **I.AAS-3 (Ledger Immutability)**: Commitment ledger is append-only.
+//! - **Fail-Closed Pipeline Configuration**: submissions are rejected unless all
+//!   seven stages are present in canonical order.
+//! - **Explicit Lifecycle Transitions**: outcomes are recorded only from executable
+//!   states; terminal states cannot be mutated.
 //!
 //! ## 7-Stage Pipeline
 //!
