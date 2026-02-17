@@ -12,3 +12,8 @@ description = "WorldLine ledger, provenance, and replay service entrypoints"
 maple-kernel-provenance = { workspace = true }
 maple-kernel-fabric = { workspace = true }
 maple-mwl-types = { workspace = true }
+worldline-types = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+blake3 = { workspace = true }

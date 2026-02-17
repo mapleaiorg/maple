@@ -26,6 +26,8 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use tracing::debug;
 
+const CAPABILITY_FINANCIAL_SETTLE: &str = "cap-financial-settle";
+
 // ──────────────────────────────────────────────
 // Router
 // ──────────────────────────────────────────────
@@ -127,6 +129,8 @@ pub struct CommitmentStatus {
     pub id: String,
     pub decision_receipt_id: String,
     pub declaring_identity: String,
+    pub targets: Vec<String>,
+    pub capabilities: Vec<String>,
     pub status: String,
     pub decision: String,
     pub domain: String,
@@ -465,6 +469,45 @@ async fn submit_commitment(
             .into_response();
     }
 
+    if req.targets.iter().any(|target| target.trim().is_empty()) {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({
+                "error": "targets cannot contain empty values"
+            })),
+        )
+            .into_response();
+    }
+
+    if req.effect_domain.eq_ignore_ascii_case("financial") {
+        if req.targets.is_empty() {
+            return (
+                StatusCode::BAD_REQUEST,
+                Json(serde_json::json!({
+                    "error": "financial commitments must include at least one target"
+                })),
+            )
+                .into_response();
+        }
+
+        let includes_financial_capability = req
+            .capabilities
+            .iter()
+            .any(|cap| cap.eq_ignore_ascii_case(CAPABILITY_FINANCIAL_SETTLE));
+        if !includes_financial_capability {
+            return (
+                StatusCode::BAD_REQUEST,
+                Json(serde_json::json!({
+                    "error": format!(
+                        "financial commitments must include capability '{}'",
+                        CAPABILITY_FINANCIAL_SETTLE
+                    )
+                })),
+            )
+                .into_response();
+        }
+    }
+
     let mut guard = state.write().await;
     if let Some(worldline) = guard.worldlines.get_mut(&req.declaring_identity) {
         worldline.commitment_count = worldline.commitment_count.saturating_add(1);
@@ -491,6 +534,8 @@ async fn submit_commitment(
         id: commitment_id.clone(),
         decision_receipt_id: decision_receipt_id.clone(),
         declaring_identity: req.declaring_identity.clone(),
+        targets: req.targets.clone(),
+        capabilities: req.capabilities.clone(),
         status: "approved".into(),
         decision: "approve".into(),
         domain: req.effect_domain.clone(),
@@ -900,6 +945,36 @@ async fn submit_settlement(
             .into_response();
     }
 
+    if !commitment.domain.eq_ignore_ascii_case("financial") {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({
+                "error": format!(
+                    "commitment '{}' domain '{}' is not valid for financial settlement",
+                    req.commitment_id, commitment.domain
+                )
+            })),
+        )
+            .into_response();
+    }
+
+    let allows_financial_settlement = commitment
+        .capabilities
+        .iter()
+        .any(|cap| cap.eq_ignore_ascii_case(CAPABILITY_FINANCIAL_SETTLE));
+    if !allows_financial_settlement {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({
+                "error": format!(
+                    "commitment '{}' is missing capability '{}'",
+                    req.commitment_id, CAPABILITY_FINANCIAL_SETTLE
+                )
+            })),
+        )
+            .into_response();
+    }
+
     if req.decision_receipt_id != commitment.decision_receipt_id {
         return (
             StatusCode::BAD_REQUEST,
@@ -924,6 +999,47 @@ async fn submit_settlement(
             })),
         )
             .into_response();
+    }
+
+    if !commitment.targets.is_empty() {
+        let mut allowed_parties = commitment.targets.clone();
+        allowed_parties.push(commitment.declaring_identity.clone());
+
+        let includes_any_target = req.legs.iter().any(|leg| {
+            commitment.targets.iter().any(|target| {
+                leg.from.eq_ignore_ascii_case(target) || leg.to.eq_ignore_ascii_case(target)
+            })
+        });
+        if !includes_any_target {
+            return (
+                StatusCode::BAD_REQUEST,
+                Json(serde_json::json!({
+                    "error": "settlement legs must include at least one commitment target"
+                })),
+            )
+                .into_response();
+        }
+
+        let out_of_scope_leg = req.legs.iter().find(|leg| {
+            !allowed_parties
+                .iter()
+                .any(|party| party.eq_ignore_ascii_case(&leg.from))
+                || !allowed_parties
+                    .iter()
+                    .any(|party| party.eq_ignore_ascii_case(&leg.to))
+        });
+        if let Some(leg) = out_of_scope_leg {
+            return (
+                StatusCode::BAD_REQUEST,
+                Json(serde_json::json!({
+                    "error": format!(
+                        "settlement leg '{}' -> '{}' is outside commitment party scope",
+                        leg.from, leg.to
+                    )
+                })),
+            )
+                .into_response();
+        }
     }
 
     for leg in &req.legs {
@@ -1124,12 +1240,14 @@ mod tests {
         app: &Router,
         declaring_identity: &str,
         effect_domain: &str,
+        targets: Vec<String>,
+        capabilities: Vec<String>,
     ) -> (String, String) {
         let body = serde_json::json!({
             "declaring_identity": declaring_identity,
             "effect_domain": effect_domain,
-            "targets": ["wl-target"],
-            "capabilities": ["cap-financial-settle"],
+            "targets": targets,
+            "capabilities": capabilities,
             "evidence": ["ev://decision-bundle"]
         });
 
@@ -1337,6 +1455,64 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn submit_financial_commitment_rejects_missing_target() {
+        let app = test_router();
+        let worldline_id = create_worldline(&app, "financial", "treasury").await;
+
+        let body = serde_json::json!({
+            "declaring_identity": worldline_id,
+            "effect_domain": "financial",
+            "targets": [],
+            "capabilities": [CAPABILITY_FINANCIAL_SETTLE],
+            "evidence": []
+        });
+
+        let resp = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/commitments")
+                    .header("content-type", "application/json")
+                    .body(Body::from(serde_json::to_string(&body).unwrap()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(resp.status(), StatusCode::BAD_REQUEST);
+    }
+
+    #[tokio::test]
+    async fn submit_financial_commitment_rejects_missing_financial_capability() {
+        let app = test_router();
+        let worldline_id = create_worldline(&app, "financial", "treasury").await;
+
+        let body = serde_json::json!({
+            "declaring_identity": worldline_id,
+            "effect_domain": "financial",
+            "targets": ["wl-counterparty"],
+            "capabilities": ["cap-send"],
+            "evidence": []
+        });
+
+        let resp = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/commitments")
+                    .header("content-type", "application/json")
+                    .body(Body::from(serde_json::to_string(&body).unwrap()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(resp.status(), StatusCode::BAD_REQUEST);
+    }
+
+    #[tokio::test]
     async fn balance_projection_returns_json() {
         let app = test_router();
         let worldline_id = create_worldline(&app, "financial", "treasury").await;
@@ -1411,8 +1587,14 @@ mod tests {
         let app = test_router();
         let wl_a = create_worldline(&app, "financial", "party-a").await;
         let wl_b = create_worldline(&app, "financial", "party-b").await;
-        let (commitment_id, decision_receipt_id) =
-            submit_commitment_for_worldline(&app, &wl_a, "financial").await;
+        let (commitment_id, decision_receipt_id) = submit_commitment_for_worldline(
+            &app,
+            &wl_a,
+            "financial",
+            vec![wl_b.clone()],
+            vec![CAPABILITY_FINANCIAL_SETTLE.to_string()],
+        )
+        .await;
 
         let body = serde_json::json!({
             "commitment_id": commitment_id,
@@ -1453,8 +1635,14 @@ mod tests {
         let app = test_router();
         let wl_a = create_worldline(&app, "financial", "issuer").await;
         let wl_b = create_worldline(&app, "financial", "receiver").await;
-        let (commitment_id, decision_receipt_id) =
-            submit_commitment_for_worldline(&app, &wl_a, "financial").await;
+        let (commitment_id, decision_receipt_id) = submit_commitment_for_worldline(
+            &app,
+            &wl_a,
+            "financial",
+            vec![wl_b.clone()],
+            vec![CAPABILITY_FINANCIAL_SETTLE.to_string()],
+        )
+        .await;
 
         let settlement = serde_json::json!({
             "commitment_id": commitment_id,
@@ -1536,8 +1724,14 @@ mod tests {
         let app = test_router();
         let wl_a = create_worldline(&app, "financial", "issuer").await;
         let wl_b = create_worldline(&app, "financial", "receiver").await;
-        let (commitment_id, _decision_receipt_id) =
-            submit_commitment_for_worldline(&app, &wl_a, "financial").await;
+        let (commitment_id, _decision_receipt_id) = submit_commitment_for_worldline(
+            &app,
+            &wl_a,
+            "financial",
+            vec![wl_b.clone()],
+            vec![CAPABILITY_FINANCIAL_SETTLE.to_string()],
+        )
+        .await;
 
         let settlement = serde_json::json!({
             "commitment_id": commitment_id,
@@ -1569,8 +1763,14 @@ mod tests {
         let app = test_router();
         let wl_a = create_worldline(&app, "financial", "issuer").await;
         let wl_b = create_worldline(&app, "financial", "receiver").await;
-        let (commitment_id, _decision_receipt_id) =
-            submit_commitment_for_worldline(&app, &wl_a, "financial").await;
+        let (commitment_id, _decision_receipt_id) = submit_commitment_for_worldline(
+            &app,
+            &wl_a,
+            "financial",
+            vec![wl_b.clone()],
+            vec![CAPABILITY_FINANCIAL_SETTLE.to_string()],
+        )
+        .await;
 
         let settlement = serde_json::json!({
             "commitment_id": commitment_id,
@@ -1579,6 +1779,85 @@ mod tests {
             "legs": [
                 { "from": wl_a.clone(), "to": wl_b.clone(), "asset": "USD", "amount_minor": 150000 },
                 { "from": wl_b.clone(), "to": wl_a.clone(), "asset": "BTC", "amount_minor": 1000 }
+            ]
+        });
+
+        let submit = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/financial/settle")
+                    .header("content-type", "application/json")
+                    .body(Body::from(serde_json::to_string(&settlement).unwrap()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(submit.status(), StatusCode::BAD_REQUEST);
+    }
+
+    #[tokio::test]
+    async fn submit_settlement_rejects_non_financial_commitment_domain() {
+        let app = test_router();
+        let wl_a = create_worldline(&app, "agent", "issuer").await;
+        let wl_b = create_worldline(&app, "agent", "receiver").await;
+        let (commitment_id, decision_receipt_id) = submit_commitment_for_worldline(
+            &app,
+            &wl_a,
+            "communication",
+            vec![wl_b.clone()],
+            vec![CAPABILITY_FINANCIAL_SETTLE.to_string()],
+        )
+        .await;
+
+        let settlement = serde_json::json!({
+            "commitment_id": commitment_id,
+            "decision_receipt_id": decision_receipt_id,
+            "settlement_type": "dvp",
+            "legs": [
+                { "from": wl_a.clone(), "to": wl_b.clone(), "asset": "USD", "amount_minor": 150000 },
+                { "from": wl_b.clone(), "to": wl_a.clone(), "asset": "BTC", "amount_minor": 1000 }
+            ]
+        });
+
+        let submit = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/financial/settle")
+                    .header("content-type", "application/json")
+                    .body(Body::from(serde_json::to_string(&settlement).unwrap()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(submit.status(), StatusCode::BAD_REQUEST);
+    }
+
+    #[tokio::test]
+    async fn submit_settlement_rejects_legs_outside_commitment_targets() {
+        let app = test_router();
+        let wl_a = create_worldline(&app, "financial", "issuer").await;
+        let wl_b = create_worldline(&app, "financial", "receiver").await;
+        let wl_c = create_worldline(&app, "financial", "outsider").await;
+        let (commitment_id, decision_receipt_id) = submit_commitment_for_worldline(
+            &app,
+            &wl_a,
+            "financial",
+            vec![wl_b.clone()],
+            vec![CAPABILITY_FINANCIAL_SETTLE.to_string()],
+        )
+        .await;
+
+        let settlement = serde_json::json!({
+            "commitment_id": commitment_id,
+            "decision_receipt_id": decision_receipt_id,
+            "settlement_type": "dvp",
+            "legs": [
+                { "from": wl_a.clone(), "to": wl_c.clone(), "asset": "USD", "amount_minor": 150000 },
+                { "from": wl_c.clone(), "to": wl_a.clone(), "asset": "BTC", "amount_minor": 1000 }
             ]
         });
 

@@ -6162,9 +6162,14 @@ dependencies = [
 name = "worldline-ledger"
 version = "0.1.2"
 dependencies = [
+ "blake3",
  "maple-kernel-fabric",
  "maple-kernel-provenance",
  "maple-mwl-types",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "worldline-types",
 ]
 
 [[package]]

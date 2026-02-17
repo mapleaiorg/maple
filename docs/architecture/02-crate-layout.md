@@ -41,7 +41,8 @@ worldline-runtime   -> maple-runtime
                     -> maple-kernel-{fabric,memory,gate,mrp,provenance,
                                      governance,safety,profiles,financial}
 
-worldline-ledger    -> maple-kernel-provenance + maple-kernel-fabric + maple-mwl-types
+worldline-ledger    -> worldline-types (canonical traits + projections + replay)
+                    -> maple-kernel-provenance + maple-kernel-fabric (compat exports)
 
 worldline-governance -> maple-kernel-governance
                       -> maple-kernel-gate
@@ -99,6 +100,7 @@ flowchart TB
   WC --> WI
   WR --> MK
   WR --> MR
+  WL --> WT
   WL --> MK
   WG --> MK
   WS --> MWS
@@ -146,6 +148,7 @@ classDiagram
   worldline_core --> worldline_identity
   worldline_runtime --> maple_runtime
   worldline_runtime --> maple_kernel_family
+  worldline_ledger --> worldline_types
   worldline_ledger --> maple_kernel_family
   worldline_governance --> maple_kernel_family
   worldline_substrate --> maple_worldline_family

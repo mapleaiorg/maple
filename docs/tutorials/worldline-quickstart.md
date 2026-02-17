@@ -61,7 +61,7 @@ cat >/tmp/worldline-commitment.json <<'JSON'
   "declaring_identity": "REPLACE_WITH_WORLDLINE_ID",
   "effect_domain": "financial",
   "targets": ["counterparty-1"],
-  "capabilities": ["CAP-FIN"],
+  "capabilities": ["cap-financial-settle"],
   "evidence": ["operator-approved"]
 }
 JSON
@@ -142,9 +142,40 @@ worldline-ledger = "0.1.2"
 ```
 
 ```rust
-use worldline_core::types::WorldlineId;
-use worldline_runtime::gate::CommitmentGate;
-use worldline_ledger::provenance::ProvenanceIndex;
+use std::collections::BTreeMap;
+use serde_json::json;
+use worldline_core::types::{CommitmentId, IdentityMaterial, WorldlineId};
+use worldline_ledger::{
+    CommitmentClass, CommitmentProposal, Decision, EvidenceBundle, InMemoryLedger,
+    LedgerWriter, OutcomeRecord, ProjectionBuilder, ReplayEngine, StateUpdate,
+};
+
+let worldline = WorldlineId::derive(&IdentityMaterial::GenesisHash([1; 32]));
+let ledger = InMemoryLedger::default();
+
+let proposal = CommitmentProposal {
+    worldline: worldline.clone(),
+    commitment_id: CommitmentId::new(),
+    class: CommitmentClass::ExternalIo,
+    intent: "apply balance update".into(),
+    requested_caps: vec!["cap-financial-settle".into()],
+    targets: vec![worldline.clone()],
+    evidence: EvidenceBundle::from_references(vec!["obj://ticket-1".into()]),
+    nonce: 1,
+};
+
+let commitment = ledger.append_commitment(&proposal, &Decision::Accepted, [7; 32])?;
+let outcome = OutcomeRecord {
+    effects: vec![],
+    proofs: vec![],
+    state_updates: vec![StateUpdate { key: "balance".into(), value: json!(150000) }],
+    metadata: BTreeMap::new(),
+};
+ledger.append_outcome(commitment.receipt_hash, &outcome)?;
+
+let latest = ProjectionBuilder::latest_state(&ledger, &worldline)?;
+let replay = ReplayEngine::replay_from_genesis(&ledger, &worldline)?;
+assert_eq!(latest.state, replay.state);
 ```
 
 ## 11. Optional: Direct REST Calls

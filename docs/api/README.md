@@ -125,7 +125,7 @@ All endpoints are under `/api/v1`.
 | `POST` | `/worldlines` | Create worldline (`profile`, optional `label`) |
 | `GET` | `/worldlines` | List worldlines |
 | `GET` | `/worldlines/:id` | Get worldline status |
-| `POST` | `/commitments` | Submit commitment declaration (returns `commitment_id` + `decision_receipt_id`) |
+| `POST` | `/commitments` | Submit commitment declaration (returns `commitment_id` + `decision_receipt_id`; financial domain requires at least one target + `cap-financial-settle`) |
 | `GET` | `/commitments/:id` | Get commitment status |
 | `GET` | `/commitments/:id/audit-trail` | Get gate-stage audit trail |
 | `GET` | `/provenance/:event_id/ancestors` | Traverse event ancestry (`depth` query) |

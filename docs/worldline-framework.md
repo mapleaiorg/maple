@@ -1,6 +1,6 @@
 # WorldLine Framework Guide
 
-This repository now ships the full Maple WorldLine prompt stack (Prompts 1-28) as concrete crates, tests, and runnable demos.
+This repository ships the complete Maple WorldLine framework as concrete crates, tests, and runnable demos.
 
 ## Conceptual split (EVOS-aligned)
 
@@ -25,7 +25,7 @@ Control-plane functions can be executed by humans or bots, but enforcement remai
 | 2 | WorldLine identity | `worldline-identity` (compat: `maple-mwl-identity`) |
 | 3 | Event fabric | `worldline-runtime::fabric` (compat: `maple-kernel-fabric`) |
 | 4 | Commitment gate | `worldline-runtime::gate` (compat: `maple-kernel-gate`) |
-| 5 | WorldLine ledger | `worldline-ledger` |
+| 5 | WorldLine ledger | `worldline-ledger` (`LedgerReader`, `LedgerWriter`, projections, replay) |
 | 6 | Provenance index | `worldline-ledger::provenance` (compat: `maple-kernel-provenance`) |
 | 7 | Memory engine | `worldline-runtime::memory` (compat: `maple-kernel-memory`) |
 | 8 | Operator bus | `worldline-runtime::mrp` (compat: `maple-kernel-mrp`) |
@@ -55,7 +55,7 @@ Control-plane functions can be executed by humans or bots, but enforcement remai
 ### Naming model (target)
 
 - `worldline-runtime` (kernel)
-- `worldline-ledger` (record + replay)
+- `worldline-ledger` (record + replay + projections)
 - `worldline-governance` (control plane)
 - `worldline-operator-bot` (agentic operations)
 - `worldline-promptkit` (prompt + tool contract bundles)
@@ -102,7 +102,7 @@ All commands use `--endpoint` (default `http://localhost:8080`) and support `PAL
 WorldLine routes are merged into PALM daemon under `/api/v1`:
 
 - `POST /worldlines`, `GET /worldlines`, `GET /worldlines/:id`
-- `POST /commitments` (returns `commitment_id` + `decision_receipt_id`), `GET /commitments/:id`, `GET /commitments/:id/audit-trail`
+- `POST /commitments` (returns `commitment_id` + `decision_receipt_id`; financial domain requires target scope + `cap-financial-settle`), `GET /commitments/:id`, `GET /commitments/:id/audit-trail`
 - `GET /provenance/:event_id/ancestors`, `GET /provenance/worldline/:id/history`
 - `POST /governance/policies`, `GET /governance/policies`, `POST /governance/simulate`
 - `POST /financial/settle` (requires `commitment_id` and `decision_receipt_id`), `GET /financial/:worldline_id/balance/:asset`

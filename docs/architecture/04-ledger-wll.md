@@ -80,33 +80,44 @@ CREATE TABLE wll_snapshots (
 
 ```rust
 /// worldline-ledger
-pub trait LedgerWriter: Send + Sync {
+pub trait LedgerWriter {
     fn append_commitment(
         &self,
         proposal: &CommitmentProposal,
-        decision: &Decision
-    ) -> anyhow::Result<CommitmentReceipt>;
+        decision: &Decision,
+        policy_hash: [u8; 32]
+    ) -> Result<CommitmentReceipt, LedgerError>;
 
     fn append_outcome(
         &self,
-        creceipt: &CommitmentReceipt,
-        result: &DriverResult
-    ) -> anyhow::Result<OutcomeReceipt>;
+        commitment_receipt_hash: [u8; 32],
+        outcome: &OutcomeRecord
+    ) -> Result<OutcomeReceipt, LedgerError>;
 
     fn append_rejection_outcome(
         &self,
-        creceipt: &CommitmentReceipt
-    ) -> anyhow::Result<OutcomeReceipt>;
+        commitment_receipt_hash: [u8; 32],
+        reason: &str
+    ) -> Result<OutcomeReceipt, LedgerError>;
+
+    fn append_snapshot(
+        &self,
+        snapshot: &SnapshotInput
+    ) -> Result<SnapshotReceipt, LedgerError>;
 }
 
-pub trait LedgerReader: Send + Sync {
-    fn head(&self, worldline: WorldLineId) -> anyhow::Result<Option<ReceiptRef>>;
-    fn read_range(&self, worldline: WorldLineId, from: u64, to: u64) -> anyhow::Result<Vec<Receipt>>;
-    fn get_by_hash(&self, hash: [u8; 32]) -> anyhow::Result<Option<Receipt>>;
+pub trait LedgerReader {
+    fn head(&self, worldline: &WorldlineId) -> Result<Option<ReceiptRef>, LedgerError>;
+    fn read_range(&self, worldline: &WorldlineId, from: u64, to: u64) -> Result<Vec<Receipt>, LedgerError>;
+    fn read_all(&self, worldline: &WorldlineId) -> Result<Vec<Receipt>, LedgerError>;
+    fn get_by_hash(&self, hash: [u8; 32]) -> Result<Option<Receipt>, LedgerError>;
+    fn worldlines(&self) -> Result<Vec<WorldlineId>, LedgerError>;
 }
 ```
 
-Kernel uses these traits; governance tools use read + projections.
+Current canonical implementation:
+- `InMemoryLedger` in `worldline-ledger::memory` implements both traits.
+- Legacy compatibility index remains at `worldline-ledger::provenance`.
 
 ## 4.5 Replay semantics
 
@@ -129,12 +140,16 @@ Rules:
 ## 4.6 Projections (derived views)
 
 Projections make the ledger usable without violating append-only:
-- `latest_worldline_state`
-- `audit_index` (who/what/when/why query)
-- `capability_grants` (effective permissions over time)
-- `provenance_dag` (evidence + decision lineage)
+- `latest_state` (`ProjectionBuilder::latest_state`)
+- `audit_index` (`ProjectionBuilder::audit_index`)
+- `provenance_dag` (`worldline-ledger::provenance` compatibility index)
 
-Projection updates are idempotent and rebuildable from receipts.
+Projection updates are deterministic, idempotent, and rebuildable from receipts.
+
+Replay helpers:
+- `ReplayEngine::replay_from_genesis`
+- `ReplayEngine::replay_from_snapshot`
+- `ReplayEngine::verify_snapshot_convergence`
 
 ## 4.7 Proofs and evidence
 
