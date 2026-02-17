@@ -135,7 +135,10 @@ mod tests {
     #[test]
     fn dissonance_category_display() {
         assert_eq!(format!("{}", DissonanceCategory::Semantic), "Semantic");
-        assert_eq!(format!("{}", DissonanceCategory::PolicyDrift), "Policy Drift");
+        assert_eq!(
+            format!("{}", DissonanceCategory::PolicyDrift),
+            "Policy Drift"
+        );
     }
 
     #[test]

@@ -30,7 +30,9 @@ impl HypothesisEvaluator {
     pub fn filter_viable(&self, hypotheses: &[Hypothesis]) -> Vec<Hypothesis> {
         hypotheses
             .iter()
-            .filter(|h| h.safety_score >= self.safety_threshold && h.confidence >= self.confidence_threshold)
+            .filter(|h| {
+                h.safety_score >= self.safety_threshold && h.confidence >= self.confidence_threshold
+            })
             .cloned()
             .collect()
     }
@@ -86,9 +88,9 @@ mod tests {
     fn rank_by_composite_score() {
         let eval = HypothesisEvaluator::new();
         let hypotheses = vec![
-            make_hypothesis("a", 0.6, 0.7),  // composite = 0.42
-            make_hypothesis("b", 0.9, 0.9),  // composite = 0.81
-            make_hypothesis("c", 0.7, 0.8),  // composite = 0.56
+            make_hypothesis("a", 0.6, 0.7), // composite = 0.42
+            make_hypothesis("b", 0.9, 0.9), // composite = 0.81
+            make_hypothesis("c", 0.7, 0.8), // composite = 0.56
         ];
         let ranked = eval.rank(&hypotheses);
         assert_eq!(ranked[0].id, "b");
@@ -110,9 +112,7 @@ mod tests {
     #[test]
     fn select_best_none_viable() {
         let eval = HypothesisEvaluator::new();
-        let hypotheses = vec![
-            make_hypothesis("unsafe", 0.8, 0.1),
-        ];
+        let hypotheses = vec![make_hypothesis("unsafe", 0.8, 0.1)];
         assert!(eval.select_best(&hypotheses).is_none());
     }
 

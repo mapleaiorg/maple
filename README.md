@@ -26,7 +26,7 @@ cargo run -p maple-runtime --example 01_basic_resonator
 cargo run -p maple-cli -- daemon start
 
 # Run core WorldLine conformance checks
-cargo test -p maple-mwl-conformance -p maple-worldline-conformance
+cargo test -p worldline-conformance -p maple-worldline-conformance-suite -p maple-worldline-conformance
 ```
 
 For full WorldLine onboarding, use:
@@ -76,20 +76,21 @@ MAPLE implements the **Resonance Pipeline** - a strict ordering of cognitive sta
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### The 8 Runtime Invariants
+### The 9 WorldLine Invariants
 
-These are **enforced at runtime** - violations cause errors, not silent failures:
+These are the kernel-level invariants that define WorldLine safety and continuity:
 
 | # | Invariant | Meaning |
 |---|-----------|---------|
-| 1 | Presence precedes Coupling | Must establish presence before forming relationships |
-| 2 | Coupling precedes Meaning | Meaning only forms within established couplings |
-| 3 | Meaning precedes Intent | Intent requires sufficient meaning convergence |
-| 4 | Commitment precedes Consequence | No action without explicit, auditable commitment |
-| 5 | Receipts are Immutable | Commitment receipts cannot be modified |
-| 6 | Audit trail is Append-Only | Audit entries can only be added, never removed |
-| 7 | Capabilities gate Actions | Actions require explicit capability grants |
-| 8 | Time anchors are Monotonic | Temporal anchors always increase |
+| 1 | Worldline Primacy | Persistent trajectories are the core entities, not sessions |
+| 2 | Intrinsic Typed Memory | Memory is explicit and typed: working, episodic, semantic, parametric |
+| 3 | Commitment Boundary | No external consequence without an explicit, policy-checked commitment |
+| 4 | Causal Provenance | Every commitment and consequence is attributable and verifiable |
+| 5 | Resonance-Bounded Coupling | Coupling must remain attention-bounded to avoid instability |
+| 6 | Pluggable Evolution Laws | Operators are swappable but always commitment-gated and provable |
+| 7 | Safety Overrides Optimization | Safety and agency constraints outrank optimization goals |
+| 8 | Substrate Independence | Architecture is consistent across digital, hybrid, and sovereign deployments |
+| 9 | Constitutional Evolution Provenance | Operator upgrades must preserve invariants and replay-valid history |
 
 ---
 
@@ -227,7 +228,7 @@ let suite = ConformanceSuite::new(ConformanceConfig::default());
 let report = suite.run_all();
 
 if report.all_passed() {
-    println!("✅ All 8 invariants verified - MAPLE compliant!");
+    println!("✅ All invariants verified - MAPLE compliant!");
 } else {
     for test in report.failures() {
         println!("❌ {:?}: {}", test.invariant, test.error);

@@ -116,6 +116,7 @@ pub struct SubmitCommitmentRequest {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SubmitCommitmentResponse {
     pub commitment_id: String,
+    pub decision_receipt_id: String,
     pub status: String,
     pub decision: String,
     pub risk_class: String,
@@ -124,6 +125,7 @@ pub struct SubmitCommitmentResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CommitmentStatus {
     pub id: String,
+    pub decision_receipt_id: String,
     pub declaring_identity: String,
     pub status: String,
     pub decision: String,
@@ -203,6 +205,8 @@ pub struct BalanceProjectionResponse {
 
 #[derive(Debug, Deserialize)]
 pub struct SettlementRequest {
+    pub commitment_id: String,
+    pub decision_receipt_id: String,
     pub settlement_type: String,
     pub legs: Vec<SettlementLegRequest>,
 }
@@ -218,6 +222,8 @@ pub struct SettlementLegRequest {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SettlementResponse {
     pub settlement_id: String,
+    pub commitment_id: String,
+    pub decision_receipt_id: String,
     pub atomic: bool,
     pub legs: usize,
     pub settled_at: String,
@@ -473,6 +479,7 @@ async fn submit_commitment(
     }
 
     let commitment_id = short_id("cm");
+    let decision_receipt_id = short_id("dec");
     let created_at = now_rfc3339();
     let risk_class = if req.effect_domain.eq_ignore_ascii_case("financial") {
         "medium"
@@ -482,6 +489,7 @@ async fn submit_commitment(
 
     let status = CommitmentStatus {
         id: commitment_id.clone(),
+        decision_receipt_id: decision_receipt_id.clone(),
         declaring_identity: req.declaring_identity.clone(),
         status: "approved".into(),
         decision: "approve".into(),
@@ -524,6 +532,7 @@ async fn submit_commitment(
 
     Json(SubmitCommitmentResponse {
         commitment_id,
+        decision_receipt_id,
         status: "approved".into(),
         decision: "approve".into(),
         risk_class: risk_class.to_string(),
@@ -803,6 +812,36 @@ async fn submit_settlement(
         "Submitting settlement"
     );
 
+    if req.commitment_id.trim().is_empty() {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({
+                "error": "commitment_id is required"
+            })),
+        )
+            .into_response();
+    }
+
+    if req.decision_receipt_id.trim().is_empty() {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({
+                "error": "decision_receipt_id is required"
+            })),
+        )
+            .into_response();
+    }
+
+    if req.decision_receipt_id.chars().any(|c| c.is_whitespace()) {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({
+                "error": "decision_receipt_id cannot contain whitespace"
+            })),
+        )
+            .into_response();
+    }
+
     if req.legs.is_empty() {
         return (
             StatusCode::BAD_REQUEST,
@@ -838,6 +877,55 @@ async fn submit_settlement(
     }
 
     let mut guard = state.write().await;
+    let Some(commitment) = guard.commitments.get(&req.commitment_id).cloned() else {
+        return (
+            StatusCode::NOT_FOUND,
+            Json(serde_json::json!({
+                "error": format!("commitment '{}' not found", req.commitment_id)
+            })),
+        )
+            .into_response();
+    };
+
+    if commitment.status != "approved" {
+        return (
+            StatusCode::CONFLICT,
+            Json(serde_json::json!({
+                "error": format!(
+                    "commitment '{}' must be approved before settlement (current status: {})",
+                    req.commitment_id, commitment.status
+                )
+            })),
+        )
+            .into_response();
+    }
+
+    if req.decision_receipt_id != commitment.decision_receipt_id {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({
+                "error": format!(
+                    "decision_receipt_id '{}' does not match commitment '{}'",
+                    req.decision_receipt_id, req.commitment_id
+                )
+            })),
+        )
+            .into_response();
+    }
+
+    let commitment_participates = req.legs.iter().any(|leg| {
+        leg.from == commitment.declaring_identity || leg.to == commitment.declaring_identity
+    });
+    if !commitment_participates {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({
+                "error": "settlement legs must include commitment declaring_identity"
+            })),
+        )
+            .into_response();
+    }
+
     for leg in &req.legs {
         if !guard.worldlines.contains_key(&leg.from) {
             return (
@@ -859,6 +947,8 @@ async fn submit_settlement(
         }
     }
 
+    let settlement_id = short_id("stl");
+    let settled_at = now_rfc3339();
     for leg in &req.legs {
         guard
             .trajectories
@@ -878,13 +968,30 @@ async fn submit_settlement(
         append_provenance_event(&mut guard, &leg.from, "Consequence", "SettlementDebited");
         append_provenance_event(&mut guard, &leg.to, "Consequence", "SettlementCredited");
     }
+
+    guard
+        .audit_trails
+        .entry(req.commitment_id.clone())
+        .or_default()
+        .push(AuditTrailItem {
+            event_id: short_id("audit"),
+            stage: "Consequence".into(),
+            result: format!(
+                "Settlement {} linked to decision receipt {}",
+                settlement_id, req.decision_receipt_id
+            ),
+            timestamp: settled_at.clone(),
+        });
+
     guard.financial_settlements = guard.financial_settlements.saturating_add(1);
 
     Json(SettlementResponse {
-        settlement_id: short_id("stl"),
+        settlement_id,
+        commitment_id: req.commitment_id,
+        decision_receipt_id: req.decision_receipt_id,
         atomic: true,
         legs: req.legs.len(),
-        settled_at: now_rfc3339(),
+        settled_at,
     })
     .into_response()
 }
@@ -1011,6 +1118,40 @@ mod tests {
             .unwrap();
         let created: CreateWorldlineResponse = serde_json::from_slice(&bytes).unwrap();
         created.id
+    }
+
+    async fn submit_commitment_for_worldline(
+        app: &Router,
+        declaring_identity: &str,
+        effect_domain: &str,
+    ) -> (String, String) {
+        let body = serde_json::json!({
+            "declaring_identity": declaring_identity,
+            "effect_domain": effect_domain,
+            "targets": ["wl-target"],
+            "capabilities": ["cap-financial-settle"],
+            "evidence": ["ev://decision-bundle"]
+        });
+
+        let resp = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/commitments")
+                    .header("content-type", "application/json")
+                    .body(Body::from(serde_json::to_string(&body).unwrap()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+
+        let bytes = axum::body::to_bytes(resp.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        let created: SubmitCommitmentResponse = serde_json::from_slice(&bytes).unwrap();
+        (created.commitment_id, created.decision_receipt_id)
     }
 
     #[tokio::test]
@@ -1192,6 +1333,7 @@ mod tests {
             .unwrap();
         let json: SubmitCommitmentResponse = serde_json::from_slice(&body).unwrap();
         assert!(json.commitment_id.starts_with("cm-"));
+        assert!(json.decision_receipt_id.starts_with("dec-"));
     }
 
     #[tokio::test]
@@ -1269,8 +1411,12 @@ mod tests {
         let app = test_router();
         let wl_a = create_worldline(&app, "financial", "party-a").await;
         let wl_b = create_worldline(&app, "financial", "party-b").await;
+        let (commitment_id, decision_receipt_id) =
+            submit_commitment_for_worldline(&app, &wl_a, "financial").await;
 
         let body = serde_json::json!({
+            "commitment_id": commitment_id,
+            "decision_receipt_id": decision_receipt_id,
             "settlement_type": "dvp",
             "legs": [
                 { "from": wl_a, "to": wl_b, "asset": "USD", "amount_minor": 100000 },
@@ -1299,6 +1445,7 @@ mod tests {
         let json: SettlementResponse = serde_json::from_slice(&body).unwrap();
         assert!(json.atomic);
         assert_eq!(json.legs, 2);
+        assert!(json.decision_receipt_id.starts_with("dec-"));
     }
 
     #[tokio::test]
@@ -1306,8 +1453,12 @@ mod tests {
         let app = test_router();
         let wl_a = create_worldline(&app, "financial", "issuer").await;
         let wl_b = create_worldline(&app, "financial", "receiver").await;
+        let (commitment_id, decision_receipt_id) =
+            submit_commitment_for_worldline(&app, &wl_a, "financial").await;
 
         let settlement = serde_json::json!({
+            "commitment_id": commitment_id,
+            "decision_receipt_id": decision_receipt_id,
             "settlement_type": "dvp",
             "legs": [
                 { "from": wl_a.clone(), "to": wl_b.clone(), "asset": "USD", "amount_minor": 150000 },
@@ -1347,5 +1498,102 @@ mod tests {
         let projection: BalanceProjectionResponse = serde_json::from_slice(&bytes).unwrap();
         assert_eq!(projection.balance_minor, 150000);
         assert_eq!(projection.trajectory_length, 1);
+    }
+
+    #[tokio::test]
+    async fn submit_settlement_rejects_missing_commitment() {
+        let app = test_router();
+        let wl_a = create_worldline(&app, "financial", "issuer").await;
+        let wl_b = create_worldline(&app, "financial", "receiver").await;
+
+        let settlement = serde_json::json!({
+            "commitment_id": "cm-missing",
+            "decision_receipt_id": "dec-rcpt-api-003",
+            "settlement_type": "dvp",
+            "legs": [
+                { "from": wl_a.clone(), "to": wl_b.clone(), "asset": "USD", "amount_minor": 150000 },
+                { "from": wl_b.clone(), "to": wl_a.clone(), "asset": "BTC", "amount_minor": 1000 }
+            ]
+        });
+
+        let submit = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/financial/settle")
+                    .header("content-type", "application/json")
+                    .body(Body::from(serde_json::to_string(&settlement).unwrap()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(submit.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
+    async fn submit_settlement_rejects_missing_decision_receipt() {
+        let app = test_router();
+        let wl_a = create_worldline(&app, "financial", "issuer").await;
+        let wl_b = create_worldline(&app, "financial", "receiver").await;
+        let (commitment_id, _decision_receipt_id) =
+            submit_commitment_for_worldline(&app, &wl_a, "financial").await;
+
+        let settlement = serde_json::json!({
+            "commitment_id": commitment_id,
+            "decision_receipt_id": "   ",
+            "settlement_type": "dvp",
+            "legs": [
+                { "from": wl_a.clone(), "to": wl_b.clone(), "asset": "USD", "amount_minor": 150000 },
+                { "from": wl_b.clone(), "to": wl_a.clone(), "asset": "BTC", "amount_minor": 1000 }
+            ]
+        });
+
+        let submit = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/financial/settle")
+                    .header("content-type", "application/json")
+                    .body(Body::from(serde_json::to_string(&settlement).unwrap()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(submit.status(), StatusCode::BAD_REQUEST);
+    }
+
+    #[tokio::test]
+    async fn submit_settlement_rejects_mismatched_decision_receipt() {
+        let app = test_router();
+        let wl_a = create_worldline(&app, "financial", "issuer").await;
+        let wl_b = create_worldline(&app, "financial", "receiver").await;
+        let (commitment_id, _decision_receipt_id) =
+            submit_commitment_for_worldline(&app, &wl_a, "financial").await;
+
+        let settlement = serde_json::json!({
+            "commitment_id": commitment_id,
+            "decision_receipt_id": "dec-wrong-link",
+            "settlement_type": "dvp",
+            "legs": [
+                { "from": wl_a.clone(), "to": wl_b.clone(), "asset": "USD", "amount_minor": 150000 },
+                { "from": wl_b.clone(), "to": wl_a.clone(), "asset": "BTC", "amount_minor": 1000 }
+            ]
+        });
+
+        let submit = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/financial/settle")
+                    .header("content-type", "application/json")
+                    .body(Body::from(serde_json::to_string(&settlement).unwrap()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(submit.status(), StatusCode::BAD_REQUEST);
     }
 }

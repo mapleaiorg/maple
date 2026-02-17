@@ -40,9 +40,9 @@ pub use error::{GraphError, StorageError, ValidationError};
 pub use graph::{EvolutionChain, NodeContent, WllNode};
 pub use manager::{ContextGraphManager, InMemoryContextGraphManager};
 pub use nodes::{
-    CommitmentNode, ConsequenceNode, DecisionPoint, DeltaNode, DeltaSizeMetrics,
-    DeploymentMetrics, EvidenceBundleRef, HealthStatus, InferenceNode, IntentNode,
-    RejectedAlternative, StructuredRationale, SubstrateType,
+    CommitmentNode, ConsequenceNode, DecisionPoint, DeltaNode, DeltaSizeMetrics, DeploymentMetrics,
+    EvidenceBundleRef, HealthStatus, InferenceNode, IntentNode, RejectedAlternative,
+    StructuredRationale, SubstrateType,
 };
 pub use storage::{GraphStorage, InMemoryGraphStorage};
 pub use types::{ContentHash, GovernanceTier, NodeContentType, TemporalRange, ValidationResult};

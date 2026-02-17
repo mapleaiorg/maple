@@ -42,20 +42,9 @@ fn section(title: &str) {
     let left = pad / 2;
     let right = pad - left;
     println!();
-    println!(
-        " ┌{}┐",
-        "─".repeat(width)
-    );
-    println!(
-        " │{}  {}  {}│",
-        " ".repeat(left),
-        title,
-        " ".repeat(right)
-    );
-    println!(
-        " └{}┘",
-        "─".repeat(width)
-    );
+    println!(" ┌{}┐", "─".repeat(width));
+    println!(" │{}  {}  {}│", " ".repeat(left), title, " ".repeat(right));
+    println!(" └{}┘", "─".repeat(width));
 }
 
 fn ok(msg: &str) {
@@ -104,8 +93,10 @@ async fn run_demo() -> Result<(), Box<dyn std::error::Error>> {
     section("Phase A: Genesis Boot");
 
     let config = SeedConfig::demo();
-    info(&format!("SeedConfig::demo()  resonance_min={:.2}  max_steps={}",
-        config.resonance_min, config.max_evolution_steps));
+    info(&format!(
+        "SeedConfig::demo()  resonance_min={:.2}  max_steps={}",
+        config.resonance_min, config.max_evolution_steps
+    ));
 
     let result: GenesisResult = genesis_boot(config.clone()).await?;
     print_genesis_result(&result);
@@ -127,9 +118,9 @@ async fn run_demo() -> Result<(), Box<dyn std::error::Error>> {
     for i in 0..total_steps {
         let metrics = match i {
             0 | 2 | 4 => SimulatedWorkload::healthy_metrics(),
-            1         => SimulatedWorkload::stressed_metrics(),
-            3         => SimulatedWorkload::degrading_metrics(6),
-            _         => SimulatedWorkload::healthy_metrics(),
+            1 => SimulatedWorkload::stressed_metrics(),
+            3 => SimulatedWorkload::degrading_metrics(6),
+            _ => SimulatedWorkload::healthy_metrics(),
         };
 
         let label = step_label(i + 1, total_steps);
@@ -150,7 +141,10 @@ async fn run_demo() -> Result<(), Box<dyn std::error::Error>> {
     info(&format!("Rollbacks        : {}", km.rollbacks));
     info(&format!("Current resonance: {:.4}", km.current_resonance));
     info(&format!("Average resonance: {:.4}", km.avg_resonance()));
-    info(&format!("Success rate     : {:.1}%", km.success_rate() * 100.0));
+    info(&format!(
+        "Success rate     : {:.1}%",
+        km.success_rate() * 100.0
+    ));
 
     // ── Phase E: WLIR Module ────────────────────────────────────────
     section("Phase E: WLIR Module Creation + Verification");
@@ -172,7 +166,10 @@ fn print_genesis_result(r: &GenesisResult) {
     ok(&format!("WorldLine ID       : {}", r.worldline_id));
     ok(&format!("Invariants verified: {}", r.invariants_verified));
     ok(&format!("Initial resonance  : {:.4}", r.initial_resonance));
-    ok(&format!("Duration           : {} ms", r.genesis_duration_ms));
+    ok(&format!(
+        "Duration           : {} ms",
+        r.genesis_duration_ms
+    ));
 }
 
 // ── Evolution step helpers ──────────────────────────────────────────────
@@ -182,8 +179,14 @@ fn print_step_result(label: &str, result: &EvolutionStepResult) {
         EvolutionStepResult::Healthy { resonance } => {
             ok(&format!("{}  Healthy        R={:.4}", label, resonance));
         }
-        EvolutionStepResult::Evolved { resonance, description } => {
-            info(&format!("{}  Evolved        R={:.4}  {}", label, resonance, description));
+        EvolutionStepResult::Evolved {
+            resonance,
+            description,
+        } => {
+            info(&format!(
+                "{}  Evolved        R={:.4}  {}",
+                label, resonance, description
+            ));
         }
         EvolutionStepResult::EvidenceFailed { reason } => {
             warn(&format!("{}  EvidenceFailed  {}", label, reason));
@@ -215,30 +218,25 @@ fn demonstrate_wlir() -> Result<(), Box<dyn std::error::Error>> {
         allow_filesystem: false,
     };
 
-    let module = WlirFactoryModule::new(
-        "demo-transform",
-        provenance,
-        constraints,
-        "0.1.0",
-    )
-    .with_operator(OperatorDefinition::new(
-        "square",
-        vec!["x".into()],
-        "i64",
-        OperatorBody::Expression("(* x x)".into()),
-    ))
-    .with_operator(OperatorDefinition::new(
-        "hash_data",
-        vec!["data".into()],
-        "bytes",
-        OperatorBody::Native("blake3".into()),
-    ))
-    .with_operator(OperatorDefinition::new(
-        "pipeline",
-        vec!["input".into()],
-        "bytes",
-        OperatorBody::Composite(vec!["square".into(), "hash_data".into()]),
-    ));
+    let module = WlirFactoryModule::new("demo-transform", provenance, constraints, "0.1.0")
+        .with_operator(OperatorDefinition::new(
+            "square",
+            vec!["x".into()],
+            "i64",
+            OperatorBody::Expression("(* x x)".into()),
+        ))
+        .with_operator(OperatorDefinition::new(
+            "hash_data",
+            vec!["data".into()],
+            "bytes",
+            OperatorBody::Native("blake3".into()),
+        ))
+        .with_operator(OperatorDefinition::new(
+            "pipeline",
+            vec!["input".into()],
+            "bytes",
+            OperatorBody::Composite(vec!["square".into(), "hash_data".into()]),
+        ));
 
     info(&format!("Module name    : {}", module.name));
     info(&format!("Version        : {}", module.version));
@@ -294,9 +292,24 @@ async fn demonstrate_evidence() -> Result<(), Box<dyn std::error::Error>> {
     .build()
     .await?;
 
-    info(&format!("Tests            : {}/{}", bundle.tests_passed(), bundle.test_count()));
-    info(&format!("Invariants       : {}/{}", bundle.invariants_holding(), bundle.invariant_count()));
-    info(&format!("Repro build      : {}", if bundle.repro_build_verified() { "OK" } else { "FAIL" }));
+    info(&format!(
+        "Tests            : {}/{}",
+        bundle.tests_passed(),
+        bundle.test_count()
+    ));
+    info(&format!(
+        "Invariants       : {}/{}",
+        bundle.invariants_holding(),
+        bundle.invariant_count()
+    ));
+    info(&format!(
+        "Repro build      : {}",
+        if bundle.repro_build_verified() {
+            "OK"
+        } else {
+            "FAIL"
+        }
+    ));
     info(&format!("Equivalence tier : {}", bundle.equivalence_tier));
     info(&format!("Hash verified    : {}", bundle.verify_hash()));
 
@@ -330,13 +343,13 @@ mod tests {
     async fn genesis_boot_succeeds_with_demo_config() {
         let config = SeedConfig::demo();
         let result = genesis_boot(config).await;
-        assert!(result.is_ok(), "genesis_boot should succeed with demo config");
+        assert!(
+            result.is_ok(),
+            "genesis_boot should succeed with demo config"
+        );
 
         let r = result.unwrap();
-        assert_eq!(
-            r.phase_reached,
-            maple_waf_genesis::GenesisPhase::Complete
-        );
+        assert_eq!(r.phase_reached, maple_waf_genesis::GenesisPhase::Complete);
         assert_eq!(r.invariants_verified, 14);
         assert!(r.initial_resonance > 0.0);
     }

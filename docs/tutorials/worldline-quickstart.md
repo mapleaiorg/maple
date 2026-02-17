@@ -19,7 +19,7 @@ cargo test -p worldline-types -p worldline-identity -p worldline-core -p worldli
 ## 3. Run Core WorldLine Verification
 
 ```bash
-cargo test -p worldline-conformance -p worldline-integration -p maple-worldline-conformance
+cargo test -p worldline-conformance -p worldline-integration -p maple-worldline-conformance-suite -p maple-worldline-conformance
 ```
 
 ## 4. Start the Daemon (Terminal A)
@@ -71,11 +71,15 @@ JSON
 cargo run -p maple-cli -- commit submit --file /tmp/worldline-commitment.json
 ```
 
+Use the returned `commitment_id` and `decision_receipt_id` in the settlement payload.
+
 ## 7. Submit a Settlement + Check Projection
 
 ```bash
 cat >/tmp/worldline-settlement.json <<'JSON'
 {
+  "commitment_id": "REPLACE_WITH_COMMITMENT_ID",
+  "decision_receipt_id": "REPLACE_WITH_DECISION_RECEIPT_ID",
   "settlement_type": "dvp",
   "legs": [
     { "from": "REPLACE_WL_A", "to": "REPLACE_WL_B", "asset": "USD", "amount_minor": 150000 },

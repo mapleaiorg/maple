@@ -53,8 +53,10 @@ Compatibility wrappers remain for existing integrations:
 
 - `maple-mwl-types` -> `worldline-types`
 - `maple-mwl-identity` -> `worldline-identity`
-- `maple-mwl-conformance` -> `worldline-conformance`
-- `maple-mwl-integration` -> `worldline-integration`
+- `maple-worldline-conformance-suite` -> `worldline-conformance`
+- `maple-worldline-integration-suite` -> `worldline-integration`
+- `maple-mwl-conformance` -> legacy alias for `worldline-conformance`
+- `maple-mwl-integration` -> legacy alias for `worldline-integration`
 
 ## Commitment Gate Hardening (latest)
 

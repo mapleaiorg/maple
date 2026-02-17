@@ -69,9 +69,9 @@ impl DissonanceDetector {
         let mut events = Vec::new();
 
         if metrics.cpu_usage_pct > self.thresholds.cpu_high {
-            let severity =
-                ((metrics.cpu_usage_pct - self.thresholds.cpu_high) / (100.0 - self.thresholds.cpu_high))
-                    .min(1.0);
+            let severity = ((metrics.cpu_usage_pct - self.thresholds.cpu_high)
+                / (100.0 - self.thresholds.cpu_high))
+                .min(1.0);
             events.push(DissonanceEvent::new(
                 DissonanceCategory::Computational,
                 severity,
@@ -195,8 +195,10 @@ mod tests {
         let mut metrics = healthy_metrics();
         metrics.cpu_usage_pct = 95.0;
         let events = detector.detect(&metrics);
-        assert!(events.iter().any(|e| e.category == DissonanceCategory::Computational
-            && e.source_metric == "cpu_usage_pct"));
+        assert!(events
+            .iter()
+            .any(|e| e.category == DissonanceCategory::Computational
+                && e.source_metric == "cpu_usage_pct"));
     }
 
     #[test]
@@ -223,8 +225,12 @@ mod tests {
         let mut metrics = healthy_metrics();
         metrics.error_rate = 0.15;
         let events = detector.detect(&metrics);
-        assert!(events.iter().any(|e| e.category == DissonanceCategory::Semantic
-            && e.source_metric == "error_rate"));
+        assert!(
+            events
+                .iter()
+                .any(|e| e.category == DissonanceCategory::Semantic
+                    && e.source_metric == "error_rate")
+        );
     }
 
     #[test]
@@ -233,7 +239,9 @@ mod tests {
         let mut metrics = healthy_metrics();
         metrics.api_friction_score = 0.6;
         let events = detector.detect(&metrics);
-        assert!(events.iter().any(|e| e.source_metric == "api_friction_score"));
+        assert!(events
+            .iter()
+            .any(|e| e.source_metric == "api_friction_score"));
     }
 
     #[test]
@@ -242,8 +250,10 @@ mod tests {
         let mut metrics = healthy_metrics();
         metrics.policy_denial_rate = 0.25;
         let events = detector.detect(&metrics);
-        assert!(events.iter().any(|e| e.category == DissonanceCategory::PolicyDrift
-            && e.source_metric == "policy_denial_rate"));
+        assert!(events
+            .iter()
+            .any(|e| e.category == DissonanceCategory::PolicyDrift
+                && e.source_metric == "policy_denial_rate"));
     }
 
     #[test]
@@ -268,7 +278,11 @@ mod tests {
         metrics.resonance = 0.01;
         let events = detector.detect(&metrics);
         for e in &events {
-            assert!(e.severity >= 0.0 && e.severity <= 1.0, "severity out of range: {}", e.severity);
+            assert!(
+                e.severity >= 0.0 && e.severity <= 1.0,
+                "severity out of range: {}",
+                e.severity
+            );
         }
     }
 

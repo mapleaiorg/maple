@@ -1,9 +1,9 @@
 use crate::error::EvolutionError;
 use crate::types::{HardwareContext, Hypothesis, SynthesisResult};
 use async_trait::async_trait;
-use maple_waf_context_graph::{ContentHash, IntentNode, SubstrateType};
 #[cfg(test)]
 use maple_waf_context_graph::GovernanceTier;
+use maple_waf_context_graph::{ContentHash, IntentNode, SubstrateType};
 
 /// Trait for synthesis providers (LLM-powered or simulated).
 #[async_trait]
@@ -75,7 +75,10 @@ impl Synthesizer for SimulatedSynthesizer {
                     format!("hyp_{}", i),
                     format!("Hypothesis {} for: {}", i, intent.description),
                     SubstrateType::Rust,
-                    format!("// Simulated code for hypothesis {}\nfn optimized() {{ }}", i),
+                    format!(
+                        "// Simulated code for hypothesis {}\nfn optimized() {{ }}",
+                        i
+                    ),
                 )
                 .with_confidence(confidence)
                 .with_safety_score(safety)

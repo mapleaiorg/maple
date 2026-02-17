@@ -3,7 +3,9 @@ use crate::metrics::KernelMetrics;
 use maple_waf_context_graph::{
     ContextGraphManager, InMemoryContextGraphManager, IntentNode, NodeContent,
 };
-use maple_waf_evolution_engine::{HardwareContext, HypothesisEvaluator, SimulatedSynthesizer, Synthesizer};
+use maple_waf_evolution_engine::{
+    HardwareContext, HypothesisEvaluator, SimulatedSynthesizer, Synthesizer,
+};
 use maple_waf_genesis::{GenesisPhase, SeedConfig, Worldline};
 use maple_waf_resonance_monitor::{DissonanceThresholds, MonitorOrchestrator, SystemMetrics};
 use serde::{Deserialize, Serialize};
@@ -86,7 +88,9 @@ impl AutopoieticKernel {
 
         // Check max steps.
         if self.step_count >= self.config.max_evolution_steps {
-            return Err(KernelError::MaxStepsReached(self.config.max_evolution_steps));
+            return Err(KernelError::MaxStepsReached(
+                self.config.max_evolution_steps,
+            ));
         }
 
         self.step_count += 1;

@@ -16,6 +16,4 @@ pub mod genesis;
 
 pub use config::SeedConfig;
 pub use error::GenesisError;
-pub use genesis::{
-    create_worldline, genesis_boot, GenesisPhase, GenesisResult, Worldline,
-};
+pub use genesis::{create_worldline, genesis_boot, GenesisPhase, GenesisResult, Worldline};

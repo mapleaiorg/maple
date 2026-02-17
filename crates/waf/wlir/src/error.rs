@@ -61,8 +61,7 @@ mod tests {
 
     #[test]
     fn error_is_std_error() {
-        let err: Box<dyn std::error::Error> =
-            Box::new(WlirError::UnsafeOperation("test".into()));
+        let err: Box<dyn std::error::Error> = Box::new(WlirError::UnsafeOperation("test".into()));
         assert!(err.to_string().contains("unsafe operation"));
     }
 }

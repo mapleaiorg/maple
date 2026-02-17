@@ -20,6 +20,4 @@ pub use detector::DissonanceDetector;
 pub use error::MonitorError;
 pub use intent_builder::IntentBuilder;
 pub use orchestrator::MonitorOrchestrator;
-pub use types::{
-    DissonanceCategory, DissonanceEvent, DissonanceThresholds, SystemMetrics,
-};
+pub use types::{DissonanceCategory, DissonanceEvent, DissonanceThresholds, SystemMetrics};

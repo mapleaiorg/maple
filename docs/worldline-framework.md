@@ -48,7 +48,7 @@ Control-plane functions can be executed by humans or bots, but enforcement remai
 | 25 | Adaptive compiler | `worldline-substrate::compiler` (compat: `maple-worldline-compiler`) |
 | 26 | SAL | `worldline-substrate::sal` (compat: `maple-worldline-sal`) |
 | 27 | Hardware + bootstrap protocol | `worldline-substrate::hardware`, `worldline-substrate::bootstrap` |
-| 28 | EVOS integration + conformance | `worldline-substrate::evos`, `worldline-substrate::conformance`, `worldline-conformance` (compat: `maple-mwl-conformance`) |
+| 28 | EVOS integration + conformance | `worldline-substrate::evos`, `worldline-substrate::conformance`, `worldline-conformance` (compat: `maple-worldline-conformance-suite`, legacy: `maple-mwl-conformance`) |
 
 ## User-Facing Interfaces
 
@@ -75,8 +75,10 @@ Compatibility:
 | `maple-kernel-provenance` (+ fabric/types for lineage) | `worldline-ledger` |
 | `maple-kernel-governance` (+ gate/safety/profiles) | `worldline-governance` |
 | `maple-worldline-*` substrate crates | `worldline-substrate` |
-| `maple-mwl-conformance` | `worldline-conformance` |
-| `maple-mwl-integration` | `worldline-integration` |
+| `maple-worldline-conformance-suite` | `worldline-conformance` |
+| `maple-worldline-integration-suite` | `worldline-integration` |
+| `maple-mwl-conformance` | Legacy alias for `worldline-conformance` |
+| `maple-mwl-integration` | Legacy alias for `worldline-integration` |
 
 Implementation note:
 - Legacy crates stay available for compatibility.
@@ -100,10 +102,10 @@ All commands use `--endpoint` (default `http://localhost:8080`) and support `PAL
 WorldLine routes are merged into PALM daemon under `/api/v1`:
 
 - `POST /worldlines`, `GET /worldlines`, `GET /worldlines/:id`
-- `POST /commitments`, `GET /commitments/:id`, `GET /commitments/:id/audit-trail`
+- `POST /commitments` (returns `commitment_id` + `decision_receipt_id`), `GET /commitments/:id`, `GET /commitments/:id/audit-trail`
 - `GET /provenance/:event_id/ancestors`, `GET /provenance/worldline/:id/history`
 - `POST /governance/policies`, `GET /governance/policies`, `POST /governance/simulate`
-- `POST /financial/settle`, `GET /financial/:worldline_id/balance/:asset`
+- `POST /financial/settle` (requires `commitment_id` and `decision_receipt_id`), `GET /financial/:worldline_id/balance/:asset`
 - `GET /kernel/status`, `GET /kernel/metrics`
 
 ## Verification Status
@@ -111,7 +113,7 @@ WorldLine routes are merged into PALM daemon under `/api/v1`:
 The following suites pass in this repository:
 
 - `cargo test -p worldline-types -p worldline-identity -p worldline-core -p worldline-runtime -p worldline-ledger -p worldline-governance -p worldline-substrate`
-- `cargo test -p worldline-conformance -p worldline-integration -p maple-worldline-conformance`
+- `cargo test -p worldline-conformance -p worldline-integration -p maple-worldline-conformance-suite -p maple-worldline-conformance`
 - `cargo test -p maple-worldline-observation -p maple-worldline-meaning -p maple-worldline-intent -p maple-worldline-commitment -p maple-worldline-consequence -p maple-worldline-self-mod-gate -p maple-worldline-codegen -p maple-worldline-deployment -p maple-worldline-langgen -p maple-worldline-ir -p maple-worldline-compiler -p maple-worldline-sal -p maple-worldline-hardware -p maple-worldline-bootstrap -p maple-worldline-evos`
 - `cargo test -p maple-kernel-sdk -p maple-cli -p palm-daemon`
 

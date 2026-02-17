@@ -83,10 +83,7 @@ mod tests {
             "(module (func $f))",
         );
         let artifact = compiler.compile(&h, &simulated_hw()).await.unwrap();
-        assert_eq!(
-            artifact.metadata.get("target").unwrap(),
-            "Wasm",
-        );
+        assert_eq!(artifact.metadata.get("target").unwrap(), "Wasm",);
     }
 
     #[tokio::test]

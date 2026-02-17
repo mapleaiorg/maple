@@ -79,7 +79,10 @@ mod tests {
     async fn simulated_sandbox_produces_artifact() {
         let sandbox = SimulatedSandbox;
         let h = sample_hypothesis();
-        let artifact = sandbox.compile(&h, CompilationTarget::Native).await.unwrap();
+        let artifact = sandbox
+            .compile(&h, CompilationTarget::Native)
+            .await
+            .unwrap();
         assert!(artifact.verify_hash());
         assert_eq!(artifact.substrate, SubstrateType::Rust);
         assert_eq!(artifact.binary, b"fn main() {}");
@@ -90,7 +93,10 @@ mod tests {
         let sandbox = SimulatedSandbox;
         let h = sample_hypothesis();
         let artifact = sandbox.compile(&h, CompilationTarget::Wasm).await.unwrap();
-        assert_eq!(artifact.metadata.get("hypothesis_id").unwrap(), "h-sandbox-1");
+        assert_eq!(
+            artifact.metadata.get("hypothesis_id").unwrap(),
+            "h-sandbox-1"
+        );
         assert_eq!(artifact.metadata.get("target").unwrap(), "Wasm");
         assert_eq!(artifact.metadata.get("simulated").unwrap(), "true");
     }
@@ -114,7 +120,10 @@ mod tests {
 
         let sandbox = SimulatedSandbox;
         let h = sample_hypothesis();
-        let artifact = sandbox.compile(&h, CompilationTarget::Native).await.unwrap();
+        let artifact = sandbox
+            .compile(&h, CompilationTarget::Native)
+            .await
+            .unwrap();
 
         let after_ms = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)

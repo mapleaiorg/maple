@@ -77,8 +77,7 @@ impl MonitorOrchestrator {
         }
 
         // Check cooldown (skip for first invocation when last_intent_ms == 0).
-        if self.last_intent_ms > 0
-            && now_ms.saturating_sub(self.last_intent_ms) < self.cooldown_ms
+        if self.last_intent_ms > 0 && now_ms.saturating_sub(self.last_intent_ms) < self.cooldown_ms
         {
             return Vec::new();
         }
@@ -155,8 +154,8 @@ mod tests {
 
     #[test]
     fn cooldown_prevents_repeated_intents() {
-        let mut orch = MonitorOrchestrator::new(DissonanceThresholds::default())
-            .with_cooldown_ms(5000);
+        let mut orch =
+            MonitorOrchestrator::new(DissonanceThresholds::default()).with_cooldown_ms(5000);
         let intents1 = orch.process_metrics(&stressed_metrics(), 1000);
         assert!(!intents1.is_empty());
 

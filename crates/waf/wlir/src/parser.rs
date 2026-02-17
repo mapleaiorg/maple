@@ -106,7 +106,9 @@ fn parse_tokens<'a>(tokens: &'a [String]) -> Result<(SExpr, &'a [String]), WlirE
 
         loop {
             if rest.is_empty() {
-                return Err(WlirError::ParseError("unbalanced parentheses: missing ')'".into()));
+                return Err(WlirError::ParseError(
+                    "unbalanced parentheses: missing ')'".into(),
+                ));
             }
             if rest[0] == ")" {
                 rest = &rest[1..];
@@ -156,10 +158,7 @@ mod tests {
             SExpr::List(vec![
                 SExpr::Atom("foo".into()),
                 SExpr::Atom("bar".into()),
-                SExpr::List(vec![
-                    SExpr::Atom("baz".into()),
-                    SExpr::Atom("42".into()),
-                ]),
+                SExpr::List(vec![SExpr::Atom("baz".into()), SExpr::Atom("42".into()),]),
             ])
         );
     }

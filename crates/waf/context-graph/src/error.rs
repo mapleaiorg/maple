@@ -12,10 +12,7 @@ pub enum GraphError {
     #[error("incomplete evolution chain: missing {0}")]
     IncompleteChain(NodeContentType),
     #[error("worldline mismatch: expected {expected}, got {actual}")]
-    WorldlineMismatch {
-        expected: String,
-        actual: String,
-    },
+    WorldlineMismatch { expected: String, actual: String },
 }
 
 /// Errors from node or chain validation.

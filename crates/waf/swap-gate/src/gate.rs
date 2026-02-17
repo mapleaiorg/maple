@@ -201,7 +201,10 @@ mod tests {
         let proposal = make_proposal(GovernanceTier::Tier3);
         let result = gate.execute(&proposal, &evidence, vec![1]).await;
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), SwapError::GovernanceDenied(_)));
+        assert!(matches!(
+            result.unwrap_err(),
+            SwapError::GovernanceDenied(_)
+        ));
     }
 
     #[tokio::test]
@@ -241,8 +244,7 @@ mod tests {
         // Need to create shadow that succeeds but behavioral_match = false
         // SimulatedShadowRunner::passing sets behavioral_match to true
         // Let's test shadow failure instead
-        let gate = WafSwapGate::new()
-            .with_shadow_runner(SimulatedShadowRunner::failing());
+        let gate = WafSwapGate::new().with_shadow_runner(SimulatedShadowRunner::failing());
         let evidence = make_passing_evidence();
         let proposal = make_proposal(GovernanceTier::Tier0);
         let result = gate.execute(&proposal, &evidence, vec![1]).await;

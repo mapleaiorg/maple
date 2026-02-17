@@ -3,8 +3,8 @@ use async_trait::async_trait;
 
 /// All 14 invariants (8 seed + 6 WAF).
 pub const ALL_INVARIANT_IDS: &[&str] = &[
-    "I.1", "I.2", "I.3", "I.4", "I.5", "I.6", "I.7", "I.8",
-    "I.WAF-1", "I.WAF-2", "I.WAF-3", "I.WAF-4", "I.WAF-5", "I.WAF-6",
+    "I.1", "I.2", "I.3", "I.4", "I.5", "I.6", "I.7", "I.8", "I.WAF-1", "I.WAF-2", "I.WAF-3",
+    "I.WAF-4", "I.WAF-5", "I.WAF-6",
 ];
 
 /// Descriptions for the 14 invariants.
@@ -23,7 +23,9 @@ pub fn invariant_description(id: &str) -> &'static str {
         "I.WAF-3" => "Swap Atomicity: Logic swap is atomic; no partial upgrades",
         "I.WAF-4" => "Rollback Guarantee: System can always revert to last stable state",
         "I.WAF-5" => "Evidence Completeness: No swap without satisfying EvidenceBundle",
-        "I.WAF-6" => "Resonance Monotonicity: Evolution must not decrease resonance below threshold",
+        "I.WAF-6" => {
+            "Resonance Monotonicity: Evolution must not decrease resonance below threshold"
+        }
         _ => "Unknown invariant",
     }
 }

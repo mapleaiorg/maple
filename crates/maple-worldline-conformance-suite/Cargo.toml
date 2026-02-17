@@ -1,15 +1,15 @@
 [package]
-name = "maple-mwl-conformance"
+name = "maple-worldline-conformance-suite"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-description = "Legacy compatibility wrapper (prefer maple-worldline-conformance-suite or worldline-conformance)"
+description = "Maple top-level conformance suite wrapper for worldline-conformance"
 
 [lib]
-name = "mwl_conformance"
+name = "maple_worldline_conformance_suite"
 path = "src/lib.rs"
 
 [dependencies]

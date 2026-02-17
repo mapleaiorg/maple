@@ -1,6 +1,6 @@
-use maple_waf_context_graph::IntentNode;
 #[cfg(test)]
 use maple_waf_context_graph::GovernanceTier;
+use maple_waf_context_graph::IntentNode;
 
 /// Builds system prompts for LLM synthesis with invariant awareness.
 pub struct SystemPromptBuilder;
@@ -26,10 +26,7 @@ impl SystemPromptBuilder {
         }
 
         // Governance constraints.
-        prompt.push_str(&format!(
-            "## Governance Tier: {}\n",
-            intent.governance_tier
-        ));
+        prompt.push_str(&format!("## Governance Tier: {}\n", intent.governance_tier));
         if intent.governance_tier.requires_human_approval() {
             prompt.push_str("⚠ This change requires human review.\n");
         }

@@ -99,7 +99,11 @@ async fn anchor_axioms() -> Result<usize, GenesisError> {
     let results = checker.check_all().await;
     let all_hold = results.iter().all(|r| r.holds);
     if !all_hold {
-        let violations: Vec<_> = results.iter().filter(|r| !r.holds).map(|r| r.id.clone()).collect();
+        let violations: Vec<_> = results
+            .iter()
+            .filter(|r| !r.holds)
+            .map(|r| r.id.clone())
+            .collect();
         return Err(GenesisError::AxiomaticAnchoringFailed(format!(
             "invariant violations: {:?}",
             violations
@@ -210,10 +214,7 @@ mod tests {
             format!("{}", GenesisPhase::SubstrateAttestation),
             "Phase 1: Substrate Attestation"
         );
-        assert_eq!(
-            format!("{}", GenesisPhase::Complete),
-            "Genesis Complete"
-        );
+        assert_eq!(format!("{}", GenesisPhase::Complete), "Genesis Complete");
     }
 
     #[tokio::test]

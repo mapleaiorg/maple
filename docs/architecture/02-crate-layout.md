@@ -19,6 +19,8 @@ crates/
     integration/  (crate: worldline-integration)
 
   # compatibility and legacy implementation crates
+  maple-worldline-conformance-suite
+  maple-worldline-integration-suite
   maple-mwl-*
   maple-kernel-*
   maple-worldline-*
@@ -51,7 +53,8 @@ worldline-substrate -> maple-worldline-{observation,meaning,intent,commitment,
                                         deployment,ir,langgen,compiler,sal,
                                         hardware,bootstrap,evos,conformance}
 
-maple-mwl-{conformance,integration} -> worldline-{conformance,integration}
+maple-worldline-{conformance-suite,integration-suite} -> worldline-{conformance,integration}
+maple-mwl-{conformance,integration} -> legacy aliases for maple-worldline-{conformance-suite,integration-suite}
 worldline-{conformance,integration} -> worldline-{core,runtime,ledger}
 maple-worldline-*                   -> worldline-{core,runtime} (selected crates)
 ```
@@ -78,8 +81,10 @@ flowchart TB
     MK["maple-kernel-*"]
     MR["maple-runtime"]
     MWS["maple-worldline-*"]
-    MMC["maple-mwl-conformance"]
-    MMI2["maple-mwl-integration"]
+    MWCS["maple-worldline-conformance-suite"]
+    MWIS["maple-worldline-integration-suite"]
+    MMC["maple-mwl-conformance (legacy alias)"]
+    MMI2["maple-mwl-integration (legacy alias)"]
   end
 
   subgraph Validation["Conformance and integration"]
@@ -101,11 +106,13 @@ flowchart TB
   MC --> WC
   MC --> WR
   MC --> WL
-  MMC --> MC
+  MWCS --> MC
+  MMC --> MWCS
   MI --> WC
   MI --> WR
   MI --> WL
-  MMI2 --> MI
+  MWIS --> MI
+  MMI2 --> MWIS
 ```
 
 ### UML-style component view
@@ -127,6 +134,8 @@ classDiagram
   class maple_kernel_family
   class maple_runtime
   class maple_worldline_family
+  class maple_worldline_conformance_suite
+  class maple_worldline_integration_suite
   class maple_mwl_conformance
   class maple_mwl_integration
 
@@ -140,11 +149,13 @@ classDiagram
   worldline_ledger --> maple_kernel_family
   worldline_governance --> maple_kernel_family
   worldline_substrate --> maple_worldline_family
-  maple_mwl_conformance --> worldline_conformance
+  maple_worldline_conformance_suite --> worldline_conformance
+  maple_mwl_conformance --> maple_worldline_conformance_suite
   worldline_conformance --> worldline_core
   worldline_conformance --> worldline_runtime
   worldline_conformance --> worldline_ledger
-  maple_mwl_integration --> worldline_integration
+  maple_worldline_integration_suite --> worldline_integration
+  maple_mwl_integration --> maple_worldline_integration_suite
   worldline_integration --> worldline_core
   worldline_integration --> worldline_runtime
   worldline_integration --> worldline_ledger
@@ -168,6 +179,8 @@ classDiagram
 - `maple-mwl-types` and `maple-mwl-identity` are compatibility wrappers.
 - `worldline-core` composes `worldline-types` and `worldline-identity`.
 - `worldline-conformance` and `worldline-integration` are canonical suite crates.
-- `maple-mwl-conformance` and `maple-mwl-integration` are compatibility wrappers.
+- `maple-worldline-conformance-suite` and `maple-worldline-integration-suite`
+  are Maple-level suite wrappers.
+- `maple-mwl-conformance` and `maple-mwl-integration` remain legacy aliases.
 - Legacy `maple-kernel-*` and `maple-worldline-*` crates remain the implementation
   substrate for one compatibility cycle.

@@ -81,12 +81,14 @@ impl IBankBridge {
     /// - `amount_minor` → `amount_minor` (u64 → i64)
     /// - `currency` → `asset`
     /// - `transaction_type` → `settlement_type`
+    /// - `decision_receipt_id` → explicit commitment-boundary linkage
     pub fn create_financial_commitment(
         declaring_identity: WorldlineId,
         counterparty: WorldlineId,
         asset: AssetId,
         amount_minor: u64,
         settlement_type: SettlementType,
+        decision_receipt_id: impl Into<String>,
     ) -> FinancialCommitment {
         FinancialCommitment {
             commitment_id: CommitmentId::new(),
@@ -95,6 +97,7 @@ impl IBankBridge {
             settlement_type,
             counterparty,
             declaring_identity,
+            decision_receipt_id: decision_receipt_id.into(),
             created_at: TemporalAnchor::now(0),
         }
     }
@@ -183,6 +186,7 @@ mod tests {
             usd(),
             30_000_000, // $300K
             SettlementType::FreeOfPayment,
+            "dec-rcpt-ibank-aml-1",
         );
 
         // Register collateral so we don't fail on collateral check
@@ -215,6 +219,7 @@ mod tests {
             usd(),
             50_000, // $500
             SettlementType::FreeOfPayment,
+            "dec-rcpt-ibank-small-1",
         );
 
         assert!(bridge.pre_check(&commitment).is_ok());
@@ -228,6 +233,7 @@ mod tests {
             usd(),
             100_000,
             SettlementType::DvP,
+            "dec-rcpt-ibank-map-1",
         );
 
         assert_eq!(fc.amount_minor, 100_000);
@@ -235,6 +241,7 @@ mod tests {
         assert_eq!(fc.settlement_type, SettlementType::DvP);
         assert_eq!(fc.declaring_identity, wid_a());
         assert_eq!(fc.counterparty, wid_b());
+        assert_eq!(fc.decision_receipt_id, "dec-rcpt-ibank-map-1");
     }
 
     #[test]

@@ -125,7 +125,7 @@ All endpoints are under `/api/v1`.
 | `POST` | `/worldlines` | Create worldline (`profile`, optional `label`) |
 | `GET` | `/worldlines` | List worldlines |
 | `GET` | `/worldlines/:id` | Get worldline status |
-| `POST` | `/commitments` | Submit commitment declaration |
+| `POST` | `/commitments` | Submit commitment declaration (returns `commitment_id` + `decision_receipt_id`) |
 | `GET` | `/commitments/:id` | Get commitment status |
 | `GET` | `/commitments/:id/audit-trail` | Get gate-stage audit trail |
 | `GET` | `/provenance/:event_id/ancestors` | Traverse event ancestry (`depth` query) |
@@ -133,7 +133,7 @@ All endpoints are under `/api/v1`.
 | `POST` | `/governance/policies` | Add governance policy |
 | `GET` | `/governance/policies` | List governance policies |
 | `POST` | `/governance/simulate` | Simulate policy decision for a payload |
-| `POST` | `/financial/settle` | Submit settlement legs |
+| `POST` | `/financial/settle` | Submit settlement legs (`commitment_id` + `decision_receipt_id` required) |
 | `GET` | `/financial/:worldline_id/balance/:asset` | Balance projection |
 | `GET` | `/kernel/status` | WorldLine kernel status |
 | `GET` | `/kernel/metrics` | WorldLine kernel metrics |

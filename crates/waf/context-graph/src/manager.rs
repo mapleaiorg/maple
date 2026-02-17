@@ -82,9 +82,7 @@ impl InMemoryContextGraphManager {
                 actual: format!("poisoned: {}", e),
             })?;
 
-        let wl_chains = chains
-            .entry(node.worldline_id.clone())
-            .or_default();
+        let wl_chains = chains.entry(node.worldline_id.clone()).or_default();
 
         match node.content_type() {
             NodeContentType::Intent => {
@@ -100,11 +98,11 @@ impl InMemoryContextGraphManager {
             | NodeContentType::Commitment
             | NodeContentType::Consequence => {
                 // Find the chain that has one of our parents as its latest node.
-                if let Some(chain) = wl_chains.iter_mut().rev().find(|c| {
-                    node.parent_ids
-                        .iter()
-                        .any(|p| c.node_ids().contains(p))
-                }) {
+                if let Some(chain) = wl_chains
+                    .iter_mut()
+                    .rev()
+                    .find(|c| node.parent_ids.iter().any(|p| c.node_ids().contains(p)))
+                {
                     match node.content_type() {
                         NodeContentType::Inference => chain.inference = Some(node.id.clone()),
                         NodeContentType::Delta => chain.delta = Some(node.id.clone()),
@@ -137,7 +135,13 @@ impl ContextGraphManager for InMemoryContextGraphManager {
         timestamp: TemporalAnchor,
         governance_tier: GovernanceTier,
     ) -> Result<ContentHash, GraphError> {
-        let node = WllNode::new(worldline_id, content, parent_ids, timestamp, governance_tier);
+        let node = WllNode::new(
+            worldline_id,
+            content,
+            parent_ids,
+            timestamp,
+            governance_tier,
+        );
         let id = node.id.clone();
 
         // Validate content hash (should always pass for freshly created nodes).
@@ -210,8 +214,8 @@ impl ContextGraphManager for InMemoryContextGraphManager {
 mod tests {
     use super::*;
     use crate::nodes::{
-        ConsequenceNode, DeltaNode, EvidenceBundleRef, InferenceNode, IntentNode, SubstrateType,
-        CommitmentNode,
+        CommitmentNode, ConsequenceNode, DeltaNode, EvidenceBundleRef, InferenceNode, IntentNode,
+        SubstrateType,
     };
 
     fn test_worldline() -> WorldlineId {

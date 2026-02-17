@@ -21,7 +21,10 @@ pub trait GraphStorage: Send + Sync {
     async fn contains(&self, id: &ContentHash) -> Result<bool, StorageError>;
 
     /// Get all nodes for a worldline.
-    async fn get_by_worldline(&self, worldline_id: &WorldlineId) -> Result<Vec<WllNode>, StorageError>;
+    async fn get_by_worldline(
+        &self,
+        worldline_id: &WorldlineId,
+    ) -> Result<Vec<WllNode>, StorageError>;
 
     /// Get nodes by content type.
     async fn get_by_type(

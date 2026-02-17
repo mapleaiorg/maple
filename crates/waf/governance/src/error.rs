@@ -11,10 +11,7 @@ pub enum GovernanceError {
 
     /// The governance tier of the caller is insufficient for the operation.
     #[error("insufficient governance tier: required {required}, actual {actual}")]
-    InsufficientTier {
-        required: String,
-        actual: String,
-    },
+    InsufficientTier { required: String, actual: String },
 
     /// A quorum of approvers was not reached.
     #[error("quorum not reached: {0}")]

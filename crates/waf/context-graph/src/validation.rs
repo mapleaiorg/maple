@@ -44,10 +44,7 @@ impl GraphValidator {
             checks += 1;
             match storage.contains(parent_id).await {
                 Ok(true) => passed += 1,
-                Ok(false) => errors.push(format!(
-                    "dangling parent: {}",
-                    parent_id
-                )),
+                Ok(false) => errors.push(format!("dangling parent: {}", parent_id)),
                 Err(e) => errors.push(format!("storage lookup failed: {}", e)),
             }
         }
@@ -68,7 +65,10 @@ impl GraphValidator {
                 }
                 Ok(None) => {
                     // Already caught by parent existence check.
-                    errors.push(format!("parent not found for temporal check: {}", parent_id));
+                    errors.push(format!(
+                        "parent not found for temporal check: {}",
+                        parent_id
+                    ));
                 }
                 Err(e) => errors.push(format!("storage error during temporal check: {}", e)),
             }
@@ -98,7 +98,11 @@ impl GraphValidator {
             }
             visited.insert(current_id.clone());
 
-            let node = match storage.get(&current_id).await.map_err(GraphError::Storage)? {
+            let node = match storage
+                .get(&current_id)
+                .await
+                .map_err(GraphError::Storage)?
+            {
                 Some(n) => n,
                 None => {
                     // Missing node in chain — record as validation error, not hard error.
@@ -123,7 +127,11 @@ impl GraphValidator {
         if all_errors.is_empty() {
             Ok(ValidationResult::ok(total_checks))
         } else {
-            Ok(ValidationResult::failed(total_checks, total_passed, all_errors))
+            Ok(ValidationResult::failed(
+                total_checks,
+                total_passed,
+                all_errors,
+            ))
         }
     }
 
@@ -147,7 +155,11 @@ mod tests {
     use crate::types::GovernanceTier;
     use worldline_types::{EventId, TemporalAnchor, WorldlineId};
 
-    fn make_intent_node(wl: &WorldlineId, ts_ms: u64, parents: Vec<crate::types::ContentHash>) -> WllNode {
+    fn make_intent_node(
+        wl: &WorldlineId,
+        ts_ms: u64,
+        parents: Vec<crate::types::ContentHash>,
+    ) -> WllNode {
         let intent = IntentNode::new(EventId::new(), "test", GovernanceTier::Tier0);
         WllNode::new(
             wl.clone(),
@@ -165,7 +177,9 @@ mod tests {
         let node = make_intent_node(&wl, 100, vec![]);
         storage.put(node.clone()).await.unwrap();
 
-        let result = GraphValidator::validate_node(&node, &storage).await.unwrap();
+        let result = GraphValidator::validate_node(&node, &storage)
+            .await
+            .unwrap();
         assert!(result.valid);
         assert!(result.checks_performed >= 1);
     }
@@ -182,7 +196,9 @@ mod tests {
         let child = make_intent_node(&wl, 200, vec![parent_id]);
         storage.put(child.clone()).await.unwrap();
 
-        let result = GraphValidator::validate_node(&child, &storage).await.unwrap();
+        let result = GraphValidator::validate_node(&child, &storage)
+            .await
+            .unwrap();
         assert!(result.valid);
     }
 
@@ -195,7 +211,9 @@ mod tests {
         let node = make_intent_node(&wl, 100, vec![dangling]);
         storage.put(node.clone()).await.unwrap();
 
-        let result = GraphValidator::validate_node(&node, &storage).await.unwrap();
+        let result = GraphValidator::validate_node(&node, &storage)
+            .await
+            .unwrap();
         assert!(!result.valid);
         assert!(result.errors.iter().any(|e| e.contains("dangling")));
     }
@@ -213,7 +231,9 @@ mod tests {
         let child = make_intent_node(&wl, 100, vec![parent_id]);
         storage.put(child.clone()).await.unwrap();
 
-        let result = GraphValidator::validate_node(&child, &storage).await.unwrap();
+        let result = GraphValidator::validate_node(&child, &storage)
+            .await
+            .unwrap();
         assert!(!result.valid);
         assert!(result.errors.iter().any(|e| e.contains("temporal")));
     }
@@ -230,7 +250,9 @@ mod tests {
         // We store the node under its tampered ID.
         storage.put(node.clone()).await.unwrap();
 
-        let result = GraphValidator::validate_node(&node, &storage).await.unwrap();
+        let result = GraphValidator::validate_node(&node, &storage)
+            .await
+            .unwrap();
         assert!(!result.valid);
         assert!(result.errors.iter().any(|e| e.contains("content hash")));
     }
@@ -245,7 +267,9 @@ mod tests {
         node.sign(&signing_key);
         storage.put(node.clone()).await.unwrap();
 
-        let result = GraphValidator::validate_node(&node, &storage).await.unwrap();
+        let result = GraphValidator::validate_node(&node, &storage)
+            .await
+            .unwrap();
         assert!(result.valid);
         // Should have 2 checks: content hash + signature.
         assert!(result.checks_performed >= 2);
@@ -268,7 +292,9 @@ mod tests {
         let n3_id = n3.id.clone();
         storage.put(n3).await.unwrap();
 
-        let result = GraphValidator::validate_chain(&n3_id, &storage).await.unwrap();
+        let result = GraphValidator::validate_chain(&n3_id, &storage)
+            .await
+            .unwrap();
         assert!(result.valid);
         // 3 nodes, each with content hash check + parent checks.
         assert!(result.checks_performed >= 3);
@@ -289,7 +315,9 @@ mod tests {
         let n2_id = n2.id.clone();
         storage.put(n2).await.unwrap();
 
-        let result = GraphValidator::validate_chain(&n2_id, &storage).await.unwrap();
+        let result = GraphValidator::validate_chain(&n2_id, &storage)
+            .await
+            .unwrap();
         assert!(!result.valid);
     }
 

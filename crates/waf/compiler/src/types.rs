@@ -123,35 +123,23 @@ mod tests {
     #[test]
     fn artifact_new_computes_hash() {
         let binary = vec![0xDE, 0xAD, 0xBE, 0xEF];
-        let artifact = ExecutableArtifact::new(
-            SubstrateType::Rust,
-            binary.clone(),
-            HashMap::new(),
-            1000,
-        );
+        let artifact =
+            ExecutableArtifact::new(SubstrateType::Rust, binary.clone(), HashMap::new(), 1000);
         assert_eq!(artifact.hash, ContentHash::hash(&binary));
         assert!(!artifact.hash.is_zero());
     }
 
     #[test]
     fn artifact_verify_hash_passes() {
-        let artifact = ExecutableArtifact::new(
-            SubstrateType::Wasm,
-            vec![1, 2, 3],
-            HashMap::new(),
-            2000,
-        );
+        let artifact =
+            ExecutableArtifact::new(SubstrateType::Wasm, vec![1, 2, 3], HashMap::new(), 2000);
         assert!(artifact.verify_hash());
     }
 
     #[test]
     fn artifact_verify_hash_fails_on_tamper() {
-        let mut artifact = ExecutableArtifact::new(
-            SubstrateType::Cuda,
-            vec![10, 20, 30],
-            HashMap::new(),
-            3000,
-        );
+        let mut artifact =
+            ExecutableArtifact::new(SubstrateType::Cuda, vec![10, 20, 30], HashMap::new(), 3000);
         // Tamper with the binary after construction.
         artifact.binary.push(0xFF);
         assert!(!artifact.verify_hash());

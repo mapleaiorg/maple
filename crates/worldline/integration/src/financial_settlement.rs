@@ -207,6 +207,7 @@ fn test_regulatory_policy_enforcement() {
         settlement_type: SettlementType::FreeOfPayment,
         counterparty: bob(),
         declaring_identity: wid.clone(),
+        decision_receipt_id: "dec-rcpt-int-001".into(),
         created_at: TemporalAnchor::now(0),
     };
 

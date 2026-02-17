@@ -2449,6 +2449,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "maple-worldline-conformance-suite"
+version = "0.1.2"
+dependencies = [
+ "worldline-conformance",
+]
+
+[[package]]
 name = "maple-worldline-consequence"
 version = "0.1.2"
 dependencies = [
@@ -2509,6 +2516,13 @@ dependencies = [
  "tracing",
  "uuid",
  "worldline-core",
+]
+
+[[package]]
+name = "maple-worldline-integration-suite"
+version = "0.1.2"
+dependencies = [
+ "worldline-integration",
 ]
 
 [[package]]

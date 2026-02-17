@@ -7,6 +7,7 @@ use crate::error::FinancialError;
 use crate::regulatory::RegulatoryEngine;
 use crate::types::{
     AssetId, AtomicSettlement, CollateralRecord, FinancialCommitment, SettledLeg, SettlementLeg,
+    SettlementType,
 };
 use maple_mwl_types::TemporalAnchor;
 
@@ -106,16 +107,28 @@ impl FinancialGateExtension {
     /// that all legs are valid and would settle atomically.
     pub fn dvp_atomicity(
         &self,
+        commitment: &FinancialCommitment,
         legs: &[SettlementLeg],
     ) -> Result<AtomicSettlement, FinancialError> {
+        self.validate_decision_receipt_link(commitment)?;
+
         if legs.is_empty() {
             return Err(FinancialError::DvPViolation {
                 message: "No settlement legs provided".into(),
             });
         }
 
-        // For DvP, we need exactly 2 legs (delivery + payment)
-        // For PvP, we need exactly 2 legs (payment + payment)
+        if matches!(
+            commitment.settlement_type,
+            SettlementType::DvP | SettlementType::PvP
+        ) && legs.len() < 2
+        {
+            return Err(FinancialError::LegMismatch {
+                expected: 2,
+                actual: legs.len(),
+            });
+        }
+
         // Validate all legs have positive amounts
         for (i, leg) in legs.iter().enumerate() {
             if leg.amount_minor <= 0 {
@@ -125,10 +138,15 @@ impl FinancialGateExtension {
             }
         }
 
+        self.validate_settlement_matches_commitment(commitment, legs)?;
+
         // Validate that legs form a valid pair:
         // Leg 0: A -> B (asset X)
         // Leg 1: B -> A (asset Y) [or same asset for PvP]
-        if legs.len() >= 2 {
+        if matches!(
+            commitment.settlement_type,
+            SettlementType::DvP | SettlementType::PvP
+        ) {
             let leg_a = &legs[0];
             let leg_b = &legs[1];
 
@@ -206,8 +224,74 @@ impl FinancialGateExtension {
     /// 2. Regulatory check
     /// (DvP atomicity is checked during settlement execution)
     pub fn pre_check(&self, commitment: &FinancialCommitment) -> Result<(), FinancialError> {
+        self.validate_decision_receipt_link(commitment)?;
         self.collateral_check(commitment)?;
         self.regulatory_check(commitment)?;
+        Ok(())
+    }
+
+    fn validate_decision_receipt_link(
+        &self,
+        commitment: &FinancialCommitment,
+    ) -> Result<(), FinancialError> {
+        if !commitment.has_decision_receipt_link() {
+            return Err(FinancialError::MissingDecisionReceiptLink);
+        }
+
+        let receipt_id = commitment.decision_receipt_id.trim();
+        if receipt_id.len() < 6 || receipt_id.chars().any(|c| c.is_whitespace()) {
+            return Err(FinancialError::InvalidDecisionReceiptLink {
+                receipt_id: commitment.decision_receipt_id.clone(),
+            });
+        }
+
+        Ok(())
+    }
+
+    fn validate_settlement_matches_commitment(
+        &self,
+        commitment: &FinancialCommitment,
+        legs: &[SettlementLeg],
+    ) -> Result<(), FinancialError> {
+        let declaring_identity = &commitment.declaring_identity;
+        let counterparty = &commitment.counterparty;
+
+        for leg in legs {
+            let from_matches = leg.from == *declaring_identity || leg.from == *counterparty;
+            let to_matches = leg.to == *declaring_identity || leg.to == *counterparty;
+            if !from_matches || !to_matches || leg.from == leg.to {
+                return Err(FinancialError::SettlementPartiesMismatch {
+                    declaring_identity: declaring_identity.to_string(),
+                    counterparty: counterparty.to_string(),
+                });
+            }
+        }
+
+        let has_primary_leg = legs
+            .iter()
+            .any(|leg| leg.from == *declaring_identity && leg.to == *counterparty);
+        if !has_primary_leg {
+            return Err(FinancialError::SettlementCommitmentMismatch {
+                commitment_id: commitment.commitment_id.to_string(),
+                message: "missing declaring_identity -> counterparty settlement leg".into(),
+            });
+        }
+
+        if matches!(
+            commitment.settlement_type,
+            SettlementType::DvP | SettlementType::PvP
+        ) {
+            let has_counter_leg = legs
+                .iter()
+                .any(|leg| leg.from == *counterparty && leg.to == *declaring_identity);
+            if !has_counter_leg {
+                return Err(FinancialError::SettlementCommitmentMismatch {
+                    commitment_id: commitment.commitment_id.to_string(),
+                    message: "missing counterparty -> declaring_identity settlement leg".into(),
+                });
+            }
+        }
+
         Ok(())
     }
 }
@@ -221,7 +305,6 @@ impl Default for FinancialGateExtension {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::SettlementType;
     use maple_mwl_types::{CommitmentId, IdentityMaterial};
 
     fn wid_a() -> WorldlineId {
@@ -248,6 +331,7 @@ mod tests {
             settlement_type: SettlementType::DvP,
             counterparty: wid_b(),
             declaring_identity: wid_a(),
+            decision_receipt_id: "dec-rcpt-test-001".into(),
             created_at: TemporalAnchor::now(0),
         }
     }
@@ -314,6 +398,7 @@ mod tests {
     #[test]
     fn dvp_atomicity_succeeds_for_valid_pair() {
         let ext = FinancialGateExtension::new();
+        let commitment = test_commitment(100_000);
         let legs = vec![
             SettlementLeg {
                 from: wid_a(),
@@ -329,7 +414,7 @@ mod tests {
             },
         ];
 
-        let result = ext.dvp_atomicity(&legs).unwrap();
+        let result = ext.dvp_atomicity(&commitment, &legs).unwrap();
         assert!(result.atomic);
         assert_eq!(result.legs.len(), 2);
         assert!(result.legs.iter().all(|l| l.settled));
@@ -338,8 +423,9 @@ mod tests {
     #[test]
     fn dvp_atomicity_rejects_empty_legs() {
         let ext = FinancialGateExtension::new();
+        let commitment = test_commitment(100_000);
         assert!(matches!(
-            ext.dvp_atomicity(&[]),
+            ext.dvp_atomicity(&commitment, &[]),
             Err(FinancialError::DvPViolation { .. })
         ));
     }
@@ -347,15 +433,24 @@ mod tests {
     #[test]
     fn dvp_atomicity_rejects_zero_amount() {
         let ext = FinancialGateExtension::new();
-        let legs = vec![SettlementLeg {
-            from: wid_a(),
-            to: wid_b(),
-            asset: usd(),
-            amount_minor: 0,
-        }];
+        let commitment = test_commitment(100_000);
+        let legs = vec![
+            SettlementLeg {
+                from: wid_a(),
+                to: wid_b(),
+                asset: usd(),
+                amount_minor: 0,
+            },
+            SettlementLeg {
+                from: wid_b(),
+                to: wid_a(),
+                asset: btc(),
+                amount_minor: 1_000_000,
+            },
+        ];
 
         assert!(matches!(
-            ext.dvp_atomicity(&legs),
+            ext.dvp_atomicity(&commitment, &legs),
             Err(FinancialError::DvPViolation { .. })
         ));
     }
@@ -363,6 +458,7 @@ mod tests {
     #[test]
     fn dvp_atomicity_rejects_mismatched_counterparties() {
         let ext = FinancialGateExtension::new();
+        let commitment = test_commitment(100_000);
         let wid_c = WorldlineId::derive(&IdentityMaterial::GenesisHash([3u8; 32]));
         let legs = vec![
             SettlementLeg {
@@ -380,8 +476,8 @@ mod tests {
         ];
 
         assert!(matches!(
-            ext.dvp_atomicity(&legs),
-            Err(FinancialError::DvPViolation { .. })
+            ext.dvp_atomicity(&commitment, &legs),
+            Err(FinancialError::SettlementPartiesMismatch { .. })
         ));
     }
 
@@ -506,6 +602,8 @@ mod tests {
     #[test]
     fn single_leg_settlement_succeeds() {
         let ext = FinancialGateExtension::new();
+        let mut commitment = test_commitment(100_000);
+        commitment.settlement_type = SettlementType::FreeOfPayment;
         let legs = vec![SettlementLeg {
             from: wid_a(),
             to: wid_b(),
@@ -513,8 +611,70 @@ mod tests {
             amount_minor: 100_000,
         }];
 
-        let result = ext.dvp_atomicity(&legs).unwrap();
+        let result = ext.dvp_atomicity(&commitment, &legs).unwrap();
         assert!(result.atomic);
         assert_eq!(result.legs.len(), 1);
+    }
+
+    #[test]
+    fn pre_check_rejects_missing_decision_receipt_link() {
+        let mut ext = FinancialGateExtension::new();
+        ext.register_collateral(CollateralRecord {
+            worldline: wid_a(),
+            asset: usd(),
+            available_minor: 100_000,
+            locked_minor: 0,
+        });
+
+        let mut commitment = test_commitment(50_000);
+        commitment.decision_receipt_id = "   ".into();
+        assert!(matches!(
+            ext.pre_check(&commitment),
+            Err(FinancialError::MissingDecisionReceiptLink)
+        ));
+    }
+
+    #[test]
+    fn pre_check_rejects_invalid_decision_receipt_link() {
+        let mut ext = FinancialGateExtension::new();
+        ext.register_collateral(CollateralRecord {
+            worldline: wid_a(),
+            asset: usd(),
+            available_minor: 100_000,
+            locked_minor: 0,
+        });
+
+        let mut commitment = test_commitment(50_000);
+        commitment.decision_receipt_id = "bad id".into();
+        assert!(matches!(
+            ext.pre_check(&commitment),
+            Err(FinancialError::InvalidDecisionReceiptLink { .. })
+        ));
+    }
+
+    #[test]
+    fn dvp_atomicity_rejects_commitment_party_mismatch() {
+        let ext = FinancialGateExtension::new();
+        let commitment = test_commitment(100_000);
+        let wid_c = WorldlineId::derive(&IdentityMaterial::GenesisHash([3u8; 32]));
+        let legs = vec![
+            SettlementLeg {
+                from: wid_c,
+                to: wid_b(),
+                asset: usd(),
+                amount_minor: 100_000,
+            },
+            SettlementLeg {
+                from: wid_b(),
+                to: wid_a(),
+                asset: btc(),
+                amount_minor: 1_000_000,
+            },
+        ];
+
+        assert!(matches!(
+            ext.dvp_atomicity(&commitment, &legs),
+            Err(FinancialError::SettlementPartiesMismatch { .. })
+        ));
     }
 }

@@ -116,8 +116,7 @@ mod tests {
 
     #[tokio::test]
     async fn run_specific_test() {
-        let runner = SimulatedTestRunner::new()
-            .with_passing_test("target_test");
+        let runner = SimulatedTestRunner::new().with_passing_test("target_test");
         let result = runner.run_test("target_test").await;
         assert!(result.passed);
     }

@@ -102,7 +102,10 @@ mod tests {
     #[test]
     fn health_status_display() {
         assert_eq!(format!("{}", HealthStatus::Stable), "Stable");
-        assert_eq!(format!("{}", HealthStatus::RollbackTriggered), "Rollback Triggered");
+        assert_eq!(
+            format!("{}", HealthStatus::RollbackTriggered),
+            "Rollback Triggered"
+        );
     }
 
     #[test]

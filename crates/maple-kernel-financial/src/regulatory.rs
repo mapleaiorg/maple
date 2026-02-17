@@ -376,6 +376,7 @@ mod tests {
             settlement_type: SettlementType::DvP,
             counterparty: wid_b(),
             declaring_identity: wid_a(),
+            decision_receipt_id: "dec-rcpt-reg-001".into(),
             created_at: TemporalAnchor::now(0),
         }
     }

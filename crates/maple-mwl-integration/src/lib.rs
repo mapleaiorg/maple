@@ -1,6 +1,7 @@
-//! Compatibility wrapper for legacy `maple-mwl-integration` imports.
+//! Legacy compatibility wrapper for `maple-mwl-integration` imports.
 //!
-//! New code should depend on `worldline-integration`.
+//! Prefer `maple-worldline-integration-suite` (Maple namespace) or
+//! `worldline-integration` (canonical namespace) for new code.
 
 pub use worldline_integration::*;
 

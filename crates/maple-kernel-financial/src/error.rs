@@ -29,6 +29,26 @@ pub enum FinancialError {
     #[error("settlement counterparty not found: {0}")]
     CounterpartyNotFound(String),
 
+    #[error("missing commitment decision receipt link for financial settlement")]
+    MissingDecisionReceiptLink,
+
+    #[error("invalid commitment decision receipt link: {receipt_id}")]
+    InvalidDecisionReceiptLink { receipt_id: String },
+
+    #[error("settlement does not align with commitment {commitment_id}: {message}")]
+    SettlementCommitmentMismatch {
+        commitment_id: String,
+        message: String,
+    },
+
+    #[error(
+        "settlement legs do not match commitment parties: expected {declaring_identity} <-> {counterparty}"
+    )]
+    SettlementPartiesMismatch {
+        declaring_identity: String,
+        counterparty: String,
+    },
+
     // --- Regulatory errors ---
     #[error("regulatory violation: {policy} — {message}")]
     RegulatoryViolation { policy: String, message: String },

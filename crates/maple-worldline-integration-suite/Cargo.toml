@@ -1,16 +1,15 @@
 [package]
-name = "maple-mwl-integration"
+name = "maple-worldline-integration-suite"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-description = "Legacy compatibility wrapper (prefer maple-worldline-integration-suite or worldline-integration)"
+description = "Maple top-level integration suite wrapper for worldline-integration"
 
-# This is a test-only crate — no library output
 [lib]
-name = "mwl_integration"
+name = "maple_worldline_integration_suite"
 path = "src/lib.rs"
 
 [dependencies]

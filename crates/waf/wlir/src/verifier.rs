@@ -120,7 +120,9 @@ mod tests {
         let mut m = valid_module();
         m.provenance.worldline_id = String::new();
         let err = ModuleVerifier::verify(&m).unwrap_err();
-        assert!(matches!(err, WlirError::ValidationFailed(ref msg) if msg.contains("worldline_id")));
+        assert!(
+            matches!(err, WlirError::ValidationFailed(ref msg) if msg.contains("worldline_id"))
+        );
     }
 
     #[test]
@@ -142,8 +144,6 @@ mod tests {
             OperatorBody::Expression("()".into()),
         ));
         let err = ModuleVerifier::verify(&m).unwrap_err();
-        assert!(
-            matches!(err, WlirError::ValidationFailed(ref msg) if msg.contains("empty name"))
-        );
+        assert!(matches!(err, WlirError::ValidationFailed(ref msg) if msg.contains("empty name")));
     }
 }

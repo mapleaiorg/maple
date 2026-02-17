@@ -104,8 +104,12 @@ impl WllNode {
 
     /// Verify that the stored ID matches the computed content hash.
     pub fn verify_content_hash(&self) -> Result<(), ValidationError> {
-        let computed =
-            Self::compute_id(&self.content, &self.parent_ids, &self.worldline_id, &self.timestamp);
+        let computed = Self::compute_id(
+            &self.content,
+            &self.parent_ids,
+            &self.worldline_id,
+            &self.timestamp,
+        );
         if self.id != computed {
             return Err(ValidationError::HashMismatch {
                 expected: self.id.clone(),
@@ -324,12 +328,7 @@ mod tests {
         let content = NodeContent::Intent(intent);
 
         let id1 = WllNode::compute_id(&content, &[], &wl, &ts);
-        let id2 = WllNode::compute_id(
-            &content,
-            &[ContentHash::hash(b"parent")],
-            &wl,
-            &ts,
-        );
+        let id2 = WllNode::compute_id(&content, &[ContentHash::hash(b"parent")], &wl, &ts);
 
         assert_ne!(id1, id2);
     }
@@ -484,10 +483,7 @@ mod tests {
     fn node_content_type_mapping() {
         use crate::nodes::*;
         let cases: Vec<(NodeContent, NodeContentType)> = vec![
-            (
-                NodeContent::Intent(test_intent()),
-                NodeContentType::Intent,
-            ),
+            (NodeContent::Intent(test_intent()), NodeContentType::Intent),
             (
                 NodeContent::Inference(InferenceNode::new("m", 0.5)),
                 NodeContentType::Inference,

@@ -47,21 +47,14 @@ mod tests {
 
     #[test]
     fn tier0_small_change() {
-        let tier = GovernanceTierEngine::classify_change(
-            "fix typo",
-            &["src/lib.rs".into()],
-            5,
-        );
+        let tier = GovernanceTierEngine::classify_change("fix typo", &["src/lib.rs".into()], 5);
         assert_eq!(tier, GovernanceTier::Tier0);
     }
 
     #[test]
     fn tier1_moderate_change() {
-        let tier = GovernanceTierEngine::classify_change(
-            "refactor helper",
-            &["src/utils.rs".into()],
-            50,
-        );
+        let tier =
+            GovernanceTierEngine::classify_change("refactor helper", &["src/utils.rs".into()], 50);
         assert_eq!(tier, GovernanceTier::Tier1);
     }
 
@@ -87,11 +80,8 @@ mod tests {
 
     #[test]
     fn tier3_over_500_lines() {
-        let tier = GovernanceTierEngine::classify_change(
-            "big refactor",
-            &["src/lib.rs".into()],
-            750,
-        );
+        let tier =
+            GovernanceTierEngine::classify_change("big refactor", &["src/lib.rs".into()], 750);
         assert_eq!(tier, GovernanceTier::Tier3);
     }
 

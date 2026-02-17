@@ -220,7 +220,7 @@ In addition to PALM platform-pack conformance, run WorldLine suites:
 
 ```bash
 # Constitutional + cross-profile + lifecycle integration
-cargo test -p worldline-conformance -p worldline-integration
+cargo test -p worldline-conformance -p worldline-integration -p maple-worldline-conformance-suite
 
 # Prompt 17-28 self-producing substrate invariants
 cargo test -p maple-worldline-conformance

@@ -42,6 +42,7 @@ pub struct PyWorldline {
 #[derive(Clone, Debug)]
 pub struct PyCommitmentResult {
     pub commitment_id: String,
+    pub decision_receipt_id: String,
     pub status: String,
     pub decision: String,
     pub risk_class: String,
@@ -225,11 +226,13 @@ mod tests {
     fn commitment_result_fields() {
         let result = PyCommitmentResult {
             commitment_id: "cm-123".into(),
+            decision_receipt_id: "dec-123".into(),
             status: "approved".into(),
             decision: "approve".into(),
             risk_class: "low".into(),
         };
         assert_eq!(result.commitment_id, "cm-123");
+        assert_eq!(result.decision_receipt_id, "dec-123");
         assert_eq!(result.decision, "approve");
     }
 

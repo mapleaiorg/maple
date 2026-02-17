@@ -116,11 +116,16 @@ mod tests {
 
     #[test]
     fn hypothesis_builder() {
-        let h = Hypothesis::new("h1", "optimize allocator", SubstrateType::Rust, "fn alloc() {}")
-            .with_confidence(0.8)
-            .with_safety_score(0.9)
-            .with_impact("latency_ms", -20.0)
-            .with_governance_tier(GovernanceTier::Tier1);
+        let h = Hypothesis::new(
+            "h1",
+            "optimize allocator",
+            SubstrateType::Rust,
+            "fn alloc() {}",
+        )
+        .with_confidence(0.8)
+        .with_safety_score(0.9)
+        .with_impact("latency_ms", -20.0)
+        .with_governance_tier(GovernanceTier::Tier1);
         assert_eq!(h.confidence, 0.8);
         assert_eq!(h.safety_score, 0.9);
         assert!((h.composite_score() - 0.72).abs() < 0.001);
