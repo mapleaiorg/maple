@@ -188,8 +188,7 @@ async fn snapshot_is_content_addressed() {
 
 #[tokio::test]
 async fn shadow_failure_prevents_swap_and_preserves_state() {
-    let gate = WafSwapGate::new()
-        .with_shadow_runner(SimulatedShadowRunner::failing());
+    let gate = WafSwapGate::new().with_shadow_runner(SimulatedShadowRunner::failing());
     let evidence = make_passing_evidence();
     let proposal = make_proposal(GovernanceTier::Tier0);
 

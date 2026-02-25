@@ -245,12 +245,10 @@ async fn context_graph_rejects_dangling_parent_reference() {
     // Chain validation should report the dangling reference.
     let validation = mgr.validate_chain(&id).await.unwrap();
     assert!(!validation.valid);
-    assert!(
-        validation
-            .errors
-            .iter()
-            .any(|e| e.contains("dangling") || e.contains("not found"))
-    );
+    assert!(validation
+        .errors
+        .iter()
+        .any(|e| e.contains("dangling") || e.contains("not found")));
 }
 
 #[tokio::test]

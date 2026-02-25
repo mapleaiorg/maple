@@ -7,27 +7,45 @@ compatibility layer that preserves existing `maple-*` and `palm-*` consumers.
 
 ```text
 crates/
-  worldline/
-    types/        (crate: worldline-types)
-    identity/     (crate: worldline-identity)
-    core/         (crate: worldline-core)
-    runtime/      (crate: worldline-runtime)
-    ledger/       (crate: worldline-ledger)
-    governance/   (crate: worldline-governance)
-    operator-bot/ (crate: worldline-operator-bot)
-    promptkit/    (crate: worldline-promptkit)
-    substrate/    (crate: worldline-substrate)
-    conformance/  (crate: worldline-conformance)
-    integration/  (crate: worldline-integration)
+  # Constitutional & Protocol Foundations
+  rcf/            (rcf-types, rcf-meaning, rcf-intent, rcf-commitment, rcf-validator, rcf-compiler, rcf-audit)
+  ual/            (ual-types, ual-parser, ual-compiler)
+  mrp/            (mrp-types, mrp-router, mrp-transport, mrp-service)
 
-  # compatibility and legacy implementation crates
-  maple-worldline-conformance-suite
-  maple-worldline-integration-suite
-  maple-mwl-*
-  maple-kernel-*
-  maple-worldline-*
+  # Authority & Learning
+  aas/            (aas-types, aas-identity, aas-capability, aas-policy, aas-adjudication, aas-ledger, aas-service)
+  eve/            (eve-types, eve-ingestion, eve-evaluation, eve-artifacts, eve-service)
+
+  # Multi-Agent Coordination
+  collective/     (collective-types, collective-runtime)
+  workflow/       (workflow-types, workflow-engine, workflow-dsl)
+
+  # WorldLine Framework
+  worldline/      (worldline-types, worldline-identity, worldline-core, worldline-runtime, worldline-ledger,
+                   worldline-governance, worldline-operator-bot, worldline-promptkit, worldline-substrate,
+                   worldline-conformance, worldline-integration)
+  kernel/         (maple-kernel-fabric, -memory, -gate, -mrp, -provenance, -governance, -safety, -profiles, -financial, -sdk)
+  substrate/      (maple-worldline-observation, -meaning, -intent, -commitment, -consequence, -self-mod-gate,
+                   -codegen, -deployment, -ir, -langgen, -compiler, -sal, -hardware, -bootstrap, -evos,
+                   -conformance, -integration-suite, -conformance-suite)
+  mwl/            (maple-mwl-types, -identity, -integration, -conformance)
+  waf/            (maple-waf-context-graph, -evidence, -resonance-monitor, -evolution-engine, -compiler,
+                   -wlir, -swap-gate, -governance, -genesis, -kernel, -tests, -demo)
+
+  # Cognition & Execution
+  resonator/      (resonator-types, -identity, -meaning, -intent, -commitment, -consequence, -memory,
+                   -conversation, -profiles, -runtime, -client, -cli, -observability, -conformance)
+  mapleverse/     (mapleverse-types, -executor, -connectors, -evidence, -service, -world)
+
+  # Operations & Orchestration
+  palm/           (palm-types, -registry, -deployment, -health, -state, -control, -policy, -shared-state,
+                   palm, palm-daemon, -observability)
+  maple/          (maple-storage, maple-model-openai, -anthropic, -gemini, -grok, maple-protocol-mcp, -a2a)
+
+  # Top-level entry points (flat)
   maple-runtime
-  palm/*
+  maple-integration
+  maple-cli
 ```
 
 ## 2.2 Component dependency graph (text)
@@ -202,5 +220,5 @@ classDiagram
 - `maple-worldline-conformance-suite` and `maple-worldline-integration-suite`
   are Maple-level suite wrappers.
 - `maple-mwl-conformance` and `maple-mwl-integration` remain legacy aliases.
-- Legacy `maple-kernel-*` and `maple-worldline-*` crates remain the implementation
-  substrate for one compatibility cycle.
+- `maple-kernel-*` crates now live in `crates/kernel/` and `maple-worldline-*` in `crates/substrate/`.
+- Package names are unchanged; only directory paths were reorganized.

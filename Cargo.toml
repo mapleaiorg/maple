@@ -2,29 +2,29 @@
 resolver = "2"
 members = [
     # Phase 0: Contract-First (Constitutional Layer)
-    "crates/rcf-types",
-    "crates/rcf-meaning",
-    "crates/rcf-intent",
-    "crates/rcf-commitment",
-    "crates/rcf-validator",
-    "crates/rcf-compiler",
-    "crates/rcf-audit",
-    "crates/ual-types",
-    "crates/ual-parser",
-    "crates/ual-compiler",
-    "crates/mrp-types",
-    "crates/mrp-router",
-    "crates/mrp-transport",
-    "crates/mrp-service",
+    "crates/rcf/types",
+    "crates/rcf/meaning",
+    "crates/rcf/intent",
+    "crates/rcf/commitment",
+    "crates/rcf/validator",
+    "crates/rcf/compiler",
+    "crates/rcf/audit",
+    "crates/ual/types",
+    "crates/ual/parser",
+    "crates/ual/compiler",
+    "crates/mrp/types",
+    "crates/mrp/router",
+    "crates/mrp/transport",
+    "crates/mrp/service",
 
     # Phase 1: Authority and Execution Boundary
-    "crates/aas-types",
-    "crates/aas-identity",
-    "crates/aas-capability",
-    "crates/aas-policy",
-    "crates/aas-adjudication",
-    "crates/aas-ledger",
-    "crates/aas-service",
+    "crates/aas/types",
+    "crates/aas/identity",
+    "crates/aas/capability",
+    "crates/aas/policy",
+    "crates/aas/adjudication",
+    "crates/aas/ledger",
+    "crates/aas/service",
     "crates/mapleverse/types",
     "crates/mapleverse/executor",
     "crates/mapleverse/connectors",
@@ -32,23 +32,23 @@ members = [
     "crates/mapleverse/service",
 
     # Phase 2: Learning Without Power
-    "crates/eve-types",
-    "crates/eve-ingestion",
-    "crates/eve-evaluation",
-    "crates/eve-artifacts",
-    "crates/eve-service",
+    "crates/eve/types",
+    "crates/eve/ingestion",
+    "crates/eve/evaluation",
+    "crates/eve/artifacts",
+    "crates/eve/service",
 
     # Phase 3: Cognition Layer
     "crates/resonator/types",
 
     # Collective Layer (MAPLE v2)
-    "crates/collective-types",
-    "crates/collective-runtime",
+    "crates/collective/types",
+    "crates/collective/runtime",
 
     # Workflow Engine (MAPLE v2)
-    "crates/workflow-types",
-    "crates/workflow-engine",
-    "crates/workflow-dsl",
+    "crates/workflow/types",
+    "crates/workflow/engine",
+    "crates/workflow/dsl",
 
     # Mapleverse World (MAPLE v2 - AI-only civilization)
     "crates/mapleverse/world",
@@ -109,44 +109,46 @@ members = [
     "crates/maple-integration",
     "crates/maple-cli",
 
-    # MWL - Maple WorldLine Framework
-    "crates/maple-mwl-types",
-    "crates/maple-mwl-identity",
-    "crates/maple-kernel-fabric",
-    "crates/maple-kernel-memory",
-    "crates/maple-kernel-gate",
-    "crates/maple-kernel-mrp",
-    "crates/maple-kernel-provenance",
-    "crates/maple-kernel-governance",
-    "crates/maple-kernel-safety",
-    "crates/maple-kernel-profiles",
-    "crates/maple-kernel-financial",
-    "crates/maple-kernel-sdk",
+    # MWL Compatibility Wrappers
+    "crates/mwl/types",
+    "crates/mwl/identity",
+
+    # WorldLine Kernel
+    "crates/kernel/fabric",
+    "crates/kernel/memory",
+    "crates/kernel/gate",
+    "crates/kernel/mrp",
+    "crates/kernel/provenance",
+    "crates/kernel/governance",
+    "crates/kernel/safety",
+    "crates/kernel/profiles",
+    "crates/kernel/financial",
+    "crates/kernel/sdk",
 
     # WorldLine Self-Producing Substrate
-    "crates/maple-worldline-observation",
-    "crates/maple-worldline-meaning",
-    "crates/maple-worldline-intent",
-    "crates/maple-worldline-commitment",
-    "crates/maple-worldline-consequence",
-    "crates/maple-worldline-self-mod-gate",
-    "crates/maple-worldline-codegen",
-    "crates/maple-worldline-deployment",
-    "crates/maple-worldline-ir",
-    "crates/maple-worldline-langgen",
-    "crates/maple-worldline-compiler",
-    "crates/maple-worldline-sal",
-    "crates/maple-worldline-hardware",
-    "crates/maple-worldline-bootstrap",
-    "crates/maple-worldline-evos",
-    "crates/maple-worldline-conformance",
+    "crates/substrate/observation",
+    "crates/substrate/meaning",
+    "crates/substrate/intent",
+    "crates/substrate/commitment",
+    "crates/substrate/consequence",
+    "crates/substrate/self-mod-gate",
+    "crates/substrate/codegen",
+    "crates/substrate/deployment",
+    "crates/substrate/ir",
+    "crates/substrate/langgen",
+    "crates/substrate/compiler",
+    "crates/substrate/sal",
+    "crates/substrate/hardware",
+    "crates/substrate/bootstrap",
+    "crates/substrate/evos",
+    "crates/substrate/conformance",
 
     # WorldLine suite wrappers
-    "crates/maple-worldline-integration-suite",
-    "crates/maple-worldline-conformance-suite",
+    "crates/substrate/integration-suite",
+    "crates/substrate/conformance-suite",
     # Legacy compatibility wrappers
-    "crates/maple-mwl-integration",
-    "crates/maple-mwl-conformance",
+    "crates/mwl/integration",
+    "crates/mwl/conformance",
 
     # WAF — WorldLine Autopoietic Factory
     "crates/waf/context-graph",
@@ -224,37 +226,37 @@ proptest = "1.4"
 criterion = "0.5"
 
 # Internal crates
-rcf-types = { version = "0.1.2", path = "crates/rcf-types" }
-rcf-meaning = { version = "0.1.2", path = "crates/rcf-meaning" }
-rcf-intent = { version = "0.1.2", path = "crates/rcf-intent" }
-rcf-commitment = { version = "0.1.2", path = "crates/rcf-commitment" }
-rcf-validator = { version = "0.1.2", path = "crates/rcf-validator" }
-rcf-compiler = { version = "0.1.2", path = "crates/rcf-compiler" }
-rcf-audit = { version = "0.1.2", path = "crates/rcf-audit" }
-ual-types = { version = "0.1.2", path = "crates/ual-types" }
-ual-parser = { version = "0.1.2", path = "crates/ual-parser" }
-ual-compiler = { version = "0.1.2", path = "crates/ual-compiler" }
-mrp-types = { version = "0.1.2", path = "crates/mrp-types" }
-mrp-router = { version = "0.1.2", path = "crates/mrp-router" }
-mrp-transport = { version = "0.1.2", path = "crates/mrp-transport" }
-mrp-service = { version = "0.1.2", path = "crates/mrp-service" }
-aas-types = { version = "0.1.2", path = "crates/aas-types" }
-aas-identity = { version = "0.1.2", path = "crates/aas-identity" }
-aas-capability = { version = "0.1.2", path = "crates/aas-capability" }
-aas-policy = { version = "0.1.2", path = "crates/aas-policy" }
-aas-adjudication = { version = "0.1.2", path = "crates/aas-adjudication" }
-aas-ledger = { version = "0.1.2", path = "crates/aas-ledger" }
-aas-service = { version = "0.1.2", path = "crates/aas-service" }
+rcf-types = { version = "0.1.2", path = "crates/rcf/types" }
+rcf-meaning = { version = "0.1.2", path = "crates/rcf/meaning" }
+rcf-intent = { version = "0.1.2", path = "crates/rcf/intent" }
+rcf-commitment = { version = "0.1.2", path = "crates/rcf/commitment" }
+rcf-validator = { version = "0.1.2", path = "crates/rcf/validator" }
+rcf-compiler = { version = "0.1.2", path = "crates/rcf/compiler" }
+rcf-audit = { version = "0.1.2", path = "crates/rcf/audit" }
+ual-types = { version = "0.1.2", path = "crates/ual/types" }
+ual-parser = { version = "0.1.2", path = "crates/ual/parser" }
+ual-compiler = { version = "0.1.2", path = "crates/ual/compiler" }
+mrp-types = { version = "0.1.2", path = "crates/mrp/types" }
+mrp-router = { version = "0.1.2", path = "crates/mrp/router" }
+mrp-transport = { version = "0.1.2", path = "crates/mrp/transport" }
+mrp-service = { version = "0.1.2", path = "crates/mrp/service" }
+aas-types = { version = "0.1.2", path = "crates/aas/types" }
+aas-identity = { version = "0.1.2", path = "crates/aas/identity" }
+aas-capability = { version = "0.1.2", path = "crates/aas/capability" }
+aas-policy = { version = "0.1.2", path = "crates/aas/policy" }
+aas-adjudication = { version = "0.1.2", path = "crates/aas/adjudication" }
+aas-ledger = { version = "0.1.2", path = "crates/aas/ledger" }
+aas-service = { version = "0.1.2", path = "crates/aas/service" }
 mapleverse-types = { version = "0.1.2", path = "crates/mapleverse/types" }
 mapleverse-executor = { version = "0.1.2", path = "crates/mapleverse/executor" }
 mapleverse-connectors = { version = "0.1.2", path = "crates/mapleverse/connectors" }
 mapleverse-evidence = { version = "0.1.2", path = "crates/mapleverse/evidence" }
 mapleverse-service = { version = "0.1.2", path = "crates/mapleverse/service" }
-eve-types = { version = "0.1.2", path = "crates/eve-types" }
-eve-ingestion = { version = "0.1.2", path = "crates/eve-ingestion" }
-eve-evaluation = { version = "0.1.2", path = "crates/eve-evaluation" }
-eve-artifacts = { version = "0.1.2", path = "crates/eve-artifacts" }
-eve-service = { version = "0.1.2", path = "crates/eve-service" }
+eve-types = { version = "0.1.2", path = "crates/eve/types" }
+eve-ingestion = { version = "0.1.2", path = "crates/eve/ingestion" }
+eve-evaluation = { version = "0.1.2", path = "crates/eve/evaluation" }
+eve-artifacts = { version = "0.1.2", path = "crates/eve/artifacts" }
+eve-service = { version = "0.1.2", path = "crates/eve/service" }
 resonator-types = { version = "0.1.2", path = "crates/resonator/types" }
 resonator-identity = { version = "0.1.2", path = "crates/resonator/identity" }
 resonator-meaning = { version = "0.1.2", path = "crates/resonator/meaning" }
@@ -287,11 +289,11 @@ maple-model-anthropic = { version = "0.1.0", path = "crates/maple/model-anthropi
 maple-model-gemini = { version = "0.1.0", path = "crates/maple/model-gemini" }
 maple-model-grok = { version = "0.1.0", path = "crates/maple/model-grok" }
 maple-integration = { version = "0.1.2", path = "crates/maple-integration" }
-collective-types = { version = "0.1.2", path = "crates/collective-types" }
-collective-runtime = { version = "0.1.2", path = "crates/collective-runtime" }
-workflow-types = { version = "0.1.2", path = "crates/workflow-types" }
-workflow-engine = { version = "0.1.2", path = "crates/workflow-engine" }
-workflow-dsl = { version = "0.1.2", path = "crates/workflow-dsl" }
+collective-types = { version = "0.1.2", path = "crates/collective/types" }
+collective-runtime = { version = "0.1.2", path = "crates/collective/runtime" }
+workflow-types = { version = "0.1.2", path = "crates/workflow/types" }
+workflow-engine = { version = "0.1.2", path = "crates/workflow/engine" }
+workflow-dsl = { version = "0.1.2", path = "crates/workflow/dsl" }
 
 # PALM crates
 palm-types = { version = "0.1.0", path = "crates/palm/types" }
@@ -307,38 +309,38 @@ palm-daemon = { version = "0.1.0", path = "crates/palm/daemon" }
 palm-observability = { version = "0.1.0", path = "crates/palm/observability" }
 
 # MWL crates
-maple-mwl-types = { path = "crates/maple-mwl-types" }
-maple-mwl-identity = { path = "crates/maple-mwl-identity" }
-maple-kernel-fabric = { path = "crates/maple-kernel-fabric" }
-maple-kernel-memory = { path = "crates/maple-kernel-memory" }
-maple-kernel-gate = { path = "crates/maple-kernel-gate" }
-maple-kernel-mrp = { path = "crates/maple-kernel-mrp" }
-maple-kernel-provenance = { path = "crates/maple-kernel-provenance" }
-maple-kernel-governance = { path = "crates/maple-kernel-governance" }
-maple-kernel-safety = { path = "crates/maple-kernel-safety" }
-maple-kernel-profiles = { path = "crates/maple-kernel-profiles" }
-maple-kernel-financial = { path = "crates/maple-kernel-financial" }
-maple-kernel-sdk = { path = "crates/maple-kernel-sdk" }
-maple-worldline-observation = { path = "crates/maple-worldline-observation" }
-maple-worldline-meaning = { path = "crates/maple-worldline-meaning" }
-maple-worldline-intent = { path = "crates/maple-worldline-intent" }
-maple-worldline-commitment = { path = "crates/maple-worldline-commitment" }
-maple-worldline-consequence = { path = "crates/maple-worldline-consequence" }
-maple-worldline-self-mod-gate = { path = "crates/maple-worldline-self-mod-gate" }
-maple-worldline-codegen = { path = "crates/maple-worldline-codegen" }
-maple-worldline-deployment = { path = "crates/maple-worldline-deployment" }
-maple-worldline-ir = { path = "crates/maple-worldline-ir" }
-maple-worldline-langgen = { path = "crates/maple-worldline-langgen" }
-maple-worldline-compiler = { path = "crates/maple-worldline-compiler" }
-maple-worldline-sal = { path = "crates/maple-worldline-sal" }
-maple-worldline-hardware = { path = "crates/maple-worldline-hardware" }
-maple-worldline-bootstrap = { path = "crates/maple-worldline-bootstrap" }
-maple-worldline-evos = { path = "crates/maple-worldline-evos" }
-maple-worldline-conformance = { path = "crates/maple-worldline-conformance" }
-maple-worldline-integration-suite = { path = "crates/maple-worldline-integration-suite" }
-maple-worldline-conformance-suite = { path = "crates/maple-worldline-conformance-suite" }
-maple-mwl-integration = { path = "crates/maple-mwl-integration" }
-maple-mwl-conformance = { path = "crates/maple-mwl-conformance" }
+maple-mwl-types = { path = "crates/mwl/types" }
+maple-mwl-identity = { path = "crates/mwl/identity" }
+maple-kernel-fabric = { path = "crates/kernel/fabric" }
+maple-kernel-memory = { path = "crates/kernel/memory" }
+maple-kernel-gate = { path = "crates/kernel/gate" }
+maple-kernel-mrp = { path = "crates/kernel/mrp" }
+maple-kernel-provenance = { path = "crates/kernel/provenance" }
+maple-kernel-governance = { path = "crates/kernel/governance" }
+maple-kernel-safety = { path = "crates/kernel/safety" }
+maple-kernel-profiles = { path = "crates/kernel/profiles" }
+maple-kernel-financial = { path = "crates/kernel/financial" }
+maple-kernel-sdk = { path = "crates/kernel/sdk" }
+maple-worldline-observation = { path = "crates/substrate/observation" }
+maple-worldline-meaning = { path = "crates/substrate/meaning" }
+maple-worldline-intent = { path = "crates/substrate/intent" }
+maple-worldline-commitment = { path = "crates/substrate/commitment" }
+maple-worldline-consequence = { path = "crates/substrate/consequence" }
+maple-worldline-self-mod-gate = { path = "crates/substrate/self-mod-gate" }
+maple-worldline-codegen = { path = "crates/substrate/codegen" }
+maple-worldline-deployment = { path = "crates/substrate/deployment" }
+maple-worldline-ir = { path = "crates/substrate/ir" }
+maple-worldline-langgen = { path = "crates/substrate/langgen" }
+maple-worldline-compiler = { path = "crates/substrate/compiler" }
+maple-worldline-sal = { path = "crates/substrate/sal" }
+maple-worldline-hardware = { path = "crates/substrate/hardware" }
+maple-worldline-bootstrap = { path = "crates/substrate/bootstrap" }
+maple-worldline-evos = { path = "crates/substrate/evos" }
+maple-worldline-conformance = { path = "crates/substrate/conformance" }
+maple-worldline-integration-suite = { path = "crates/substrate/integration-suite" }
+maple-worldline-conformance-suite = { path = "crates/substrate/conformance-suite" }
+maple-mwl-integration = { path = "crates/mwl/integration" }
+maple-mwl-conformance = { path = "crates/mwl/conformance" }
 
 # WAF crates
 maple-waf-context-graph = { path = "crates/waf/context-graph" }

@@ -1,0 +1,21 @@
+[package]
+name = "maple-kernel-financial"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Financial extensions: ARES (Commitment Gate + Financial), EVOS (balance-as-projection), ERX (liquidity field)"
+
+[dependencies]
+maple-mwl-types = { path = "../../mwl/types" }
+maple-kernel-fabric = { path = "../fabric" }
+maple-kernel-gate = { path = "../gate" }
+maple-kernel-profiles = { path = "../profiles" }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true, features = ["v4"] }
+chrono = { workspace = true }
