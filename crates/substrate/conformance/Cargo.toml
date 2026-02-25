@@ -1,0 +1,42 @@
+[package]
+name = "maple-worldline-conformance"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "WorldLine conformance testing — verifies 22 safety invariants across 15 subsystems"
+
+[lib]
+name = "worldline_conformance"
+path = "src/lib.rs"
+
+[dependencies]
+# All 15 WorldLine subsystem crates
+maple-worldline-observation = { path = "../observation" }
+maple-worldline-meaning = { path = "../meaning" }
+maple-worldline-intent = { path = "../intent" }
+maple-worldline-commitment = { path = "../commitment" }
+maple-worldline-consequence = { path = "../consequence" }
+maple-worldline-self-mod-gate = { path = "../self-mod-gate" }
+maple-worldline-codegen = { path = "../codegen" }
+maple-worldline-deployment = { path = "../deployment" }
+maple-worldline-ir = { path = "../ir" }
+maple-worldline-langgen = { path = "../langgen" }
+maple-worldline-compiler = { path = "../compiler" }
+maple-worldline-sal = { path = "../sal" }
+maple-worldline-hardware = { path = "../hardware" }
+maple-worldline-bootstrap = { path = "../bootstrap" }
+maple-worldline-evos = { path = "../evos" }
+
+# WorldLine facade core types
+worldline-core = { workspace = true }
+
+# Runtime and utilities
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }

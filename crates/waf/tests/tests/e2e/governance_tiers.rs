@@ -53,11 +53,8 @@ fn make_request(id: &str, tier: GovernanceTier) -> ApprovalRequest {
 
 #[test]
 fn classify_small_change_as_tier0() {
-    let tier = GovernanceTierEngine::classify_change(
-        "fix typo in comments",
-        &["src/utils.rs".into()],
-        5,
-    );
+    let tier =
+        GovernanceTierEngine::classify_change("fix typo in comments", &["src/utils.rs".into()], 5);
     assert_eq!(tier, GovernanceTier::Tier0);
 }
 
@@ -103,11 +100,8 @@ fn classify_kernel_path_as_tier4() {
 
 #[test]
 fn classify_very_large_change_as_tier3_or_higher() {
-    let tier = GovernanceTierEngine::classify_change(
-        "massive refactor",
-        &["src/lib.rs".into()],
-        750,
-    );
+    let tier =
+        GovernanceTierEngine::classify_change("massive refactor", &["src/lib.rs".into()], 750);
     assert!(tier >= GovernanceTier::Tier3);
 }
 
@@ -244,7 +238,10 @@ async fn swap_gate_respects_exact_tier_boundary() {
         ContentHash::hash(b"delta2"),
     )
     .with_governance_tier(GovernanceTier::Tier2);
-    let result = gate.execute(&proposal_ok, &evidence, vec![1]).await.unwrap();
+    let result = gate
+        .execute(&proposal_ok, &evidence, vec![1])
+        .await
+        .unwrap();
     assert!(result.is_success());
 
     // Tier3 should be denied (one above boundary).

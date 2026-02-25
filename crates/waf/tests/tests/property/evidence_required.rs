@@ -12,21 +12,16 @@ use proptest::prelude::*;
 
 /// Generate a random test result.
 fn arb_test_result() -> impl Strategy<Value = TestResult> {
-    (
-        "[a-z_]{3,15}",
-        any::<bool>(),
-        1u64..500,
-    )
-        .prop_map(|(name, passed, duration_ms)| TestResult {
-            name,
-            passed,
-            duration_ms,
-            error: if passed {
-                None
-            } else {
-                Some("assertion failed".into())
-            },
-        })
+    ("[a-z_]{3,15}", any::<bool>(), 1u64..500).prop_map(|(name, passed, duration_ms)| TestResult {
+        name,
+        passed,
+        duration_ms,
+        error: if passed {
+            None
+        } else {
+            Some("assertion failed".into())
+        },
+    })
 }
 
 /// Generate a vector of test results.

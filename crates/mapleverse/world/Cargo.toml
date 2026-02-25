@@ -7,10 +7,10 @@ description = "MapleVerse World - World state management for pure AI-agent civil
 [dependencies]
 # Core MAPLE dependencies
 mapleverse-types = { path = "../types" }
-collective-types = { path = "../../collective-types" }
+collective-types = { path = "../../collective/types" }
 resonator-types = { path = "../../resonator/types" }
-rcf-types = { path = "../../rcf-types" }
-rcf-commitment = { path = "../../rcf-commitment" }
+rcf-types = { path = "../../rcf/types" }
+rcf-commitment = { path = "../../rcf/commitment" }
 
 # Serialization
 serde = { workspace = true }

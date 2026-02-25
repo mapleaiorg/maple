@@ -1,0 +1,19 @@
+[package]
+name = "maple-kernel-provenance"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Provenance Index: causal DAG for full audit trails (PVP)"
+
+[dependencies]
+maple-mwl-types = { path = "../../mwl/types" }
+maple-kernel-fabric = { path = "../fabric" }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true, features = ["v4"] }

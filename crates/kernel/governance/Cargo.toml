@@ -1,0 +1,22 @@
+[package]
+name = "maple-kernel-governance"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Governance Engine: AAS normative authority for identity, capabilities, policies, and invariants"
+
+[dependencies]
+maple-mwl-types = { path = "../../mwl/types" }
+maple-mwl-identity = { path = "../../mwl/identity" }
+maple-kernel-fabric = { path = "../fabric" }
+maple-kernel-gate = { path = "../gate" }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true, features = ["v4"] }
+async-trait = { workspace = true }

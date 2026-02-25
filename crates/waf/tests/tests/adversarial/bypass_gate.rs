@@ -196,8 +196,7 @@ async fn tier5_proposal_denied_even_with_tier4_auto_approve() {
 
 #[tokio::test]
 async fn failing_shadow_execution_blocks_swap() {
-    let gate = WafSwapGate::new()
-        .with_shadow_runner(SimulatedShadowRunner::failing());
+    let gate = WafSwapGate::new().with_shadow_runner(SimulatedShadowRunner::failing());
     let evidence = valid_evidence();
     let proposal = make_proposal(GovernanceTier::Tier0);
 

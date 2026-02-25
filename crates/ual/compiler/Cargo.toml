@@ -1,0 +1,16 @@
+[package]
+name = "ual-compiler"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "UAL Compiler - Compiles UAL statements into RCF and PALM operations"
+
+[dependencies]
+chrono = { workspace = true }
+rcf-commitment = { workspace = true }
+rcf-types = { workspace = true }
+palm-types = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+thiserror = { workspace = true }
+ual-types = { path = "../types" }

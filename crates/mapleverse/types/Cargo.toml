@@ -6,10 +6,10 @@ description = "MapleVerse Types - Pure AI-agent civilization simulation (NO HUMA
 
 [dependencies]
 # Core MAPLE dependencies
-collective-types = { path = "../../collective-types" }
+collective-types = { path = "../../collective/types" }
 resonator-types = { path = "../../resonator/types" }
-rcf-types = { path = "../../rcf-types" }
-rcf-commitment = { path = "../../rcf-commitment" }
+rcf-types = { path = "../../rcf/types" }
+rcf-commitment = { path = "../../rcf/commitment" }
 
 # Serialization
 serde = { workspace = true }

@@ -76,12 +76,7 @@ async fn different_parents_produce_different_hashes() {
     let ts = TemporalAnchor::new(1000, 0, 0);
 
     let id_no_parents = WllNode::compute_id(&content, &[], &wl, &ts);
-    let id_with_parents = WllNode::compute_id(
-        &content,
-        &[ContentHash::hash(b"parent")],
-        &wl,
-        &ts,
-    );
+    let id_with_parents = WllNode::compute_id(&content, &[ContentHash::hash(b"parent")], &wl, &ts);
     assert_ne!(id_no_parents, id_with_parents);
 }
 
@@ -137,7 +132,9 @@ async fn full_six_node_evolution_chain() {
     let evidence_id = mgr
         .append(
             wl.clone(),
-            NodeContent::Evidence(EvidenceBundleRef::new(ContentHash::hash(b"evidence-bundle"))),
+            NodeContent::Evidence(EvidenceBundleRef::new(ContentHash::hash(
+                b"evidence-bundle",
+            ))),
             vec![delta_id.clone()],
             TemporalAnchor::new(400, 0, 0),
             GovernanceTier::Tier1,
@@ -192,7 +189,11 @@ async fn tampered_node_hash_detected() {
     let wl = test_worldline();
     let mut node = WllNode::new(
         wl,
-        NodeContent::Intent(IntentNode::new(EventId::new(), "test", GovernanceTier::Tier0)),
+        NodeContent::Intent(IntentNode::new(
+            EventId::new(),
+            "test",
+            GovernanceTier::Tier0,
+        )),
         vec![],
         TemporalAnchor::new(1000, 0, 0),
         GovernanceTier::Tier0,
@@ -210,7 +211,11 @@ async fn signed_node_verified() {
 
     let mut node = WllNode::new(
         wl,
-        NodeContent::Intent(IntentNode::new(EventId::new(), "signed intent", GovernanceTier::Tier0)),
+        NodeContent::Intent(IntentNode::new(
+            EventId::new(),
+            "signed intent",
+            GovernanceTier::Tier0,
+        )),
         vec![],
         TemporalAnchor::new(1000, 0, 0),
         GovernanceTier::Tier0,
@@ -228,7 +233,11 @@ async fn bad_signature_rejected() {
 
     let mut node = WllNode::new(
         wl,
-        NodeContent::Intent(IntentNode::new(EventId::new(), "test sig", GovernanceTier::Tier0)),
+        NodeContent::Intent(IntentNode::new(
+            EventId::new(),
+            "test sig",
+            GovernanceTier::Tier0,
+        )),
         vec![],
         TemporalAnchor::new(1000, 0, 0),
         GovernanceTier::Tier0,
@@ -248,7 +257,11 @@ async fn multiple_worldlines_isolated_in_same_graph() {
 
     mgr.append(
         wl1.clone(),
-        NodeContent::Intent(IntentNode::new(EventId::new(), "wl1 intent", GovernanceTier::Tier0)),
+        NodeContent::Intent(IntentNode::new(
+            EventId::new(),
+            "wl1 intent",
+            GovernanceTier::Tier0,
+        )),
         vec![],
         TemporalAnchor::new(100, 0, 0),
         GovernanceTier::Tier0,
@@ -258,7 +271,11 @@ async fn multiple_worldlines_isolated_in_same_graph() {
 
     mgr.append(
         wl2.clone(),
-        NodeContent::Intent(IntentNode::new(EventId::new(), "wl2 intent", GovernanceTier::Tier0)),
+        NodeContent::Intent(IntentNode::new(
+            EventId::new(),
+            "wl2 intent",
+            GovernanceTier::Tier0,
+        )),
         vec![],
         TemporalAnchor::new(100, 0, 0),
         GovernanceTier::Tier0,
@@ -280,7 +297,11 @@ async fn graph_validator_catches_tampered_node() {
     let wl = test_worldline();
     let mut node = WllNode::new(
         wl,
-        NodeContent::Intent(IntentNode::new(EventId::new(), "clean", GovernanceTier::Tier0)),
+        NodeContent::Intent(IntentNode::new(
+            EventId::new(),
+            "clean",
+            GovernanceTier::Tier0,
+        )),
         vec![],
         TemporalAnchor::new(100, 0, 0),
         GovernanceTier::Tier0,

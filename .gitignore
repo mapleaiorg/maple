@@ -16,6 +16,7 @@ Thumbs.db
 *.log
 tmp/
 temp/
+.prompt/
 
 # Optional – if you really never want to commit lockfiles in libraries:
 # Cargo.lock
