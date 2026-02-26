@@ -30,3 +30,12 @@ pub use error::ProvenanceError;
 pub use index::ProvenanceIndex;
 pub use node::ProvenanceNode;
 pub use reports::{ContagionReport, ImpactReport};
+
+// ── WLL canonical DAG re-exports ────────────────────────────────────
+/// WLL DAG primitives — causal ancestry tracking and provenance.
+pub mod wll {
+    pub use wll_dag::{
+        ProvenanceDag as WllDag,
+        DagNode as WllDagNode,
+    };
+}

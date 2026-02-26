@@ -17,3 +17,6 @@ tracing = { workspace = true }
 blake3 = { workspace = true }
 ed25519-dalek = { workspace = true, features = ["serde"] }
 rand = { workspace = true }
+
+# WLL canonical crypto (re-exported for downstream consumers)
+wll-crypto = { workspace = true }

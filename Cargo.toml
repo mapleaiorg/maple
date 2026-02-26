@@ -180,7 +180,7 @@ authors = ["Maple AI Team"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/mapleaiorg/maple"
 description = "Maple AI Framework - Resonance-Native Architecture"
-rust-version = "1.75"
+rust-version = "1.80"
 
 [workspace.dependencies]
 # Serialization
@@ -205,7 +205,7 @@ getrandom = "0.2"
 uuid = { version = "1.6", features = ["v4", "serde"] }
 
 # Error handling
-thiserror = "1.0"
+thiserror = "2"
 anyhow = "1.0"
 
 # Logging and tracing
@@ -217,7 +217,7 @@ sqlx = { version = "0.8", features = ["runtime-tokio", "postgres", "sqlite", "ch
 
 # Networking
 axum = "0.7"
-tower = "0.4"
+tower = { version = "0.5", features = ["util"] }
 tower-http = { version = "0.5", features = ["trace", "cors"] }
 reqwest = { version = "0.11", features = ["json"] }
 
@@ -341,6 +341,21 @@ maple-worldline-integration-suite = { path = "crates/substrate/integration-suite
 maple-worldline-conformance-suite = { path = "crates/substrate/conformance-suite" }
 maple-mwl-integration = { path = "crates/mwl/integration" }
 maple-mwl-conformance = { path = "crates/mwl/conformance" }
+
+# WLL — WorldLine Ledger (canonical implementation)
+wll-types = { git = "https://github.com/mapleaiorg/wll.git" }
+wll-crypto = { git = "https://github.com/mapleaiorg/wll.git" }
+wll-store = { git = "https://github.com/mapleaiorg/wll.git" }
+wll-dag = { git = "https://github.com/mapleaiorg/wll.git" }
+wll-ledger = { git = "https://github.com/mapleaiorg/wll.git" }
+wll-fabric = { git = "https://github.com/mapleaiorg/wll.git" }
+wll-gate = { git = "https://github.com/mapleaiorg/wll.git" }
+wll-refs = { git = "https://github.com/mapleaiorg/wll.git" }
+wll-pack = { git = "https://github.com/mapleaiorg/wll.git" }
+wll-sync = { git = "https://github.com/mapleaiorg/wll.git" }
+wll-protocol = { git = "https://github.com/mapleaiorg/wll.git" }
+wll-server = { git = "https://github.com/mapleaiorg/wll.git" }
+wll-sdk = { git = "https://github.com/mapleaiorg/wll.git" }
 
 # WAF crates
 maple-waf-context-graph = { path = "crates/waf/context-graph" }

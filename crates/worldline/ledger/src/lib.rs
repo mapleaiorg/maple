@@ -34,6 +34,24 @@ pub use maple_kernel_fabric as fabric;
 pub use maple_kernel_provenance as provenance;
 pub use maple_mwl_types as types;
 
+// ── WLL canonical ledger re-exports ─────────────────────────────────
+/// WLL ledger primitives — canonical receipts, replay, and projections.
+pub mod wll {
+    pub use wll_ledger::{
+        InMemoryLedger as WllInMemoryLedger,
+        CommitmentReceipt as WllCommitmentReceipt,
+        OutcomeReceipt as WllOutcomeReceipt,
+        Receipt as WllReceipt,
+        LedgerReader as WllLedgerReader,
+        LedgerWriter as WllLedgerWriter,
+        ProjectionBuilder as WllProjectionBuilder,
+        LatestStateProjection as WllLatestState,
+        ReplayEngine as WllReplayEngine,
+        StreamValidator,
+        ValidationReport,
+    };
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::BTreeMap;

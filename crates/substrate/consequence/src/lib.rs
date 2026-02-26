@@ -84,6 +84,13 @@ pub use types::{
     ConsequenceConfig, ConsequenceRecord, ConsequenceStatus, ConsequenceSummary, SelfConsequenceId,
 };
 
+// ── WLL canonical ledger + crypto re-exports ────────────────────────
+/// WLL primitives for outcome receipt recording and content hashing.
+pub mod wll {
+    pub use wll_ledger::OutcomeReceipt as WllOutcomeReceipt;
+    pub use wll_crypto::ContentHasher;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

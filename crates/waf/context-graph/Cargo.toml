@@ -21,3 +21,8 @@ uuid = { workspace = true, features = ["v4"] }
 async-trait = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
+
+# WLL canonical DAG + store + crypto (re-exported for downstream consumers)
+wll-dag = { workspace = true }
+wll-store = { workspace = true }
+wll-crypto = { workspace = true }

@@ -63,6 +63,15 @@ pub use types::{
     SelfCommitmentId,
 };
 
+// ── WLL canonical ledger re-exports ─────────────────────────────────
+/// WLL ledger primitives for commitment receipt recording.
+pub mod wll {
+    pub use wll_ledger::{
+        CommitmentReceipt as WllCommitmentReceipt,
+        LedgerWriter as WllLedgerWriter,
+    };
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -19,6 +19,9 @@ rcf-types = { workspace = true }
 aas-types = { workspace = true }
 sqlx = { workspace = true, optional = true }
 
+# WLL canonical store (re-exported for downstream consumers)
+wll-store = { workspace = true }
+
 [dev-dependencies]
 tokio = { workspace = true }
 

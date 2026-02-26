@@ -19,3 +19,13 @@ pub use gate::WafSwapGate;
 pub use rollback::RollbackManager;
 pub use shadow::{ShadowResult, ShadowRunner, SimulatedShadowRunner};
 pub use types::{Snapshot, SwapResult, UpgradeProposal};
+
+// ── WLL canonical gate re-exports ───────────────────────────────────
+/// WLL gate primitives — policy pipeline for atomic swap evaluation.
+pub mod wll {
+    pub use wll_gate::{
+        CommitmentGate as WllGate,
+        GateStage as WllGateStage,
+        PolicyRule as WllPolicyRule,
+    };
+}

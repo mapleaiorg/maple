@@ -26,3 +26,10 @@ pub use error::EvidenceError;
 pub use invariant_checker::{InvariantChecker, SimulatedInvariantChecker, ALL_INVARIANT_IDS};
 pub use test_runner::{SimulatedTestRunner, TestRunner};
 pub use types::{EquivalenceTier, InvariantResult, ReproBuildResult, TestResult};
+
+// ── WLL canonical re-exports ────────────────────────────────────────
+/// WLL evidence primitives — canonical evidence bundle and content hashing.
+pub mod wll {
+    pub use wll_types::EvidenceBundle as WllEvidenceBundle;
+    pub use wll_crypto::ContentHasher;
+}

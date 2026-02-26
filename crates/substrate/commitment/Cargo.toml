@@ -19,5 +19,8 @@ thiserror = { workspace = true }
 tracing = { workspace = true }
 uuid = { workspace = true, features = ["v4", "serde"] }
 
+# WLL canonical ledger (re-exported for downstream consumers)
+wll-ledger = { workspace = true }
+
 [dev-dependencies]
 tokio = { workspace = true, features = ["full", "test-util"] }

@@ -17,3 +17,6 @@ serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 blake3 = { workspace = true }
+
+# WLL canonical ledger (re-exported for downstream consumers)
+wll-ledger = { workspace = true }

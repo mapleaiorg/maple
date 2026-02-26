@@ -17,3 +17,6 @@ tokio = { workspace = true, features = ["full"] }
 thiserror = { workspace = true }
 tracing = { workspace = true }
 uuid = { workspace = true, features = ["v4"] }
+
+# WLL canonical store (re-exported for downstream consumers)
+wll-store = { workspace = true }

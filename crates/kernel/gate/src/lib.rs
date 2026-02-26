@@ -48,3 +48,15 @@ pub use stages::{
     IdentityBindingStage, PolicyEvaluationStage, RiskAssessmentStage,
 };
 pub use traits::{CapabilityProvider, GateStage, PolicyProvider};
+
+// ── WLL canonical gate re-exports ───────────────────────────────────
+/// WLL gate primitives — generic policy pipeline and rule trait.
+pub mod wll {
+    pub use wll_gate::{
+        CommitmentGate as WllGate,
+        GateStage as WllGateStage,
+        GateContext as WllGateContext,
+        StageDecision as WllStageDecision,
+    };
+    pub use wll_gate::{PolicyRule as WllPolicyRule, PolicyStage as WllPolicyStage};
+}

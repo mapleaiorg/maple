@@ -28,6 +28,18 @@ pub use hlc::{HlcTimestamp, HybridLogicalClock};
 pub use metrics::FabricMetrics;
 pub use router::CausalRouter;
 pub use traits::{FabricConsumer, FabricProducer};
+
+// ── WLL canonical fabric re-exports ─────────────────────────────────
+/// WLL fabric primitives — canonical HLC, WAL, and event-sourcing.
+pub mod wll {
+    pub use wll_fabric::{
+        HybridLogicalClock as WllHLC,
+        WriteAheadLog as WllWAL,
+        EventFabric as WllEventFabric,
+        FabricEvent as WllFabricEvent,
+    };
+    pub use wll_fabric::fabric::FabricConfig as WllFabricConfig;
+}
 pub use types::*;
 pub use wal::{SyncMode, WalConfig, WriteAheadLog};
 

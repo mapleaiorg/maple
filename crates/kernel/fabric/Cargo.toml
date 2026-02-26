@@ -22,6 +22,9 @@ bytes = "1"
 crc32fast = "1"
 async-trait = { workspace = true }
 
+# WLL canonical fabric (re-exported for downstream consumers)
+wll-fabric = { workspace = true }
+
 [dev-dependencies]
 tokio = { workspace = true, features = ["full", "test-util"] }
 tempfile = "3"

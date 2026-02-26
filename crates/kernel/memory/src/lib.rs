@@ -26,3 +26,13 @@ pub use episodic::EpisodicPlane;
 pub use error::MemoryError;
 pub use filter::MemoryFilter;
 pub use working::{ContextSummary, WorkingPlane, WorkingPlaneConfig};
+
+// ── WLL canonical store re-exports ──────────────────────────────────
+/// WLL store primitives — content-addressed object storage.
+pub mod wll {
+    pub use wll_store::{
+        ObjectStore as WllObjectStore,
+        InMemoryObjectStore as WllInMemoryStore,
+        StoredObject as WllStoredObject,
+    };
+}

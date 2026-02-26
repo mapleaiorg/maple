@@ -13,6 +13,16 @@ pub use continuity::{ContinuityChain, ContinuityContext, ContinuitySegment, KeyR
 pub use error::{ContinuityError, IdentityError};
 pub use manager::{IdentityManager, IdentityRecord};
 
+// ── WLL canonical crypto re-exports ─────────────────────────────────
+//
+// Re-exporting WLL crypto primitives allows downstream identity consumers
+// to use the canonical signing/hashing without adding wll-crypto directly.
+
+/// WLL crypto primitives for identity operations.
+pub mod wll {
+    pub use wll_crypto::{ContentHasher, Signature, SigningKey, VerifyingKey};
+}
+
 #[cfg(test)]
 mod tests {
     use super::IdentityManager;

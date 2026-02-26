@@ -6,6 +6,16 @@
 
 #![deny(unsafe_code)]
 
+// ── WLL canonical ledger re-exports ─────────────────────────────────
+/// WLL ledger primitives — canonical receipts and ledger interfaces.
+pub mod wll {
+    pub use wll_ledger::{
+        InMemoryLedger as WllInMemoryLedger,
+        LedgerReader as WllLedgerReader,
+        LedgerWriter as WllLedgerWriter,
+    };
+}
+
 use aas_types::{
     AgentId, CommitmentLifecycle, CommitmentOutcome, LedgerEntry, LedgerEntryId, LifecycleStatus,
     PolicyDecisionCard, ToolExecutionReceipt, ToolReceiptStatus,

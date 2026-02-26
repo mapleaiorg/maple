@@ -17,3 +17,7 @@ serde_json.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 async-trait.workspace = true
+
+# WLL canonical types + crypto (re-exported for downstream consumers)
+wll-types = { workspace = true }
+wll-crypto = { workspace = true }

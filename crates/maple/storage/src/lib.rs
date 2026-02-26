@@ -32,3 +32,13 @@ pub use traits::{
     AgentStateStore, AuditStore, CommitmentStore, MapleStorage, ProjectionStore, QueryWindow,
     SemanticMemoryStore,
 };
+
+// ── WLL canonical store re-exports ──────────────────────────────────
+/// WLL store primitives — content-addressed object storage backend.
+pub mod wll {
+    pub use wll_store::{
+        ObjectStore as WllObjectStore,
+        InMemoryObjectStore as WllInMemoryStore,
+        StoredObject as WllStoredObject,
+    };
+}

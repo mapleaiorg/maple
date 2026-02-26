@@ -47,3 +47,11 @@ pub use nodes::{
 pub use storage::{GraphStorage, InMemoryGraphStorage};
 pub use types::{ContentHash, GovernanceTier, NodeContentType, TemporalRange, ValidationResult};
 pub use validation::GraphValidator;
+
+// ── WLL canonical re-exports ────────────────────────────────────────
+/// WLL primitives for content-addressing, causal DAG, and object storage.
+pub mod wll {
+    pub use wll_dag::ProvenanceDag as WllDag;
+    pub use wll_store::{ObjectStore as WllObjectStore, InMemoryObjectStore as WllStore};
+    pub use wll_crypto::ContentHasher;
+}
