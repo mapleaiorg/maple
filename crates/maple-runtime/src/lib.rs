@@ -117,9 +117,7 @@
 #![warn(clippy::all)]
 
 // Core modules
-pub mod agent_kernel;
 pub mod allocator;
-pub mod cognition;
 pub mod config;
 pub mod fabrics;
 pub mod invariants;
@@ -129,13 +127,21 @@ pub mod telemetry;
 pub mod temporal;
 pub mod types;
 
+#[cfg(feature = "agent-kernel")]
+pub mod agent_kernel;
+#[cfg(feature = "cognition")]
+pub mod cognition;
+
 // Re-exports for convenience
+#[cfg(feature = "agent-kernel")]
 pub use agent_kernel::{
     AgentAuditEvent, AgentExecutionProfile, AgentHandleRequest, AgentHandleResponse, AgentHost,
     AgentKernel, AgentKernelError, AgentRegistration, CapabilityDescriptor, CapabilityExecution,
     CapabilityExecutionMode, CapabilityExecutor, CommitmentGateway, EchoCapability,
     SimulatedTransferCapability,
 };
+
+#[cfg(feature = "cognition")]
 pub use cognition::{
     AnthropicAdapter, CapabilityCallCandidate, CognitionState, ContractDraft, EpisodicSummary,
     GeminiAdapter, GrokAdapter, IntentDraft, JournalSliceItem, LlamaAdapter, MeaningDraft,

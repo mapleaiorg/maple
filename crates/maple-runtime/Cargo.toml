@@ -43,34 +43,77 @@ chrono = { version = "0.4", features = ["serde"] }
 config = "0.14"
 
 # Commitment/accountability stack
-rcf-types = { version = "0.1.2", path = "../rcf/types" }
-rcf-meaning = { version = "0.1.2", path = "../rcf/meaning" }
-rcf-intent = { version = "0.1.2", path = "../rcf/intent" }
-rcf-commitment = { version = "0.1.2", path = "../rcf/commitment" }
-rcf-validator = { version = "0.1.2", path = "../rcf/validator" }
-aas-types = { version = "0.1.2", path = "../aas/types" }
-aas-identity = { version = "0.1.2", path = "../aas/identity" }
-aas-capability = { version = "0.1.2", path = "../aas/capability" }
-aas-policy = { version = "0.1.2", path = "../aas/policy" }
-aas-ledger = { version = "0.1.2", path = "../aas/ledger" }
-aas-service = { version = "0.1.2", path = "../aas/service" }
-resonator-types = { version = "0.1.2", path = "../resonator/types" }
-resonator-profiles = { version = "0.1.2", path = "../resonator/profiles" }
-resonator-commitment = { version = "0.1.2", path = "../resonator/commitment" }
-resonator-consequence = { version = "0.1.2", path = "../resonator/consequence" }
-resonator-memory = { version = "0.1.2", path = "../resonator/memory" }
-resonator-conversation = { version = "0.1.2", path = "../resonator/conversation" }
-resonator-observability = { version = "0.1.2", path = "../resonator/observability" }
-resonator-conformance = { version = "0.1.2", path = "../resonator/conformance" }
-maple-storage = { version = "0.1.2", path = "../maple/storage" }
+rcf-types = { version = "0.1.2", path = "../rcf/types", optional = true }
+rcf-commitment = { version = "0.1.2", path = "../rcf/commitment", optional = true }
+rcf-validator = { version = "0.1.2", path = "../rcf/validator", optional = true }
+aas-types = { version = "0.1.2", path = "../aas/types", optional = true }
+aas-identity = { version = "0.1.2", path = "../aas/identity", optional = true }
+aas-capability = { version = "0.1.2", path = "../aas/capability", optional = true }
+aas-policy = { version = "0.1.2", path = "../aas/policy", optional = true }
+aas-ledger = { version = "0.1.2", path = "../aas/ledger", optional = true }
+aas-service = { version = "0.1.2", path = "../aas/service", optional = true }
+resonator-types = { version = "0.1.2", path = "../resonator/types", optional = true }
+resonator-profiles = { version = "0.1.2", path = "../resonator/profiles", optional = true }
+resonator-commitment = { version = "0.1.2", path = "../resonator/commitment", optional = true }
+resonator-memory = { version = "0.1.2", path = "../resonator/memory", optional = true }
+resonator-conversation = { version = "0.1.2", path = "../resonator/conversation", optional = true }
+resonator-observability = { version = "0.1.2", path = "../resonator/observability", optional = true }
+resonator-conformance = { version = "0.1.2", path = "../resonator/conformance", optional = true }
+maple-storage = { version = "0.1.2", path = "../maple/storage", optional = true }
 
 [dev-dependencies]
 tokio-test = "0.4"
 
 [features]
-default = ["mapleverse", "finalverse", "ibank"]
+default = [
+    "mapleverse",
+    "finalverse",
+    "ibank",
+    "profile-validation",
+    "cognition",
+    "agent-kernel",
+]
 mapleverse = []
 finalverse = []
 ibank = []
+profile-validation = ["dep:resonator-profiles"]
+cognition = ["dep:rcf-types", "dep:rcf-commitment"]
+agent-kernel = [
+    "cognition",
+    "dep:rcf-validator",
+    "dep:aas-types",
+    "dep:aas-identity",
+    "dep:aas-capability",
+    "dep:aas-policy",
+    "dep:aas-ledger",
+    "dep:aas-service",
+    "dep:resonator-types",
+    "dep:resonator-profiles",
+    "dep:resonator-commitment",
+    "dep:maple-storage",
+]
+memory-conversation = [
+    "dep:resonator-memory",
+    "dep:resonator-conversation",
+    "dep:resonator-types",
+]
+observability-examples = ["dep:resonator-observability"]
+conformance-examples = ["dep:resonator-conformance"]
 telemetry-detailed = []
 strict-docs = []
+
+[[example]]
+name = "06_agent_kernel_boundary"
+required-features = ["agent-kernel"]
+
+[[example]]
+name = "08_memory_and_conversation"
+required-features = ["memory-conversation"]
+
+[[example]]
+name = "09_observability_demo"
+required-features = ["observability-examples"]
+
+[[example]]
+name = "10_conformance_testing"
+required-features = ["conformance-examples"]

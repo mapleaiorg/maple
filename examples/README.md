@@ -1,32 +1,35 @@
 # WorldLine Examples and Demos
 
-All examples are workspace members and can be run directly.
-
-Phase A note:
-- `mwl-*` demos use the facade crates (`worldline-core`, `worldline-runtime`, `worldline-ledger`).
-- Legacy `maple-*` crates remain supported for one compatibility cycle.
+All examples are workspace members and run directly from this repo.
 
 ## Core WorldLine Demos
 
 | Example | Focus | Run |
 |---|---|---|
-| `mwl-worldline-lifecycle` | Deterministic identity, event fabric, integrity, provenance | `cargo run --manifest-path examples/mwl-worldline-lifecycle/Cargo.toml` |
-| `mwl-commitment-gate` | 7-stage commitment adjudication and denial paths | `cargo run --manifest-path examples/mwl-commitment-gate/Cargo.toml` |
-| `mwl-provenance-audit` | Worldline-scoped audit history and causal verification | `cargo run --manifest-path examples/mwl-provenance-audit/Cargo.toml` |
-| `mwl-human-agency` | Consent protocol, coercion detection, profile restrictions | `cargo run --manifest-path examples/mwl-human-agency/Cargo.toml` |
-| `mwl-financial-settlement` | EVOS projection, DvP atomicity, regulatory checks | `cargo run --manifest-path examples/mwl-financial-settlement/Cargo.toml` |
+| `mwl-worldline-lifecycle` | Identity, event fabric, provenance | `cargo run --manifest-path examples/mwl-worldline-lifecycle/Cargo.toml` |
+| `mwl-commitment-gate` | Commitment adjudication and denial paths | `cargo run --manifest-path examples/mwl-commitment-gate/Cargo.toml` |
+| `mwl-provenance-audit` | Causal history and lineage checks | `cargo run --manifest-path examples/mwl-provenance-audit/Cargo.toml` |
+| `mwl-human-agency` | Consent/coercion protections | `cargo run --manifest-path examples/mwl-human-agency/Cargo.toml` |
+| `mwl-financial-settlement` | DvP-style settlement and projection | `cargo run --manifest-path examples/mwl-financial-settlement/Cargo.toml` |
 
-## Platform Boundary Demo
+## Runtime Examples (`maple-runtime`)
 
 | Example | Focus | Run |
 |---|---|---|
-| `boundary-demo` | Policy differences across Mapleverse/Finalverse/iBank | `cargo run --manifest-path examples/boundary-demo/Cargo.toml` |
+| `01_basic_resonator` | Runtime bootstrap + register + presence | `cargo run -p maple-runtime --example 01_basic_resonator` |
+| `02_resonator_coupling` | Coupling/attention behavior | `cargo run -p maple-runtime --example 02_resonator_coupling` |
+| `03_mapleverse_config` | Mapleverse profile defaults | `cargo run -p maple-runtime --example 03_mapleverse_config` |
+| `04_finalverse_config` | Finalverse profile defaults | `cargo run -p maple-runtime --example 04_finalverse_config` |
+| `05_ibank_config` | iBank profile defaults | `cargo run -p maple-runtime --example 05_ibank_config` |
+| `06_agent_kernel_boundary` | Commitment-gated dangerous capability path | `cargo run -p maple-runtime --example 06_agent_kernel_boundary --features agent-kernel` |
+| `08_memory_and_conversation` | Memory and conversation stack | `cargo run -p maple-runtime --example 08_memory_and_conversation --features memory-conversation` |
+| `09_observability_demo` | Observability components | `cargo run -p maple-runtime --example 09_observability_demo --features observability-examples` |
+| `10_conformance_testing` | Conformance checks | `cargo run -p maple-runtime --example 10_conformance_testing --features conformance-examples` |
 
 ## Suggested Order
 
-1. `mwl-worldline-lifecycle`
-2. `mwl-commitment-gate`
-3. `mwl-provenance-audit`
-4. `mwl-human-agency`
-5. `mwl-financial-settlement`
-6. `boundary-demo`
+1. `01_basic_resonator`
+2. `02_resonator_coupling`
+3. `06_agent_kernel_boundary`
+4. `mwl-worldline-lifecycle`
+5. `mwl-commitment-gate`

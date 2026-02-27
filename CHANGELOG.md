@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `maple-runtime` feature-gated build tiers:
+  - core-only standalone mode (`--no-default-features`)
+  - optional cognition and AgentKernel layers (`cognition`, `agent-kernel`, `profile-validation`)
+- New standalone tutorial: `docs/tutorials/maple-runtime-standalone.md`
+
 - Initial PALM (Platform Agent Lifecycle Management) implementation
 - Platform Pack contract with `PlatformPack` trait
 - Three canonical platform packs:
@@ -39,10 +44,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 
-- Architecture guide
-- Platform packs tutorial
-- Conformance testing guide
-- API reference
+- Refreshed root README, runtime README, and tutorial index for current `main` architecture
+- Updated getting started, operations, worldline quickstart, and iBank commitment boundary tutorials
+- Updated examples/crates layout READMEs with feature-gated runtime example commands
 
 ## [0.1.2] - 2026-02-10
 

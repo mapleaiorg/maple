@@ -1,3 +1,5 @@
+#![cfg(feature = "agent-kernel")]
+
 use maple_runtime::{
     config::RuntimeConfig, AgentHandleRequest, AgentKernel, AgentKernelError, AgentRegistration,
     CognitionState, LlamaAdapter, MeaningInput, ModelAdapter, ModelBackend, OpenAiAdapter,

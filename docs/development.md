@@ -6,7 +6,7 @@ This guide will help you set up a complete development environment for MAPLE.
 
 ### Required
 
-- **Rust 1.75 or higher**: [Install Rust](https://www.rust-lang.org/tools/install)
+- **Rust 1.80 or higher**: [Install Rust](https://www.rust-lang.org/tools/install)
 - **Git**: Version control
 - **A code editor**: VS Code, IntelliJ IDEA, or similar
 

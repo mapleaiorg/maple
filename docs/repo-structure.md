@@ -49,6 +49,7 @@ MAPLE groups all subsystems under dedicated layer directories so the crate graph
 - Crate package names remain stable (`rcf-types`, `palm-daemon`, `maple-kernel-fabric`, etc.) to preserve compatibility.
 - Cargo workspace members are updated to new paths.
 - Existing commands (`cargo run -p palm-daemon`, `cargo run -p maple-cli`) remain unchanged.
+- `maple-runtime` supports standalone core builds via `cargo check -p maple-runtime --no-default-features`.
 - WorldLine governance API aliases are available under `/api/v1/worldline-governance/*`.
 - WorldLine command groups are exposed via `maple worldline|commit|provenance|financial|gov|kernel` (`policy` remains as alias).
 - Root `storage/` is reserved for ops assets (migrations/bootstrap scripts), while storage code lives in `crates/maple/storage`.

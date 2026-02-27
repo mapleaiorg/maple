@@ -1,3 +1,5 @@
+#![cfg(feature = "agent-kernel")]
+
 use async_trait::async_trait;
 use maple_runtime::agent_kernel::{CapabilityExecutionError, CapabilityInvocation};
 use maple_runtime::{

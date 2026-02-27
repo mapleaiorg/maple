@@ -1,41 +1,52 @@
 # Crate Layout
 
-The workspace groups all architecture layers into explicit folders.
+The workspace is organized by architectural layer.
 
-## Layered folders
+## Layered Folders
 
-### Constitutional & Protocol Foundations
-- `rcf/`: Resonance Constitutional Framework (types, meaning, intent, commitment, validator, compiler, audit)
-- `ual/`: Universal Agent Language (types, parser, compiler)
-- `mrp/`: MAPLE Routing Protocol (types, router, transport, service)
+### Constitutional and Protocol
 
-### Authority & Learning
-- `aas/`: Agent Accountability Service (types, identity, capability, policy, adjudication, ledger, service)
-- `eve/`: Epistemic Validation Engine (types, ingestion, evaluation, artifacts, service)
+- `rcf/`: Resonance Constitutional Framework
+- `ual/`: Universal Agent Language
+- `mrp/`: routing and transport
+
+### Authority and Learning
+
+- `aas/`: accountability and capability governance
+- `eve/`: evidence and validation
 
 ### Multi-Agent Coordination
-- `collective/`: Multi-agent organization primitives (types, runtime)
-- `workflow/`: Receipt-gated workflow engine (types, engine, dsl)
+
+- `collective/`: organization primitives
+- `workflow/`: receipt-gated workflow engine
 
 ### WorldLine Framework
-- `worldline/`: Canonical WorldLine entrypoints (types, identity, core, runtime, ledger, governance, operator-bot, promptkit, substrate, conformance, integration)
-- `kernel/`: WorldLine kernel subsystems (fabric, memory, gate, mrp, provenance, governance, safety, profiles, financial, sdk)
-- `substrate/`: Self-producing WorldLine substrate (observation, meaning, intent, commitment, consequence, self-mod-gate, codegen, deployment, ir, langgen, compiler, sal, hardware, bootstrap, evos, conformance)
-- `mwl/`: MWL compatibility wrappers (types, identity, integration, conformance)
-- `waf/`: WorldLine Autopoietic Factory (context-graph, evidence, resonance-monitor, evolution-engine, compiler, wlir, swap-gate, governance, genesis, kernel, tests, demo)
 
-### Cognition & Execution
-- `resonator/`: Cognition and lifecycle crates (types, identity, meaning, intent, commitment, consequence, memory, conversation, profiles, runtime, client, cli, observability, conformance)
-- `mapleverse/`: World execution and integration crates (types, executor, connectors, evidence, service, world)
+- `worldline/`: canonical WorldLine crates
+- `kernel/`: runtime kernel subsystems
+- `substrate/`: self-producing substrate
+- `mwl/`: compatibility wrappers
+- `waf/`: autopoietic factory components
 
-### Operations & Orchestration
-- `palm/`: Operational control-plane and tooling (types, registry, deployment, health, state, control, policy, shared-state, cli, daemon, observability)
-- `maple/`: Cross-runtime shared services (storage, model-openai, model-anthropic, model-gemini, model-grok, protocol-mcp, protocol-a2a)
+### Cognition and Execution
 
-## Flat crates (top-level entry points)
+- `resonator/`: cognition/memory/conformance layer
+- `mapleverse/`: world execution layer
 
-- `maple-runtime`: Core MAPLE runtime hub
-- `maple-integration`: Integration facade
-- `maple-cli`: CLI entry point
+### Operations and Shared Services
 
-Package names remain stable (`rcf-types`, `maple-kernel-fabric`, etc.) — only directory paths changed.
+- `palm/`: daemon, CLI, policy, lifecycle ops
+- `maple/`: shared services (storage, model adapters, protocols)
+
+## Flat Entry Points
+
+- `maple-runtime`: runtime SDK (supports `--no-default-features` standalone mode)
+- `maple-cli`: umbrella CLI
+- `maple-integration`: integration facade
+
+## Notes
+
+- Package names remain stable for compatibility (`worldline-*`, `palm-*`, `maple-kernel-*`, `rcf-*`, etc.).
+- `maple-runtime` now supports feature-gated dependency tiers:
+  - core-only: `default-features = false`
+  - full stack: enable `cognition`, `agent-kernel`, `profile-validation`

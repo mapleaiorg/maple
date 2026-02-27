@@ -1,67 +1,60 @@
 # iBank Commitment Boundary Tutorial
 
-This tutorial demonstrates the full MAPLE commitment boundary flow for an iBank agent:
+This tutorial verifies MAPLE's non-bypassable commitment boundary for dangerous financial capabilities.
 
-1. Register iBank agent capabilities:
-   - `echo` (safe)
-   - `transfer_funds` (dangerous, simulated only)
-2. Attempt `transfer_funds` without a contract -> denied.
-3. Draft and declare a commitment -> execute through `CommitmentGateway`.
-4. Verify receipt persistence in AAS ledger.
+## What This Covers
 
-## Run Paths
+1. Register safe and dangerous capabilities.
+2. Observe denial for dangerous execution without commitment.
+3. Execute dangerous path with explicit commitment.
+4. Verify receipt persistence and auditability.
 
-### Direct Example (recommended for quick verification)
+## 1. Run the Runtime Example
+
+`06_agent_kernel_boundary` is feature-gated behind `agent-kernel`.
 
 ```bash
-cargo run -p maple-runtime --example 06_agent_kernel_boundary --offline
+cargo run -p maple-runtime --example 06_agent_kernel_boundary --features agent-kernel
 ```
 
 Expected output includes:
 
-- denial log for transfer without commitment (`ContractMissing`)
-- declared contract id
-- receipt id + receipt status
-- stage transition logs (`meaning -> intent -> commitment -> consequence`)
+- dangerous call denied as `ContractMissing`
+- commitment id emission
+- receipt id + status
+- stage transitions (`meaning -> intent -> commitment -> consequence`)
 
-### Daemon + CLI Path (ops flow)
-
-Start daemon with iBank + memory storage:
+## 2. Run Integration Tests
 
 ```bash
-cargo run -p maple-cli -- daemon start --platform ibank --storage memory
+cargo test -p maple-runtime --test ibank_commitment_boundary
+cargo test -p maple-runtime --test model_adapter_conformance
 ```
 
-Then use CLI agent commands (`maple agent handle`, `maple agent commitment`, `maple agent commitments`) for API-based operation and inspection.
-
-## Contract-Boundary Scenario
-
-Prompt:
-
-`transfer $100 to Alice`
-
-Positive path:
-
-- contract drafted with capability-scoped binding
-- policy approves within iBank risk/autonomy thresholds
-- capability execution runs via `CommitmentGateway`
-- receipt is persisted to AAS ledger
-- lifecycle reaches completed/fulfilled state
-
-Negative path:
-
-- dangerous capability call without contract is denied
-- failure is explicit and auditable
-
-## Validation
-
-Run integration coverage:
+## 3. Optional Daemon + CLI Path
 
 ```bash
-cargo test -p maple-runtime --offline
+cargo run -p palm-daemon
+cargo run -p maple-cli -- agent status
+cargo run -p maple-cli -- agent handle \
+  --prompt "transfer 500 usd to demo" \
+  --tool simulate_transfer \
+  --args '{"amount":500,"to":"demo"}' \
+  --with-commitment
+cargo run -p maple-cli -- agent audit --limit 20
+cargo run -p maple-cli -- agent commitments --limit 20
 ```
 
-The integration test `crates/maple-runtime/tests/ibank_commitment_boundary.rs` asserts:
+## 4. Validation Criteria
 
-- transfer without contract is denied
-- transfer with contract persists a receipt in ledger replay
+Success criteria:
+
+- dangerous capability without commitment is denied
+- dangerous capability with valid commitment executes
+- receipt is persisted and queryable by commitment id
+- audit trail keeps explicit stage transitions and outcomes
+
+## Next
+
+- [Maple Runtime Standalone Tutorial](maple-runtime-standalone.md)
+- [Operations Tutorial](operations.md)

@@ -1,74 +1,87 @@
-# Operations Tutorial: Governance Ops, CLI, Daemon, Playground
+# Operations Tutorial
 
-This tutorial shows how to run WorldLine governance operations, monitor agents in real time from the terminal, and optionally use the Playground UI for live visualization and replay.
+This tutorial covers daemon startup, CLI operations, AgentKernel boundary execution, and runtime troubleshooting.
 
-## 1. Choose Your CLI
+## 1. CLI Entry Points
 
-MAPLE uses a single umbrella CLI (`maple`). Governance operations can run either directly (`maple ...`) or via explicit compatibility namespace (`maple palm ...`).
-
-- **`maple`** is the primary entrypoint and includes developer utilities.
-- **`maple ...`** (for governance/ops verbs like `spec`, `deployment`, `instance`, `events`, `playground`) forwards directly to the runtime ops layer.
-- **`maple palm ...`** remains fully supported as explicit namespace.
-- **`palm`** remains available as a direct operations CLI (backwards compatible).
-
-Example developer CLI usage:
+Primary CLI:
 
 ```bash
-cargo run -p maple-cli -- version
-cargo run -p maple-cli -- validate --file README.md
-cargo run -p maple-cli -- spec list
+cargo run -p maple-cli -- --help
 ```
 
-Install once (no `cargo run` required):
+Optional compatibility CLI:
 
 ```bash
-cargo install --path crates/maple-cli --bin maple && cargo install --path crates/palm/cli --bin palm
+cargo run -p palm -- --help
 ```
 
-## 2. Start the Daemon
+## 2. Start Daemon
 
 ```bash
-# Start daemon (API + governance control plane)
+# default config
 cargo run -p palm-daemon
 
-# Or use maple lifecycle commands
-maple daemon start --platform mapleverse
-```
-
-Defaults:
-
-- Storage: PostgreSQL (default URL is `postgres://postgres:postgres@localhost:5432/maple`)
-- API: `http://127.0.0.1:8080`
-- Playground UI: `http://127.0.0.1:8080/playground`
-
-Development behavior: if PostgreSQL is not reachable, the daemon now falls back to in-memory storage so you can still boot and explore. For durable state, run PostgreSQL and keep the default storage config.
-
-Force in-memory mode explicitly:
-
-```bash
+# explicit in-memory storage
 PALM_STORAGE_TYPE=memory cargo run -p palm-daemon
 ```
 
-You can override settings with a config file via `PALM_CONFIG` or `--config`. Environment overrides use the `PALM_` prefix.
+Default API endpoint: `http://127.0.0.1:8080`
 
-Daemon lifecycle commands:
+## 3. Daemon Lifecycle
 
 ```bash
-# Show health + managed PID state
-maple daemon status
-
-# Graceful stop via API (fallback to PID terminate)
-maple daemon stop
-
-# Alias
-maple daemon shutdown
+cargo run -p maple-cli -- daemon status
+cargo run -p maple-cli -- daemon stop
 ```
 
-### First-Time Local Setup (PostgreSQL + Ollama)
+## 4. Local Doctor Checks
 
-If this is your first local run, do these once.
+```bash
+cargo run -p maple-cli -- doctor
+cargo run -p maple-cli -- doctor --model llama3.2
+```
 
-1. Start PostgreSQL (recommended: Docker)
+## 5. AgentKernel Boundary from CLI
+
+```bash
+# safe path
+cargo run -p maple-cli -- agent demo --prompt "log runtime status"
+
+# dangerous path denied without commitment
+cargo run -p maple-cli -- agent demo --dangerous --prompt "transfer 500 usd to demo"
+
+# dangerous path with explicit commitment
+cargo run -p maple-cli -- agent demo --dangerous --with-commitment --amount 500 --prompt "transfer 500 usd to demo"
+```
+
+Inspect persisted boundary state:
+
+```bash
+cargo run -p maple-cli -- agent audit --limit 20
+cargo run -p maple-cli -- agent commitments --limit 20
+cargo run -p maple-cli -- agent contract --id <commitment_id>
+```
+
+## 6. WorldLine Command Groups
+
+```bash
+cargo run -p maple-cli -- worldline list
+cargo run -p maple-cli -- commit submit --file /tmp/commitment.json
+cargo run -p maple-cli -- provenance worldline-history <worldline_id>
+cargo run -p maple-cli -- financial projection <worldline_id> USD
+cargo run -p maple-cli -- gov list
+```
+
+## 7. Real-Time Monitoring
+
+```bash
+cargo run -p maple-cli -- events watch
+cargo run -p maple-cli -- playground activities --limit 50
+cargo run -p maple-cli -- health summary
+```
+
+## 8. PostgreSQL Setup (Optional Durable Storage)
 
 ```bash
 docker run --name maple-postgres \
@@ -78,205 +91,25 @@ docker run --name maple-postgres \
   -p 5432:5432 \
   -v maple_pgdata:/var/lib/postgresql/data \
   -d postgres:16
-```
 
-2. Verify PostgreSQL is ready
-
-```bash
 docker exec maple-postgres pg_isready -U postgres -d maple
-```
 
-3. Start PALM daemon with explicit PostgreSQL settings
-
-```bash
 PALM_STORAGE_TYPE=postgres \
 PALM_STORAGE_URL=postgres://postgres:postgres@localhost:5432/maple \
 cargo run -p palm-daemon -- --platform mapleverse
 ```
 
-4. Start Ollama and pull a model used by Playground inference
+## 9. Runtime Independence Checks
+
+Validate standalone runtime mode in CI/ops:
 
 ```bash
-ollama serve
-ollama pull llama3
+cargo check -p maple-runtime --no-default-features
+cargo test -p maple-runtime --no-default-features --lib
 ```
 
-5. If you use a different local model, set backend model explicitly
+## 10. Next
 
-```bash
-cargo run -p maple-cli -- playground set-backend \
-  --kind local_llama \
-  --model llama3 \
-  --endpoint http://127.0.0.1:11434
-```
-
-### Run Doctor Checks
-
-Use the built-in doctor to validate daemon, storage, and Ollama/model readiness:
-
-```bash
-maple doctor
-maple doctor --model llama3.2
-```
-
-## 3. AgentKernel From CLI and Daemon
-
-You can run MAPLE’s non-bypassable `AgentKernel` locally from CLI, or through daemon APIs.
-
-Local demo (no daemon required):
-
-```bash
-# Safe path (echo/log)
-maple agent demo --prompt "log current runtime status"
-
-# Dangerous path (denied without commitment)
-maple agent demo --dangerous --prompt "transfer 500 usd to demo"
-
-# Dangerous path with explicit commitment
-maple agent demo --dangerous --with-commitment --amount 500 --prompt "transfer 500 usd to demo"
-```
-
-Daemon-backed hooks:
-
-```bash
-# Show kernel status
-maple agent status
-
-# Execute one handle request through daemon
-maple agent handle \
-  --prompt "transfer 500 usd to demo" \
-  --backend local_llama \
-  --tool simulate_transfer \
-  --args '{"amount":500,"to":"demo"}' \
-  --with-commitment
-
-# Read recent audit events
-maple agent audit --limit 20
-```
-
-When `palmd` is configured with PostgreSQL storage, AgentKernel + AAS commitment/audit/checkpoint
-records are persisted to PostgreSQL as a single durable source of truth.
-
-Inspect one contract/commitment (including execution timestamps + receipts):
-
-```bash
-maple agent contract --id <commitment_id>
-```
-
-List recent commitments in a table:
-
-```bash
-maple agent commitments --limit 20
-```
-
-## 4. WorldLine CLI Operations
-
-The umbrella CLI now exposes WorldLine command groups directly:
-
-```bash
-# Worldline lifecycle
-maple worldline create --profile agent --label demo-agent
-maple worldline list
-maple worldline status <worldline_id>
-
-# Kernel state
-maple kernel status
-maple kernel metrics
-
-# Commitment and provenance
-maple commit submit --file /tmp/commitment.json
-maple commit audit-trail <commitment_id>
-maple provenance worldline-history <worldline_id>
-maple provenance ancestors <event_id> --depth 5
-maple gov list
-
-# Financial projection and settlement
-maple financial settle --file /tmp/settlement.json
-maple financial projection <worldline_id> USD
-```
-
-All commands support `--endpoint` and `PALM_ENDPOINT`.
-Governance REST aliases are also available at `/api/v1/worldline-governance/*`.
-
-## 5. Real-Time Monitoring from the CLI
-
-Real-time agent status and monitoring can be done entirely from the terminal:
-
-```bash
-# Live event stream (Ctrl+C to stop)
-cargo run -p maple-cli -- events watch
-
-# Live activity feed from the playground store
-cargo run -p maple-cli -- playground activities --limit 50
-
-# Status snapshots
-cargo run -p maple-cli -- playground agents
-cargo run -p maple-cli -- playground resonators
-
-# Health checks
-cargo run -p maple-cli -- health summary
-```
-
-The watch stream includes `AgentStageTransition` and `AgentReceiptRecorded` events emitted by AgentKernel execution.
-
-Tip: add `--output json` for scripting and automation.
-
-Direct operations CLI (optional):
-
-```bash
-cargo run -p palm -- events watch
-```
-
-## 6. Playground UI (Optional)
-
-The Playground is a live, game-like view for human/web observation and replay. It is optional and does not affect runtime behavior.
-
-```bash
-open http://localhost:8080/playground
-```
-
-Use the **Agent Kernel** tab to run gated handle requests, draft commitment-backed executions, inspect audit trail events live, and copy an equivalent `maple agent handle ...` command for terminal replay.
-
-## 7. AI Backend Selection
-
-Local Llama is the default AI backend for the Playground. You can switch backends via the umbrella CLI:
-
-```bash
-# Local Llama (default)
-cargo run -p maple-cli -- playground set-backend --kind local_llama --model llama3 --endpoint http://127.0.0.1:11434
-
-# OpenAI
-cargo run -p maple-cli -- playground set-backend --kind open_ai --model gpt-4o-mini --api-key YOUR_KEY
-
-# Anthropic
-cargo run -p maple-cli -- playground set-backend --kind anthropic --model claude-3-5-sonnet --api-key YOUR_KEY
-
-# Grok (xAI)
-cargo run -p maple-cli -- playground set-backend --kind grok --model grok-2-latest --api-key YOUR_KEY
-
-# Gemini (Google)
-cargo run -p maple-cli -- playground set-backend --kind gemini --model gemini-2.0-flash --api-key YOUR_KEY
-```
-
-Run one-shot inference on the active backend:
-
-```bash
-cargo run -p maple-cli -- playground infer "Summarize the latest system activity"
-cargo run -p maple-cli -- playground infer "Draft UAL for scaling deployment dep-123 to 5" --system-prompt "You are a MAPLE ops copilot"
-```
-
-Auto-inference simulation mode is **enabled by default** and periodically invokes the active backend, writing `agent_cognition` activities. You can tune or disable it in the dashboard (**Simulation** tab) or via CLI.
-
-CLI alternative:
-
-```bash
-cargo run -p maple-cli -- playground set-simulation --auto-inference-enabled true --inference-interval-ticks 4 --inferences-per-tick 2
-```
-
-## 8. Headless Runtime
-
-You can run MAPLE without PALM or the Playground when you want embedded, headless agents. For example:
-
-```bash
-cargo run -p maple-runtime --example 01_basic_resonator
-```
+- [Maple Runtime Standalone Tutorial](maple-runtime-standalone.md)
+- [iBank Commitment Boundary Tutorial](ibank-commitment-boundary.md)
+- [WorldLine Quickstart](worldline-quickstart.md)

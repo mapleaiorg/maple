@@ -3,6 +3,8 @@
 use crate::config::ProfileConfig;
 use crate::runtime_core::ResonatorSpec;
 use crate::types::*;
+
+#[cfg(feature = "profile-validation")]
 use resonator_profiles::{
     DefaultProfileValidator, ProfileArchetype, ProfileValidationContext, ProfileValidator,
 };
@@ -10,12 +12,15 @@ use resonator_profiles::{
 /// Profile manager validates Resonator specifications against profile rules
 pub struct ProfileManager {
     config: ProfileConfig,
+    #[cfg(feature = "profile-validation")]
     validator: DefaultProfileValidator,
+    #[cfg(feature = "profile-validation")]
     validation_context: ProfileValidationContext,
 }
 
 impl ProfileManager {
     pub fn new(config: &ProfileConfig) -> Self {
+        #[cfg(feature = "profile-validation")]
         let validation_context = ProfileValidationContext {
             human_profiles_allowed: config.human_profiles_allowed,
             ibank_profiles_allowed: config.allow_ibank_profiles,
@@ -24,7 +29,9 @@ impl ProfileManager {
 
         Self {
             config: config.clone(),
+            #[cfg(feature = "profile-validation")]
             validator: DefaultProfileValidator,
+            #[cfg(feature = "profile-validation")]
             validation_context,
         }
     }
@@ -36,11 +43,14 @@ impl ProfileManager {
             return Err(format!("Profile {:?} not allowed", spec.profile));
         }
 
-        // Canonical profile validation is centralized in resonator-profiles so all runtimes
-        // apply the same archetype semantics.
-        self.validator
-            .validate_archetype(map_runtime_profile(spec.profile), &self.validation_context)
-            .map_err(|e| e.to_string())?;
+        #[cfg(feature = "profile-validation")]
+        {
+            // Canonical profile validation is centralized in resonator-profiles so all runtimes
+            // apply the same archetype semantics.
+            self.validator
+                .validate_archetype(map_runtime_profile(spec.profile), &self.validation_context)
+                .map_err(|e| e.to_string())?;
+        }
 
         // Runtime-local safety checks that depend on runtime-specific spec fields.
         if spec.profile == ResonatorProfile::Human && spec.attention.total_capacity == 0 {
@@ -52,19 +62,41 @@ impl ProfileManager {
 
     /// Can these two profiles couple?
     pub fn can_couple(&self, profile_a: &ResonatorProfile, profile_b: &ResonatorProfile) -> bool {
-        self.validator.can_couple(
-            &map_runtime_profile(*profile_a),
-            &map_runtime_profile(*profile_b),
-        )
+        #[cfg(feature = "profile-validation")]
+        {
+            return self.validator.can_couple(
+                &map_runtime_profile(*profile_a),
+                &map_runtime_profile(*profile_b),
+            );
+        }
+
+        #[cfg(not(feature = "profile-validation"))]
+        {
+            can_couple_fallback(profile_a, profile_b)
+        }
     }
 }
 
+#[cfg(feature = "profile-validation")]
 fn map_runtime_profile(profile: ResonatorProfile) -> ProfileArchetype {
     match profile {
         ResonatorProfile::Human => ProfileArchetype::Human,
         ResonatorProfile::World => ProfileArchetype::World,
         ResonatorProfile::Coordination => ProfileArchetype::Coordination,
         ResonatorProfile::IBank => ProfileArchetype::IBank,
+    }
+}
+
+#[cfg(not(feature = "profile-validation"))]
+fn can_couple_fallback(profile_a: &ResonatorProfile, profile_b: &ResonatorProfile) -> bool {
+    match (profile_a, profile_b) {
+        (ResonatorProfile::IBank, ResonatorProfile::IBank) => true,
+        (ResonatorProfile::Coordination, ResonatorProfile::Coordination) => true,
+        (ResonatorProfile::World, ResonatorProfile::World) => true,
+        (ResonatorProfile::Human, ResonatorProfile::Human) => true,
+        (ResonatorProfile::Human, ResonatorProfile::World) => true,
+        (ResonatorProfile::World, ResonatorProfile::Human) => true,
+        _ => false,
     }
 }
 
