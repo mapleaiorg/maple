@@ -6,8 +6,11 @@
 
 pub mod commitment;
 pub mod confidence;
+pub mod config;
 pub mod governance;
 pub mod ids;
+pub mod memory_model;
+pub mod profile;
 pub mod resonance;
 pub mod temporal;
 pub mod worldline_id;
@@ -23,6 +26,11 @@ pub use ids::{CapabilityId, CommitmentId, EventId, NodeId, PolicyId, ProvenanceR
 pub use resonance::ResonanceType;
 pub use temporal::TemporalAnchor;
 pub use worldline_id::{IdentityMaterial, WorldlineId};
+
+// MAPLE profile, config, and memory model extensions
+pub use config::{DeploymentProfile, KernelConfig};
+pub use memory_model::{MemoryClass, MemoryContent, MemoryRecord};
+pub use profile::WorldlineProfile;
 
 // ── WLL canonical re-exports ──────────────────────────────────────────
 //

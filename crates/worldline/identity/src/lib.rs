@@ -5,11 +5,13 @@
 
 pub mod bridge;
 pub mod continuity;
+pub mod coupling;
 pub mod error;
 pub mod manager;
 
 pub use bridge::{resonator_id_to_worldline, ResonatorIdentity};
 pub use continuity::{ContinuityChain, ContinuityContext, ContinuitySegment, KeyRef};
+pub use coupling::{AttentionBudget, Coupling, CouplingError, CouplingId, CouplingState, CouplingStrength};
 pub use error::{ContinuityError, IdentityError};
 pub use manager::{IdentityManager, IdentityRecord};
 

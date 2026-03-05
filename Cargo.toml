@@ -1,6 +1,9 @@
 [workspace]
 resolver = "2"
 members = [
+    # MAPLE Foundation Crypto (local Ed25519 + BLAKE3)
+    "crates/maple/crypto",
+
     # Phase 0: Contract-First (Constitutional Layer)
     "crates/rcf/types",
     "crates/rcf/meaning",
@@ -65,6 +68,9 @@ members = [
     "crates/resonator/cli",
     "crates/resonator/observability",
     "crates/resonator/conformance",
+
+    # MAPLE Skill Pack (D-01/D-04)
+    "crates/maple/skill-pack",
 
     # MAPLE Core Runtime
     "crates/maple-runtime",
@@ -183,6 +189,10 @@ description = "Maple AI Framework - Resonance-Native Architecture"
 rust-version = "1.80"
 
 [workspace.dependencies]
+# MAPLE Foundation
+maple-crypto = { version = "0.1.0", path = "crates/maple/crypto" }
+maple-skill-pack = { version = "0.1.2", path = "crates/maple/skill-pack" }
+
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
