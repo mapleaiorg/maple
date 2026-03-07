@@ -39,19 +39,19 @@ CRATES=(
 
 # Internal crates patched for local preflight so unpublished dependencies resolve locally.
 PATCHES=(
-  "rcf-types:crates/rcf-types"
-  "rcf-meaning:crates/rcf-meaning"
-  "rcf-intent:crates/rcf-intent"
-  "rcf-commitment:crates/rcf-commitment"
-  "rcf-validator:crates/rcf-validator"
-  "mrp-types:crates/mrp-types"
-  "aas-types:crates/aas-types"
-  "aas-identity:crates/aas-identity"
-  "aas-capability:crates/aas-capability"
-  "aas-policy:crates/aas-policy"
-  "aas-adjudication:crates/aas-adjudication"
-  "aas-ledger:crates/aas-ledger"
-  "aas-service:crates/aas-service"
+  "rcf-types:crates/rcf/types"
+  "rcf-meaning:crates/rcf/meaning"
+  "rcf-intent:crates/rcf/intent"
+  "rcf-commitment:crates/rcf/commitment"
+  "rcf-validator:crates/rcf/validator"
+  "mrp-types:crates/mrp/types"
+  "aas-types:crates/aas/types"
+  "aas-identity:crates/aas/identity"
+  "aas-capability:crates/aas/capability"
+  "aas-policy:crates/aas/policy"
+  "aas-adjudication:crates/aas/adjudication"
+  "aas-ledger:crates/aas/ledger"
+  "aas-service:crates/aas/service"
   "resonator-types:crates/resonator/types"
   "resonator-profiles:crates/resonator/profiles"
   "resonator-memory:crates/resonator/memory"
@@ -61,6 +61,24 @@ PATCHES=(
   "resonator-observability:crates/resonator/observability"
   "resonator-conformance:crates/resonator/conformance"
   "maple-storage:crates/maple/storage"
+)
+
+WLL_GIT_URL="https://github.com/mapleaiorg/wll.git"
+WLL_GIT_REV="f1e65c4f2caab71facae66339be97dc528ad2aa2"
+WLL_PATCHES=(
+  "wll-types"
+  "wll-crypto"
+  "wll-store"
+  "wll-dag"
+  "wll-ledger"
+  "wll-fabric"
+  "wll-gate"
+  "wll-refs"
+  "wll-pack"
+  "wll-sync"
+  "wll-protocol"
+  "wll-server"
+  "wll-sdk"
 )
 
 usage() {
@@ -176,6 +194,57 @@ check_prereqs() {
   fi
 }
 
+parse_retry_after_sleep_seconds() {
+  local output="$1"
+  local retry_after retry_epoch now_epoch sleep_for
+  retry_after="$(printf '%s\n' "$output" | sed -nE 's/.*Please try again after ([A-Za-z]{3}, [0-9]{2} [A-Za-z]{3} [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2} GMT).*/\1/p' | tail -n1)"
+  [[ -n "$retry_after" ]] || return 1
+
+  retry_epoch="$(date -u -j -f "%a, %d %b %Y %H:%M:%S GMT" "$retry_after" +%s 2>/dev/null || true)"
+  [[ -n "$retry_epoch" ]] || return 1
+
+  now_epoch="$(date -u +%s)"
+  sleep_for=$((retry_epoch - now_epoch + 5))
+  if (( sleep_for < 5 )); then
+    sleep_for=5
+  fi
+  printf '%s|%s\n' "$sleep_for" "$retry_after"
+}
+
+run_cargo_with_retry() {
+  local -a cargo_args=("$@")
+  local output status retry_info sleep_for retry_after
+
+  while true; do
+    set +e
+    output="$(cargo "${cargo_args[@]}" 2>&1)"
+    status=$?
+    set -e
+
+    printf '%s\n' "$output"
+    if [[ "$status" -eq 0 ]]; then
+      return 0
+    fi
+
+    if [[ "$MODE" != "execute" || "$output" != *"status 429 Too Many Requests"* ]]; then
+      return "$status"
+    fi
+
+    retry_info="$(parse_retry_after_sleep_seconds "$output" || true)"
+    if [[ -n "$retry_info" ]]; then
+      sleep_for="${retry_info%%|*}"
+      retry_after="${retry_info#*|}"
+      log "crates.io rate limit hit; sleeping ${sleep_for}s (retry after ${retry_after})"
+    else
+      sleep_for=600
+      log "crates.io rate limit hit; sleeping ${sleep_for}s before retry"
+    fi
+
+    sleep "$sleep_for"
+    log "retrying: cargo ${cargo_args[*]}"
+  done
+}
+
 publish_one() {
   local crate="$1"
   local -a args
@@ -188,6 +257,11 @@ publish_one() {
         local patch_name="${patch%%:*}"
         local patch_path="${patch#*:}"
         args+=(--config "patch.crates-io.${patch_name}.path=\"${ROOT_DIR}/${patch_path}\"")
+      done
+      local wll_patch
+      for wll_patch in "${WLL_PATCHES[@]}"; do
+        args+=(--config "patch.crates-io.${wll_patch}.git=\"${WLL_GIT_URL}\"")
+        args+=(--config "patch.crates-io.${wll_patch}.rev=\"${WLL_GIT_REV}\"")
       done
       ;;
     publish-dry-run)
@@ -209,7 +283,7 @@ publish_one() {
   fi
 
   log "cargo ${args[*]}"
-  cargo "${args[@]}"
+  run_cargo_with_retry "${args[@]}"
 }
 
 main() {

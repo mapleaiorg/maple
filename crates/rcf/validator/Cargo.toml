@@ -2,6 +2,8 @@
 name = "rcf-validator"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
+repository.workspace = true
 description = "RCF Validator"
 [dependencies]
 rcf-types = { workspace = true }

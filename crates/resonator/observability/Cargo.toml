@@ -2,6 +2,8 @@
 name = "resonator-observability"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
+repository.workspace = true
 description = "Observability and Metrics for MAPLE Resonators - monitoring, tracing, and telemetry"
 
 [dependencies]

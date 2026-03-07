@@ -38,7 +38,7 @@ pub struct SubstrateManifest {
 impl SubstrateManifest {
     /// Create the canonical manifest for the current WorldLine build.
     pub fn canonical() -> Self {
-        let version = "0.1.2".to_string();
+        let version = "0.1.3".to_string();
         let entries = vec![
             SubsystemEntry {
                 id: SubsystemId::Observation,
@@ -210,7 +210,7 @@ mod tests {
     fn manifest_find_subsystem() {
         let manifest = SubstrateManifest::canonical();
         let obs = manifest.find(&SubsystemId::Observation).unwrap();
-        assert_eq!(obs.version, "0.1.2");
+        assert_eq!(obs.version, "0.1.3");
         assert!(obs.description.contains("anomaly"));
     }
 
@@ -250,12 +250,12 @@ mod tests {
     fn subsystem_entry_display() {
         let entry = SubsystemEntry {
             id: SubsystemId::Compiler,
-            version: "0.1.2".into(),
+            version: "0.1.3".into(),
             description: "Adaptive compilation".into(),
         };
         let display = entry.to_string();
         assert!(display.contains("compiler"));
-        assert!(display.contains("0.1.2"));
+        assert!(display.contains("0.1.3"));
     }
 
     #[test]

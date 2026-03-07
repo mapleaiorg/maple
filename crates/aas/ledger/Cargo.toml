@@ -2,6 +2,8 @@
 name = "aas-ledger"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
+repository.workspace = true
 description = "AAS Ledger - Immutable commitment accountability record"
 
 [dependencies]

@@ -11,7 +11,7 @@ This tutorial shows how to run `maple-runtime` as an independent crate with a mi
 
 ```toml
 [dependencies]
-maple-runtime = { version = "0.1.2", default-features = false }
+maple-runtime = { version = "0.1.3", default-features = false }
 tokio = { version = "1", features = ["full"] }
 ```
 
@@ -41,7 +41,7 @@ When you need structured cognition drafts and commitment-gated tool execution:
 
 ```toml
 [dependencies]
-maple-runtime = { version = "0.1.2", default-features = false, features = ["cognition", "agent-kernel", "profile-validation"] }
+maple-runtime = { version = "0.1.3", default-features = false, features = ["cognition", "agent-kernel", "profile-validation"] }
 tokio = { version = "1", features = ["full"] }
 ```
 

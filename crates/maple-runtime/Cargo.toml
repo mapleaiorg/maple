@@ -1,6 +1,6 @@
 [package]
 name = "maple-runtime"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 authors = ["MAPLE Team"]
 description = "MAPLE Resonance Runtime - Foundational AI framework for Mapleverse, Finalverse, and iBank"
@@ -43,23 +43,23 @@ chrono = { version = "0.4", features = ["serde"] }
 config = "0.14"
 
 # Commitment/accountability stack
-rcf-types = { version = "0.1.2", path = "../rcf/types", optional = true }
-rcf-commitment = { version = "0.1.2", path = "../rcf/commitment", optional = true }
-rcf-validator = { version = "0.1.2", path = "../rcf/validator", optional = true }
-aas-types = { version = "0.1.2", path = "../aas/types", optional = true }
-aas-identity = { version = "0.1.2", path = "../aas/identity", optional = true }
-aas-capability = { version = "0.1.2", path = "../aas/capability", optional = true }
-aas-policy = { version = "0.1.2", path = "../aas/policy", optional = true }
-aas-ledger = { version = "0.1.2", path = "../aas/ledger", optional = true }
-aas-service = { version = "0.1.2", path = "../aas/service", optional = true }
-resonator-types = { version = "0.1.2", path = "../resonator/types", optional = true }
-resonator-profiles = { version = "0.1.2", path = "../resonator/profiles", optional = true }
-resonator-commitment = { version = "0.1.2", path = "../resonator/commitment", optional = true }
-resonator-memory = { version = "0.1.2", path = "../resonator/memory", optional = true }
-resonator-conversation = { version = "0.1.2", path = "../resonator/conversation", optional = true }
-resonator-observability = { version = "0.1.2", path = "../resonator/observability", optional = true }
-resonator-conformance = { version = "0.1.2", path = "../resonator/conformance", optional = true }
-maple-storage = { version = "0.1.2", path = "../maple/storage", optional = true }
+rcf-types = { version = "0.1.3", path = "../rcf/types", optional = true }
+rcf-commitment = { version = "0.1.3", path = "../rcf/commitment", optional = true }
+rcf-validator = { version = "0.1.3", path = "../rcf/validator", optional = true }
+aas-types = { version = "0.1.3", path = "../aas/types", optional = true }
+aas-identity = { version = "0.1.3", path = "../aas/identity", optional = true }
+aas-capability = { version = "0.1.3", path = "../aas/capability", optional = true }
+aas-policy = { version = "0.1.3", path = "../aas/policy", optional = true }
+aas-ledger = { version = "0.1.3", path = "../aas/ledger", optional = true }
+aas-service = { version = "0.1.3", path = "../aas/service", optional = true }
+resonator-types = { version = "0.1.3", path = "../resonator/types", optional = true }
+resonator-profiles = { version = "0.1.3", path = "../resonator/profiles", optional = true }
+resonator-commitment = { version = "0.1.3", path = "../resonator/commitment", optional = true }
+resonator-memory = { version = "0.1.3", path = "../resonator/memory", optional = true }
+resonator-conversation = { version = "0.1.3", path = "../resonator/conversation", optional = true }
+resonator-observability = { version = "0.1.3", path = "../resonator/observability", optional = true }
+resonator-conformance = { version = "0.1.3", path = "../resonator/conformance", optional = true }
+maple-storage = { version = "0.1.3", path = "../maple/storage", optional = true }
 
 [dev-dependencies]
 tokio-test = "0.4"

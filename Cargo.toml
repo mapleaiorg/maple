@@ -4,6 +4,56 @@ members = [
     # MAPLE Foundation Crypto (local Ed25519 + BLAKE3)
     "crates/maple/crypto",
 
+    # Phase F: Packaging & Build System
+    "crates/maple-package",
+    "crates/maple-package-format",
+    "crates/maple-build",
+    "crates/maple-init",
+    "crates/maple-package-trust",
+
+    # Phase G: Registry & Distribution
+    "crates/maple-registry-client",
+    "crates/maple-registry-catalog",
+    "crates/maple-store",
+
+    # Phase H: Model Manager
+    "crates/maple-model-core",
+    "crates/maple-model-backends",
+    "crates/maple-model-router",
+
+    # Phase I: Guard & Risk Engine
+    "crates/maple-guard-core",
+    "crates/maple-guard-firewall",
+    "crates/maple-guard-pii",
+    "crates/maple-guard-inference",
+    "crates/maple-guard-approvals",
+    "crates/maple-guard-compliance",
+    "crates/maple-guard-risk",
+    "crates/maple-guard",
+
+    # Phase H (continued): Model Manager
+    "crates/maple-model-server",
+    "crates/maple-model-benchmark",
+
+    # Phase J: Foundry
+    "crates/maple-foundry-traces",
+    "crates/maple-foundry-eval",
+    "crates/maple-foundry-train",
+
+    # Phase K: Fleet
+    "crates/maple-fleet-instance",
+    "crates/maple-fleet-stack",
+    "crates/maple-fleet-rollout",
+    "crates/maple-fleet-costs",
+    "crates/maple-fleet-tenancy",
+    "crates/maple-fleet-observe",
+
+    # Phase L: Reference Agents
+    "crates/maple-agents-payment",
+    "crates/maple-agents-trading",
+    "crates/maple-agents-support",
+    "crates/maple-agents-compliance",
+
     # Phase 0: Contract-First (Constitutional Layer)
     "crates/rcf/types",
     "crates/rcf/meaning",
@@ -180,7 +230,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 authors = ["Maple AI Team"]
 license = "MIT OR Apache-2.0"
@@ -191,7 +241,7 @@ rust-version = "1.80"
 [workspace.dependencies]
 # MAPLE Foundation
 maple-crypto = { version = "0.1.0", path = "crates/maple/crypto" }
-maple-skill-pack = { version = "0.1.2", path = "crates/maple/skill-pack" }
+maple-skill-pack = { version = "0.1.3", path = "crates/maple/skill-pack" }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
@@ -236,74 +286,108 @@ proptest = "1.4"
 criterion = "0.5"
 
 # Internal crates
-rcf-types = { version = "0.1.2", path = "crates/rcf/types" }
-rcf-meaning = { version = "0.1.2", path = "crates/rcf/meaning" }
-rcf-intent = { version = "0.1.2", path = "crates/rcf/intent" }
-rcf-commitment = { version = "0.1.2", path = "crates/rcf/commitment" }
-rcf-validator = { version = "0.1.2", path = "crates/rcf/validator" }
-rcf-compiler = { version = "0.1.2", path = "crates/rcf/compiler" }
-rcf-audit = { version = "0.1.2", path = "crates/rcf/audit" }
-ual-types = { version = "0.1.2", path = "crates/ual/types" }
-ual-parser = { version = "0.1.2", path = "crates/ual/parser" }
-ual-compiler = { version = "0.1.2", path = "crates/ual/compiler" }
-mrp-types = { version = "0.1.2", path = "crates/mrp/types" }
-mrp-router = { version = "0.1.2", path = "crates/mrp/router" }
-mrp-transport = { version = "0.1.2", path = "crates/mrp/transport" }
-mrp-service = { version = "0.1.2", path = "crates/mrp/service" }
-aas-types = { version = "0.1.2", path = "crates/aas/types" }
-aas-identity = { version = "0.1.2", path = "crates/aas/identity" }
-aas-capability = { version = "0.1.2", path = "crates/aas/capability" }
-aas-policy = { version = "0.1.2", path = "crates/aas/policy" }
-aas-adjudication = { version = "0.1.2", path = "crates/aas/adjudication" }
-aas-ledger = { version = "0.1.2", path = "crates/aas/ledger" }
-aas-service = { version = "0.1.2", path = "crates/aas/service" }
-mapleverse-types = { version = "0.1.2", path = "crates/mapleverse/types" }
-mapleverse-executor = { version = "0.1.2", path = "crates/mapleverse/executor" }
-mapleverse-connectors = { version = "0.1.2", path = "crates/mapleverse/connectors" }
-mapleverse-evidence = { version = "0.1.2", path = "crates/mapleverse/evidence" }
-mapleverse-service = { version = "0.1.2", path = "crates/mapleverse/service" }
-eve-types = { version = "0.1.2", path = "crates/eve/types" }
-eve-ingestion = { version = "0.1.2", path = "crates/eve/ingestion" }
-eve-evaluation = { version = "0.1.2", path = "crates/eve/evaluation" }
-eve-artifacts = { version = "0.1.2", path = "crates/eve/artifacts" }
-eve-service = { version = "0.1.2", path = "crates/eve/service" }
-resonator-types = { version = "0.1.2", path = "crates/resonator/types" }
-resonator-identity = { version = "0.1.2", path = "crates/resonator/identity" }
-resonator-meaning = { version = "0.1.2", path = "crates/resonator/meaning" }
-resonator-intent = { version = "0.1.2", path = "crates/resonator/intent" }
-resonator-commitment = { version = "0.1.2", path = "crates/resonator/commitment" }
-resonator-consequence = { version = "0.1.2", path = "crates/resonator/consequence" }
-resonator-memory = { version = "0.1.2", path = "crates/resonator/memory" }
-resonator-conversation = { version = "0.1.2", path = "crates/resonator/conversation" }
-resonator-profiles = { version = "0.1.2", path = "crates/resonator/profiles" }
-resonator-runtime = { version = "0.1.2", path = "crates/resonator/runtime" }
-resonator-client = { version = "0.1.2", path = "crates/resonator/client" }
-resonator-cli = { version = "0.1.2", path = "crates/resonator/cli" }
-resonator-observability = { version = "0.1.2", path = "crates/resonator/observability" }
-resonator-conformance = { version = "0.1.2", path = "crates/resonator/conformance" }
-maple-runtime = { version = "0.1.2", path = "crates/maple-runtime" }
-worldline-types = { version = "0.1.2", path = "crates/worldline/types" }
-worldline-identity = { version = "0.1.2", path = "crates/worldline/identity" }
-worldline-core = { version = "0.1.2", path = "crates/worldline/core" }
-worldline-runtime = { version = "0.1.2", path = "crates/worldline/runtime" }
-worldline-ledger = { version = "0.1.2", path = "crates/worldline/ledger" }
-worldline-governance = { version = "0.1.2", path = "crates/worldline/governance" }
-worldline-operator-bot = { version = "0.1.2", path = "crates/worldline/operator-bot" }
-worldline-promptkit = { version = "0.1.2", path = "crates/worldline/promptkit" }
-worldline-substrate = { version = "0.1.2", path = "crates/worldline/substrate" }
-worldline-conformance = { version = "0.1.2", path = "crates/worldline/conformance" }
-worldline-integration = { version = "0.1.2", path = "crates/worldline/integration" }
-maple-storage = { version = "0.1.2", path = "crates/maple/storage" }
+rcf-types = { version = "0.1.3", path = "crates/rcf/types" }
+rcf-meaning = { version = "0.1.3", path = "crates/rcf/meaning" }
+rcf-intent = { version = "0.1.3", path = "crates/rcf/intent" }
+rcf-commitment = { version = "0.1.3", path = "crates/rcf/commitment" }
+rcf-validator = { version = "0.1.3", path = "crates/rcf/validator" }
+rcf-compiler = { version = "0.1.3", path = "crates/rcf/compiler" }
+rcf-audit = { version = "0.1.3", path = "crates/rcf/audit" }
+ual-types = { version = "0.1.3", path = "crates/ual/types" }
+ual-parser = { version = "0.1.3", path = "crates/ual/parser" }
+ual-compiler = { version = "0.1.3", path = "crates/ual/compiler" }
+mrp-types = { version = "0.1.3", path = "crates/mrp/types" }
+mrp-router = { version = "0.1.3", path = "crates/mrp/router" }
+mrp-transport = { version = "0.1.3", path = "crates/mrp/transport" }
+mrp-service = { version = "0.1.3", path = "crates/mrp/service" }
+aas-types = { version = "0.1.3", path = "crates/aas/types" }
+aas-identity = { version = "0.1.3", path = "crates/aas/identity" }
+aas-capability = { version = "0.1.3", path = "crates/aas/capability" }
+aas-policy = { version = "0.1.3", path = "crates/aas/policy" }
+aas-adjudication = { version = "0.1.3", path = "crates/aas/adjudication" }
+aas-ledger = { version = "0.1.3", path = "crates/aas/ledger" }
+aas-service = { version = "0.1.3", path = "crates/aas/service" }
+mapleverse-types = { version = "0.1.3", path = "crates/mapleverse/types" }
+mapleverse-executor = { version = "0.1.3", path = "crates/mapleverse/executor" }
+mapleverse-connectors = { version = "0.1.3", path = "crates/mapleverse/connectors" }
+mapleverse-evidence = { version = "0.1.3", path = "crates/mapleverse/evidence" }
+mapleverse-service = { version = "0.1.3", path = "crates/mapleverse/service" }
+eve-types = { version = "0.1.3", path = "crates/eve/types" }
+eve-ingestion = { version = "0.1.3", path = "crates/eve/ingestion" }
+eve-evaluation = { version = "0.1.3", path = "crates/eve/evaluation" }
+eve-artifacts = { version = "0.1.3", path = "crates/eve/artifacts" }
+eve-service = { version = "0.1.3", path = "crates/eve/service" }
+resonator-types = { version = "0.1.3", path = "crates/resonator/types" }
+resonator-identity = { version = "0.1.3", path = "crates/resonator/identity" }
+resonator-meaning = { version = "0.1.3", path = "crates/resonator/meaning" }
+resonator-intent = { version = "0.1.3", path = "crates/resonator/intent" }
+resonator-commitment = { version = "0.1.3", path = "crates/resonator/commitment" }
+resonator-consequence = { version = "0.1.3", path = "crates/resonator/consequence" }
+resonator-memory = { version = "0.1.3", path = "crates/resonator/memory" }
+resonator-conversation = { version = "0.1.3", path = "crates/resonator/conversation" }
+resonator-profiles = { version = "0.1.3", path = "crates/resonator/profiles" }
+resonator-runtime = { version = "0.1.3", path = "crates/resonator/runtime" }
+resonator-client = { version = "0.1.3", path = "crates/resonator/client" }
+resonator-cli = { version = "0.1.3", path = "crates/resonator/cli" }
+resonator-observability = { version = "0.1.3", path = "crates/resonator/observability" }
+resonator-conformance = { version = "0.1.3", path = "crates/resonator/conformance" }
+maple-runtime = { version = "0.1.3", path = "crates/maple-runtime" }
+worldline-types = { version = "0.1.3", path = "crates/worldline/types" }
+worldline-identity = { version = "0.1.3", path = "crates/worldline/identity" }
+worldline-core = { version = "0.1.3", path = "crates/worldline/core" }
+worldline-runtime = { version = "0.1.3", path = "crates/worldline/runtime" }
+worldline-ledger = { version = "0.1.3", path = "crates/worldline/ledger" }
+worldline-governance = { version = "0.1.3", path = "crates/worldline/governance" }
+worldline-operator-bot = { version = "0.1.3", path = "crates/worldline/operator-bot" }
+worldline-promptkit = { version = "0.1.3", path = "crates/worldline/promptkit" }
+worldline-substrate = { version = "0.1.3", path = "crates/worldline/substrate" }
+worldline-conformance = { version = "0.1.3", path = "crates/worldline/conformance" }
+worldline-integration = { version = "0.1.3", path = "crates/worldline/integration" }
+maple-storage = { version = "0.1.3", path = "crates/maple/storage" }
 maple-model-openai = { version = "0.1.0", path = "crates/maple/model-openai" }
 maple-model-anthropic = { version = "0.1.0", path = "crates/maple/model-anthropic" }
 maple-model-gemini = { version = "0.1.0", path = "crates/maple/model-gemini" }
 maple-model-grok = { version = "0.1.0", path = "crates/maple/model-grok" }
-maple-integration = { version = "0.1.2", path = "crates/maple-integration" }
-collective-types = { version = "0.1.2", path = "crates/collective/types" }
-collective-runtime = { version = "0.1.2", path = "crates/collective/runtime" }
-workflow-types = { version = "0.1.2", path = "crates/workflow/types" }
-workflow-engine = { version = "0.1.2", path = "crates/workflow/engine" }
-workflow-dsl = { version = "0.1.2", path = "crates/workflow/dsl" }
+maple-integration = { version = "0.1.3", path = "crates/maple-integration" }
+maple-package = { path = "crates/maple-package" }
+maple-package-format = { path = "crates/maple-package-format" }
+maple-build = { path = "crates/maple-build" }
+maple-init = { path = "crates/maple-init" }
+maple-package-trust = { path = "crates/maple-package-trust" }
+maple-registry-client = { path = "crates/maple-registry-client" }
+maple-store = { path = "crates/maple-store" }
+maple-model-core = { path = "crates/maple-model-core" }
+maple-model-backends = { path = "crates/maple-model-backends" }
+maple-model-router = { path = "crates/maple-model-router" }
+maple-registry-catalog = { path = "crates/maple-registry-catalog" }
+maple-guard-core = { path = "crates/maple-guard-core" }
+maple-guard-firewall = { path = "crates/maple-guard-firewall" }
+maple-guard-pii = { path = "crates/maple-guard-pii" }
+maple-guard-inference = { path = "crates/maple-guard-inference" }
+maple-foundry-traces = { path = "crates/maple-foundry-traces" }
+maple-guard-approvals = { path = "crates/maple-guard-approvals" }
+maple-guard-compliance = { path = "crates/maple-guard-compliance" }
+maple-guard-risk = { path = "crates/maple-guard-risk" }
+maple-guard = { path = "crates/maple-guard" }
+maple-model-server = { path = "crates/maple-model-server" }
+maple-model-benchmark = { path = "crates/maple-model-benchmark" }
+maple-foundry-eval = { path = "crates/maple-foundry-eval" }
+maple-foundry-train = { path = "crates/maple-foundry-train" }
+maple-fleet-instance = { path = "crates/maple-fleet-instance" }
+maple-fleet-stack = { path = "crates/maple-fleet-stack" }
+maple-fleet-rollout = { path = "crates/maple-fleet-rollout" }
+maple-fleet-costs = { path = "crates/maple-fleet-costs" }
+maple-fleet-tenancy = { path = "crates/maple-fleet-tenancy" }
+maple-fleet-observe = { path = "crates/maple-fleet-observe" }
+maple-agents-payment = { path = "crates/maple-agents-payment" }
+maple-agents-trading = { path = "crates/maple-agents-trading" }
+maple-agents-support = { path = "crates/maple-agents-support" }
+maple-agents-compliance = { path = "crates/maple-agents-compliance" }
+collective-types = { version = "0.1.3", path = "crates/collective/types" }
+collective-runtime = { version = "0.1.3", path = "crates/collective/runtime" }
+workflow-types = { version = "0.1.3", path = "crates/workflow/types" }
+workflow-engine = { version = "0.1.3", path = "crates/workflow/engine" }
+workflow-dsl = { version = "0.1.3", path = "crates/workflow/dsl" }
 
 # PALM crates
 palm-types = { version = "0.1.0", path = "crates/palm/types" }
@@ -353,19 +437,19 @@ maple-mwl-integration = { path = "crates/mwl/integration" }
 maple-mwl-conformance = { path = "crates/mwl/conformance" }
 
 # WLL — WorldLine Ledger (canonical implementation)
-wll-types = { git = "https://github.com/mapleaiorg/wll.git" }
-wll-crypto = { git = "https://github.com/mapleaiorg/wll.git" }
-wll-store = { git = "https://github.com/mapleaiorg/wll.git" }
-wll-dag = { git = "https://github.com/mapleaiorg/wll.git" }
-wll-ledger = { git = "https://github.com/mapleaiorg/wll.git" }
-wll-fabric = { git = "https://github.com/mapleaiorg/wll.git" }
-wll-gate = { git = "https://github.com/mapleaiorg/wll.git" }
-wll-refs = { git = "https://github.com/mapleaiorg/wll.git" }
-wll-pack = { git = "https://github.com/mapleaiorg/wll.git" }
-wll-sync = { git = "https://github.com/mapleaiorg/wll.git" }
-wll-protocol = { git = "https://github.com/mapleaiorg/wll.git" }
-wll-server = { git = "https://github.com/mapleaiorg/wll.git" }
-wll-sdk = { git = "https://github.com/mapleaiorg/wll.git" }
+wll-types = { version = "0.1.0", git = "https://github.com/mapleaiorg/wll.git" }
+wll-crypto = { version = "0.1.0", git = "https://github.com/mapleaiorg/wll.git" }
+wll-store = { version = "0.1.0", git = "https://github.com/mapleaiorg/wll.git" }
+wll-dag = { version = "0.1.0", git = "https://github.com/mapleaiorg/wll.git" }
+wll-ledger = { version = "0.1.0", git = "https://github.com/mapleaiorg/wll.git" }
+wll-fabric = { version = "0.1.0", git = "https://github.com/mapleaiorg/wll.git" }
+wll-gate = { version = "0.1.0", git = "https://github.com/mapleaiorg/wll.git" }
+wll-refs = { version = "0.1.0", git = "https://github.com/mapleaiorg/wll.git" }
+wll-pack = { version = "0.1.0", git = "https://github.com/mapleaiorg/wll.git" }
+wll-sync = { version = "0.1.0", git = "https://github.com/mapleaiorg/wll.git" }
+wll-protocol = { version = "0.1.0", git = "https://github.com/mapleaiorg/wll.git" }
+wll-server = { version = "0.1.0", git = "https://github.com/mapleaiorg/wll.git" }
+wll-sdk = { version = "0.1.0", git = "https://github.com/mapleaiorg/wll.git" }
 
 # WAF crates
 maple-waf-context-graph = { path = "crates/waf/context-graph" }

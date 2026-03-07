@@ -2,6 +2,8 @@
 name = "aas-service"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
+repository.workspace = true
 description = "AAS Service - The unified Agent Accountability Service"
 
 [dependencies]

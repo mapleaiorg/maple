@@ -2,6 +2,8 @@
 name = "resonator-commitment"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
+repository.workspace = true
 description = "Contract lifecycle manager for MAPLE Resonators - implements state machine, disputes, and expiry tracking"
 
 [dependencies]

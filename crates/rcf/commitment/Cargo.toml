@@ -2,6 +2,8 @@
 name = "rcf-commitment"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
+repository.workspace = true
 description = "RCF-Commitment Layer - Explicit obligation, the only executable layer"
 
 [dependencies]

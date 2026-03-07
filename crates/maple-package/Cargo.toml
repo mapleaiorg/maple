@@ -1,0 +1,27 @@
+[package]
+name = "maple-package"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "MAPLE package manifest types and validation"
+rust-version.workspace = true
+
+[dependencies]
+worldline-types = { path = "../worldline/types" }
+maple-crypto = { path = "../maple/crypto" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+semver = { version = "1", features = ["serde"] }
+url = { version = "2", features = ["serde"] }
+thiserror = "2"
+blake3 = "1"
+chrono = { version = "0.4", features = ["serde"] }
+regex = "1"
+
+[dev-dependencies]
+proptest = "1"
+serde_json = "1"
+tempfile = "3"

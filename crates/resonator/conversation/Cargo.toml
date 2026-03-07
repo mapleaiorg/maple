@@ -2,6 +2,8 @@
 name = "resonator-conversation"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
+repository.workspace = true
 description = "Multi-Turn Conversation support for MAPLE Resonators - session management and context preservation"
 
 [dependencies]

@@ -1,0 +1,22 @@
+[package]
+name = "maple-guard"
+description = "MAPLE Guard -- unified guard service facade for AI agent governance"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+tokio = { workspace = true }
+maple-guard-core = { path = "../maple-guard-core" }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full", "test-util"] }
+semver = "1"

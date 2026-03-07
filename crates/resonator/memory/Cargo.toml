@@ -2,6 +2,8 @@
 name = "resonator-memory"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
+repository.workspace = true
 description = "Enhanced Memory System for MAPLE Resonators - multi-tier memory with consolidation"
 
 [dependencies]

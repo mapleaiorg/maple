@@ -17,7 +17,7 @@ This guide gives the shortest path to run MAPLE today, with two tracks:
 
 ```toml
 [dependencies]
-maple-runtime = { version = "0.1.2", default-features = false }
+maple-runtime = { version = "0.1.3", default-features = false }
 tokio = { version = "1", features = ["full"] }
 ```
 
@@ -38,7 +38,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ```toml
 [dependencies]
-maple-runtime = { version = "0.1.2", default-features = false, features = ["cognition", "agent-kernel", "profile-validation"] }
+maple-runtime = { version = "0.1.3", default-features = false, features = ["cognition", "agent-kernel", "profile-validation"] }
 tokio = { version = "1", features = ["full"] }
 ```
 

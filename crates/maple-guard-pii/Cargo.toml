@@ -1,0 +1,17 @@
+[package]
+name = "maple-guard-pii"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "MAPLE Guard PII/Secrets detection and redaction engine"
+
+[dependencies]
+regex = "1"
+serde = { workspace = true }
+serde_json = { workspace = true }
+blake3 = { workspace = true }
+
+[dev-dependencies]

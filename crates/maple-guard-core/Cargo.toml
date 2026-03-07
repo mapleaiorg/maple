@@ -1,0 +1,23 @@
+[package]
+name = "maple-guard-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "MAPLE Guard policy engine — enterprise governance for AI agents"
+rust-version.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = "0.9"
+chrono = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+regex = "1"
+semver = { version = "1", features = ["serde"] }
+
+[dev-dependencies]
+tokio = { workspace = true }
+tempfile = "3"

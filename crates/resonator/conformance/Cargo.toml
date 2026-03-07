@@ -2,6 +2,8 @@
 name = "resonator-conformance"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
+repository.workspace = true
 description = "Conformance Test Suite for MAPLE Resonance Architecture - validates 8 runtime invariants"
 
 [dependencies]

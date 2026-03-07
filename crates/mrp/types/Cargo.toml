@@ -2,6 +2,8 @@
 name = "mrp-types"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
+repository.workspace = true
 description = "MRP Types"
 [dependencies]
 rcf-types = { workspace = true }

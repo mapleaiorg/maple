@@ -57,7 +57,7 @@ Use this when you only need runtime lifecycle/coupling/attention primitives.
 
 ```toml
 [dependencies]
-maple-runtime = { version = "0.1.2", default-features = false }
+maple-runtime = { version = "0.1.3", default-features = false }
 tokio = { version = "1", features = ["full"] }
 ```
 
@@ -67,7 +67,7 @@ Use this when you need cognition adapters + AgentKernel commitment gating.
 
 ```toml
 [dependencies]
-maple-runtime = { version = "0.1.2", features = ["cognition", "agent-kernel", "profile-validation"] }
+maple-runtime = { version = "0.1.3", features = ["cognition", "agent-kernel", "profile-validation"] }
 tokio = { version = "1", features = ["full"] }
 ```
 

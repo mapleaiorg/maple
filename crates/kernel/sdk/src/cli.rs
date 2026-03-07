@@ -603,7 +603,7 @@ mod tests {
     #[test]
     fn kernel_status_response_serialization() {
         let resp = KernelStatusResponse {
-            version: "0.1.2".into(),
+            version: "0.1.3".into(),
             worldline_count: 10,
             commitment_count: 50,
             profile_types: vec!["human".into(), "agent".into()],

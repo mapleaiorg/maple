@@ -8,7 +8,7 @@ This README reflects the current `main` architecture where runtime users can cho
 
 ```toml
 [dependencies]
-maple-runtime = "0.1.2"
+maple-runtime = "0.1.3"
 ```
 
 ## Build Modes
@@ -28,7 +28,7 @@ This mode compiles adapters and AgentKernel commitment boundary integrations.
 
 ```toml
 [dependencies]
-maple-runtime = { version = "0.1.2", default-features = false }
+maple-runtime = { version = "0.1.3", default-features = false }
 ```
 
 Core-only mode keeps:

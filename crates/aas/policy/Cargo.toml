@@ -2,6 +2,8 @@
 name = "aas-policy"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
+repository.workspace = true
 description = "AAS Policy - Policy engine for commitment adjudication"
 
 [dependencies]
