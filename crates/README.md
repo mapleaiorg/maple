@@ -1,52 +1,66 @@
-# Crate Layout
+# MAPLE Crates
 
-The workspace is organized by architectural layer.
+The workspace is organized around the MapleAI Agent OS layers. Some crates still reflect earlier naming eras, but the current shape is converging on a clearer product-oriented stack.
 
-## Layered Folders
+## Core Product-Oriented Families
 
-### Constitutional and Protocol
+### Runtime and identity
 
-- `rcf/`: Resonance Constitutional Framework
-- `ual/`: Universal Agent Language
-- `mrp/`: routing and transport
+- `worldline-*`
+- `maple-runtime`
+- `maple-kernel-*`
 
-### Authority and Learning
+These crates define identity, continuity, event flow, commitment gating, memory, provenance, and runtime execution.
 
-- `aas/`: accountability and capability governance
-- `eve/`: evidence and validation
+### Packaging and supply chain
 
-### Multi-Agent Coordination
+- `maple-package`
+- `maple-package-format`
+- `maple-build`
+- `maple-init`
+- `maple-package-trust`
+- `maple-registry-*`
 
-- `collective/`: organization primitives
-- `workflow/`: receipt-gated workflow engine
+These crates define the Maplefile contract, artifact assembly, signing, verification, registry distribution, and mirroring.
 
-### WorldLine Framework
+### Model management
 
-- `worldline/`: canonical WorldLine crates
-- `kernel/`: runtime kernel subsystems
-- `substrate/`: self-producing substrate
-- `mwl/`: compatibility wrappers
-- `waf/`: autopoietic factory components
+- `maple-model-*`
 
-### Cognition and Execution
+These crates define backend adapters, routing, serving, and benchmarking.
 
-- `resonator/`: cognition/memory/conformance layer
-- `mapleverse/`: world execution layer
+### Governance
 
-### Operations and Shared Services
+- `maple-guard-*`
+- `worldline-governance`
+- `worldline-operator-bot`
+- `worldline-promptkit`
 
-- `palm/`: daemon, CLI, policy, lifecycle ops
-- `maple/`: shared services (storage, model adapters, protocols)
+These crates define capability controls, approvals, redaction, compliance, and governance coordination.
 
-## Flat Entry Points
+### Improvement and rollout
 
-- `maple-runtime`: runtime SDK (supports `--no-default-features` standalone mode)
-- `maple-cli`: umbrella CLI
-- `maple-integration`: integration facade
+- `maple-foundry-*`
+- `maple-fleet-*`
+- `palm-*`
 
-## Notes
+These crates define traces, evaluation, training loops, rollout control, daemon operations, and operational visibility.
 
-- Package names remain stable for compatibility (`worldline-*`, `palm-*`, `maple-kernel-*`, `rcf-*`, etc.).
-- `maple-runtime` now supports feature-gated dependency tiers:
-  - core-only: `default-features = false`
-  - full stack: enable `cognition`, `agent-kernel`, `profile-validation`
+## Compatibility Families
+
+The repository still contains compatibility namespaces and older architectural groupings. They remain useful for source compatibility and implementation history:
+
+- `resonator-*`
+- `rcf-*`
+- `ual-*`
+- `mrp-*`
+- `aas-*`
+- `mapleverse-*`
+- `eve-*`
+- `workflow-*`
+
+## How to Navigate
+
+- Start with [README.md](../README.md) for the product and docs map
+- Use [docs/architecture/overview.md](../docs/architecture/overview.md) for the system model
+- Use `cargo metadata --no-deps --format-version 1` if you need a machine-readable workspace map

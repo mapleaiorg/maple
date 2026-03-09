@@ -1,8 +1,8 @@
 # WorldLine Quickstart
 
-This is the fastest end-to-end path for the canonical WorldLine stack (`worldline-*` crates, PALM daemon, and `maple` CLI).
+This tutorial is the shortest end-to-end path through the current MAPLE implementation: build the repo, start the PALM daemon, create worldlines, submit a commitment, and inspect provenance.
 
-## 1. Build
+## 1. Build the workspace
 
 ```bash
 git clone https://github.com/mapleaiorg/maple.git
@@ -10,39 +10,24 @@ cd maple
 cargo build
 ```
 
-## 2. Validate Core WorldLine Crates
-
-```bash
-cargo test -p worldline-types -p worldline-identity -p worldline-core -p worldline-runtime -p worldline-ledger -p worldline-governance -p worldline-substrate
-cargo test -p worldline-operator-bot -p worldline-promptkit
-```
-
-## 3. Run Conformance + Integration
-
-```bash
-cargo test -p worldline-conformance -p worldline-integration -p maple-worldline-conformance-suite -p maple-worldline-conformance
-```
-
-## 4. Start Daemon (Terminal A)
+## 2. Start the daemon
 
 ```bash
 cargo run -p palm-daemon
 ```
 
-API base: `http://localhost:8080/api/v1`
+Default API base: `http://localhost:8080/api/v1`
 
-## 5. Run CLI (Terminal B)
+## 3. Open a second terminal for CLI commands
 
 ```bash
 cargo run -p maple-cli -- --help
 cargo run -p maple-cli -- worldline create --profile financial --label treasury-a
 cargo run -p maple-cli -- worldline create --profile financial --label treasury-b
 cargo run -p maple-cli -- worldline list
-cargo run -p maple-cli -- kernel status
-cargo run -p maple-cli -- kernel metrics
 ```
 
-## 6. Submit Commitment
+## 4. Submit a commitment
 
 ```bash
 cat >/tmp/worldline-commitment.json <<'JSON'
@@ -58,9 +43,9 @@ JSON
 cargo run -p maple-cli -- commit submit --file /tmp/worldline-commitment.json
 ```
 
-Keep returned `commitment_id` and `decision_receipt_id`.
+Capture the returned `commitment_id` and `decision_receipt_id`.
 
-## 7. Settle + Query Projection
+## 5. Execute a financial consequence
 
 ```bash
 cat >/tmp/worldline-settlement.json <<'JSON'
@@ -76,29 +61,26 @@ cat >/tmp/worldline-settlement.json <<'JSON'
 JSON
 
 cargo run -p maple-cli -- financial settle --file /tmp/worldline-settlement.json
-cargo run -p maple-cli -- financial projection REPLACE_WL_B USD
 ```
 
-## 8. Provenance + Governance
+## 6. Inspect provenance and kernel state
 
 ```bash
-cargo run -p maple-cli -- gov list
-cargo run -p maple-cli -- provenance ancestors EVENT_ID --depth 5
+cargo run -p maple-cli -- kernel status
+cargo run -p maple-cli -- kernel metrics
 cargo run -p maple-cli -- provenance worldline-history REPLACE_WORLDLINE_ID
+cargo run -p maple-cli -- gov list
 ```
 
-## 9. Demo Programs
+## 7. What you just exercised
 
-```bash
-cargo run --manifest-path examples/mwl-worldline-lifecycle/Cargo.toml
-cargo run --manifest-path examples/mwl-commitment-gate/Cargo.toml
-cargo run --manifest-path examples/mwl-provenance-audit/Cargo.toml
-cargo run --manifest-path examples/mwl-human-agency/Cargo.toml
-cargo run --manifest-path examples/mwl-financial-settlement/Cargo.toml
-```
+- worldline identity creation
+- commitment submission and decision receipts
+- a consequence that required explicit authorization
+- kernel and provenance visibility through the current CLI
 
-## 10. Next
+## Next
 
-- [WorldLine Framework Guide](../worldline-framework.md)
 - [Operations Tutorial](operations.md)
-- [Maple Runtime Standalone Tutorial](maple-runtime-standalone.md)
+- [iBank Commitment Boundary](ibank-commitment-boundary.md)
+- [REST API](../api/rest-api.md)

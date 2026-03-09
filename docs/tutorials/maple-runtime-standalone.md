@@ -1,13 +1,8 @@
-# maple-runtime Standalone Tutorial
+# maple-runtime Standalone
 
-This tutorial shows how to run `maple-runtime` as an independent crate with a minimal dependency footprint, then opt into full boundary features only when required.
+This tutorial shows how to use `maple-runtime` as a smaller runtime dependency when you do not need the full daemon and worldline operations surface.
 
-## 1. Prerequisites
-
-- Rust `1.80+`
-- Cargo
-
-## 2. Create a Core-Only App
+## 1. Core-only dependency
 
 ```toml
 [dependencies]
@@ -28,16 +23,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-## 3. Validate Core-Only Build in This Repo
+## 2. Validate the minimal build matrix
 
 ```bash
 cargo check -p maple-runtime --no-default-features
 cargo test -p maple-runtime --no-default-features --lib
 ```
 
-## 4. Add Cognition and Boundary Features (Optional)
-
-When you need structured cognition drafts and commitment-gated tool execution:
+## 3. Opt into richer features when needed
 
 ```toml
 [dependencies]
@@ -45,35 +38,25 @@ maple-runtime = { version = "0.1.3", default-features = false, features = ["cogn
 tokio = { version = "1", features = ["full"] }
 ```
 
-This enables:
-
-- `maple_runtime::cognition::*`
-- `maple_runtime::agent_kernel::*`
-- canonical profile validation through `resonator-profiles`
-
-## 5. Run Feature-Gated Examples
+Useful example programs:
 
 ```bash
 cargo run -p maple-runtime --example 06_agent_kernel_boundary --features agent-kernel
 cargo run -p maple-runtime --example 08_memory_and_conversation --features memory-conversation
 cargo run -p maple-runtime --example 09_observability_demo --features observability-examples
-cargo run -p maple-runtime --example 10_conformance_testing --features conformance-examples
 ```
 
-## 6. Build Matrix Recommended for CI
+## 4. When to choose this path
 
-```bash
-# Full compatibility matrix
-cargo check -p maple-runtime
-cargo test -p maple-runtime
+Use the standalone runtime path when you want:
 
-# Independent/minimal matrix
-cargo check -p maple-runtime --no-default-features
-cargo test -p maple-runtime --no-default-features --lib
-```
+- embedded runtime experiments
+- smaller dependency surfaces
+- direct control over cognition and lifecycle integration
 
-## 7. Next
+Use the PALM and worldline path when you need daemon operations, REST APIs, provenance queries, and richer control-plane workflows.
 
-- Boundary flow: [iBank Commitment Boundary](ibank-commitment-boundary.md)
-- Full stack ops: [Operations Tutorial](operations.md)
-- WorldLine path: [WorldLine Quickstart](worldline-quickstart.md)
+## Next
+
+- [WorldLine Quickstart](worldline-quickstart.md)
+- [Architecture Overview](../architecture/overview.md)

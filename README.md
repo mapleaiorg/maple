@@ -1,133 +1,124 @@
-# MAPLE AI Framework
+# MAPLE by MapleAI - The Agent Operating System
 
-MAPLE is a Rust workspace for building resonance-native multi-agent systems with explicit commitment boundaries, auditable consequence flow, and WorldLine continuity.
+> Ship agents like software. Govern them like infrastructure.
 
-The repository currently exposes two complementary entry paths:
+MAPLE is the open-source kernel and control-plane foundation for the MapleAI Agent OS. It packages the runtime, governance, provenance, model routing, and operational surfaces needed to move agentic systems from experiments into production.
 
-- `maple-runtime`: runtime-first SDK for resonator lifecycle, coupling, cognition adapters, and AgentKernel boundary execution.
-- `worldline-*` + `palm-*`: canonical WorldLine kernel/governance crates and operational control plane.
+This repository currently exposes the core layers that power that design:
 
-## Current Status (main)
+- WorldLine-first runtime and provenance primitives
+- PALM daemon and operational control plane
+- `maple` CLI for local development, daemon operations, and governed worldline flows
+- package, model, guard, foundry, and fleet crates that define the Agent OS supply chain
 
-This repository is aligned with upstream `mapleaiorg/maple` `main` at commit `759a5f49` (2026-02-26 fetch).
+Brand: `MapleAI`  
+Legal entity: `MapelAI Intelligence Inc.`
 
-Recent practical updates reflected in this docs refresh:
+## What MAPLE Does
 
-- `maple-runtime` now supports a **minimal standalone core mode** via Cargo feature gates.
-- AgentKernel/cognition/accountability dependencies can be opted in only when needed.
-- Example and test build requirements are explicitly feature-gated.
-- Docs/tutorials now separate **core runtime** workflows from **full WorldLine + PALM ops** workflows.
+- Package agents as versioned artifacts with Maplefile manifests, build provenance, signing, and SBOM support
+- Route local and hosted models behind one policy-aware control surface
+- Enforce deny-by-default capability access through Guard and commitment gating
+- Record worldline receipts so decisions and outcomes stay replayable and auditable
+- Scale governed agents through fleet, rollout, budget, and tenancy controls
+- Improve production behavior through trace capture, eval loops, and distillation workflows
 
-## Quick Start
-
-### Prerequisites
-
-- Rust `1.80+`
-- Cargo
-- Optional for ops tutorials: PostgreSQL and Ollama
-
-### Clone and Build
+## What You Can Run Today
 
 ```bash
-git clone https://github.com/mapleaiorg/maple.git
-cd maple
-cargo build --release
-```
-
-### Run the first runtime example
-
-```bash
-cargo run -p maple-runtime --example 01_basic_resonator
-```
-
-### Run WorldLine demo examples
-
-```bash
-cargo run --manifest-path examples/mwl-worldline-lifecycle/Cargo.toml
-cargo run --manifest-path examples/mwl-commitment-gate/Cargo.toml
-```
-
-## maple-runtime Independence Modes
-
-`maple-runtime` now supports two practical dependency modes.
-
-### 1) Core runtime only (most independent)
-
-Use this when you only need runtime lifecycle/coupling/attention primitives.
-
-```toml
-[dependencies]
-maple-runtime = { version = "0.1.3", default-features = false }
-tokio = { version = "1", features = ["full"] }
-```
-
-### 2) Full runtime boundary stack
-
-Use this when you need cognition adapters + AgentKernel commitment gating.
-
-```toml
-[dependencies]
-maple-runtime = { version = "0.1.3", features = ["cognition", "agent-kernel", "profile-validation"] }
-tokio = { version = "1", features = ["full"] }
-```
-
-### Validate both build modes in this repo
-
-```bash
-cargo check -p maple-runtime
-cargo check -p maple-runtime --no-default-features
-```
-
-## Core Commands
-
-### Runtime and examples
-
-```bash
-cargo test -p maple-runtime
-cargo run -p maple-runtime --example 02_resonator_coupling
-cargo run -p maple-runtime --example 06_agent_kernel_boundary --features agent-kernel
-cargo run -p maple-runtime --example 08_memory_and_conversation --features memory-conversation
-cargo run -p maple-runtime --example 09_observability_demo --features observability-examples
-cargo run -p maple-runtime --example 10_conformance_testing --features conformance-examples
-```
-
-### WorldLine / PALM operations
-
-```bash
+# Start the daemon
 cargo run -p palm-daemon
-cargo run -p maple-cli -- worldline list
+
+# Create a worldline
+cargo run -p maple-cli -- worldline create --profile financial --label treasury-a
+
+# Inspect kernel state
 cargo run -p maple-cli -- kernel status
-cargo run -p maple-cli -- gov list
 ```
 
-## Repository Layout
+Those commands exercise the current implementation surfaces directly. The broader Agent OS redesign described in the docs is built on top of these runtime, provenance, and control-plane layers.
 
-See [docs/repo-structure.md](docs/repo-structure.md) for complete details.
+## Architecture at a Glance
 
-High-level layout:
+```mermaid
+graph TD
+    A[Reference Agents] --> B[Fleet, Foundry, Guard]
+    B --> C[Packages, Registry, Models]
+    C --> D[WorldLine Kernel]
+    D --> E[Types, Identity, Temporal Model, Cryptography]
+```
 
-- `crates/maple-runtime`: runtime SDK and boundary kernel APIs
-- `crates/worldline/*`: canonical WorldLine namespaces
-- `crates/palm/*`: control plane, daemon, and ops tooling
-- `crates/resonator/*`: cognition/memory/conformance layer
-- `examples/*`: runnable lifecycle/commitment/provenance demos
-- `docs/*`: architecture, API, tutorials, rollout guides
+- Reference agents: support, finance, compliance, operator workflows
+- Fleet / Foundry / Guard: rollout, eval, approvals, policy, compliance
+- Packages / Registry / Models: artifact supply chain and model operations
+- WorldLine kernel: commitment boundary, memory, provenance, event fabric
+- Foundation: types, identity, temporal and crypto primitives
+
+## Quick Start Paths
+
+### Path A: Installation and first run
+
+- [Installation](docs/getting-started/installation.md)
+- [5-Minute Quickstart](docs/getting-started/quickstart.md)
+
+### Path B: Build your first governed agent
+
+- [First Agent Tutorial](docs/getting-started/first-agent.md)
+- [Maplefile Reference](docs/guides/maplefile.md)
+- [Guard and Policies](docs/guides/guard-policies.md)
+
+### Path C: Deep architecture and APIs
+
+- [Architecture Overview](docs/architecture/overview.md)
+- [REST API](docs/api/rest-api.md)
+- [CLI Reference](docs/api/cli-reference.md)
 
 ## Documentation Map
 
-- [docs/README.md](docs/README.md)
-- [docs/getting-started.md](docs/getting-started.md)
-- [docs/tutorials/maple-runtime-standalone.md](docs/tutorials/maple-runtime-standalone.md)
-- [docs/tutorials/worldline-quickstart.md](docs/tutorials/worldline-quickstart.md)
-- [docs/tutorials/operations.md](docs/tutorials/operations.md)
-- [docs/worldline-framework.md](docs/worldline-framework.md)
+- [Docs Index](docs/README.md)
+- [Architecture](docs/architecture/overview.md)
+- [Getting Started](docs/getting-started/installation.md)
+- [Guides](docs/guides/maplefile.md)
+- [API](docs/api/README.md)
+- [Reference](docs/reference/invariants.md)
+- [Comparison](docs/comparison.md)
+- [Tutorials](docs/tutorials/worldline-quickstart.md)
+
+## Repository Layout
+
+```text
+maple/
+├── crates/               # Runtime, package, model, guard, fleet, and worldline crates
+├── contracts/            # Packaging and conformance contracts
+├── examples/             # Runnable demos and end-to-end reference flows
+├── docs/                 # Canonical documentation set
+├── ibank/                # Domain-specific financial application surfaces
+└── deploy/               # Deployment assets when present
+```
+
+## Status
+
+MAPLE is in the middle of an Agent OS redesign. The repository already contains the foundational implementation for:
+
+- worldline identity and provenance
+- PALM daemon operations
+- packaging, registry, and model-management crates
+- guard, foundry, and fleet crate families
+
+Some top-level docs describe the full target operating model even where the UX is still converging on the final `maple build`, `maple run`, and `maple model` ergonomics.
 
 ## Contributing
 
-- [CONTRIBUTING.md](CONTRIBUTING.md)
-- [CHANGELOG.md](CHANGELOG.md)
-- [ROADMAP.md](ROADMAP.md)
+- [Contributing Guide](CONTRIBUTING.md)
+- [Roadmap](ROADMAP.md)
+- [Changelog](CHANGELOG.md)
+
+## Contact
+
+- Website: <https://mapleai.org>
+- Docs: <https://mapleai.org/docs>
+- Email: <hello@mapleai.org>
 
 ## License
 
-Dual-licensed under MIT OR Apache-2.0.
+MIT OR Apache-2.0

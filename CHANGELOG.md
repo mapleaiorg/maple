@@ -1,11 +1,18 @@
 # Changelog
 
-All notable changes to MAPLE will be documented in this file.
+All notable changes to MAPLE are documented here.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The project follows Keep a Changelog style and uses semantic versioning where release tags exist.
 
 ## [Unreleased]
+
+### Documentation
+
+- rewrote the root README around the MapleAI Agent OS narrative
+- added the new docs information architecture under `docs/getting-started`, `docs/guides`, `docs/api`, `docs/reference`, and `docs/architecture/overview.md`
+- refreshed top-level docs indexes, examples docs, and crate layout docs
+- rewrote core tutorials to reflect the current runtime, PALM, and worldline flows
+- aligned brand and corporation references with `MapleAI` and `MapelAI Intelligence Inc.`
 
 ## [0.1.3] - 2026-03-05
 
@@ -14,84 +21,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `maple-runtime` feature-gated build tiers:
   - core-only standalone mode (`--no-default-features`)
   - optional cognition and AgentKernel layers (`cognition`, `agent-kernel`, `profile-validation`)
-- New standalone tutorial: `docs/tutorials/maple-runtime-standalone.md`
+- initial package, model, guard, foundry, and fleet crate families for the Agent OS redesign
+- new standalone tutorial for `maple-runtime`
 
-- Initial PALM (Platform Agent Lifecycle Management) implementation
-- Platform Pack contract with `PlatformPack` trait
-- Three canonical platform packs:
-  - `mapleverse-pack`: High-throughput swarm orchestration
-  - `finalverse-pack`: Human-centric world simulation
-  - `ibank-pack`: Autonomous financial operations
-- Conformance test suite for platform pack validation
-- Boundary enforcement demo
-- Complete documentation and tutorials
+### Changed
 
-### Core Crates
-
-- `palm-types`: Core type definitions
-- `palm-registry`: Agent specification registry
-- `palm-deployment`: Deployment management
-- `palm-health`: Health monitoring with probes
-- `palm-state`: Checkpoint and state management
-- `palm-control`: Unified control plane
-- `palm-policy`: Policy gate system with platform-specific policies
-- `palm`: Command-line interface
-- `palm-daemon`: Background orchestration service
-- `palm-observability`: Metrics, tracing, and audit
-
-### Contracts
-
-- `palm-platform-pack`: Platform pack interface contract
-- `palm-conformance`: Conformance test framework
-
-### Documentation
-
-- Refreshed root README, runtime README, and tutorial index for current `main` architecture
-- Updated getting started, operations, worldline quickstart, and iBank commitment boundary tutorials
-- Updated examples/crates layout READMEs with feature-gated runtime example commands
+- PALM and worldline documentation were reorganized around clearer runtime and operations workflows
+- examples and crate layout docs were refreshed for feature-gated runtime examples
 
 ## [0.1.2] - 2026-02-10
 
 ### Added
-- First Llama model adapter for resonance-field integrations, enabling pluggable LLMs in the cognitive pipeline (Presence → Meaning).
-- Core banking updates in the iBank profile, supporting autonomous DeFi executions on platforms like Libra2.org with commitment-gated transactions.
-- AgentKernel enhancements for better worldline persistence and memory tiering (Short-term, Working, Long-term, Episodic).
-- New examples in `examples/boundary-demo/` demonstrating commitment boundaries and conformance testing.
-- Docs updates in `docs/` for runtime invariants, CLI usage, and platform profiles (Mapleverse, Finalverse, iBank).
+
+- initial Llama adapter work for resonance-field integrations
+- iBank profile improvements for commitment-gated financial flows
+- AgentKernel enhancements for worldline persistence and memory tiering
 
 ### Changed
-- Refined maple storage system for improved observability and audit trails, aligning with EVOS axioms (worldline primacy, intrinsic memory).
-- Minor optimizations in resonator and palm crates for scalability toward 100M+ agents.
 
-### Fixed
-- Resolved minor issues in Cargo dependencies and build scripts.
-
-This release advances Maple's Resonance Architecture toward accountable AI civilizations, with direct applications in iBank.io for crypto banking on Libra2.org. See ROADMAP.md for upcoming bio-digital hybrids and multi-level selection.
-
-[Full Changelog](https://github.com/mapleaiorg/maple/compare/v0.1.1...v0.1.2)
+- storage and observability layers were refined around auditability and provenance
 
 ## [0.1.1] - 2026-02-03
 
 ### Fixed
 
-- `maple-runtime`: first explicit `signal_presence()` after `register_resonator()` could incorrectly return `PresenceError::RateLimitExceeded`.
-- `maple-runtime`: restored resonators can send an immediate explicit presence signal without tripping startup rate limiting.
-
-### Documentation
-
-- Updated getting started guidance for the initial presence signaling path.
+- `maple-runtime`: initial explicit `signal_presence()` after registration no longer trips startup rate limiting
 
 ## [0.1.0] - 2026-02-01
 
 ### Added
 
-- Initial release
-- Resonance Architecture implementation
-- Platform pack system
-- Documentation
+- initial release
+- resonance architecture implementation
+- platform pack and control-plane foundations
 
-[Unreleased]: https://github.com/mapleaiorg/maple/compare/v0.1.3...HEAD
-[0.1.3]: https://github.com/mapleaiorg/maple/compare/v0.1.2...v0.1.3
+[0.1.3]: https://github.com/mapleaiorg/maple/releases/tag/v0.1.3
 [0.1.2]: https://github.com/mapleaiorg/maple/releases/tag/v0.1.2
 [0.1.1]: https://github.com/mapleaiorg/maple/releases/tag/v0.1.1
 [0.1.0]: https://github.com/mapleaiorg/maple/releases/tag/v0.1.0

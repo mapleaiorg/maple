@@ -1,12 +1,27 @@
-# Mapleverse Layer (`crates/mapleverse/*`)
+# Mapleverse Crates
 
-Mapleverse is the execution/service layer for MAPLE world operations.
+`crates/mapleverse/*` contains execution and world-facing service crates from the earlier profile-specific architecture.
 
-Components:
+## Current Role
 
-- `types`: Mapleverse platform data types.
-- `executor`: Commitment execution engine.
-- `connectors`: Effect-domain adapters.
-- `evidence`: Evidence collection/storage.
-- `service`: Unified service facade.
-- `world`: World-scale simulation/runtime modules.
+These crates remain useful as execution-layer and connector-oriented implementation surfaces. In the newer Agent OS framing, that work maps mostly into:
+
+- Runtime for execution semantics
+- Guard for governed consequence
+- Fleet for operational rollout
+- reference agents for domain packages
+
+## Components
+
+- `types`
+- `executor`
+- `connectors`
+- `evidence`
+- `service`
+- `world`
+
+## Recommended Reading
+
+- [Architecture Overview](../../docs/architecture/overview.md)
+- [Commitment Boundary](../../docs/architecture/commitment-boundary.md)
+- [Fleet Deployment Guide](../../docs/guides/fleet-deployment.md)

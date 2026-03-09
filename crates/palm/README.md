@@ -1,17 +1,31 @@
-# PALM Layer (`crates/palm/*`)
+# PALM Crates
 
-PALM is the operations/control-plane layer.
+PALM is the current daemon and operational control-plane layer in the MAPLE repository.
 
-Components:
+## What PALM Does
 
-- `types`: Shared domain types.
-- `registry`: Agent spec/instance registry.
-- `deployment`: Deployment orchestration.
-- `health`: Health checks and resilience.
-- `state`: Checkpoint/snapshot/state management.
-- `control`: Unified control-plane orchestration.
-- `policy`: Policy evaluation and gates.
-- `shared-state`: Shared UI/API state contracts.
-- `daemon`: Background API and scheduler service.
-- `observability`: Metrics/tracing/audit queries.
-- `cli`: Direct `palm` CLI.
+- daemon lifecycle and HTTP surfaces
+- deployment and instance coordination
+- health, state, and operational visibility
+- policy and registry operations
+- compatibility path for the broader Fleet and control-plane story
+
+## Current Crates
+
+- `types`
+- `registry`
+- `deployment`
+- `health`
+- `state`
+- `control`
+- `policy`
+- `shared-state`
+- `daemon`
+- `observability`
+- `cli`
+
+## How to Use It
+
+- start with [docs/tutorials/operations.md](../../docs/tutorials/operations.md)
+- use [docs/api/cli-reference.md](../../docs/api/cli-reference.md) for command groups
+- use [docs/api/rest-api.md](../../docs/api/rest-api.md) for endpoint orientation

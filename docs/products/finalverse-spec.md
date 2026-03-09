@@ -2,7 +2,7 @@
 
 **Version**: 1.0.0
 **Status**: Draft
-**Product Owner**: MapleAI Intelligence Inc.
+**Product Owner**: MapelAI Intelligence Inc.
 
 ## Executive Summary
 

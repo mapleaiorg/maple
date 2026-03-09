@@ -1,21 +1,15 @@
-# Platform Packs Tutorial
+# Platform Packs
 
-This tutorial walks through creating a custom PALM platform pack.
+This tutorial covers the current platform-pack implementation surfaces that feed PALM and the broader Agent OS control plane.
 
-## Prerequisites
-
-- Rust `1.80+`
-- Async Rust basics
-- Familiarity with MAPLE profiles and policy boundaries
-
-## 1. Create a Crate
+## 1. Create a new pack crate
 
 ```bash
 cargo new --lib my-platform-pack
 cd my-platform-pack
 ```
 
-## 2. Add Dependencies
+## 2. Add the contract dependencies
 
 ```toml
 [dependencies]
@@ -26,82 +20,38 @@ serde = { version = "1", features = ["derive"] }
 tracing = "0.1"
 ```
 
-## 3. Implement `PlatformPack`
+## 3. Implement the contract
 
-```rust
-use async_trait::async_trait;
-use palm_platform_pack::*;
-use palm_types::PlatformProfile;
+Platform packs currently define:
 
-pub struct MyPlatformPack {
-    metadata: PlatformMetadata,
-    policy: PlatformPolicyConfig,
-    health: PlatformHealthConfig,
-    state: PlatformStateConfig,
-    resources: PlatformResourceConfig,
-    recovery: PlatformRecoveryConfig,
-    capabilities: PlatformCapabilities,
-}
+- profile metadata
+- policy defaults
+- health configuration
+- state behavior
+- resource limits
+- recovery strategy
+- supported capability surface
 
-impl Default for MyPlatformPack {
-    fn default() -> Self {
-        Self {
-            metadata: PlatformMetadata {
-                name: "my-platform".into(),
-                version: "0.1.0".into(),
-                description: "Custom platform profile".into(),
-                ..Default::default()
-            },
-            policy: PlatformPolicyConfig::default(),
-            health: PlatformHealthConfig::default(),
-            state: PlatformStateConfig::default(),
-            resources: PlatformResourceConfig::default(),
-            recovery: PlatformRecoveryConfig::default(),
-            capabilities: PlatformCapabilities::default(),
-        }
-    }
-}
-
-#[async_trait]
-impl PlatformPack for MyPlatformPack {
-    fn profile(&self) -> PlatformProfile {
-        PlatformProfile::Custom("my-platform".into())
-    }
-
-    fn metadata(&self) -> &PlatformMetadata { &self.metadata }
-    fn policy_config(&self) -> &PlatformPolicyConfig { &self.policy }
-    fn health_config(&self) -> &PlatformHealthConfig { &self.health }
-    fn state_config(&self) -> &PlatformStateConfig { &self.state }
-    fn resource_config(&self) -> &PlatformResourceConfig { &self.resources }
-    fn recovery_config(&self) -> &PlatformRecoveryConfig { &self.recovery }
-    fn capabilities(&self) -> &PlatformCapabilities { &self.capabilities }
-
-    async fn on_load(&self) -> Result<(), PackError> {
-        tracing::info!("my-platform loaded");
-        Ok(())
-    }
-}
-```
-
-## 4. Validate with Conformance
+After implementation, validate with:
 
 ```bash
 cargo test -p palm-conformance
 ```
 
-## 5. Integrate with Daemon/CLI
+## 4. Why platform packs matter
 
-- Register the pack in your PALM profile registry path.
-- Start daemon and select the profile.
-- Verify policy, health, and recovery behavior through CLI.
+Platform packs are one of the bridges between the older profile-specific implementation surfaces and the newer Agent OS packaging and fleet model. They let you define deployment defaults and control-plane expectations without hard-coding them in the daemon.
 
-## Canonical Built-In Packs
+## 5. Current built-in profiles
 
-- `mapleverse-pack`: throughput-first AI coordination
-- `finalverse-pack`: human agency and safety-first
-- `ibank-pack`: accountability-first financial operations
+- Mapleverse
+- Finalverse
+- iBank
+- development
+
+These remain useful as compatibility and domain-shaping profiles while the top-level product story converges on Runtime, Registry, Models, Guard, Foundry, and Fleet.
 
 ## Next
 
 - [Operations Tutorial](operations.md)
-- [Conformance Guide](../conformance.md)
+- [Architecture Overview](../architecture/overview.md)
