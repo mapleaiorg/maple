@@ -1,36 +1,27 @@
 # TypeScript SDK
 
-Install:
+MapleAI does not currently ship an official published TypeScript SDK from this repo.
 
-```bash
-npm install @maple-ai/sdk
-```
+## Current integration path
 
-The TypeScript SDK is aimed at control planes, operator consoles, and workflow services that need typed access to the commitment model.
-
-## Example
+Use the PALM daemon REST API and keep a thin client in your application or control plane.
 
 ```typescript
-import { MapleClient, Profile } from "@maple-ai/sdk";
+const response = await fetch("http://127.0.0.1:8080/health");
+const status = await response.json();
 
-const client = await MapleClient.connect("http://localhost:8080");
-
-const agent = await client.worldline.create({
-  profile: Profile.Agent,
-  label: "my-support-agent",
-});
-
-const result = await client.commit.submit({
-  worldlineId: agent.id,
-  obligation: "resolve customer ticket #1234",
-  capabilities: ["zendesk.ticket.reply"],
-});
-
-console.log(result);
+console.log(status);
 ```
 
-## Typical flow
+For richer workflows, target the REST resources documented in [REST API](rest-api.md).
 
-- Connect once and reuse the client.
-- Keep worldline IDs explicit in your workflow state.
-- Treat commitment responses as governed outcomes, not just boolean success.
+## Recommended scope today
+
+- operator consoles
+- internal workflow services
+- generated clients against the PALM HTTP API
+- browser or Node.js tooling that needs runtime visibility
+
+## Status
+
+TypeScript integration is currently HTTP-first. An official SDK package may come later, but it is not published from this repo today.

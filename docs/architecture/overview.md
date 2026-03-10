@@ -4,13 +4,15 @@ MAPLE is the enterprise control plane for agentic AI systems. It is not a chatbo
 
 The core thesis is simple: models will commoditize, but governed execution will not. Enterprises need packaging, model routing, capability controls, auditability, rollout control, and cost boundaries. MAPLE treats those as platform primitives.
 
+In the current repository, the runtime, PALM daemon, playground, and worldline flows are the most complete public interfaces. The package, registry, model, and fleet layers are implemented primarily as crates that the final product CLI will sit on.
+
 ## The layer cake
 
 | Layer | MAPLE role | Analogy |
 | --- | --- | --- |
 | Reference agents | Opinionated agent packages for support, finance, compliance, and operations | Application layer |
 | Fleet / Foundry / Guard | Rollout, evaluation, distillation, capability firewall, approvals, compliance packs | Kubernetes + policy engine |
-| Packages / Registry / Models | OCI-style distribution, signed artifacts, model pull/serve/route | Docker + registry + Ollama |
+| Packages / Registry / Models | OCI-style package manifests, build and trust crates, registry clients, and model store/router/server foundations | Docker + registry + Ollama |
 | Kernel | Event fabric, commitment gate, worldline ledger, memory engine, operator bus | Agent runtime kernel |
 | Foundation | Types, temporal model, cryptography, identity, proofs | System substrate |
 
@@ -82,11 +84,11 @@ For a request like "pay my credit card bill", the platform shape looks like this
 
 ### Local development
 
-Single-process demo path with Rust binaries, SQLite-friendly storage, and optional Ollama. Best for learning the mental model.
+Rust binaries, worldline examples, PALM daemon, and optional Ollama. Best for learning the mental model.
 
 ### Team deployment
 
-Compose-based deployment with MAPLE services, Postgres, Ollama, and basic observability. Best for shared staging and integration work.
+Shared PALM environment with Postgres, playground backends, and basic observability. Best for shared staging and integration work.
 
 ### Enterprise
 

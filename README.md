@@ -2,43 +2,112 @@
 
 > Ship agents like software. Govern them like infrastructure.
 
-MAPLE is the open-source kernel and control-plane foundation for the MapleAI Agent OS. It packages the runtime, governance, provenance, model routing, and operational surfaces needed to move agentic systems from experiments into production.
-
-This repository currently exposes the core layers that power that design:
-
-- WorldLine-first runtime and provenance primitives
-- PALM daemon and operational control plane
-- `maple` CLI for local development, daemon operations, and governed worldline flows
-- package, model, guard, foundry, and fleet crates that define the Agent OS supply chain
+MAPLE is the open-source runtime and supply-chain foundation for the MapleAI Agent OS. It combines governed execution, worldline identity, provenance, package artifacts, model control, and operational surfaces for agent systems that can create real consequences.
 
 Brand: `MapleAI`  
 Legal entity: `MapelAI Intelligence Inc.`
 
-## What MAPLE Does
+## What Ships In This Repository Today
 
-- Package agents as versioned artifacts with Maplefile manifests, build provenance, signing, and SBOM support
-- Route local and hosted models behind one policy-aware control surface
-- Enforce deny-by-default capability access through Guard and commitment gating
-- Record worldline receipts so decisions and outcomes stay replayable and auditable
-- Scale governed agents through fleet, rollout, budget, and tenancy controls
-- Improve production behavior through trace capture, eval loops, and distillation workflows
+- Runtime and consequence control: `maple-cli`, `palm-daemon`, `maple-runtime`, `worldline-*`, and `maple-kernel-*`
+- Package and registry foundations: `maple-package`, `maple-init`, `maple-build`, `maple-package-trust`, and `maple-registry-client`
+- Model-control foundations: `maple-model-core`, `maple-model-router`, `maple-model-server`, `maple-model-benchmark`, backend adapters, and PALM playground integration
+- Governance and improvement: `maple-guard-*`, `maple-foundry-*`, `maple-fleet-*`, and `palm-*`
+
+## What "Docker-like" Means In MAPLE
+
+MAPLE's Docker-like layer is the agent package supply chain. The core idea is that an agent is a versioned artifact with an explicit contract, not a folder of prompts plus ad hoc glue.
+
+Implemented foundations:
+
+- `maple-package` parses and validates `Maplefile.yaml`
+- `maple-init` generates templates and scaffold directories for package kinds
+- `maple-build` resolves dependencies, assembles deterministic OCI layers, and writes `maple.lock`
+- `maple-package-trust` signs digests, generates SBOMs, and creates build attestations
+- `maple-registry-client` pushes, pulls, and mirrors OCI artifacts
+- `maple-fleet-stack` defines stack YAML and dependency ordering for multi-service agent systems
+
+Current instruction:
+
+1. Author a `Maplefile.yaml` using the implemented schema in [docs/guides/maplefile.md](docs/guides/maplefile.md).
+2. Scaffold package directories manually or via the `maple-init` crate.
+3. Use the build, trust, and registry crates from Rust or internal automation.
+4. Use PALM plus fleet crates for deployment control.
+
+Important: the final top-level `maple build`, `maple sign`, `maple push`, and `maple up` UX is not exposed in `maple-cli` yet. The crates are present; the public product CLI is still converging.
+
+## What "Ollama-like" Means In MAPLE
+
+MAPLE's Ollama-like layer is model control, not just local model download. The repo already implements model metadata, a local model store, routing policy, backend neutrality, and OpenAI-compatible serving types.
+
+Implemented foundations:
+
+- `maple-model-core` stores models under `~/.maple/models` and parses `MapleModelfile`
+- `maple-model-router` routes across backends with policy, fallback, and circuit breaking
+- `maple-model-server` provides OpenAI-compatible request and response types plus handler logic
+- `maple-model-benchmark` defines benchmark suites and quality gates
+- PALM playground can target `local_llama`, `open_ai`, `anthropic`, `grok`, and `gemini`
+
+Current instruction:
+
+1. Start Ollama locally:
+
+```bash
+ollama serve
+ollama pull llama3.2:3b
+```
+
+2. Verify the runtime path:
+
+```bash
+cargo run -p maple-cli -- doctor --model llama3.2:3b
+```
+
+3. Start PALM:
+
+```bash
+cargo run -p maple-cli -- daemon start --foreground
+```
+
+4. Point PALM playground at Ollama:
+
+```bash
+cargo run -p palm -- playground set-backend \
+  --kind local_llama \
+  --model llama3.2:3b \
+  --endpoint http://127.0.0.1:11434
+
+cargo run -p palm -- playground infer "Summarize current runtime status"
+```
+
+Important: the final `maple model pull`, `maple model run`, and `maple model serve` CLI is not exposed in `maple-cli` yet. Today the practical operator path is Ollama plus PALM playground plus the model crates.
 
 ## What You Can Run Today
 
 ```bash
+# Inspect the current CLI surface
+cargo run -q -p maple-cli -- --help
+
+# Check PALM, Postgres, and Ollama connectivity
+cargo run -p maple-cli -- doctor --model llama3.2:3b
+
+# Run the local agent demo
+cargo run -p maple-cli -- agent demo --prompt "log current runtime status"
+
 # Start the daemon
-cargo run -p palm-daemon
+cargo run -p maple-cli -- daemon start --foreground
 
-# Create a worldline
-cargo run -p maple-cli -- worldline create --profile financial --label treasury-a
-
-# Inspect kernel state
+# In another terminal: inspect the runtime
 cargo run -p maple-cli -- kernel status
+cargo run -p maple-cli -- worldline create --profile agent --label demo-agent
+cargo run -p maple-cli -- worldline list
+
+# Use PALM directly or via `maple palm ...`
+cargo run -p palm -- playground backends
+cargo run -p palm -- deployment list
 ```
 
-Those commands exercise the current implementation surfaces directly. The broader Agent OS redesign described in the docs is built on top of these runtime, provenance, and control-plane layers.
-
-## Architecture at a Glance
+## Architecture At A Glance
 
 ```mermaid
 graph TD
@@ -48,30 +117,32 @@ graph TD
     D --> E[Types, Identity, Temporal Model, Cryptography]
 ```
 
-- Reference agents: support, finance, compliance, operator workflows
-- Fleet / Foundry / Guard: rollout, eval, approvals, policy, compliance
-- Packages / Registry / Models: artifact supply chain and model operations
-- WorldLine kernel: commitment boundary, memory, provenance, event fabric
-- Foundation: types, identity, temporal and crypto primitives
+- Reference agents: support, finance, compliance, and operator workflows
+- Fleet / Foundry / Guard: rollout, eval, approvals, policy, and compliance
+- Packages / Registry / Models: artifact supply chain plus model routing and serving foundations
+- WorldLine kernel: commitment boundary, memory, provenance, and event fabric
+- Foundation: types, identity, temporal, and cryptographic primitives
 
 ## Quick Start Paths
 
-### Path A: Installation and first run
+### Path A: Install and run the current runtime
 
 - [Installation](docs/getting-started/installation.md)
 - [5-Minute Quickstart](docs/getting-started/quickstart.md)
+- [CLI Reference](docs/api/cli-reference.md)
 
-### Path B: Build your first governed agent
+### Path B: Author the first package contract
 
-- [First Agent Tutorial](docs/getting-started/first-agent.md)
+- [Author Your First Agent Package](docs/getting-started/first-agent.md)
 - [Maplefile Reference](docs/guides/maplefile.md)
 - [Guard and Policies](docs/guides/guard-policies.md)
 
-### Path C: Deep architecture and APIs
+### Path C: Go deeper on packaging, models, and architecture
 
 - [Architecture Overview](docs/architecture/overview.md)
+- [Model Management](docs/guides/model-management.md)
+- [Fleet Deployment](docs/guides/fleet-deployment.md)
 - [REST API](docs/api/rest-api.md)
-- [CLI Reference](docs/api/cli-reference.md)
 
 ## Documentation Map
 
@@ -90,7 +161,7 @@ graph TD
 maple/
 ├── crates/               # Runtime, package, model, guard, fleet, and worldline crates
 ├── contracts/            # Packaging and conformance contracts
-├── examples/             # Runnable demos and end-to-end reference flows
+├── examples/             # Runnable worldline and runtime examples
 ├── docs/                 # Canonical documentation set
 ├── ibank/                # Domain-specific financial application surfaces
 └── deploy/               # Deployment assets when present
@@ -98,14 +169,11 @@ maple/
 
 ## Status
 
-MAPLE is in the middle of an Agent OS redesign. The repository already contains the foundational implementation for:
+MAPLE is in the middle of the MapleAI Agent OS redesign.
 
-- worldline identity and provenance
-- PALM daemon operations
-- packaging, registry, and model-management crates
-- guard, foundry, and fleet crate families
-
-Some top-level docs describe the full target operating model even where the UX is still converging on the final `maple build`, `maple run`, and `maple model` ergonomics.
+- The runtime, worldline, daemon, and PALM operational surfaces are the most complete public interfaces today.
+- The package, registry, model, guard, foundry, and fleet layers are implemented primarily as crates.
+- The docs in this repo now distinguish between "implemented now" and "target product UX" where that boundary matters.
 
 ## Contributing
 
@@ -115,10 +183,10 @@ Some top-level docs describe the full target operating model even where the UX i
 
 ## Contact
 
-- Website: <https://mapleai.org>
-- Docs: <https://mapleai.org/docs>
+- Website: <https://www.mapleai.org>
+- Docs: <https://www.mapleai.org/docs>
 - Email: <hello@mapleai.org>
 
 ## License
 
-MIT OR Apache-2.0
+Copyright 2026 - MapelAI Intelligence Inc.

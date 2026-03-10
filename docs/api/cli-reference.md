@@ -1,71 +1,119 @@
 # CLI Reference
 
-The `maple` CLI is the shortest path to the platform model. It combines package workflow, model management, runtime control, governance, and provenance inspection under one command surface.
+The current CLI surface is runtime-first. `maple` manages diagnostics, PALM lifecycle, worldlines, commitments, provenance, governance, and the local agent demo. `palm` manages specs, deployments, instances, health, events, and playground backends.
 
-## Core command groups
+## `maple` command groups
+
+These are the command groups currently exposed by `maple --help`:
+
+- `version`
+- `validate`
+- `ual`
+- `doctor`
+- `daemon`
+- `agent`
+- `worldline`
+- `commit`
+- `provenance`
+- `financial`
+- `gov`
+- `kernel`
+- `palm`
+
+### Notes
+
+- `validate` currently behaves as a developer stub, not as a finished manifest-validation UX.
+- `palm` forwards directly to the PALM CLI.
+- Product-style package, model, and fleet commands such as `maple build`, `maple model`, and `maple up` are not currently exposed here.
+
+## Common `maple` flows
 
 ```bash
-maple init
-maple build
-maple sign
-maple push
-maple pull
-maple inspect
+# Diagnose local setup
+cargo run -p maple-cli -- doctor --model llama3.2:3b
 
-maple model pull
-maple model ls
-maple model serve
+# Start or inspect the daemon
+cargo run -p maple-cli -- daemon start --foreground
+cargo run -p maple-cli -- daemon status
 
-maple worldline create
-maple commit submit
-maple provenance worldline-history
-maple kernel status
-maple gov list
+# Exercise the local agent demo
+cargo run -p maple-cli -- agent demo --prompt "log current runtime status"
+cargo run -p maple-cli -- agent demo --dangerous --with-commitment --amount 500
+
+# Work with worldlines and provenance
+cargo run -p maple-cli -- worldline create --profile agent --label demo-agent
+cargo run -p maple-cli -- worldline list
+cargo run -p maple-cli -- provenance worldline-history <worldline-id>
+
+# Inspect the runtime
+cargo run -p maple-cli -- kernel status
+cargo run -p maple-cli -- kernel metrics
 ```
 
-## Package workflow
+## `palm` command groups
+
+These are the command groups currently exposed by `palm --help`:
+
+- `spec`
+- `deployment`
+- `instance`
+- `state`
+- `health`
+- `events`
+- `playground`
+- `config`
+- `status`
+
+## Common `palm` flows
 
 ```bash
-maple init --kind agent-package --name support-agent
-maple build -t myorg/agents/support:1.0.0 .
-maple sign myorg/agents/support:1.0.0
-maple push myorg/agents/support:1.0.0
-```
+# Check daemon connectivity
+cargo run -p palm -- status
 
-## Runtime workflow
+# Inspect playground backends and set the active one
+cargo run -p palm -- playground backends
+cargo run -p palm -- playground set-backend \
+  --kind local_llama \
+  --model llama3.2:3b \
+  --endpoint http://127.0.0.1:11434
+cargo run -p palm -- playground infer "Summarize current runtime health"
 
-```bash
-maple worldline create --profile financial --label treasury-a
-maple commit submit --file ./payment.json
-maple provenance worldline-history wl_123
-maple kernel metrics
-```
-
-## Fleet workflow
-
-```bash
-maple up -f maple-stack.yml
-maple ps
-maple down -f maple-stack.yml
+# Inspect rollout state
+cargo run -p palm -- spec list
+cargo run -p palm -- deployment list
 ```
 
 ## Environment variables
 
-| Variable | Purpose |
-| --- | --- |
-| `PALM_ENDPOINT` | Default API endpoint for CLI requests |
-| `MAPLE_PROFILE` | Default execution or deployment profile |
-| `MAPLE_TOKEN` | API credential for shared environments |
+These variables are part of the current surfaced toolchain:
+
+| Variable | Used by | Purpose |
+| --- | --- | --- |
+| `PALM_ENDPOINT` | `maple`, `palm` | Default API endpoint for CLI requests |
+| `OLLAMA_HOST` | `maple doctor` | Local Ollama endpoint for connectivity checks |
+| `PALM_CONFIG` | `palm`, `palmd` | Config file path |
+| `PALM_PLATFORM` | `palm`, `palmd` | Active platform profile |
+| `PALM_LISTEN_ADDR` | `palmd` | Daemon listen address |
+| `PALM_LOG_LEVEL` | `palmd` | Daemon log level |
+| `PALM_LOG_JSON` | `palmd` | Enable JSON logs |
+| `PALM_STORAGE_TYPE` | `maple daemon`, `maple doctor` | Storage mode override |
+| `PALM_STORAGE_URL` | `maple doctor` and PALM storage config | PostgreSQL connection URL |
 
 ## Config
 
-```toml
-endpoint = "http://localhost:8080"
-profile = "standard"
+PALM CLI reads:
 
-[model]
-default_backend = "ollama"
-default_model = "llama3.2:8b-q4"
+```text
+~/.config/palm/config.toml
 ```
 
-Use environment variables for CI or ephemeral overrides, and a config file for stable operator defaults.
+The current fields are:
+
+```toml
+endpoint = "http://127.0.0.1:8080"
+default_platform = "development"
+default_namespace = "mapleai"
+timeout_seconds = 30
+```
+
+Use explicit flags for one-off overrides and the PALM config file for stable operator defaults.

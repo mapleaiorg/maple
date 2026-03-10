@@ -1,12 +1,12 @@
 # MAPLE Documentation
 
-This is the canonical documentation set for the MAPLE Agent Operating System redesign. It is organized by job-to-be-done first, then by deeper architecture and reference material.
+This is the canonical documentation set for the MAPLE Agent Operating System redesign. It is organized by job-to-be-done first, then by deeper architecture and reference material. The top-level guides below describe the implemented runtime and crate surfaces, and they call out where the final product CLI is still converging.
 
 ## Start Here
 
 - [Installation](getting-started/installation.md)
 - [5-Minute Quickstart](getting-started/quickstart.md)
-- [Build Your First Agent](getting-started/first-agent.md)
+- [Author Your First Agent Package](getting-started/first-agent.md)
 
 ## Architecture
 

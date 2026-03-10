@@ -1,13 +1,14 @@
 # Installation
 
-MAPLE is designed to be usable in a local laptop loop first, then carried into team and production environments without changing the core operating model. The fastest path is: install Rust, optionally install Ollama for local models, build the repo, and verify the CLI plus demo path.
+MAPLE is easiest to use from a source checkout today. Build the workspace tools, optionally install Ollama for local model-backed playground flows, and verify the runtime with the shipped examples plus CLI surfaces.
 
 ## Prerequisites
 
 - Rust 1.80 or newer
 - Git
-- Ollama recommended for local models
-- Docker optional for compose-based environments
+- PostgreSQL recommended for persistent PALM storage
+- Ollama optional for local model-backed playground use
+- Docker optional if you want containerized Postgres or Ollama during development
 
 Install Rust:
 
@@ -16,34 +17,31 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 rustup update
 ```
 
-Install Ollama:
+Install Ollama if you want a local model backend:
 
 ```bash
 curl -fsSL https://ollama.ai/install.sh | sh
-ollama pull llama3.2
+ollama pull llama3.2:3b
 ```
 
-## Install from source
+## Build from source
 
 ```bash
 git clone https://github.com/mapleaiorg/maple.git
 cd maple
-cargo build --release
+cargo build --release -p maple-cli -p palm-daemon -p palm
 
 export PATH="$PWD/target/release:$PATH"
-maple --version
+maple --help
+palmd --help
+palm --help
 ```
 
-This path is the best fit if you want the demo binaries, examples, and the latest runtime code at the same time.
+This is the recommended install path for the current repo. It gives you the runtime CLI, the PALM daemon, the PALM operator CLI, and the example programs in one checkout.
 
-## Install via Cargo
+## Current install status
 
-When the CLI is published independently, use:
-
-```bash
-cargo install maple-cli
-maple --version
-```
+The repository does not document a single published install target for the full product surface yet. The source build above is the accurate path today.
 
 ## Platform notes
 
@@ -61,17 +59,37 @@ maple --version
 ### Windows
 
 - Use WSL2 for the cleanest developer path today.
-- Keep your repository and build cache inside the Linux filesystem rather than a mounted Windows path for better cargo performance.
+- Keep the repo and cargo cache inside the Linux filesystem rather than a mounted Windows path for better build performance.
 
 ## Verify the install
 
+Start with the binaries:
+
 ```bash
-maple --version
-curl -s http://localhost:11434/api/tags | head
-cargo run -p maple-demo
+maple --help
+palmd --help
+palm --help
 ```
 
-If Ollama is not running, the demo should still degrade gracefully. You lose local-model execution, but the rest of the runtime path remains testable.
+Then run a non-daemon example:
+
+```bash
+cargo run --manifest-path examples/mwl-worldline-lifecycle/Cargo.toml
+```
+
+If you want to verify the daemon-backed path, start PALM in one terminal:
+
+```bash
+palmd --platform development
+```
+
+And in another terminal:
+
+```bash
+maple doctor --model llama3.2:3b
+```
+
+If Ollama is not running, `maple doctor` will tell you that explicitly. The worldline and daemon surfaces are still usable without it.
 
 ## Troubleshooting
 
@@ -88,25 +106,31 @@ rustc --version
 ollama serve
 ```
 
-Run that in a separate terminal before retrying model operations.
+Run that in a separate terminal before retrying PALM playground or `maple doctor`.
+
+### PALM doctor reports PostgreSQL failures
+
+By default, PALM expects:
+
+```text
+postgres://postgres:postgres@localhost:5432/maple
+```
+
+Override with `PALM_STORAGE_URL`, or start the daemon in memory mode through `maple daemon start --storage memory`.
 
 ### Build failures after dependency changes
 
 ```bash
 cargo clean
-cargo build --release
+cargo build --release -p maple-cli -p palm-daemon -p palm
 ```
 
-### `maple` is not found
+### `maple`, `palmd`, or `palm` is not found
 
-Check that `target/release` is on your `PATH`, or call the binary directly:
-
-```bash
-./target/release/maple --version
-```
+Call the binaries directly from `target/release`, or ensure that directory is on your `PATH`.
 
 ## Next steps
 
-- Continue to the [/docs/getting-started/quickstart](https://mapleai.org/docs/getting-started/quickstart)
-- Package an agent in [/docs/getting-started/first-agent](https://mapleai.org/docs/getting-started/first-agent)
-- Review the runtime shape in [/docs/architecture/overview](https://mapleai.org/docs/architecture/overview)
+- Continue to [5-Minute Quickstart](quickstart.md)
+- Author a package in [Author Your First Agent Package](first-agent.md)
+- Review the runtime shape in [Architecture Overview](../architecture/overview.md)

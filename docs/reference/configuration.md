@@ -1,59 +1,85 @@
 # Configuration
 
-MAPLE configuration should be explicit enough that an operator can answer three questions quickly:
+The current repo has two real configuration surfaces:
 
-1. Which services are enabled?
-2. Which models and policies are default?
-3. Which deployment profile is active?
+1. PALM daemon configuration, loaded by `palmd`
+2. PALM CLI configuration, loaded by `palm`
 
-## Example config
+`maple-cli` is mostly flag- and environment-driven today. It does not currently read a separate MAPLE-wide config file with the fields that older docs implied.
+
+## PALM daemon config
+
+`palmd` loads defaults, then an optional config file, then `PALM_` environment variables.
+
+Example:
 
 ```toml
-profile = "standard"
-endpoint = "http://localhost:8080"
-registry = "registry.mapleai.org"
+[server]
+listen_addr = "127.0.0.1:8080"
+enable_cors = true
+request_timeout_secs = 30
+max_body_size = 10485760
 
-[model]
-default_backend = "ollama"
-default_model = "llama3.2:8b-q4"
+[storage]
+type = "postgres"
+url = "postgres://postgres:postgres@localhost:5432/maple"
+max_connections = 10
+connect_timeout_secs = 5
 
-[guard]
-default_policy = "policies/default.yaml"
-pii_redaction = true
+[scheduler]
+reconcile_interval_secs = 10
+health_check_interval_secs = 5
+metrics_interval_secs = 15
+max_concurrent_reconciliations = 10
+auto_healing_enabled = true
 
-[fleet]
-budget_monthly_usd = 2000
-canary_enabled = true
+platform = "development"
+
+[logging]
+level = "info"
+json = false
+timestamps = true
+```
+
+## PALM CLI config
+
+`palm` looks for:
+
+```text
+~/.config/palm/config.toml
+```
+
+Example:
+
+```toml
+endpoint = "http://127.0.0.1:8080"
+default_platform = "development"
+default_namespace = "mapleai"
+timeout_seconds = 30
 ```
 
 ## Useful environment variables
 
-| Variable | Meaning |
-| --- | --- |
-| `PALM_ENDPOINT` | CLI and SDK endpoint override |
-| `MAPLE_PROFILE` | Active deployment profile |
-| `MAPLE_MODEL_BACKEND` | Default routing backend |
-| `MAPLE_MODEL_NAME` | Default model identifier |
-| `MAPLE_GUARD_POLICY` | Guard policy override |
+| Variable | Used by | Meaning |
+| --- | --- | --- |
+| `PALM_ENDPOINT` | `maple`, `palm` | Default API endpoint |
+| `OLLAMA_HOST` | `maple doctor` | Local Ollama endpoint |
+| `PALM_CONFIG` | `palm`, `palmd` | Explicit config file path |
+| `PALM_PLATFORM` | `palm`, `palmd` | Active platform profile |
+| `PALM_LISTEN_ADDR` | `palmd` | Daemon listen address |
+| `PALM_LOG_LEVEL` | `palmd` | Log level |
+| `PALM_LOG_JSON` | `palmd` | Enable JSON logs |
+| `PALM_STORAGE_TYPE` | `maple daemon`, `maple doctor` | Storage mode override |
+| `PALM_STORAGE_URL` | PALM storage checks and config | PostgreSQL connection URL |
 
-## Deployment profiles
+## Important status note
 
-### Minimal
+These older variables are not the current public config contract:
 
-Single-node development with lightweight persistence.
+- `MAPLE_PROFILE`
+- `MAPLE_MODEL_BACKEND`
+- `MAPLE_MODEL_NAME`
+- `MAPLE_GUARD_POLICY`
+- `MAPLE_TOKEN`
 
-### Standard
-
-Shared team environment with observability and policy simulation.
-
-### Financial
-
-Higher approval, audit, and idempotency requirements.
-
-### Sovereign
-
-Private registry, mirrored artifacts, and controlled connectivity.
-
-### Federated
-
-Multi-domain deployment with stronger tenancy boundaries and mirrored policy packs.
+Use explicit CLI flags, PALM config files, and the verified `PALM_` environment variables above instead.

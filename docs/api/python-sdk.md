@@ -1,38 +1,29 @@
 # Python SDK
 
-Install:
+MapleAI does not currently ship an official published Python SDK from this repo.
 
-```bash
-pip install maple-sdk
-```
+## Current integration path
 
-The Python SDK is a good fit for automation, data workflows, and evaluation harnesses that need governed action submission without rebuilding the operator plane.
-
-## Example
+Use the PALM daemon REST API from your automation or evaluation harness.
 
 ```python
-from maple_sdk import MapleClient, Profile
+import requests
 
+response = requests.get("http://127.0.0.1:8080/health", timeout=10)
+response.raise_for_status()
 
-async def main():
-    client = await MapleClient.connect("http://localhost:8080")
-
-    agent = await client.worldline.create(
-        profile=Profile.Agent,
-        label="my-support-agent",
-    )
-
-    result = await client.commit.submit(
-        worldline_id=agent.id,
-        obligation="resolve customer ticket #1234",
-        capabilities=["zendesk.ticket.reply"],
-    )
-
-    print(result)
+print(response.json())
 ```
 
-## Typical flow
+For richer workflows, target the REST resources documented in [REST API](rest-api.md).
 
-- Create async clients for operator or batch workloads.
-- Use provenance queries to validate expected outcomes after automation runs.
-- Keep human approval loops separate from background execution loops.
+## Recommended scope today
+
+- automation and operator scripts
+- evaluation harnesses
+- data workflows that need runtime health or audit data
+- internal generated clients against the PALM HTTP API
+
+## Status
+
+Python integration is currently HTTP-first. An official SDK package may come later, but it is not published from this repo today.

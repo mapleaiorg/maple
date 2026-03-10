@@ -1,13 +1,14 @@
-# Build Your First Agent
+# Author Your First Agent Package
 
-This tutorial builds a small TODO agent that can add, list, complete, and delete tasks. The point is not sophisticated task management. The point is to feel the MAPLE packaging model: agent contract, model binding, deny-by-default capability grants, and auditable actions.
+This tutorial authors a small TODO agent package contract. The point is not sophisticated task management. The point is to model an agent the way MAPLE models it now: explicit package identity, model requirements, deny-by-default tool authority, and durable runtime expectations.
 
-## 1. Scaffold the package
+## 1. Scaffold the package directory
+
+The repo already ships the `maple-init` crate, but there is not yet a top-level `maple init` command in `maple-cli`. For now, create the expected directories manually:
 
 ```bash
-mkdir my-todo-agent
+mkdir -p my-todo-agent/prompts my-todo-agent/contracts my-todo-agent/eval
 cd my-todo-agent
-maple init --kind agent-package --name my-todo-agent --org myorg
 ```
 
 Expected shape:
@@ -16,44 +17,84 @@ Expected shape:
 my-todo-agent/
 ├── Maplefile.yaml
 ├── prompts/
-│   └── system.md
-├── skills/
-│   └── todo/
-└── policies/
-    └── guard.yaml
+├── contracts/
+└── eval/
 ```
 
-## 2. Configure the Maplefile
+## 2. Write `Maplefile.yaml`
+
+The current parser expects snake_case field names and kebab-case `kind` values.
 
 ```yaml
-apiVersion: maple.ai/v1alpha1
-kind: AgentPackage
+api_version: "maple.ai/v1"
+kind: agent-package
+name: "myorg/agents/my-todo-agent"
+version: "0.1.0"
+description: "TODO agent package contract"
+
 metadata:
-  name: my-todo-agent
-  org: myorg
-  version: 0.1.0
+  authors:
+    - "myorg"
+  license: "MIT OR Apache-2.0"
+  keywords:
+    - "todo"
+    - "agent"
+  labels: {}
 
-model:
-  ref: ollama:llama3.2:8b-q4
-  routingPolicy: default-local
-
-memory:
-  backend: sqlite
-  path: ./.maple/todo.sqlite
+models:
+  default:
+    reference: "ollama:llama3.2:3b"
+    capabilities:
+      - "tool-calling"
+  alternatives:
+    - reference: "openai:gpt-4o-mini"
+      capabilities:
+        - "tool-calling"
+  constraints:
+    data_classification: "internal"
+    jurisdictions:
+      - "CA"
+    max_cost_per_1k_tokens: 0.02
 
 skills:
-  - ref: ./skills/todo
+  - reference: "myorg/skills/todo"
+    version: "^0.1.0"
+    optional: false
+    provides:
+      - "todo.add"
+      - "todo.list"
+      - "todo.complete"
+      - "todo.delete"
 
-guard:
-  mode: deny-by-default
+contracts:
+  - reference: "myorg/contracts/todo-safety"
+    version: "^0.1.0"
+    enforcement: mandatory
+
+memory:
+  worldline:
+    mode: "event-ledger"
+    backend: "sqlite"
+
+policy:
+  deny_by_default: true
   allow:
-    - todo.add
-    - todo.list
-    - todo.complete
-    - todo.delete
+    - tool: "todo.add"
+      requires_approval: false
+    - tool: "todo.list"
+      requires_approval: false
+    - tool: "todo.complete"
+      requires_approval: false
+    - tool: "todo.delete"
+      requires_approval: true
+
+observability:
+  traces: "otel"
+  replay: "enabled"
+  metrics: "prometheus"
 ```
 
-The key idea is that the package declares cognition, memory, and tool boundaries together. MAPLE is not treating tool access as an afterthought bolted onto a chat loop.
+The key idea is that the package declares cognition, memory, contracts, and capability boundaries together. MAPLE does not treat tool access as an afterthought bolted onto a chat loop.
 
 ## 3. Write the system prompt
 
@@ -62,89 +103,46 @@ The key idea is that the package declares cognition, memory, and tool boundaries
 ```md
 You are a TODO list assistant.
 You help users add, list, complete, and delete tasks.
-Available tools: todo.add, todo.list, todo.complete, todo.delete
-Always confirm before deleting tasks.
+Use tools only when they are explicitly allowed by policy.
+Always request confirmation before deleting tasks.
 ```
 
-## 4. Define the skill surface
+## 4. Decide what belongs in `contracts/` and `eval/`
 
-`skills/todo/manifest.yaml`
+- `contracts/` is where you place the policy, contract, or compliance material your package depends on.
+- `eval/` is where you keep evaluation vectors and regression material.
 
-```yaml
-name: todo
-tools:
-  - id: todo.add
-    input: { text: string }
-  - id: todo.list
-    input: {}
-  - id: todo.complete
-    input: { id: string }
-  - id: todo.delete
-    input: { id: string }
-```
+The exact file formats inside those directories depend on the contract and eval tooling you adopt in your environment. The important point is that MAPLE packages reserve explicit space for them instead of hiding them in app-specific conventions.
 
-You can implement the tool handlers in Rust, TypeScript, or Python. For a first pass, keep them in-memory and focus on the capability contract.
+## 5. Understand the build path
 
-## 5. Build the package
+Today the package pipeline is library-first:
+
+- `maple-package` parses and validates the manifest
+- `maple-build` resolves dependencies and assembles OCI layers
+- `maple-package-trust` signs, verifies, and generates SBOMs
+- `maple-registry-client` pushes, pulls, and mirrors artifacts
+
+There is not yet a polished `maple build` or `maple push` command in `maple-cli`. The package contract you authored here is the input those crates are designed to consume.
+
+## 6. Connect the package design to the runtime
+
+The current runtime CLI does not execute package artifacts directly yet, but you can exercise the daemon and worldline surfaces the package is targeting:
 
 ```bash
-maple build -t myorg/agents/todo:0.1.0 .
+# Terminal 1
+cargo run -p maple-cli -- daemon start --foreground
+
+# Terminal 2
+cargo run -p maple-cli -- worldline create --profile agent --label my-todo-agent
+cargo run -p maple-cli -- kernel status
+cargo run -p maple-cli -- agent demo --prompt "summarize current operator state"
 ```
 
-The build step should assemble your Maplefile, prompts, skill manifest, policy files, and metadata into a versioned package artifact.
-
-## 6. Run the agent
-
-```bash
-maple run myorg/agents/todo:0.1.0
-```
-
-Example interaction:
-
-```text
-> add buy groceries
-Added task #1: buy groceries
-
-> list my tasks
-1. buy groceries [open]
-
-> complete task 1
-Marked task #1 as complete
-```
-
-## 7. Inspect the audit trail
-
-```bash
-maple provenance worldline-history <worldline-id>
-```
-
-You should see that each meaningful action is attached to an identity and a receipt trail. That is the main difference between a packaged MAPLE agent and a plain application-level chat bot.
-
-## 8. Add a delete guard
-
-`policies/guard.yaml`
-
-```yaml
-version: v1
-default: deny
-rules:
-  - id: allow-safe-todo-ops
-    match:
-      capability: [todo.add, todo.list, todo.complete]
-    action: allow
-
-  - id: confirm-delete
-    match:
-      capability: [todo.delete]
-    action: require_approval
-    approvals:
-      count: 1
-```
-
-Now the agent can draft a deletion, but consequence is held until confirmation exists.
+Those commands show the governed runtime environment your package contract is meant to live inside: durable identities, explicit runtime status, and consequence-aware execution surfaces.
 
 ## Where to go next
 
-- Publish and sign packages in [/docs/guides/maplefile](https://mapleai.org/docs/guides/maplefile)
-- Add model routing in [/docs/guides/model-management](https://mapleai.org/docs/guides/model-management)
-- Review Guard workflows in [/docs/guides/guard-policies](https://mapleai.org/docs/guides/guard-policies)
+- Deepen the package story in [Maplefile Reference](../guides/maplefile.md)
+- Add model routing and backend control in [Model Management](../guides/model-management.md)
+- Review Guard workflows in [Guard and Policies](../guides/guard-policies.md)

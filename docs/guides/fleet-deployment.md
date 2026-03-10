@@ -1,36 +1,80 @@
 # Fleet Deployment
 
-Fleet is MAPLE's orchestration layer for running many governed agents as a system rather than as a collection of disconnected demos. It manages lifecycle, topology, rollout policy, budgets, and recovery.
+Fleet is MAPLE's orchestration layer for running many governed agents as a system rather than as a collection of disconnected demos. In the current repo, the operational control surface is PALM, and the stack-definition surface is the `maple-fleet-stack` crate.
 
-## Core lifecycle commands
+## Current operator workflow
+
+Start PALM:
 
 ```bash
-maple run myorg/agents/support:1.0.0
-maple ps
-maple stop support-001
-maple suspend support-001
-maple resume support-001
+cargo run -p maple-cli -- daemon start --foreground
 ```
 
+Then use the PALM CLI:
+
+```bash
+cargo run -p palm -- status
+cargo run -p palm -- spec list
+cargo run -p palm -- deployment list
+cargo run -p palm -- playground status
+```
+
+The currently exposed PALM command groups are:
+
+- `spec`
+- `deployment`
+- `instance`
+- `state`
+- `health`
+- `events`
+- `playground`
+
+That is the real operator surface today.
+
 ## Stack topology
+
+`maple-fleet-stack` already implements a Docker Compose-like stack definition for agents, but it is currently a Rust crate surface rather than a finished `maple up` CLI.
 
 `maple-stack.yml`
 
 ```yaml
+name: support-stack
+version: "1.0"
+
 services:
   support:
-    image: myorg/agents/support:1.0.0
+    agent_ref: "myorg/agents/support:1.0.0"
     replicas: 3
-    budget:
-      monthlyUsd: 500
-    guardPolicy: policies/support-prod.yaml
+    environment:
+      MAPLE_TENANT: "acme"
+    depends_on: []
 
   evaluator:
-    image: myorg/agents/support-eval:0.4.0
+    agent_ref: "myorg/agents/support-eval:0.4.0"
     replicas: 1
+    depends_on:
+      - support
 ```
 
-Use `maple up` and `maple down` to reconcile this desired state.
+The implemented stack schema supports:
+
+- `agent_ref`
+- `replicas`
+- `environment`
+- `depends_on`
+- `resources`
+- `health_check`
+
+## What is "Docker-compose-like" here
+
+`maple-fleet-stack` provides:
+
+- YAML parsing for multi-service agent stacks
+- dependency validation
+- topological sort for startup and teardown ordering
+- stack and service lifecycle state tracking
+
+This is the MAPLE equivalent of a compose file for agents. The final `maple up`, `maple down`, and `maple ps` UX is not wired into `maple-cli` yet.
 
 ## Rollout strategy
 
@@ -43,15 +87,15 @@ Use `maple up` and `maple down` to reconcile this desired state.
 
 ### Local
 
-Single operator, single machine, optional Ollama. Best for iteration.
+Single operator, single machine, PALM daemon, and optional Ollama. Best for iteration.
 
 ### Team
 
-Compose-managed shared stack with Postgres plus observability. Best for staging.
+Shared PALM environment with Postgres, playground backends, and basic observability. Best for staging.
 
 ### Enterprise
 
-Helm on Kubernetes with managed databases, tenant isolation, and HA services. Best for production estates.
+Multiple deployments, stronger tenancy controls, managed persistence, and external orchestration. Best for production estates.
 
 ### Air-gapped
 
